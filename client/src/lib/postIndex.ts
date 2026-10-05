@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 273 of them. Regenerate with script/generatePostIndex.ts.
+ * 275 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,26 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "fortigate-homelab-license",
+    title: "FortiGate Homelab License: What Works Without a Contract",
+    date: "2026-10-05",
+    tags: ["fortinet","homelab","firewall"],
+    excerpt: "What a used FortiGate still does with no FortiCare contract, why Fortinet refuses most secondhand transfers, and the exact limits of the free FortiGate-VM trial.",
+    coverImage: "/images/blog/fortigate-homelab-license.jpg",
+    coverCredit: {"author":"DiFronzo","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:The_Gathering_2019_-_Server_and_firewall_(46813726325).jpg"},
+    wordCount: 2629,
+  },
+  {
+    slug: "fortigate-60e-to-60f-migration",
+    title: "FortiGate 60E to 60F Migration: Three Paths and What Breaks",
+    date: "2026-10-05",
+    tags: ["fortinet","firewall","networking","homelab"],
+    excerpt: "How to move a FortiGate 60E config to a 60F before support ends December 29, 2026: matching FortiOS 7.4, free FortiConverter, header edits, port renames and licenses.",
+    coverImage: "/images/blog/fortigate-60e-to-60f-migration.jpg",
+    coverCredit: {"author":"Premeditated","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png"},
+    wordCount: 2830,
+  },
   {
     slug: "dell-boss-card",
     title: "Dell BOSS Card Explained: BOSS-S1, S2 and N1 Compared",
@@ -2679,10 +2699,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 273;
+export const POST_COUNT = 275;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy three";
+export const POST_COUNT_SPELLED = "two hundred and seventy five";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2691,10 +2711,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy three";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1628;
+export const CITATION_COUNT = 1715;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 146;
+export const ATTRIBUTION_URL_COUNT = 147;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1766;
+export const CHECKED_URL_COUNT = 1853;

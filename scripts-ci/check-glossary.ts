@@ -177,6 +177,7 @@ const NOT_JARGON: Record<string, string> = {
   CLI: "assumed knowledge for this audience",
   ISO: "assumed knowledge: an installer disk image",
   DDR4: "a memory generation name, covered by the DIMM entry",
+  SD: "appears only inside SD-WAN and SD card, which each article explains where it uses them",
   BIOS: "defined",
   SYN: "defined",
 };
