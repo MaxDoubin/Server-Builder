@@ -180,6 +180,10 @@ const NOT_JARGON: Record<string, string> = {
   SD: "appears only inside SD-WAN and SD card, which each article explains where it uses them",
   BIOS: "defined",
   SYN: "defined",
+  SA: "appears in the CC BY-SA license names that photo credits cite, never as a term of its own",
+  HD: "part of product names such as Radeon HD 5770 and Intel HD 3000, not a concept",
+  README: "the file name of a project's README, cited as a source document",
+  FAQ: "frequently asked questions; the articles cite a project's FAQ page by name",
 };
 
 const THRESHOLD = 25;

@@ -50,6 +50,666 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "mac-pro-4-1-vs-5-1",
+    title: "Mac Pro 4,1 vs 5,1: What a Firmware Flash Changes (and Doesn't)",
+    date: "2026-10-05",
+    tags: ["mac-pro", "hardware", "apple"],
+    excerpt:
+      "A Mac Pro 4,1 and 5,1 differ mainly in the CPU tray. See what the 4,1 to 5,1 firmware flash changes and leaves alone, how it is done, and which to buy used.",
+    coverImage: "/images/blog/mac-pro-4-1-vs-5-1.jpg",
+    coverCredit: {
+      author: "Uadro",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_(2010).jpg",
+    },
+    content: `
+## The short answer
+
+The Mac Pro 4,1 (2009) and 5,1 (2010 and 2012) are the same machine with one real hardware difference: the processor tray. A 4,1 dual-CPU tray takes delidded Xeons, a 5,1 tray takes ordinary lidded ones, and the trays do not swap. A community firmware flash makes a 4,1 report itself as a 5,1, unlocking six-core Westmere Xeons, 1333MHz memory and the macOS Sierra through Mojave installers, but the board stays a 4,1. Buy a 5,1 when prices are close, and a 4,1 only when it is clearly cheaper.
+
+## Mac Pro 4,1 vs 5,1 at a glance
+
+Apple introduced the 4,1 on [March 3, 2009](https://www.apple.com/newsroom/2009/03/03Apple-Introduces-New-Mac-Pro/) and the 5,1 on [July 27, 2010](https://www.apple.com/newsroom/2010/07/27Apple-Unveils-New-Mac-Pro-With-Up-to-12-Processing-Cores/), then quietly refreshed it on [June 11, 2012](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html). The table adds a flashed 4,1 column because those turn up in listings as 5,1s.
+
+| | 4,1 as shipped (2009) | 4,1 after the flash | 5,1 (2010, 2012) |
+| :--- | :--- | :--- | :--- |
+| Model identifier | MacPro4,1 | MacPro5,1 | MacPro5,1 |
+| Largest CPU setup | Two quad-core Nehalem | Two six-core Westmere accepted | Two six-core Westmere |
+| Dual-CPU tray | 4,1 tray, delidded Xeons | 4,1 tray, delidded Xeons | 5,1 tray, lidded Xeons |
+| Memory speed | 1066MHz | 1066 or 1333MHz, by CPU and DIMMs | 1066 or 1333MHz, by model |
+| Apple's RAM limit | 16GB single, 32GB dual | Not an Apple spec | 32GB single, 64GB dual |
+| Stock graphics | GeForce GT 120 or Radeon HD 4870 | Unchanged | Radeon HD 5770 or HD 5870 |
+| Boot ROM | MP41.0081.B07 or B08, the latest | MP51.007F.B03, then newer | Up to 144.0.0.0.0 |
+| Newest macOS from Apple | El Capitan 10.11 | Sierra to Mojave installers work | Mojave 10.14, Metal GPU needed |
+
+Specs come from Apple's tech specs for the [Early 2009](https://support.apple.com/en-us/112590), [Mid 2010](https://support.apple.com/en-us/112578) and [Mid 2012](https://support.apple.com/en-us/118464) models and Apple's [model list](https://support.apple.com/en-us/102887); the community sources cited below supply the flashed column.
+
+## What hardware differs between the 4,1 and the 5,1?
+
+The processor tray and the chips it holds. The House of Moth calls the two models ["99.9% identical"](https://thehouseofmoth.com/the-differences-between-the-41-and-51-mac-pro/) in hardware, and EveryMac says they [look essentially identical from the outside](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2010-westmere-early-2009-nehalem-models.html).
+
+### The CPU tray and lidded versus delidded Xeons
+
+Both models mount processors on a slide-out tray, but the trays take different chips. Moth reports that a 4,1 tray holds delidded CPUs (no metal heat spreader) on a spacer, and a 5,1 tray holds lidded ones. It also says single-CPU trays in both models take lidded chips, so only the 4,1 dual tray needs delidded ones. An [iFixit](https://www.ifixit.com/Answers/View/739264/Mac+Pro+4,1+vs+5,1+hardware+differences) owner answer reports the same split.
+
+<figure>
+<img src="/images/blog/mac-pro-4-1-vs-5-1/xeon-delid.jpg" alt="An Intel Xeon W3520 with its metal heat spreader removed and set beside the chip package" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A Xeon W3520, the processor in the entry 2009 Mac Pro, with its heat spreader lifted off. A 4,1 dual-CPU tray takes chips without that lid, while a 5,1 tray takes ordinary lidded ones. Photo: Fritzchens Fritz from Berlin, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Nehalem_XeonW3520_0004_(16427185949).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+EveryMac says Apple's [2009 chips were lidless](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-early-2009-nehalem-how-to-upgrade-processors.html) and that [2010 and 2012 models use standard ones](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-mid-2010-westmere-how-to-upgrade-processors.html), but it does not separate single and dual trays. This article follows the community guides, which do.
+
+Moth says lidded chips are too thick for the 4,1 tray, delidded chips too thin for the 5,1 tray, and that a copyright year on the tray, 2009 or 2010/2012, tells them apart. The trays do not swap: Moth reports that mixing them [runs the fans at full blast or stops the Mac booting](https://thehouseofmoth.com/the-differences-between-the-41-and-51-mac-pro/). Greg Gant says the flash leaves the 4,1 tray and backplane SMC firmware at version 1.39f5, while 2010 to 2012 machines run 1.39f11, and a mismatch confuses the fans.
+
+### Memory speed and capacity
+
+Apple rated every 4,1 for [1066MHz DDR3 ECC memory](https://support.apple.com/en-us/112590), up to 16GB in the single-CPU model and 32GB in the dual-CPU one. The 5,1 takes the same ECC DIMMs (see [ECC RAM explained](/blog/ecc-ram-explained)), but Apple rated the faster [Mid 2010](https://support.apple.com/en-us/112578) and [Mid 2012](https://support.apple.com/en-us/118464) CPUs for 1333MHz and lists 32GB and 64GB limits using 8GB DIMMs. EveryMac, citing OWC, says an [Early 2009 eight-core](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.93-early-2009-nehalem-specs.html) and a [Mid 2010 twelve-core](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.93-mid-2010-westmere-specs.html) can both use 128GB on OS X 10.9 or later.
+
+Speed also depends on the CPU. Ars Technica reported that some Nehalem chips support 1333MHz but are [limited to 1066MHz on the older Mac Pros](https://arstechnica.com/gadgets/2011/05/firmware-hack-can-transform-a-2009-mac-pro-into-a-12-core-monster/). Greg Gant's chart lists the W3520 as a 1066MHz chip and the X5650 through X5690 as 1333MHz chips.
+
+### Graphics, ports and everything else
+
+The 4,1 shipped with a GeForce GT 120 or Radeon HD 4870 with one Mini DisplayPort and one DVI port, and the 5,1 with a Radeon HD 5770 or HD 5870 with two Mini DisplayPorts and one DVI port. EveryMac says those ports are the only external difference, plus standard AirPort Wi-Fi on 2010 models and optional on 2009 ones.
+
+Everything else matches. Apple lists a PCIe 2.0 graphics slot plus three open PCIe 2.0 slots sharing 300W, four 3Gb/s SATA drive bays, four FireWire 800 ports, five USB 2.0 ports and two Gigabit Ethernet ports on both. The stock 5,1 is faster: Apple claimed up to 50 percent more performance than the previous generation, and Macworld's Speedmark 6 tests, [quoted by EveryMac](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-mid-2010-early-2009-speed-performance-comparison.html), found 13 percent (quad-core) and 15 percent (eight-core).
+
+## What does the 4,1 to 5,1 firmware upgrade change?
+
+It replaces the 4,1's Boot ROM with the Mid 2010 model's, so the Mac [reports itself as a MacPro5,1](https://appleinsider.com/articles/11/05/11/firmware_hack_converts_2009_mac_pro_to_use_faster_ram_cpus). That unlocks four things:
+
+<figure>
+<img src="/images/blog/mac-pro-4-1-vs-5-1/lga1366-socket.jpg" alt="An empty Intel LGA 1366 processor socket with its load plate open on a PC motherboard" width="1024" height="1064" loading="lazy" decoding="async">
+<figcaption>An LGA 1366 socket on a PC motherboard. Nehalem and Westmere Xeons share this socket, which is why a 4,1 can take six-core Westmere chips once its firmware reports a 5,1. Photo: Appaloosa, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LGA_Socket_1366.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+- **Westmere CPUs.** Ars says single-socket Macs can use W-series chips and dual-socket Macs need dual-QPI E5600 or X5600 chips. Greg Gant's chart marks six-core Westmere chips such as the X5690 and W3680 as needing the flash on a 4,1.
+- **1333MHz memory and Mini DisplayPort audio,** if the CPU and DIMMs support the speed.
+- **Newer installers.** Moth says Sierra, High Sierra and Mojave install natively afterward. Apple's [High Sierra requirements](https://support.apple.com/en-us/111934) list "Mac Pro (Mid 2010 or newer)", and Low End Mac says a flashed Mac [runs the standard Sierra installer](https://lowendmac.com/2009/mac-pro-early-2009/).
+- **Later 5,1 firmware.** Moth says the High Sierra installer delivers APFS support (see [APFS](/blog/apple-file-system-apfs)) and the Mojave installer delivers 144.0.0.0.0 with NVMe boot.
+
+The flash changes firmware only. The tray, its delidded-chip design and the SMC stay as they were. About This Mac still shows a 2009 Mac Pro because it reports the manufacture date, a serial number still identifies the original model, and Ars warned that the original install discs stop working.
+
+## How do you flash a 4,1 to a 5,1?
+
+Run a community tool that feeds Apple's own Mid 2010 firmware update to a 4,1, from El Capitan with System Integrity Protection (SIP) off. This is a community procedure, not Apple's: a forum user called MacEFIRom wrote scripts in 2011 that [force a 2009 Mac Pro to accept the 2010 update](https://arstechnica.com/gadgets/2011/05/firmware-hack-can-transform-a-2009-mac-pro-into-a-12-core-monster/), packaged as the \`Mac Pro 2009-2010 Firmware Tool\`.
+
+These steps summarize [The House of Moth's 2021 guide](https://thehouseofmoth.com/turning-a-2009-41-mac-pro-into-a-2010-2012-51-mac-pro-2021-edition/) and [jensd's 2024 workaround](https://jensd.be/2453/apple/apple-mac-pro-41-firmware-upgrade-to-51-in-2024). Moth's page warns that its procedure may no longer work, so read both in full first.
+
+1. Confirm you have a 4,1 and an original Apple or Mac-flashed graphics card, a prerequisite in Moth's guide.
+2. Install OS X El Capitan 10.11, the [newest OS Apple supports on a 4,1](https://support.apple.com/en-us/102887), as a clean install. Apple's [older macOS downloads page](https://support.apple.com/en-us/102662) still lists it, and commenters report tool errors on older releases.
+3. Update to the last 4,1 firmware, MP41.0081.B07 or B08, with Apple's [Mac Pro EFI Firmware Update 1.4](https://support.apple.com/en-us/106656) if needed.
+4. Restart into Recovery with Command-R, open Terminal from the Utilities menu, run the first command below and restart.
+5. Mount Apple's [Mac Pro EFI Firmware Update 1.5](https://support.apple.com/en-us/106455) image, run the tool and click "Upgrade to 2010 Firmware". If it quits with error 5570, use jensd's workaround, which renames both Apple firmware images and runs two scripts by hand.
+6. Shut down, hold the power button until the power light flashes and a long tone sounds, then release. A progress bar fills, the optical drive ejects and the Mac restarts. Apple's page for that update says not to "unplug, shutdown, restart or disturb" the Mac while it runs.
+7. Open About This Mac, then System Report, and read Boot ROM Version under Hardware Overview. A successful flash shows MP51.007F.B03. Then run the second command from Recovery.
+
+\`\`\`
+csrutil disable
+csrutil enable
+\`\`\`
+
+The first command turns SIP off and Terminal confirms it, and the second turns it back on.
+
+## Is the flash safe, and can you undo it?
+
+It is unsupported but long used, and reversible with one exception. Ars noted in 2011 that unsupported firmware and CPU swaps void AppleCare. That matters little now: Apple's [vintage and obsolete list](https://support.apple.com/en-us/102772) puts the Early 2009 and Mid 2010 under obsolete, where service providers cannot order parts, and the Mid 2012 under vintage.
+
+Moth says the same tool and files can [downgrade a flashed Mac](https://thehouseofmoth.com/turning-a-2009-41-mac-pro-into-a-2010-2012-51-mac-pro-2021-edition/) to the 4,1 firmware, after which Westmere CPUs must come out, El Capitan must go back on, and 1333MHz memory may misbehave. Ars adds that some refurbished 2009 Macs run a special firmware revision that is not public and cannot be reverted.
+
+The risk is in the process. Back up first, as EveryMac advises, and do not interrupt the update. Most failures in Moth's comments are tool errors (5510, 5530, 5570) or a Mac that restarts with nothing flashed, not damaged machines. Skip beta installers: Greg Gant relays MacRumors reports that firmware 142.0.0.0.0, in the Mojave 10.14.4 and 10.14.5 developer previews, bricked 5,1 Macs with W3xxx Xeons.
+
+## Which macOS can a flashed 4,1 and a 5,1 run?
+
+After the flash they are equal. Apple lists El Capitan as the newest OS for the 4,1 and Mojave for the 5,1, and EveryMac says the [Early 2009 is not supported on Sierra or later](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.93-early-2009-nehalem-specs.html). Moth explains that the flashed Mac "thinks it's a 5,1", so Sierra through Mojave install natively.
+
+Mojave has hurdles on both. Apple says to [update to High Sierra 10.13.6 first](https://support.apple.com/en-us/101330), turn FileVault off and use a Metal-capable card, such as an RX 560, an RX 580 or a Radeon HD 7950 Mac Edition. The cards Apple shipped in the 5,1 lack Metal, and Moth says the same of the 4,1's.
+
+Past Mojave, OpenCore Legacy Patcher (OCLP) lists [both MacPro4,1 and MacPro5,1](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) as supported, and its [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says it targets Big Sur through Sequoia. It cannot add CPU instructions: the FAQ puts AVX in the 2013 Mac Pro and AVX2 in the 2019 one, so newer apps can crash with "illegal instruction" on either model, and Navi cards (RX 5000 and 6000) fail in 2008 to 2012 Mac Pros on Ventura or newer.
+
+## Should you buy a 4,1 or a 5,1 used?
+
+Buy the 5,1 when the price is close. It arrives with the right tray, lidded chips and newer firmware, while Greg Gant says the 4,1's appeal is that it can historically be [had for cheaper](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html).
+
+A flashed 4,1 matches a 5,1 in speed, but its dual tray still needs delidded CPUs. Greg Gant calls the X5690 the fastest chip for either Mac and the X5680 a bargain at roughly half the price. Moth says pre-delidded chips usually carry ridiculous prices, and Greg Gant prices a DIY delid at a razor blade or a roughly $40 Delid-Die-Mate. A single-CPU 4,1 avoids delidding, but a dual-CPU upgrade needs a dual tray, which Greg says often costs as much as a whole used Mac Pro.
+
+Prices overlap. On October 5, 2026, [UsedMac.com](https://usedmac.com/product-category/apple-mac-pro/) asked $99 to $195 for 2009 Nehalem models and $125 to $395 for 5,1 models across its [two result pages](https://usedmac.com/product-category/apple-mac-pro/page/2/). Those are asking prices, not sold prices, so do not pay a 5,1 premium for a flashed 4,1. One listing reads "5,1" with "2009" in the title, and another sells an "Early 2009" machine "upgraded to 5,1".
+
+Check what you are actually buying:
+
+- **System Report:** it shows the firmware, not the hardware.
+- **EMC number on the back:** EveryMac lists [2314 for the Early 2009, 2314-2 for the Mid 2010 and 2629 for the Mid 2012](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-mid-2010-westmere-how-to-upgrade-processors.html), though early Mid 2010 units also carry 2314.
+- **Serial number:** EveryMac's Ultimate Mac Lookup identifies the original model.
+- **The tray:** Greg Gant suggests asking for a photo with the side panel off, and Moth says a 4,1 tray holds chips loose under the heatsink while a 5,1 tray clamps them.
+
+Budget for a Metal-capable graphics card either way, and see [Mac Pro 5,1 vs 7,1](/blog/mac-pro-5-1-vs-7-1) for the step up to a 2019 Mac Pro.
+
+## What breaks
+
+**The firmware tool quits with error 5570 or 5530, or the Mac restarts without flashing.** Moth says the tool's firmware download links stopped working long ago, and jensd's analysis is that it needs both the 4,1 and 5,1 images but can only be handed the new one. Fix: follow jensd's workaround, run from El Capitan with SIP off, install the 4,1 firmware update first, and keep an original EFI graphics card installed.
+
+**A lidded Xeon can destroy a 4,1 dual tray.** The tray is built for delidded chips on a spacer, so a lid adds thickness and heatsink pressure. EveryMac recounts AnandTech's first attempt, which killed a new processor, the processor board and a heatsink for nearly $2,000, though The Mac Observer's lidded upgrade survived. Fix: delid the chips or buy them delidded, and use lidded chips only in 5,1 trays and single-CPU trays.
+
+<figure>
+<img src="/images/blog/mac-pro-4-1-vs-5-1/xeon-x5570-lidded.jpg" alt="A lidded Intel Xeon X5570 processor shown from the top and from the contact side" width="1200" height="623" loading="lazy" decoding="async">
+<figcaption>A lidded Xeon X5570, the chip in the 2.93GHz eight-core 2009 Mac Pro, shown top and bottom. The lid is the extra thickness a 4,1 dual tray was not built for. Photo: Michael Wandinger, <a href="https://creativecommons.org/licenses/by-sa/3.0/de/deed.en">CC BY-SA 3.0 DE</a>, via <a href="https://commons.wikimedia.org/wiki/File:Xeon-x5570.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+**The fans run at full speed after a tray swap.** The tray's SMC version no longer matches the backplane's, and the flash updates neither. Fix: keep each tray in its own generation of Mac Pro.
+
+**The screen stays black at startup after a graphics upgrade.** Apple says [many third-party cards show nothing during startup](https://support.apple.com/en-us/101330), so you cannot log in to FileVault or choose a startup disk. Fix: keep an EFI-capable card, one that shows the boot screen, for firmware work, turn FileVault off, and switch systems in the Startup Disk pane because holding Option does not work.
+
+**Memory still runs at 1066MHz after a CPU upgrade.** The CPU and every DIMM must support 1333MHz, and a 4,1 needs the 5,1 firmware. Fix: use a 1333MHz Westmere such as an X5650, X5675 or X5690, and reset NVRAM, which Greg Gant says fixed it for one MacProUpgrade group member.
+
+## Frequently asked questions
+
+### Is a flashed 4,1 the same as a real 5,1?
+
+Almost. Greg Gant says there is no performance difference with the same CPUs, but the tray is still 4,1 hardware and About This Mac still shows 2009.
+
+### Can I put a 4,1 tray in a 5,1, or the reverse?
+
+No. Moth reports that the fans run full blast or the Mac will not boot, and the flash does not change the tray.
+
+### Do I need to delid my CPUs?
+
+Only for a 4,1 dual-CPU tray. Single trays and every 5,1 tray take lidded chips. Moth says lidded chips can fit a 4,1 tray with spacer rings and extra thermal pads but advises against it.
+
+<figure>
+<img src="/images/blog/mac-pro-4-1-vs-5-1/xeon-delidded.jpg" alt="A delidded Intel Xeon W3520 with its bare silicon die exposed and cleaned" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A delidded Xeon W3520 with its bare die cleaned. Only the 4,1 dual-CPU tray needs chips like this; single trays and every 5,1 tray take lidded ones. Photo: Fritzchens Fritz from Berlin, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Nehalem_XeonW3520_0005_(16425972500).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+### What is the difference between the 2010 and 2012 Mac Pro?
+
+Almost none. [EveryMac](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2012-mid-2010-models.html) says they share the same processor architectures, memory, storage and other internal components, and the MacPro5,1 identifier.
+
+## What this means
+
+Treat the 4,1 and 5,1 as one platform with two tray designs. Buy a 5,1 if the price is close, because it needs no flash and takes ordinary lidded Xeons. Buy a dual-CPU 4,1 only if it is much cheaper and you will delid CPUs yourself.
+
+If you already own a 4,1, flash it only for six-core CPUs, 1333MHz memory, NVMe boot or macOS beyond El Capitan. Treat the flash as a community procedure: back up, follow a current guide and leave the tray alone.
+
+## References
+
+- [Apple: Mac Pro (Early 2009) technical specifications](https://support.apple.com/en-us/112590)
+- [Apple: Mac Pro (Mid 2010) technical specifications](https://support.apple.com/en-us/112578)
+- [Apple: Mac Pro (Mid 2012) technical specifications](https://support.apple.com/en-us/118464)
+- [Apple: Identify your Mac Pro model](https://support.apple.com/en-us/102887)
+- [Apple: Mac Pro EFI Firmware Update 1.4](https://support.apple.com/en-us/106656)
+- [Apple: Mac Pro EFI Firmware Update 1.5](https://support.apple.com/en-us/106455)
+- [Apple: Install macOS 10.14 Mojave on Mac Pro (Mid 2010) and Mac Pro (Mid 2012)](https://support.apple.com/en-us/101330)
+- [Apple: macOS High Sierra technical specifications](https://support.apple.com/en-us/111934)
+- [Apple: How to download and install macOS](https://support.apple.com/en-us/102662)
+- [Apple: Vintage and obsolete products](https://support.apple.com/en-us/102772)
+- [Apple Newsroom: Apple Introduces New Mac Pro, March 3, 2009](https://www.apple.com/newsroom/2009/03/03Apple-Introduces-New-Mac-Pro/)
+- [Apple Newsroom: Apple Unveils New Mac Pro With Up to 12 Processing Cores, July 27, 2010](https://www.apple.com/newsroom/2010/07/27Apple-Unveils-New-Mac-Pro-With-Up-to-12-Processing-Cores/)
+- [EveryMac: Differences between the Mid-2010 and Early 2009 Mac Pro models](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2010-westmere-early-2009-nehalem-models.html)
+- [EveryMac: Speed of the Mid-2010 models compared with Early 2009](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-mid-2010-early-2009-speed-performance-comparison.html)
+- [EveryMac: How to upgrade the processors in the Early 2009 Mac Pro](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-early-2009-nehalem-how-to-upgrade-processors.html)
+- [EveryMac: How to upgrade the processors in the Mid-2010 and Mid-2012 Mac Pro](https://everymac.com/systems/apple/mac_pro/faq/mac-pro-mid-2010-westmere-how-to-upgrade-processors.html)
+- [EveryMac: Mac Pro Eight Core 2.93 (Early 2009) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.93-early-2009-nehalem-specs.html)
+- [EveryMac: Mac Pro Twelve Core 2.93 (Mid 2010) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.93-mid-2010-westmere-specs.html)
+- [EveryMac: Mac Pro Twelve Core 3.06 (Mid 2012) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html)
+- [EveryMac: Differences between Mid-2012 and Mid-2010 Mac Pro models](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2012-mid-2010-models.html)
+- [The House of Moth: The differences between the 4,1 and 5,1 Mac Pro](https://thehouseofmoth.com/the-differences-between-the-41-and-51-mac-pro/)
+- [The House of Moth: Turning a 2009 4,1 Mac Pro into a 2010/2012 5,1 Mac Pro, 2021 Edition](https://thehouseofmoth.com/turning-a-2009-41-mac-pro-into-a-2010-2012-51-mac-pro-2021-edition/)
+- [Greg Gant: The Definitive Classic Mac Pro Upgrade Guide](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html)
+- [Jensd's I/O buffer: Apple Mac Pro 4,1 Firmware Upgrade to 5,1 in 2024](https://jensd.be/2453/apple/apple-mac-pro-41-firmware-upgrade-to-51-in-2024)
+- [Ars Technica: Firmware hack can transform a 2009 Mac Pro into a 12-core monster](https://arstechnica.com/gadgets/2011/05/firmware-hack-can-transform-a-2009-mac-pro-into-a-12-core-monster/)
+- [AppleInsider: Firmware hack converts 2009 Mac Pro to use faster RAM, CPUs](https://appleinsider.com/articles/11/05/11/firmware_hack_converts_2009_mac_pro_to_use_faster_ram_cpus)
+- [Low End Mac: Mac Pro (Early 2009)](https://lowendmac.com/2009/mac-pro-early-2009/)
+- [iFixit Answers: Mac Pro 4,1 vs 5,1 hardware differences](https://www.ifixit.com/Answers/View/739264/Mac+Pro+4,1+vs+5,1+hardware+differences)
+- [OpenCore Legacy Patcher: Supported models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OpenCore Legacy Patcher: FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)
+- [UsedMac.com: Apple Mac Pro listings, page 1](https://usedmac.com/product-category/apple-mac-pro/)
+- [UsedMac.com: Apple Mac Pro listings, page 2](https://usedmac.com/product-category/apple-mac-pro/page/2/)
+`,
+  },
+  {
+    slug: "mac-pro-6-1-latest-os",
+    title: "Mac Pro 6,1 Latest macOS: Monterey Officially, Sequoia With OCLP",
+    date: "2026-10-05",
+    tags: ["mac-pro", "apple", "security", "hardware"],
+    excerpt:
+      "The 2013 Mac Pro officially tops out at macOS Monterey 12.7.6, last patched July 29, 2024. See what OpenCore Legacy Patcher adds after it, what breaks, and what to run.",
+    coverImage: "/images/blog/mac-pro-6-1-latest-os.jpg",
+    coverCredit: {
+      author: "Uadro",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac-pro-2013.jpg",
+    },
+    content: `
+## The short answer
+
+The newest macOS that Apple supports on the 2013 Mac Pro (model MacPro6,1) is macOS Monterey 12, and its final release, 12.7.6, shipped on July 29, 2024. The machine has gone more than two years without an Apple security update. OpenCore Legacy Patcher (OCLP) can install Ventura, Sonoma and Sequoia on it, and a Tahoe pre-release appeared on October 4, 2026, but the FirePro GPUs depend on on-disk patches that every macOS update erases. Stay on Monterey for isolated, fixed-function work, choose OCLP with Sequoia only if you accept the upkeep and the lowered security settings, and use a supported Mac for anything sensitive.
+
+## What is the latest macOS the Mac Pro 6,1 officially supports?
+
+Monterey 12. [Apple's Mac Pro identification page](https://support.apple.com/en-us/102887) lists the Mac Pro (Late 2013) as MacPro6,1 with "macOS Monterey" as its newest compatible operating system, and [Apple's Monterey compatibility list](https://support.apple.com/en-us/103260) includes it. [OCLP's Ventura page](https://dortania.github.io/OpenCore-Legacy-Patcher/VENTURA-DROP.html) lists MacPro6,1 among the hardware Ventura dropped, so Ventura was the first release to leave the 2013 model behind.
+
+macOS 27 Golden Gate is the current release, and [Apple's compatibility page](https://support.apple.com/en-us/127255) says "If you have a Mac with Apple silicon, you can upgrade to macOS 27." OCLP's [issue 1183](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183) says "there are currently no plans to attempt working with Golden Gate," so Tahoe 26 is the ceiling for any Intel Mac, patched or not.
+
+## Does the 2013 Mac Pro still get security updates?
+
+No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as September 28, 2026.
+
+<figure>
+<img src="/images/blog/mac-pro-6-1-latest-os/home-setting.jpg" alt="A black cylindrical 2013 Mac Pro on a patterned rug with HDMI and power cables in its rear panel" width="1200" height="1100" loading="lazy" decoding="async">
+<figcaption>A Late 2013 Mac Pro at home. Its last Apple security update came with Monterey 12.7.6 on July 29, 2024. Photo: Marek Ługowski, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_late_2013,_in_home_setting.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Three things age along with the OS:
+
+- **Firmware.** [Eclectic Light](https://eclecticlight.co/2024/09/23/firmware-updates-with-macos-15-0-14-7-and-13-7/) explains that a Mac whose last macOS is Monterey "can't get any further firmware updates," and that OCLP Macs are "stuck with the last version released in their last supported macOS update." OCLP's [model list](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) says to update to the latest native version first, "to ensure you're on the highest firmware."
+- **Browsers.** Google's [Chrome 151 release notes](https://developer.chrome.com/release-notes/151) say "Chrome 150 is the last release to support macOS 12," and that Chrome on macOS 12 "will no longer receive security or feature updates." Safari's last Monterey release is 17.6, while [Firefox's requirements](https://www.mozilla.org/en-US/firefox/system-requirements/) still read "macOS 10.15 or later," so Firefox still runs on Monterey.
+- **Hardware service.** [Apple's vintage list](https://support.apple.com/en-us/102772) includes the Mac Pro (Late 2013), and [AppleInsider](https://appleinsider.com/articles/25/07/11/the-iconic-trash-can-mac-pro-is-now-on-apples-vintage-products-list) says Apple added it on July 11, 2025. Obsolete means Apple stopped selling a product "more than 7 years ago," after which "service providers cannot order parts." [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.5-xeon-e5-gray-black-cylinder-late-2013-specs.html) dates the six-core model's discontinuation to December 10, 2019, which puts that line in December 2026, though Apple makes the call.
+
+Staying on Monterey is an exposure decision, not a safety one: give the machine its own [VLAN](/blog/vlan-segmentation-guide), restrict outbound traffic with a firewall policy, and browse with Firefox if it must browse at all.
+
+## Which macOS versions can OpenCore Legacy Patcher run on a Mac Pro 6,1?
+
+Ventura, Sonoma and Sequoia are documented, and Tahoe is a pre-release. OCLP's [Supported Models page](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) lists the Mac Pro (Late 2013) with the note "Legacy Metal (macOS 13+)," and the [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says the patcher "is designed to target macOS Big Sur 11.x to macOS Sequoia 15.x."
+
+The docs pages for [Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/VENTURA-DROP.html), [Sonoma](https://dortania.github.io/OpenCore-Legacy-Patcher/SONOMA-DROP.html) and [Sequoia](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html) name the first OCLP release for each, and the [changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md) says 0.5.1 was the first to allow "install and usage of 2013 Mac Pros on Ventura."
+
+| macOS | On a Mac Pro 6,1 | Apple's newest update |
+|---|---|---|
+| Monterey 12 | Official | 12.7.6, July 29, 2024 |
+| Ventura 13 | OCLP 0.5.1 and newer | 13.7.8, August 20, 2025 |
+| Sonoma 14 | OCLP 1.0.0 and newer | 14.8.9, August 6, 2026 |
+| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.1, September 28, 2026 |
+| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.1, September 28, 2026 |
+| Golden Gate 27 | Not possible, Apple silicon only | 27.0.1, September 28, 2026 |
+
+Tahoe is where the project's signals conflict. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The Tahoe work ships only in [OCLP 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), whose changelog says "Implement macOS Tahoe support" and whose warning reads "Expect issues resulting in instability, system crashes, and potential data loss." Neither the release notes nor the docs say whether the 6,1's GPUs are covered on Tahoe.
+
+The FAQ and the release warning are more specific and more cautious than the README note, so trust them over it and treat Tahoe on a 6,1 as unverified.
+
+That leaves Sequoia as the newest release OCLP documents for this Mac, and Apple still patches it. [Intego](https://www.intego.com/mac-security-blog/how-to-keep-older-macs-secure-a-geeky-approach/) estimates from Apple's usual pattern that Sequoia "may receive security updates until around fall 2027," which Apple does not guarantee.
+
+## What does the OCLP project say about its own limits?
+
+The project says you are on your own, in several ways:
+
+- **No guarantees.** The README: "This project is offered on an AS-IS basis, we do not guarantee support for any issues that may arise."
+- **Beta GPU patches.** The [Legacy Metal tracking issue](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1008) that the Supported Models page links for the 6,1 includes the line "These patches are still in beta and in active development. Stay on Monterey if you're not comfortable with the trade offs listed." It dates from 2022, but the issue is now titled "Legacy Metal Graphics Support and macOS Ventura - Sequoia," so read it as a standing caution.
+- **Updates undo the patches.** The FAQ: "Root patches will be wiped by macOS updates and have to be reinstalled after an update finishes." It also says to disable automatic updates and to use a USB installer for major upgrades such as 13 to 14.
+- **Lowered security.** The [post-install guide](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html) says SIP "needs to be lowered on systems where root patching is required," and that on Ventura and newer "All unsupported systems require lowered SIP."
+- **A shrinking team.** Issue 1183 also says "the team has shrunk" since WWDC25, and [AppleInsider reported](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing) on March 24, 2026 that the lead developer had left for a job at Apple and that donations had stopped.
+- **No way back.** "macOS doesn't allow direct downgrades," so a bad update means wiping the disk. Keep a [3-2-1 backup](/blog/backup-strategy-321-rule) before you start.
+
+## How do the FirePro D300, D500 and D700 behave after Monterey?
+
+Monterey runs them on Apple's own drivers. Ventura and newer do not, so OCLP supplies them as root patches. [Apple's specifications](https://support.apple.com/en-us/112025) list the 6,1 with dual FirePro cards: D300 with 2GB of VRAM each, D500 with 3GB, D700 with 6GB. OCLP's Legacy Metal issue files all three under "GCN 1-3 (HD 7xxx/8xxx/9xxx, R7/R9, FirePro D300, D500, D700)," and its [hardware troubleshooting page](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html) lists GCN 1 through 3 among the GPUs that need patching on Ventura, Sonoma and Sequoia, with no GCN entry for Monterey.
+
+<figure>
+<img src="/images/blog/mac-pro-6-1-latest-os/interior.jpg" alt="A 2013 Mac Pro with its outer shell removed, showing the graphics boards around the central core" width="1200" height="1389" loading="lazy" decoding="async">
+<figcaption>Inside the 2013 Mac Pro, with the shell lifted off: the FirePro boards wrap the central core. Ventura and newer need OCLP's root patches to accelerate them. Photo: Ashley Pomeroy, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:2013_Mac_Pro_Interior.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The patching is heavier than a driver install. The post-install guide says Macs with AMD Legacy GCN GPUs on Ventura or newer "require Apple's Kernel Debug Kit to start root patching," and it names the Mac Pro 2013 (MacPro6,1). The kit is a download, so OCLP may install only the Wi-Fi driver on a first run and leave graphics unaccelerated until you patch again with a connection. The docs say Ethernet "should ensure that all patches will be installed at once," and the 6,1 has two Gigabit ports.
+
+The [changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md) shows the upkeep. Acceleration for "GCN 1 through 3" arrived with 0.5.0 for Ventura, and 1.4.0 had to "Restore support for legacy Metal GPUs on macOS 14.4 and newer," AMD legacy GCN included. One owner reports it can work: Lon Seidman [wrote in March 2025](https://blog.lon.tv/2025/03/07/the-2013-trashcan-mac-pro-is-cheap-and-surprisingly-relevant-in-2025/) that installing Sequoia 15.3.1 on a D300 machine was "surprisingly straightforward."
+
+## Should you run Linux or Windows on it instead?
+
+Both run, with caveats. Windows 10 is the newest Windows that Apple supports through Boot Camp on this Mac, which [Apple's list](https://support.apple.com/en-us/102622) describes as "Mac Pro introduced in 2013 through 2019." [Microsoft ended Windows 10 support on October 14, 2025](https://support.microsoft.com/en-us/windows/windows-10-support-has-ended-on-october-14-2025-2ca8b313-1946-43d3-b55c-2b95b107f281), with consumer Extended Security Updates running "till October 12, 2027." Windows 11 is not an option: [Microsoft's supported Intel processor list](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-supported-intel-processors) names Xeon Scalable, D, E-2000 and W families but no Xeon E5.
+
+<figure>
+<img src="/images/blog/mac-pro-6-1-latest-os/desk-with-imac.jpg" alt="A 2013 Mac Pro on a desk beside an iMac, with a white Apple keyboard in front" width="1200" height="710" loading="lazy" decoding="async">
+<figcaption>A 2013 Mac Pro beside an iMac. Boot Camp on this model stops at Windows 10, which Microsoft stopped supporting on October 14, 2025. Photo: Maurizio Pesce from Milan, Italia, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Mac_Pro_(12431600764).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Linux runs on it too. [Phoronix reported](https://www.phoronix.com/news/Linux-6.19-AMDGPU-GCN-1.0-1.1) on November 14, 2025 that Linux 6.19 would make AMDGPU the default driver for GCN 1.0 GPUs, and Seidman's post says Linux Mint LMDE 6 detected both GPUs. For installation steps and drivers, see [Linux on the Mac Pro 6,1](/blog/linux-on-mac-pro-6-1).
+
+## Which macOS should you run on a Mac Pro 6,1, by use case?
+
+| Use case | Run | Why | Watch for |
+|---|---|---|---|
+| Isolated workstation or fixed-function rig (audio, video, legacy apps) | Monterey 12.7.6 | Apple supports it, native GPU drivers, no root patches | No security fixes since July 29, 2024 |
+| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.1, September 28, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
+| Headless homelab node | Monterey on its own VLAN, or Linux | No GPU patching to maintain | Linux GPU setup on older kernels |
+| Windows-only software | Windows 10 through Boot Camp | The only Windows Apple supports on it | Out of support since October 14, 2025 |
+| Newest macOS features | Not this Mac | OCLP's Tahoe support is a pre-release with no 6,1 statement | Wait for a stable 3.0.0 |
+| Apple security support | A [Mac Pro 2019](/blog/mac-pro-rack-mount-homelab) or newer | Apple lists Tahoe 26 as the 2019's newest OS | A different machine |
+
+## What breaks
+
+**Graphics acceleration disappears after every macOS update.** Ventura and newer no longer natively support the D-series GCN 1.0 GPUs, so OCLP restores the drivers as on-disk patches, and an update replaces the system files that hold them. The FAQ describes the result as a slow system "lacking wallpaper and transparency in Dock and menubar."
+
+Fix: Treat every update as a small project.
+
+1. Wait a few days after Apple releases an update, because the FAQ says patches can break and have to be fixed.
+2. Keep automatic update downloads off, because the FAQ says staged updates can modify the system volume early and break the install.
+3. Use a USB installer for major upgrades such as 13 to 14.
+4. Update OCLP in the FAQ's order: the application, then the bootloader, then root patches. Keep Ethernet connected so the Kernel Debug Kit downloads and everything installs in one pass.
+
+**Chrome and Electron apps glitch or freeze, and Safari video can fail.** OCLP's [issue 1145](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1145), open since August 11, 2024, says Chrome 125 and newer and some Electron apps such as Discord show "heavy UI glitching and/or complete freezing" on GCN 1.0 GPUs running Ventura or newer, and lists "FirePro D300/D500/D700 (Mac Pro Late 2013 / MacPro6,1)" among the affected hardware. The Legacy Metal tracker also lists Safari DRM playback as non-functional on non-native GPUs from Sonoma on, with the workaround "Use a third-party browser."
+
+Fix: Launch Chrome with its ANGLE backend set to OpenGL, or turn off hardware acceleration in the app. Electron apps take the same flag. Use a third-party browser such as Firefox for DRM video.
+
+\`\`\`
+open /Applications/Google\\ Chrome.app --args --use-angle=gl
+\`\`\`
+
+**Wi-Fi drops until the patches are back.** The 6,1's Wi-Fi is a [Broadcom BCM4360](https://www.ifixit.com/Teardown/Mac+Pro+Late+2013+Teardown/20778), a chip OCLP's Sonoma support covers under "Wireless Networking for BCM94360, 4360, 4350, 4331 and 43224," and updates wipe that patch. After macOS 14.4, the changelog warns, "Auto-Join may not work until you forget and rejoin the network."
+
+Fix: Plug into one of the two Ethernet ports before you update, reapply root patches, and if the Mac connects but will not rejoin on its own, forget the network and add it again.
+
+**Sleep and wake can fail.** OCLP lists "[Reboot when entering Hibernation (Sleep Wake Failure)](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-MISC.html)" as a known issue "on some models," and the related [issue 72](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/72) has been open since March 2, 2021. The docs do not name the 6,1, and [the pmset manual](https://keith.github.io/xcode-man-pages/pmset.1.html) says "hibernatemode = 0 by default on desktops," though standby and autopoweroff can still write a hibernation image, so test sleep before you rely on it.
+
+Fix: Run OCLP's documented workaround and extend it to the other two settings that control hibernation images, then confirm the values:
+
+\`\`\`
+sudo pmset -a hibernatemode 0 standby 0 autopoweroff 0
+pmset -g | grep -E "hibernatemode|standby|autopoweroff"
+\`\`\`
+
+Each setting that pmset lists should read 0, and it shows standby only on Macs that support it. If the Mac still fails to wake, disable system sleep with \`sudo pmset -a sleep 0\` and let only the display sleep.
+
+**Newer apps quit with "illegal instruction."** The 6,1's Xeon E5 is an [Ivy Bridge-EP part](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html), and the FAQ lists it among the earliest Macs with AVX but names MacPro7,1 as the earliest Mac Pro with AVX2. "Since macOS Ventura, AVX2 is required from all Macs supported by it," so developers increasingly build for it. OCLP can patch macOS to boot without AVX2 but cannot patch your apps.
+
+Fix: Use an older release of the app that still supports macOS versions before Ventura, which the FAQ says may "have a chance of running," or keep those apps on a Monterey install.
+
+## Frequently asked questions
+
+### What is the highest macOS for a Mac Pro 6,1?
+
+Officially it is Monterey 12.7.6. With OCLP, Sequoia 15 is the newest release the project documents for this Mac, and Tahoe 26 exists only in the 3.0.0 pre-releases, the latest being rc.2 on October 4, 2026. macOS 27 Golden Gate requires Apple silicon.
+
+### Is the 2013 Mac Pro still supported by Apple?
+
+Not for macOS, where Monterey's last update was July 29, 2024. For hardware, Apple lists the Mac Pro (Late 2013) as vintage, and obsolete status, which ends parts ordering, follows seven years after Apple stopped selling a product. EveryMac dates the end of sales to December 10, 2019.
+
+### Can a Mac Pro 6,1 run macOS Tahoe?
+
+Not in any way the project documents yet. OCLP 3.0.0-rc.2 adds Tahoe support but lists no models, and its release notes mention improved wireless and non-Metal patches rather than GCN graphics.
+
+### Can I put Windows 11 on a Mac Pro 6,1?
+
+Not officially. Apple's Boot Camp support stops at Windows 10, Microsoft ended Windows 10 support on October 14, 2025, and the Windows 11 processor list has no Xeon E5.
+
+## What this means
+
+The 2013 Mac Pro's official story ends at Monterey 12.7.6, frozen since July 29, 2024. If the machine does one fixed job on a network you control, stay on Monterey, update to 12.7.6 first, isolate it and use Firefox.
+
+<figure>
+<img src="/images/blog/mac-pro-6-1-latest-os/studio-rig.jpg" alt="A 2013 Mac Pro on a studio desk beside two Apogee Symphony I/O audio interfaces, with a mixing console behind" width="1200" height="800" loading="lazy" decoding="async">
+<figcaption>A 2013 Mac Pro in a recording studio with Apogee audio interfaces. A fixed-function rig like this is where staying on Monterey makes the most sense. Photo: David Podosek from Garden Grove, USA, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apogee_Symphony_IO_(x2)_%2B_Symphony_64_ThnderBridge_%2B_New_Mac_Pro_%2B_Logic_(photographed_and_edited_by_David_Podosek).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+If you want a macOS that Apple still patches, Sequoia with OCLP is the only route, at the price of root patches after every update, a Kernel Debug Kit download, GPU quirks in Chrome and Electron apps, and lowered SIP. Skip Tahoe until OCLP 3.0.0 ships as a stable release with a statement about the 6,1. If the Mac touches sensitive data, replace it with one Apple still supports.
+
+## References
+
+- [Identify your Mac Pro model (Apple)](https://support.apple.com/en-us/102887)
+- [macOS Monterey is compatible with these computers (Apple)](https://support.apple.com/en-us/103260)
+- [macOS 27 Golden Gate is compatible with these computers (Apple)](https://support.apple.com/en-us/127255)
+- [Apple security releases](https://support.apple.com/en-us/100100)
+- [Vintage and obsolete products (Apple)](https://support.apple.com/en-us/102772)
+- [Mac Pro (Late 2013) Technical Specifications (Apple)](https://support.apple.com/en-us/112025)
+- [Install Windows 10 on your Mac with Boot Camp Assistant (Apple)](https://support.apple.com/en-us/102622)
+- [EveryMac: Mac Pro "Quad Core" 3.7 (Late 2013) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html)
+- [EveryMac: Mac Pro "Six Core" 3.5 (Late 2013) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.5-xeon-e5-gray-black-cylinder-late-2013-specs.html)
+- [AppleInsider: Iconic 'Trash Can' Mac Pro is now on Apple's vintage products list](https://appleinsider.com/articles/25/07/11/the-iconic-trash-can-mac-pro-is-now-on-apples-vintage-products-list)
+- [Eclectic Light: Firmware updates with macOS 15.0, 14.7 and 13.7](https://eclecticlight.co/2024/09/23/firmware-updates-with-macos-15-0-14-7-and-13-7/)
+- [Intego: How to update an older Mac to a newer macOS](https://www.intego.com/mac-security-blog/how-to-keep-older-macs-secure-a-geeky-approach/)
+- [Chrome 151 release notes (Google)](https://developer.chrome.com/release-notes/151)
+- [Firefox system requirements (Mozilla)](https://www.mozilla.org/en-US/firefox/system-requirements/)
+- [OpenCore Legacy Patcher docs: Supported Models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OpenCore Legacy Patcher docs: macOS Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/VENTURA-DROP.html)
+- [OpenCore Legacy Patcher docs: macOS Sonoma](https://dortania.github.io/OpenCore-Legacy-Patcher/SONOMA-DROP.html)
+- [OpenCore Legacy Patcher docs: macOS Sequoia](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html)
+- [OpenCore Legacy Patcher docs: FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)
+- [OpenCore Legacy Patcher docs: Hardware issues](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html)
+- [OpenCore Legacy Patcher docs: Booting, installer and other issues](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-MISC.html)
+- [OpenCore Legacy Patcher docs: Post-Installation](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+- [OpenCore Legacy Patcher README](https://github.com/dortania/OpenCore-Legacy-Patcher)
+- [OpenCore Legacy Patcher changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md)
+- [OpenCore Legacy Patcher 3.0.0-rc.2 release](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2)
+- [OpenCore Legacy Patcher issue 1008: Legacy Metal Graphics Support](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1008)
+- [OpenCore Legacy Patcher issue 1145: AMD GCN GPUs and Chrome Rendering Issues](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1145)
+- [OpenCore Legacy Patcher issue 72: Hibernation Issues with OpenCore](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/72)
+- [OpenCore Legacy Patcher issue 1183: macOS Golden Gate 27 and the Future of OpenCore Legacy Patcher](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183)
+- [AppleInsider: OpenCore Legacy Patcher faces uncertainty with the end of Intel Mac support nearing](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing)
+- [iFixit: Mac Pro Late 2013 Teardown](https://www.ifixit.com/Teardown/Mac+Pro+Late+2013+Teardown/20778)
+- [pmset manual page](https://keith.github.io/xcode-man-pages/pmset.1.html)
+- [Microsoft: Windows 10 support has ended on October 14, 2025](https://support.microsoft.com/en-us/windows/windows-10-support-has-ended-on-october-14-2025-2ca8b313-1946-43d3-b55c-2b95b107f281)
+- [Microsoft: Windows 11 supported Intel processors](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-supported-intel-processors)
+- [Phoronix: AMD GCN 1.0/1.1 GPUs Will Default To AMDGPU Driver In Linux 6.19](https://www.phoronix.com/news/Linux-6.19-AMDGPU-GCN-1.0-1.1)
+- [Lon.TV: The 2013 Trashcan Mac Pro is Cheap and Surprisingly Relevant in 2025](https://blog.lon.tv/2025/03/07/the-2013-trashcan-mac-pro-is-cheap-and-surprisingly-relevant-in-2025/)
+`,
+  },
+  {
+    slug: "linux-on-mac-pro-6-1",
+    title: "Linux on the 2013 Mac Pro 6,1: GPUs, Wi-Fi and Fans Explained",
+    date: "2026-10-05",
+    tags: ["linux", "mac-pro", "hardware", "homelab"],
+    excerpt:
+      "How to install Linux on the 2013 Mac Pro 6,1: which kernels run the FirePro D300, D500 and D700 on amdgpu, Broadcom Wi-Fi, fan behavior, Thunderbolt 2 and Proxmox.",
+    coverImage: "/images/blog/linux-on-mac-pro-6-1.jpg",
+    coverCredit: {
+      author: "Paul Hudson",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_desktop.jpeg",
+    },
+    content: `
+## The short answer
+
+Linux runs well on the 2013 Mac Pro 6,1, and it is easier than on the 2019 model because this Mac has no T2 chip: hold Option at power-on, pick the EFI Boot entry and install as you would on a PC. On kernel 6.19 or newer, such as Ubuntu 26.04 LTS or Proxmox VE 9.2 (both kernel 7.0), the FirePro D300, D500 and D700 use the amdgpu driver by default, while older kernels need \`radeon.si_support=0 amdgpu.si_support=1\`. The built-in Broadcom Wi-Fi needs a proprietary driver, so use the two Gigabit Ethernet ports for a server. Apple rates idle draw at 43 to 44 W, and GPU passthrough is unproven.
+
+## Does the Mac Pro 6,1 have the T2 problems of newer Macs?
+
+No. Apple's [list of Macs with the T2 chip](https://support.apple.com/en-us/103265) names only the "Mac Pro introduced in 2019", and [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html) identifies the Late 2013 model as MacPro6,1 with a 64-bit EFI. The Startup Security Utility settings that the [Mac Pro 7,1 guide](/blog/linux-on-mac-pro-7-1) walks through for Secure Boot and external boot media therefore do not apply.
+
+Hold Option at power-on to reach [Startup Manager](https://support.apple.com/en-us/102603). The [Arch Wiki](https://wiki.archlinux.org/title/Mac) says it lists any EFI system partition that has a /EFI/BOOT/BOOTX64.EFI file as an "EFI Boot" entry. The same wiki says macOS is the only known method for installing firmware updates, and EveryMac lists Monterey as the newest macOS this Mac supports, so update to Monterey before you wipe the drive.
+
+## Which Linux distributions work on the Mac Pro 6,1, and how do you boot the installer?
+
+Any 64-bit UEFI distribution boots here. What differs is the kernel, because [kernel 6.19 changed the default driver](https://www.phoronix.com/news/Linux-6.19-Graphics-Drivers) for this Mac's GPUs.
+
+| Release | Kernel | Default GPU driver | Flags needed |
+|---|---|---|---|
+| [Ubuntu 26.04 LTS](https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/) | 7.0 | amdgpu | No |
+| [Proxmox VE 9.2](https://pve.proxmox.com/wiki/Roadmap) | 7.0 | amdgpu | No |
+| Proxmox VE 9.1 | 6.17 | radeon | Yes |
+| Ubuntu 24.04 LTS | 6.8 (GA) or 7.0 (HWE) | radeon on 6.8 | Yes on 6.8 |
+| [Debian 13](https://www.debian.org/releases/trixie/release-notes/whats-new.en.html) | 6.12 | radeon | Yes |
+
+Owner reports confirm [Ubuntu, Linux Mint and Proxmox](https://oldpcguy.com/mac-pro-2013/) running here, including [Mint 22.1](https://forums.linuxmint.com/viewtopic.php?t=444231).
+
+To boot the installer, write it to a USB stick (owners use balenaEtcher), shut the Mac down, press the power button and hold Option. Apple says to [plug in a wireless keyboard or use a wired one](https://support.apple.com/en-us/102603) and to wait a few seconds so the keyboard is recognized. Choose the icon labeled EFI Boot. If the screen goes black after you pick the installer, highlight the entry, press e, add \`nomodeset\` to the end of the line that starts with linux and press F10, [as an owner guide describes](https://oldpcguy.com/mac-pro-2013/).
+
+## Should the FirePro D300, D500 and D700 use amdgpu or radeon?
+
+Use amdgpu. It is the default from kernel 6.19, it is the only kernel driver that works with Mesa's Vulkan driver, and older kernels switch to it with two parameters.
+
+<figure>
+<img src="/images/blog/linux-on-mac-pro-6-1/radeon-hd-7970.jpg" alt="A Radeon HD 7970 graphics card with its cooler removed, showing the GPU package and memory chips" width="1200" height="552" loading="lazy" decoding="async">
+<figcaption>A Radeon HD 7970 with its cooler off. Its Tahiti chip is the one in the D500 and D700, so the same amdgpu driver and kernel parameters apply. Photo: Aunva6, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Radeon_7970.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+All three cards are first-generation GCN ("Southern Islands") chips. [Apple](https://support.apple.com/en-us/112025) gives the memory, the [PCI ID database](https://pci-ids.ucw.cz/v2.2/pci.ids) names the Apple-specific IDs, and amdgpu's [device table](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c) maps them to chips:
+
+| Model | VRAM | PCI ID | Chip | Closest Radeon |
+|---|---|---|---|---|
+| D300 | 2GB | 1002:6810 | Pitcairn | R9 270X/370X |
+| D500 | 3GB | 1002:679e | Tahiti | HD 7870 XT |
+| D700 | 6GB | 1002:6798 | Tahiti | HD 7970 / R9 280X |
+
+Until 6.19, amdgpu support for these chips was [experimental and opt-in](https://www.phoronix.com/news/Linux-6.19-Graphics-Drivers), and on [Debian](https://wiki.debian.org/AtiHowTo) a card that both drivers support defaults to radeon. Mesa's RADV driver offers [Vulkan 1.3 on GCN 1](https://docs.mesa3d.org/drivers/radv.html) but is not supported by the radeon kernel driver. An April 2025 [owner report](https://forums.linuxmint.com/viewtopic.php?t=444231) shows OpenGL 4.6 and Vulkan 1.3.275 on a D300 under amdgpu.
+
+On a kernel older than 6.19, add the parameters to /etc/default/grub, then run \`sudo update-grub\` and reboot:
+
+\`\`\`text
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash radeon.si_support=0 amdgpu.si_support=1"
+\`\`\`
+
+Confirm that both cards use amdgpu (the \`lspci\` command comes from the [Arch Wiki](https://wiki.archlinux.org/title/AMDGPU), the log message from the kernel source):
+
+\`\`\`bash
+lspci -k -d ::03xx                # each card: Kernel driver in use: amdgpu
+sudo dmesg | grep "SI support"    # expect: SI support provided by amdgpu.
+\`\`\`
+
+amdgpu also needs current firmware, which the Arch Wiki says each model requires to boot; Debian ships it in the [firmware-amd-graphics](https://wiki.debian.org/AtiHowTo) package.
+
+Apple's [developer note TN2335](https://developer.apple.com/library/archive/technotes/tn2335/_index.html) says only the primary GPU provides output for the display, while the secondary handles compute and off-screen work. Linux lists both cards, and in the 2025 report the active monitor sat on the second one (bus 06:00.0), so do not assume the first card drives your screen.
+
+## Do Wi-Fi and Bluetooth work on the Mac Pro 6,1?
+
+Yes, but Wi-Fi needs Broadcom's proprietary driver. [iFixit](https://www.ifixit.com/Teardown/Mac+Pro+Late+2013+Teardown/20778) found a BCM4360 802.11ac chip and a BCM20702 Bluetooth 4.0 controller on the AirPort card, and an owner's report lists the Wi-Fi as [14e4:43a0 using the wl driver](https://forums.linuxmint.com/viewtopic.php?t=444231).
+
+The in-kernel Broadcom drivers do not cover it. The Arch Wiki says [brcmsmac only supports old chipsets](https://wiki.archlinux.org/title/Broadcom_wireless) such as BCM4313, BCM43224 and BCM43225, and a February 2026 Ubuntu [bug report](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2139532) shows brcmfmac failing on a 14e4:43a0 card with "unknown chip: BCM4360/3". Install the wl module instead, which [Debian's wiki](https://wiki.debian.org/wl) lists as supporting BCM4360 and describes as including a binary-only component:
+
+\`\`\`bash
+sudo apt update && sudo apt install broadcom-sta-dkms
+\`\`\`
+
+On Ubuntu 26.04 the older bcmwl-kernel-source package that many guides name is [gone from the release](https://packages.ubuntu.com/resolute/bcmwl-kernel-source), so install broadcom-sta-dkms. BCM4360 chips also [do not support WPA3](https://wiki.archlinux.org/title/Broadcom_wireless), so use WPA2.
+
+Bluetooth runs on btusb: an [owner's inxi](https://forums.linuxmint.com/viewtopic.php?t=444231) shows an Apple Bluetooth host controller (USB 05ac:828d) with hci0 up. Broadcom controllers can load a patch file named after the controller's USB IDs, and the kernel's [btbcm driver](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/bluetooth/btbcm.c) logs "firmware Patch file not found" when there is none and carries on, so that line alone is not a failure.
+
+## How do Thunderbolt 2 and the six ports behave on Linux?
+
+The six ports share Thunderbolt buses, and Linux makes you authorize PCIe devices. Apple's [display guide](https://support.apple.com/en-us/101318) says to attach displays to different buses, never more than two per bus, and, if you use HDMI, to use only one of the bottom two Thunderbolt ports (Bus 0). It also says only one connected display lights up at power-on, so expect the boot picker on a single screen.
+
+The [kernel documentation](https://docs.kernel.org/admin-guide/thunderbolt.html) says Apple systems use a software connection manager, which Linux runs at security level user: PCIe tunneling stays off until you authorize each device. Read the level, then authorize a device as root (domain0 and device 0-1 are the documentation's examples, so your numbers may differ):
+
+\`\`\`bash
+cat /sys/bus/thunderbolt/devices/domain0/security
+echo 1 > /sys/bus/thunderbolt/devices/0-1/authorized
+\`\`\`
+
+Hot-plug is less predictable. One owner [reported](https://enotacoes.wordpress.com/2016/07/15/installing-ubuntu-on-a-mac-pro-61-late-2013/) in a 2020 live session that two NVMe devices connected at boot both mounted, but one that was unmounted and plugged back in was not recognized.
+
+For host-to-host networking, the same documentation says the thunderbolt-net driver loads automatically when the other host runs macOS or Windows, creating a virtual Ethernet interface per port. This site's [Thunderbolt networking article](/blog/thunderbolt-networking) covers the Apple side.
+
+## How loud and hot does the Mac Pro 6,1 get under Linux?
+
+It stays quiet because one large fan cools everything, and the System Management Controller (SMC), not Linux, normally runs that fan. [iFixit](https://www.ifixit.com/Teardown/Mac+Pro+Late+2013+Teardown/20778) found a giant triangular heat sink shared by both GPUs and the CPU, a single fan that pulls air from under the case and out the top, and a power supply with no dedicated cooling. Apple specifies [12 dBA at idle](https://support.apple.com/en-us/112025).
+
+<figure>
+<img src="/images/blog/linux-on-mac-pro-6-1/dust-intake.jpg" alt="Dust collected at the air intake slots around the base of a cylindrical Mac Pro" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>Dust at the intake ring of a 2013 Mac Pro. One fan pulls air up through the base and across a shared heat sink, so a clogged intake heats both GPUs and the CPU at once. Photo: Atomicdragon136, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_dust_bunnies.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Apple says the SMC controls [thermal features like fans](https://support.apple.com/en-us/102605). Linux's [applesmc driver](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/hwmon/applesmc.c) matches product names containing MacPro and can expose fan and temperature sensors. Even so, an [owner's inxi report](https://forums.linuxmint.com/viewtopic.php?t=444231) from a 6,1 read "Fan Speeds (rpm): N/A" while the CPU and two GPUs showed 54, 51 and 49 C, so run \`sensors\` before assuming Linux can read or set the fan. Some owners [install mbpfan](https://oldpcguy.com/mac-pro-2013/), a fan-control tool for Macs, but nothing reviewed here confirms it works on this model.
+
+The GPUs are the weak point. Craig Federighi said in 2017 that Apple had ["designed ourselves into a bit of a thermal corner"](https://techcrunch.com/2017/04/06/transcript-phil-schiller-craig-federighi-and-john-ternus-on-the-state-of-apples-pro-macs/), and Apple's repair program covered [D500 and D700 units built February 8 to April 11, 2015](https://www.macrumors.com/2016/02/06/late-2013-mac-pro-video-issues-repair-program/) until May 30, 2018. Keep the bottom vents clear and test both GPUs under load before you buy one.
+
+If the fans run fast at idle, reset the SMC: shut down, unplug the power cord, wait 15 seconds, plug it back in, wait 5 seconds and press the power button.
+
+## Is the 2013 Mac Pro a good home server or Proxmox host?
+
+It works as a quiet host, but it idles at 43 to 44 W, has one internal drive slot and has no proven GPU passthrough. Apple [measured](https://support.apple.com/en-us/102839) idle draw of 43 W (D300 and D500 models) and 44 W (D700) with only Finder open and no peripherals attached, and maximums of 205, 238 and 270 W. At 43 W around the clock you use about 377 kWh a year, roughly $69 at the [18.31 cents per kWh U.S. residential average for July 2026](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a), and every extra 10 W adds about $16. One [owner guide](https://oldpcguy.com/mac-pro-2013/) says owners often measure 65 to 95 W at idle with a display and accessories attached, and this site's [power monitoring guide](/blog/power-consumption-monitoring) shows how to measure your own.
+
+Storage is the other limit. The internal SSD is a custom [PCIe 2.0 x4 design](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html) that Linux presented as /dev/sda in an [owner's report](https://forums.linuxmint.com/viewtopic.php?t=444231), and extra drives go in USB 3 or Thunderbolt enclosures. NVMe adapters work, but booting from NVMe needs the firmware that comes with macOS High Sierra or later, so [update it](https://oldpcguy.com/mac-pro-2013/) while the original SSD is still installed.
+
+Proxmox installs: a February 2024 forum post [installed Proxmox VE 8.1.2](https://forum.proxmox.com/threads/intel-mac-pro-hardware.141064/) to a USB 3 M.2 enclosure after setting up rEFInd, which requires disabling SIP. In a June 2026 [write-up](https://www.vimoire.com/blog/2026/failing_gpu_passthrough_proxmox_macpro), Proxmox installed in about 20 minutes while Debian took over 12 hours and never reached a display manager. The same writer passed both D700s to a VM, but the guest never initialized them after trying ROM files and a vendor-reset patch. Treat passthrough as unproven; this site's [Proxmox GPU passthrough guide](/blog/gpu-passthrough-proxmox) covers the general method.
+
+For headless use, install with a monitor and wired keyboard attached, then manage the host over SSH or the Proxmox web interface; no owner report reviewed here mentions needing a dummy display plug. One [owner guide](https://oldpcguy.com/mac-pro-2013/) calls sleep and wake unreliable, and Debian's wiki says [suspension should be disabled on servers](https://wiki.debian.org/Suspend) with a drop-in file named /etc/systemd/sleep.conf.d/nosuspend.conf:
+
+\`\`\`text
+[Sleep]
+AllowSuspend=no
+AllowHibernation=no
+AllowSuspendThenHibernate=no
+AllowHybridSleep=no
+\`\`\`
+
+## How do you install Linux on a Mac Pro 6,1, step by step?
+
+1. Update macOS to Monterey and back up anything you need, because installing to the internal SSD [replaces macOS](https://oldpcguy.com/mac-pro-2013/).
+2. Write an Ubuntu 26.04 LTS or Debian 13 installer to a USB stick, then connect a wired keyboard, a monitor and Ethernet.
+3. Shut down, press the power button, hold Option and choose EFI Boot. If the screen stays black, reboot and add \`nomodeset\` as described above.
+4. Install as on any UEFI PC. With GRUB, run \`grub-install --removable\` so the loader lands at /EFI/BOOT/BOOTX64.EFI, where the Mac's picker looks.
+5. On first boot, remove \`nomodeset\`. On kernels older than 6.19, add the si_support parameters shown earlier and run \`sudo update-grub\`. On Debian, install \`firmware-amd-graphics\` first.
+6. Install \`broadcom-sta-dkms\` if you want Wi-Fi; otherwise stay on Ethernet.
+7. Check \`lspci -k -d ::03xx\`, \`dmesg\` and \`sensors\`.
+8. If the Mac will be a server, add the nosuspend drop-in shown earlier.
+
+## What breaks
+
+**The installer shows a black screen.** One owner found that [\`nomodeset\` was needed on the 6,1 but not on a 5,1](https://enotacoes.wordpress.com/2016/07/15/installing-ubuntu-on-a-mac-pro-61-late-2013/), which points to the installer's default graphics mode setting failing on this model. Fix: add \`nomodeset\` for the installer only, as in the boot steps above.
+
+**Only one display works, or the desktop is slow, after installing.** A leftover \`nomodeset\` keeps amdgpu from loading, and the Arch Wiki says amdgpu requires kernel mode setting. Fix: remove it and, on kernels before 6.19, add the si_support parameters; one owner reported [multi-monitor luck](https://enotacoes.wordpress.com/2016/07/15/installing-ubuntu-on-a-mac-pro-61-late-2013/) after swapping \`nomodeset\` for them on Fedora 34.
+
+**Wi-Fi disappears after a kernel update.** The wl module is built outside the kernel with DKMS, and Ubuntu bug [2161038](https://bugs.launchpad.net/ubuntu/+source/broadcom-sta/+bug/2161038) recorded broadcom-sta-dkms failing to build on 24.04's 7.0 HWE kernel with an objtool error. Fix: keep Ethernet connected during upgrades and update the package; 26.04's version already carries the patch, and the 24.04 fix was accepted in August 2026.
+
+**Wired Ethernet vanishes after installing the Wi-Fi driver on Arch.** Arch's broadcom-wl-dkms blacklists tg3, the driver for the Mac Pro's BCM57762 Ethernet ports. Fix: skip that driver on Arch and use Ethernet or a USB Wi-Fi adapter.
+
+**The installed system is missing from the Option picker.** The Mac's picker detects Linux through the /EFI/BOOT/BOOTX64.EFI fallback file, and a [January 2026 forum poster](https://forum.proxmox.com/threads/proxmox-installs-on-external-ssd-but-mac-pro-2013-always-boots-back-to-macos.178945/) saw only Macintosh HD after installing Proxmox to an external SSD. Fix: reinstall the loader with \`grub-install --removable\`, or use rEFInd, which forum users say requires disabling SIP.
+
+**Graphics artifacts, random restarts or no video.** Apple ran a repair program for some D500 and D700 units, and it ended May 30, 2018. Fix: no vendor repair remains, so test both GPUs under load before buying; Apple's program [replaced both cards](https://www.macrumors.com/2016/02/06/late-2013-mac-pro-video-issues-repair-program/) on an affected Mac.
+
+## Frequently asked questions
+
+### What is the best Linux distribution for the Mac Pro 6,1?
+
+Ubuntu 26.04 LTS or Proxmox VE 9.2 if you want amdgpu without extra parameters, since both ship kernel 7.0. Debian 13 needs the two parameters on its 6.12 kernel and keeps Broadcom's Wi-Fi driver in non-free. An owner guide also reports Linux Mint running, so the choice mostly depends on the job.
+
+### Can the Mac Pro 6,1 run Proxmox with GPU passthrough?
+
+Proxmox itself installs and runs. Passthrough of the D-series cards is unproven, because the only detailed write-up reviewed here passed both GPUs to a VM but never got the guest to initialize them. Plan on CPU-only guests.
+
+### Can I boot Linux from an NVMe SSD in the Mac Pro 6,1?
+
+An owner guide says yes with an adapter, once the firmware that came with macOS High Sierra is installed, so update firmware while the original SSD is still in place. In an owner's report Linux saw the stock SSD as /dev/sda, so check device names before you partition.
+
+### Can I keep macOS and dual boot?
+
+Yes, if you install Linux to a separate drive or shrink the macOS partition in Disk Utility first. Installing to the internal SSD replaces macOS, and a Proxmox forum poster who installed to an external USB 3 disk left macOS untouched but had to change the efibootmgr boot order to keep booting it.
+
+## What this means
+
+If you already own a 6,1, update firmware from macOS, install Ubuntu 26.04 LTS or Debian 13, use amdgpu and rely on Ethernet; it makes a quiet workstation or a learning Proxmox host. It is a poor always-on server: idle draw costs about $69 a year, storage is one internal slot plus external enclosures, and the GPUs have a known failure history. Two owners, in a [Proxmox forum reply](https://forum.proxmox.com/threads/proxmox-installs-on-external-ssd-but-mac-pro-2013-always-boots-back-to-macos.178945/) and an [owner guide](https://oldpcguy.com/mac-pro-2013/), both suggest a mini PC for that job.
+
+## References
+
+- [Mac computers with the Apple T2 Security Chip](https://support.apple.com/en-us/103265)
+- [Mac startup key combinations](https://support.apple.com/en-us/102603)
+- [Mac Pro (Late 2013) Technical Specifications](https://support.apple.com/en-us/112025)
+- [Use multiple displays with your Mac Pro (Late 2013)](https://support.apple.com/en-us/101318)
+- [Reset the SMC of your Mac](https://support.apple.com/en-us/102605)
+- [Mac Pro power consumption and thermal output](https://support.apple.com/en-us/102839)
+- [Technical Note TN2335: Selecting a GPU for OpenCL on the Mac Pro (Late 2013)](https://developer.apple.com/library/archive/technotes/tn2335/_index.html)
+- [Mac Pro Late 2013 Teardown, iFixit](https://www.ifixit.com/Teardown/Mac+Pro+Late+2013+Teardown/20778)
+- [Mac Pro Quad Core 3.7 (Late 2013) specs, EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html)
+- [Apple Launches Repair Program for Late 2013 Mac Pro Video Issues, MacRumors](https://www.macrumors.com/2016/02/06/late-2013-mac-pro-video-issues-repair-program/)
+- [Transcript of the April 2017 Apple pro Mac briefing, TechCrunch](https://techcrunch.com/2017/04/06/transcript-phil-schiller-craig-federighi-and-john-ternus-on-the-state-of-apples-pro-macs/)
+- [Mac, ArchWiki](https://wiki.archlinux.org/title/Mac)
+- [AMDGPU, ArchWiki](https://wiki.archlinux.org/title/AMDGPU)
+- [Broadcom wireless, ArchWiki](https://wiki.archlinux.org/title/Broadcom_wireless)
+- [AtiHowTo, Debian Wiki](https://wiki.debian.org/AtiHowTo)
+- [wl, Debian Wiki](https://wiki.debian.org/wl)
+- [Suspend, Debian Wiki](https://wiki.debian.org/Suspend)
+- [USB4 and Thunderbolt, Linux kernel documentation](https://docs.kernel.org/admin-guide/thunderbolt.html)
+- [amdgpu_drv.c, Linux kernel source](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c)
+- [applesmc.c, Linux kernel source](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/hwmon/applesmc.c)
+- [btbcm.c, Linux kernel source](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/bluetooth/btbcm.c)
+- [Linux 6.19 GPU Driver Features, Phoronix](https://www.phoronix.com/news/Linux-6.19-Graphics-Drivers)
+- [RADV, Mesa documentation](https://docs.mesa3d.org/drivers/radv.html)
+- [PCI ID database](https://pci-ids.ucw.cz/v2.2/pci.ids)
+- [Ubuntu 26.04 LTS release notes, summary for LTS users](https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/)
+- [What's new in Debian 13, release notes](https://www.debian.org/releases/trixie/release-notes/whats-new.en.html)
+- [Roadmap, Proxmox VE](https://pve.proxmox.com/wiki/Roadmap)
+- [bcmwl-kernel-source in Ubuntu 26.04, package page](https://packages.ubuntu.com/resolute/bcmwl-kernel-source)
+- [Launchpad bug 2139532: BCM4360 not supported by brcmfmac](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2139532)
+- [Launchpad bug 2161038: broadcom-sta-dkms fails to build with kernel 7.0 HWE](https://bugs.launchpad.net/ubuntu/+source/broadcom-sta/+bug/2161038)
+- [amdgpu support on a 2013 Mac Pro, Linux Mint Forums](https://forums.linuxmint.com/viewtopic.php?t=444231)
+- [Intel Mac Pro hardware, Proxmox Support Forum](https://forum.proxmox.com/threads/intel-mac-pro-hardware.141064/)
+- [Proxmox installs on external SSD but Mac Pro 2013 always boots back to macOS, Proxmox Support Forum](https://forum.proxmox.com/threads/proxmox-installs-on-external-ssd-but-mac-pro-2013-always-boots-back-to-macos.178945/)
+- [Failing GPU passthrough on Proxmox to Debian host on MacPro 6,1, the vimoire](https://www.vimoire.com/blog/2026/failing_gpu_passthrough_proxmox_macpro)
+- [The 2013 trash can Mac Pro in 2026, OldPCGuy](https://oldpcguy.com/mac-pro-2013/)
+- [Installing Ubuntu on a Mac Pro 6,1 (late 2013) and 5,1 (mid 2010), E-notacoes](https://enotacoes.wordpress.com/2016/07/15/installing-ubuntu-on-a-mac-pro-61-late-2013/)
+- [Electric Power Monthly, Table 5.6.A, U.S. Energy Information Administration](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a)
+`,
+  },
+  {
     slug: "mac-mini-home-server-setup",
     title: "Mac mini Home Server Setup: macOS Settings That Keep It Running",
     date: "2026-10-05",

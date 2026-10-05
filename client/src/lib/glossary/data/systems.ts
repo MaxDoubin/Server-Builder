@@ -326,4 +326,14 @@ export const SYSTEMS: Term[] = [
       "It changes no firmware and adds no CPU features. Its root patches live on the system volume, so every macOS update wipes them, and apps that need AVX2 still crash on Macs that lack it.",
     see: ["T2", "UEFI"],
   },
+  {
+    term: "EFI",
+    expansion: "Extensible Firmware Interface",
+    field: "systems",
+    definition:
+      "The firmware standard that starts an Intel Mac, and the predecessor of UEFI. It reads an EFI system partition and loads a boot file such as /EFI/BOOT/BOOTX64.EFI, which is what the Mac's Option-key Startup Manager lists as an EFI Boot entry.",
+    confusion:
+      "A Mac's EFI is Apple's own implementation, with no PC-style setup screen, and its firmware updates arrive only through macOS installers, never from Linux or Windows.",
+    see: ["UEFI", "Secure Boot"],
+  },
 ];
