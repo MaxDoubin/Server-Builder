@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 275 of them. Regenerate with script/generatePostIndex.ts.
+ * 278 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,36 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "mac-mini-home-server-setup",
+    title: "Mac mini Home Server Setup: macOS Settings That Keep It Running",
+    date: "2026-10-05",
+    tags: ["servers","apple","homelab","power"],
+    excerpt: "Set up a Mac mini as an always-on home server: sleep and power-failure settings, the FileVault trade-off, remote access, containers, file sharing and what breaks.",
+    coverImage: "/images/blog/mac-mini-home-server-setup.jpg",
+    coverCredit: {"author":"Kyu3a","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:M4_Mac_mini.jpg"},
+    wordCount: 3146,
+  },
+  {
+    slug: "mac-pro-5-1-latest-os",
+    title: "Mac Pro 5,1 Latest macOS: Mojave Officially, Sequoia With OCLP",
+    date: "2026-10-05",
+    tags: ["mac-pro","apple","hardware","security"],
+    excerpt: "Apple stopped at macOS Mojave for the 2010 and 2012 Mac Pro. See what OpenCore Legacy Patcher adds up to Sequoia, what breaks at each step, and which version to run.",
+    coverImage: "/images/blog/mac-pro-5-1-latest-os.jpg",
+    coverCredit: {"author":"Evan Sims","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac_Pro_Tower.jpg"},
+    wordCount: 3269,
+  },
+  {
+    slug: "opencore-legacy-patcher-tahoe",
+    title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
+    date: "2026-10-05",
+    tags: ["apple","tools","hardware","troubleshooting"],
+    excerpt: "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
+    coverImage: "/images/blog/opencore-legacy-patcher-tahoe.jpg",
+    coverCredit: {"author":"Amada44","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Macbook_A1286.jpg"},
+    wordCount: 3203,
+  },
   {
     slug: "fortigate-homelab-license",
     title: "FortiGate Homelab License: What Works Without a Contract",
@@ -107,7 +137,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "What makes an R730 loud, which iDRAC8 settings actually lower fan speed, the raw IPMI override byte by byte, and a watchdog that hands control back when temperatures climb.",
     coverImage: "/images/blog/dell-r730-quiet-fans.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg"},
-    wordCount: 2675,
+    wordCount: 2685,
   },
   {
     slug: "linux-on-mac-pro-7-1",
@@ -1749,7 +1779,7 @@ export const postIndex: PostMeta[] = [
     tags: ["apple","mac-pro","servers","homelab"],
     excerpt: "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
     coverImage: "/images/blog/mac-pro-rack-mount-homelab.jpg",
-    wordCount: 1511,
+    wordCount: 1531,
   },
   {
     slug: "dell-poweredge-r740-deep-dive",
@@ -1759,7 +1789,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A deep dive into the PowerEdge R740 and why it is still one of the best platforms for a serious home lab environment.",
     coverImage: "/images/blog/dell-poweredge-r740-deep-dive.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg"},
-    wordCount: 1908,
+    wordCount: 1991,
   },
   {
     slug: "apple-silicon-server-future",
@@ -1770,7 +1800,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Apple Silicon changed the laptop game. Here is why it probably will not replace x86 in datacenters any time soon, and what would need to change.",
     coverImage: "/images/blog/apple-silicon-server-future.jpg",
     coverCredit: {"author":"Sonic8400","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_M1_-_APL1102_-_IHS_removed.jpg"},
-    wordCount: 1583,
+    wordCount: 1596,
   },
   {
     slug: "zfs-on-enterprise-hardware",
@@ -1844,7 +1874,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Two very different approaches to rack-mount hardware. Here is how the Mac Pro and PowerEdge compare for real workloads.",
     coverImage: "/images/blog/mac-pro-vs-poweredge-comparison.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
-    wordCount: 1581,
+    wordCount: 1621,
   },
   {
     slug: "ups-sizing-homelab",
@@ -1874,7 +1904,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","homelab","fortinet"],
     excerpt: "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
     coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
-    wordCount: 1542,
+    wordCount: 1559,
   },
   {
     slug: "server-cpu-selection-guide",
@@ -2062,7 +2092,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Apple used to make rack-mount servers. Here is why the Xserve mattered, why Apple killed it, and what it means for the Mac Pro.",
     coverImage: "/images/blog/xserve-apple-server-legacy.jpg",
     coverCredit: {"author":"htomari","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg"},
-    wordCount: 1708,
+    wordCount: 1737,
   },
   {
     slug: "raid-levels-comparison",
@@ -2699,10 +2729,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 275;
+export const POST_COUNT = 278;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy five";
+export const POST_COUNT_SPELLED = "two hundred and seventy eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2711,10 +2741,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy five";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1715;
+export const CITATION_COUNT = 1804;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 147;
+export const ATTRIBUTION_URL_COUNT = 151;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1853;
+export const CHECKED_URL_COUNT = 1945;
