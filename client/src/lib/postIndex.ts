@@ -2029,7 +2029,7 @@ export const postIndex: PostMeta[] = [
     tags: ["apple","mac-pro","servers","homelab"],
     excerpt: "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
     coverImage: "/images/blog/mac-pro-rack-mount-homelab.jpg",
-    wordCount: 1510,
+    wordCount: 1511,
   },
   {
     slug: "dell-poweredge-r740-deep-dive",
