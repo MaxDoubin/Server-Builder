@@ -316,4 +316,14 @@ export const SYSTEMS: Term[] = [
       "An MPX bay still takes ordinary PCIe cards. It is the module, not the bay, that is Apple-specific, so an MPX graphics module only fits the Mac Pro.",
     see: ["PCIe", "T2"],
   },
+  {
+    term: "OCLP",
+    expansion: "OpenCore Legacy Patcher",
+    field: "systems",
+    definition:
+      "A free tool from the Dortania project that builds an OpenCore boot loader and installs root patches, so Intel Macs that Apple no longer supports can run newer macOS releases: Big Sur through Sequoia in its stable releases, and Tahoe in pre-releases.",
+    confusion:
+      "It changes no firmware and adds no CPU features. Its root patches live on the system volume, so every macOS update wipes them, and apps that need AVX2 still crash on Macs that lack it.",
+    see: ["T2", "UEFI"],
+  },
 ];

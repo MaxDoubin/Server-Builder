@@ -50,6 +50,678 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "mac-mini-home-server-setup",
+    title: "Mac mini Home Server Setup: macOS Settings That Keep It Running",
+    date: "2026-10-05",
+    tags: ["servers", "apple", "homelab", "power"],
+    excerpt:
+      "Set up a Mac mini as an always-on home server: sleep and power-failure settings, the FileVault trade-off, remote access, containers, file sharing and what breaks.",
+    coverImage: "/images/blog/mac-mini-home-server-setup.jpg",
+    coverCredit: {
+      author: "Kyu3a",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:M4_Mac_mini.jpg",
+    },
+    content: `
+## The short answer
+
+A Mac mini makes a quiet always-on home server once you change four defaults: stop it sleeping, make it start itself after a power failure, decide on FileVault, and give it a wired connection with a fixed address. Apple's [own Mac mini server guide](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27), written for macOS 27, covers the same ground, and the M6 and M5 Pro minis [became available September 22, 2026](https://www.apple.com/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/). Every Apple silicon mini back to the 2020 M1 [still runs macOS 27](https://support.apple.com/en-us/102852), and on macOS 26 and later an Apple silicon Mac can [unlock FileVault over SSH](https://support.apple.com/guide/security/managing-filevault-sec8447f5049/web) after a restart, so a headless mini no longer has to run unencrypted. Apple lists idle draw at [4 W](https://support.apple.com/en-us/103253) for the M6 and the 2024 M4, about $6.42 a year at the July 2026 U.S. residential average of [18.31 cents per kilowatt-hour](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a).
+
+## Which Mac mini should you use as a home server?
+
+Any Apple silicon Mac mini works, and the model matters mostly for Ethernet speed, memory and how long macOS updates will last. The M6 and M5 Pro [start at $899 and $1,699](https://www.apple.com/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/). The table uses [Apple's newest-macOS list](https://support.apple.com/en-us/102852) and [Apple's power figures](https://support.apple.com/en-us/103253); cost is idle watts times 8,760 hours at 18.31 cents per kilowatt-hour.
+
+| Mac mini | Newest macOS | Idle / maximum watts | Idle cost per year |
+| :--- | :--- | ---: | ---: |
+| M6 (2026) | macOS 27 | 4 / 70 | $6.42 |
+| M5 Pro (2026) | macOS 27 | 6 / 145 | $9.62 |
+| M4 (2024) | macOS 27 | 4 / 65 | $6.42 |
+| M4 Pro (2024) | macOS 27 | 5 / 140 | $8.02 |
+| M2 (2023) | macOS 27 | 7 / 50 (CPU maximum) | $11.23 |
+| M1 (2020) | macOS 27 | 6.8 / 39 (CPU maximum) | $10.91 |
+| Intel Core i7 (2018) | macOS Sequoia 15 | 19.9 / 122 (CPU maximum) | $31.92 |
+
+Apple measures idle [with only Finder open and default power management](https://support.apple.com/en-us/103253), at the wall. Notebookcheck's meter read [2.1 to 2.4 W idle, 0.47 W in standby and a 74.3 W peak](https://www.notebookcheck.net/Compact-powerhouse-with-the-2-nm-M6-SoC-Apple-Mac-mini-2026-Review.1401148.0.html) for the M6, and the same review lists 2.6 to 2.7 W idle for the M4, both below Apple's 4 W. Budget with Apple's figure, because its test conditions are stated, and treat Notebookcheck's as the floor. Apple's rows are single configurations; the M5 Pro figure is for 64GB and 8TB, and drives or load add more.
+
+The 2018 Intel mini tops out at Sequoia, and Apple shipped [Sequoia 15.8.1 on September 28, 2026](https://support.apple.com/en-us/100100). Memory is a configure-to-order choice on current minis, [16GB standard on the M6](https://www.apple.com/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/), so size it for your containers on day one.
+
+## Which energy settings keep a Mac mini awake and restarting after a power failure?
+
+In System Settings, open Energy, stop automatic sleep when the display is off, turn on Wake for network access as a fallback, and set the power-return option. Apple's [Energy settings page](https://support.apple.com/guide/mac-help/change-energy-settings-mchlp1168/mac) describes each one, and the labels vary by Mac and macOS version.
+
+<figure>
+<img src="/images/blog/mac-mini-home-server-setup/power-button.jpg" alt="Power button on the underside of an M4 Mac mini, beside the ring-shaped air vent" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>The M4 Mac mini's power button sits on its underside near a rear corner, so a mini on a shelf is awkward to restart by hand. The power-return setting removes the need after an outage. Photo: Kyu3a, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Power_Button_of_M4_Mac_mini.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Power return comes in two versions. A mini introduced in 2024 or later on macOS 26.5 or later has "Start up when power is connected," and [Apple says Always](https://support.apple.com/en-us/125517) turns the Mac on whenever it is connected to power, including "restoring power using an external power switch," and after a power failure. Older minis list "Start up automatically after a power failure." The power button is on the bottom near the rear left corner, which [Notebookcheck calls annoying](https://www.notebookcheck.net/Compact-powerhouse-with-the-2-nm-M6-SoC-Apple-Mac-mini-2026-Review.1401148.0.html), so a mini on a shelf is awkward to restart by hand.
+
+### The pmset equivalents
+
+pmset must run as root. Start with \`pmset -g cap\`, which the [man page](https://keith.github.io/xcode-man-pages/pmset.1.html) says displays which power management features your Mac supports.
+
+| Command | Effect |
+| :--- | :--- |
+| \`sudo pmset -a sleep 0\` | Sets the system sleep timer to never; 0 disables it |
+| \`sudo pmset -a womp 1\` | Wakes on an Ethernet magic packet, the same as Wake for network access |
+| \`sudo pmset -a autorestartatconnect 1\` | 2024 or newer mini on macOS 26.5 or later: [sets Always](https://derflounder.wordpress.com/2026/05/12/using-pmset-to-set-your-mac-to-automatically-power-on-when-power-is-available-on-macos-tahoe-26-5-0/) |
+| \`sudo pmset -a autorestart 1\` | Older minis: automatic restart on power loss |
+| \`pmset -g assertions\` | Lists processes holding power assertions that can block sleep |
+
+Each key you set should report the value you gave it. Older minis use \`autorestart\`, and a 2024 or newer mini on macOS 26.5 or later also shows \`autorestartatconnect\`.
+
+\`\`\`bash
+pmset -g | grep -E "sleep|womp|autorestart"
+\`\`\`
+
+\`\`\`
+ sleep                0
+ womp                 1
+ autorestartatconnect 1
+\`\`\`
+
+Some guides also recommend \`pmset networkoversleep 1\`. The man page says that setting is [not used by all platforms and that changing it is unsupported](https://keith.github.io/xcode-man-pages/pmset.1.html), so skip it. \`sudo pmset restoredefaults\` undoes your changes.
+
+### Add a UPS
+
+A UPS covers the gap before a clean shutdown. Energy > UPS Options sets the time or battery level at which the Mac shuts down, and \`sudo pmset -u haltafter 2\` shuts it down after 2 minutes on battery. [Sizing a UPS](/blog/ups-sizing-homelab) is a separate calculation.
+
+## Should a headless Mac mini use FileVault and automatic login?
+
+Keep FileVault on if the mini holds personal data and runs macOS 26 or later, and unlock it over SSH after restarts. Turn FileVault off, with automatic login, only if the mini sits somewhere locked and must recover with nobody reachable. Apple silicon Macs [encrypt data automatically](https://support.apple.com/guide/mac-help/protect-data-on-your-mac-with-filevault-mh11785/mac), FileVault adds the login password requirement, and [automatic login is unavailable](https://support.apple.com/en-us/102316) while it is on.
+
+| Setup | After a power failure | Cost |
+| :--- | :--- | :--- |
+| FileVault off, automatic login | Boots into your account and starts login items | Anyone who powers it on gets a logged-in session |
+| FileVault on, macOS 26 or later | Waits at the lock screen until you unlock it over SSH | You must reach it on the LAN |
+| FileVault on, macOS 15 or earlier | Waits until someone types the password at the machine | You must be there |
+
+Apple says the SSH unlock needs [Apple silicon, macOS 26 or later, Remote Login and a network connection](https://support.apple.com/guide/security/managing-filevault-sec8447f5049/web). It is password-only: the [apple_ssh_and_filevault man page](https://keith.github.io/xcode-man-pages/apple_ssh_and_filevault.7.html) explains that OpenSSH keeps its configuration in the locked data volume, so key authentication is unavailable until you unlock, and SSH disconnects briefly while macOS mounts the volume. One user [reports](https://deepakness.com/raw/remote-filevault-unlock-macos-tahoe/) that it failed on Wi-Fi and worked on Ethernet.
+
+For restarts you start yourself, \`sudo fdesetup authrestart\` [bypasses the initial unlock](https://keith.github.io/xcode-man-pages/fdesetup.8.html); run \`sudo fdesetup supportsauthrestart\` first. The man page warns that "FileVault protections are reduced during authenticated restarts."
+
+Login still matters after the unlock. Apple's developer documentation says a [user agent runs only while that user is logged in](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html), Docker Desktop's [start-at-sign-in option](https://docs.docker.com/desktop/settings-and-maintenance/settings/) is off by default, and Tailscale's [Standalone app cannot run before login](https://tailscale.com/docs/concepts/macos-variants). With FileVault on, run server software as launch daemons where you can.
+
+## How do you reach a headless Mac mini remotely?
+
+Turn on Remote Login for SSH and Screen Sharing for the desktop under System Settings > General > Sharing, and test both before you unplug the display. Apple's server guide says to [make sure you can manage the mini](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27) through one of them or your server software.
+
+For SSH, Apple's [Remote Login page](https://support.apple.com/guide/mac-help/allow-a-remote-computer-to-access-your-mac-mchlp1066/mac) gives the form \`ssh username@hostname\`. Once you are in, set up [key-based authentication](/blog/ssh-key-based-authentication).
+
+For Screen Sharing, Apple's [type options page](https://support.apple.com/guide/mac-help/screen-sharing-type-options-on-mac-mchl1883115d/mac) says High Performance needs Apple silicon and macOS Sonoma 14 or later, 75 megabits per second for one 4K display, and UDP ports 5900, 5901 and 5902, and it recommends a wired connection. A virtual display tops out at 4K.
+
+Away from home, use a VPN rather than forwarding ports. Tailscale's open-source tailscaled variant can run before login, but Tailscale says it is [only recommended for unattended installs managed by experienced macOS system administrators](https://tailscale.com/docs/concepts/macos-variants). Because the [data volume stays locked until you unlock it](https://keith.github.io/xcode-man-pages/apple_ssh_and_filevault.7.html), software installed on the mini cannot be relied on first, so reach its LAN address through your router's VPN or another always-on device.
+
+## Which container runtime fits a Mac mini: Docker Desktop, OrbStack or Apple's container tool?
+
+Use Docker Desktop or OrbStack for mainstream container workloads, and try Apple's container tool for single services. Apple's [container](https://github.com/apple/container) runs Linux containers as lightweight virtual machines, needs Apple silicon, and its README says it is supported on macOS 26 and does not mention macOS 27. The project says it is under active development.
+
+| | Docker Desktop | OrbStack | Apple container |
+| :--- | :--- | :--- | :--- |
+| Memory model | VM limit defaults to [50% of host memory](https://docs.docker.com/desktop/settings-and-maintenance/settings/) | Limit is [no more than 8 GB by default](https://docs.orbstack.dev/settings), released when unused | One VM per container, [1 GB RAM and 4 CPUs by default](https://github.com/apple/container/blob/main/docs/resource-usage.md) |
+| Starts | At sign-in, off by default | Not stated on the pages read | Launch agent started by \`container system start\` |
+
+On a 16GB mini, Docker's default is an 8GB ceiling, and its Resource Saver [turns the VM off when idle](https://docs.docker.com/desktop/settings-and-maintenance/settings/). Apple's [technical overview](https://github.com/apple/container/blob/main/docs/technical-overview.md) admits a limitation: pages freed inside a container's VM are not returned to macOS, so memory-hungry containers may need occasional restarts.
+
+Idle-memory figures in blog comparisons vary widely, so this article gives none. The vendors' documented limits describe configured behavior; measure your own with Activity Monitor or \`container stats\`.
+
+## How do you add file sharing, a Time Machine server and a media server?
+
+File Sharing and Time Machine destinations are built into macOS, so only media needs extra software. Turn on File Sharing in General > Sharing, then Options > "Share files and folders using SMB." For a Time Machine destination, add a shared folder, Control-click it, choose Advanced Options and turn on ["Share as a Time Machine backup destination"](https://support.apple.com/guide/mac-help/back-up-to-a-shared-folder-mchl31533145/mac); "Limit backups to" caps its size.
+
+<figure>
+<img src="/images/blog/mac-mini-home-server-setup/m1-ports.jpg" alt="Rear panel of a 2020 M1 Mac mini with power button, power inlet, Ethernet, two Thunderbolt ports, HDMI, two USB-A ports and a headphone jack" width="1200" height="597" loading="lazy" decoding="async">
+<figcaption>The 2020 M1 Mac mini keeps two USB-A ports beside its two Thunderbolt ports, which suits external backup drives. The 2024 redesign is USB-C only, with two of its ports on the front. Photo: Gerd Fahrenhorst, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_mini_2020_(M1)_Anschl%C3%BCsse.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+For media, [Plex](https://support.plex.tv/articles/115002178853-using-hardware-accelerated-streaming/) says hardware-accelerated streaming needs a Plex Pass and lists macOS VideoToolbox as the native decoder and encoder. [Jellyfin](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/) lists VideoToolbox, full acceleration on Intel and Apple silicon Macs running macOS 12 or later, and 10-bit H.264 hardware decoding only on Apple silicon and Rockchip.
+
+A Time Machine share on the mini does not protect the mini. Back up its own data to an external disk and follow the [3-2-1 rule](/blog/backup-strategy-321-rule).
+
+## What network setup does a Mac mini server need?
+
+Use Ethernet, give the mini a DHCP reservation, and buy 10GbE only if your switch and storage can use it. Apple recommends [a wired connection](https://support.apple.com/guide/mac-help/screen-sharing-type-options-on-mac-mchl1883115d/mac) for High Performance Screen Sharing, and the one report above favors it for SSH unlock.
+
+<figure>
+<img src="/images/blog/mac-mini-home-server-setup/rear-ports.jpg" alt="Rear panel of a 2024 M4 Mac mini with power inlet, Ethernet port, HDMI port and three Thunderbolt ports" width="1200" height="818" loading="lazy" decoding="async">
+<figcaption>The back of a 2024 M4 Mac mini: one Ethernet jack, Gigabit unless 10Gb Ethernet was ordered, plus HDMI and three Thunderbolt ports. Photo: AzureSaturn, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_mini_(M4,_2024)_-_Backside.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Wi-Fi also complicates reservations. Apple's [private address feature](https://support.apple.com/en-us/102509) gives each network a different MAC address and, in Rotating mode, changes it every 2 weeks; Off uses the hardware address. Microsoft says a [reservation](https://learn.microsoft.com/en-us/windows-server/networking/technologies/dhcp/dhcp-scopes) ties an address to a MAC and lets you change addresses without signing in to the device. Apple's server guide instead suggests [DHCP with a manual address](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27) so the address does not change.
+
+The M6 and M5 Pro have [2.5Gb Ethernet with a 10Gb option](https://www.apple.com/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/); the 2024 M4 has [Gigabit, configurable to 10Gb](https://support.apple.com/en-us/121555). Notebookcheck says the 10Gb port costs [$100](https://www.notebookcheck.net/Compact-powerhouse-with-the-2-nm-M6-SoC-Apple-Mac-mini-2026-Review.1401148.0.html). Without it, Sonnet's Thunderbolt adapter [needs macOS 15 or later](https://www.sonnettech.com/product/solo10g-tb3/techspecs.html), runs 10GBASE-T to 100 meters on Cat 6A and 55 on Cat 6, and reaches 2.5 or 5 Gbps only through multi-gigabit switches. See [10GbE in a homelab](/blog/10gbe-networking-homelab).
+
+## Mac mini home server setup checklist
+
+1. Finish initial setup with a display and keyboard, as Apple says to [do first](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27), with a strong login password.
+2. Connect Ethernet and reserve an address on the router, or choose DHCP with a manual address.
+3. Turn on Remote Login and Screen Sharing, then test both from another computer.
+4. In Energy, prevent automatic sleeping, turn on Wake for network access and set the power-return option.
+5. Run \`pmset -g\` and confirm \`sleep 0\`.
+6. Decide on FileVault. If it stays on, save the recovery key and test the SSH unlock.
+7. Turn on the firewall and allow the apps you run.
+8. Choose manual or automatic macOS updates.
+9. Install your container runtime, set memory limits and make it start without a login.
+10. Add File Sharing, a Time Machine folder and your media server as needed.
+11. Attach a UPS and set its shutdown threshold.
+12. Restart from another computer and confirm every service returns; once, cut power at the outlet to test the power-return setting.
+
+## What breaks
+
+**The mini sleeps and drops off the network.** Apple's server guide warns that if a mini [goes to sleep, running tasks may be interrupted](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27). Fix: turn on "Prevent automatic sleeping when the display is off," run \`sudo pmset -a sleep 0\` and confirm with \`pmset -g\`.
+
+**A power failure leaves it off.** The power-return behavior differs by model and macOS version, and Apple's guide says to set the mini to restart automatically. Fix: set Start up when power is connected to Always, or on older minis Start up automatically after a power failure, then add a UPS.
+
+**A restart stops at the FileVault lock screen.** The data volume stays locked until an account password is entered. Fix: on macOS 26 or later, SSH in and enter the account password; use \`sudo fdesetup authrestart\` for restarts you start yourself.
+
+**An update restarts the mini and apps do not come back.** Apple's server guide says that after [a power outage or a macOS update](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27) some server apps "may need to be relaunched manually." Fix: update manually in a window you choose and configure each app to start automatically.
+
+**Containers eat memory.** Docker's VM can claim up to half of RAM and Apple's tool does not return freed memory. Fix: set memory limits and restart heavy containers.
+
+**A reservation stops matching on Wi-Fi.** A private Wi-Fi address is not the hardware address. Fix: use Ethernet, or set Private Wi-Fi Address to Fixed or Off for that network.
+
+## Frequently asked questions
+
+### Can an old Intel Mac mini still be a home server?
+
+Yes, with limits. Apple lists [Sequoia for the 2018, Monterey for the Late 2014 and Catalina for the Late 2012](https://support.apple.com/en-us/102852). The 2018 draws 19.9 W idle against 4 W for the M4, $31.92 against $6.42 a year. Apple's container tool needs Apple silicon, and Docker Desktop supports the [current and two previous macOS releases](https://docs.docker.com/desktop/setup/install/mac-install/), so Sequoia should drop out when macOS 28 ships.
+
+<figure>
+<img src="/images/blog/mac-mini-home-server-setup/intel-2018.jpg" alt="Top view of a space gray 2018 Intel Mac mini on a wooden desk" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A 2018 Intel Mac mini. Apple lists its Core i7 configuration at 19.9 W idle, about five times the M4's 4 W, and its newest macOS is Sequoia. Photo: Derorgmas, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Mini_(2018).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+### Do I need an HDMI dummy plug to run it without a monitor?
+
+Apple's server guide does not require one. It says [High Performance Screen Sharing](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27) improves the resolution of the virtual display, at up to 4K.
+
+### How much electricity does a Mac mini server use?
+
+Apple lists 4 W idle for the M6 and M4, with maximums of [70 W and 65 W](https://support.apple.com/en-us/103253). Notebookcheck measured 2.1 to 2.4 W idle on the M6, or $3.37 to $3.85 a year at 18.31 cents per kilowatt-hour.
+
+### Should a server run macOS 27 or stay on 26?
+
+Apple still patches all three: its [security page](https://support.apple.com/en-us/100100) lists macOS 27.0.1, Tahoe 26.7.1 and Sequoia 15.8.1 on September 28, 2026. Apple's container README names only macOS 26, so check each tool's notes before upgrading a working server.
+
+## What this means
+
+Buy an M6, or a used M4 or M1, connect Ethernet, set the Energy options and decide on FileVault deliberately. If the mini holds personal data, keep FileVault on and learn the SSH unlock; if it sits in a locked closet, automatic login is simpler. Then run the restart test; it finds what the settings missed. Use a 2018 Intel mini only for light, LAN-only jobs.
+
+## References
+
+- [Apple: Set up your Mac mini as a server](https://support.apple.com/guide/mac-mini/set-up-your-macmini-as-a-server-apd05a94454f/2026/mac/27)
+- [Apple: Change Energy settings on a Mac desktop computer](https://support.apple.com/guide/mac-help/change-energy-settings-mchlp1168/mac)
+- [Apple: Turn on a Mac mini, Mac Studio, or iMac without pressing its power button](https://support.apple.com/en-us/125517)
+- [Apple: Mac mini power consumption and thermal output](https://support.apple.com/en-us/103253)
+- [Apple: Identify your Mac mini model](https://support.apple.com/en-us/102852)
+- [Apple: Mac mini (2024) tech specs](https://support.apple.com/en-us/121555)
+- [Apple Newsroom: The new Mac mini and Mac Studio are available today](https://www.apple.com/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/)
+- [Apple: Apple security releases](https://support.apple.com/en-us/100100)
+- [Apple: How to log in automatically to a Mac user account](https://support.apple.com/en-us/102316)
+- [Apple: Protect data on your Mac with FileVault](https://support.apple.com/guide/mac-help/protect-data-on-your-mac-with-filevault-mh11785/mac)
+- [Apple Platform Security: Managing FileVault in macOS](https://support.apple.com/guide/security/managing-filevault-sec8447f5049/web)
+- [Apple: Allow a remote computer to access your Mac](https://support.apple.com/guide/mac-help/allow-a-remote-computer-to-access-your-mac-mchlp1066/mac)
+- [Apple: Screen sharing type options on Mac](https://support.apple.com/guide/mac-help/screen-sharing-type-options-on-mac-mchl1883115d/mac)
+- [Apple: Back up to a shared folder with Time Machine](https://support.apple.com/guide/mac-help/back-up-to-a-shared-folder-mchl31533145/mac)
+- [Apple: Use private Wi-Fi addresses on Apple devices](https://support.apple.com/en-us/102509)
+- [Apple Developer: Creating Launch Daemons and Agents](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
+- [pmset(1) man page](https://keith.github.io/xcode-man-pages/pmset.1.html)
+- [fdesetup(8) man page](https://keith.github.io/xcode-man-pages/fdesetup.8.html)
+- [apple_ssh_and_filevault(7) man page](https://keith.github.io/xcode-man-pages/apple_ssh_and_filevault.7.html)
+- [Der Flounder: Using pmset to power on a Mac when power is available](https://derflounder.wordpress.com/2026/05/12/using-pmset-to-set-your-mac-to-automatically-power-on-when-power-is-available-on-macos-tahoe-26-5-0/)
+- [DeepakNess: Remote FileVault unlock in macOS Tahoe 26](https://deepakness.com/raw/remote-filevault-unlock-macos-tahoe/)
+- [Tailscale: macOS variants](https://tailscale.com/docs/concepts/macos-variants)
+- [apple/container on GitHub](https://github.com/apple/container)
+- [apple/container: resource usage](https://github.com/apple/container/blob/main/docs/resource-usage.md)
+- [apple/container: technical overview](https://github.com/apple/container/blob/main/docs/technical-overview.md)
+- [Docker Docs: Desktop settings](https://docs.docker.com/desktop/settings-and-maintenance/settings/)
+- [Docker Docs: Install Docker Desktop on Mac](https://docs.docker.com/desktop/setup/install/mac-install/)
+- [OrbStack docs: Settings](https://docs.orbstack.dev/settings)
+- [Plex: Using hardware-accelerated streaming](https://support.plex.tv/articles/115002178853-using-hardware-accelerated-streaming/)
+- [Jellyfin: Hardware acceleration](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/)
+- [Microsoft Learn: DHCP scopes in Windows Server](https://learn.microsoft.com/en-us/windows-server/networking/technologies/dhcp/dhcp-scopes)
+- [Notebookcheck: Apple Mac mini 2026 review](https://www.notebookcheck.net/Compact-powerhouse-with-the-2-nm-M6-SoC-Apple-Mac-mini-2026-Review.1401148.0.html)
+- [Sonnet: Solo10G Thunderbolt adapter tech specs](https://www.sonnettech.com/product/solo10g-tb3/techspecs.html)
+- [U.S. EIA: Electric Power Monthly, Table 5.6.A](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a)
+`,
+  },
+  {
+    slug: "mac-pro-5-1-latest-os",
+    title: "Mac Pro 5,1 Latest macOS: Mojave Officially, Sequoia With OCLP",
+    date: "2026-10-05",
+    tags: ["mac-pro", "apple", "hardware", "security"],
+    excerpt:
+      "Apple stopped at macOS Mojave for the 2010 and 2012 Mac Pro. See what OpenCore Legacy Patcher adds up to Sequoia, what breaks at each step, and which version to run.",
+    coverImage: "/images/blog/mac-pro-5-1-latest-os.jpg",
+    coverCredit: {
+      author: "Evan Sims",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_Tower.jpg",
+    },
+    content: `
+## The short answer
+
+The newest macOS that Apple supports on a 2010 or 2012 Mac Pro (both are the MacPro5,1) is [Mojave 10.14](https://support.apple.com/en-us/102887), which needs a Metal-capable graphics card because the Radeon HD 5770 and HD 5870 that Apple shipped do not support Metal. Apple's last Mojave security fixes shipped in 2021. [OpenCore Legacy Patcher](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) (OCLP) runs Big Sur through Sequoia 15 on the same machine: Monterey 12 is the cleanest step, and Ventura and later need patches for the AVX2 instructions the CPUs lack. Tahoe 26 exists only in OCLP pre-releases, so treat Sequoia as the practical ceiling.
+
+## What is the latest macOS the Mac Pro 5,1 officially supports?
+
+Mojave 10.14 is the latest, for both model years. Apple's [Mac Pro identification page](https://support.apple.com/en-us/102887), published September 14, 2026, lists the Mid 2010 and Mid 2012 models under one identifier, MacPro5,1, with "macOS Mojave*" as the newest compatible system and a footnote that a Metal-capable graphics card is required. [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html) says Catalina and later do not support them. The two years differ only in hardware options, so "2010 latest OS" and "2012 latest OS" have one answer, and the [5,1 vs 7,1 comparison](/blog/mac-pro-5-1-vs-7-1) covers the hardware.
+
+## What does a Mac Pro 5,1 need to run Mojave?
+
+It needs a Metal-capable graphics card, High Sierra 10.13.6 installed first, and FileVault turned off for the install. [Apple's instructions](https://support.apple.com/en-us/101330) say the cards Apple offered in 2010 and 2012 "don't have GPUs that support Metal," and they warn against upgrading from anything older than 10.13.6.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-latest-os/radeon-hd-5770.jpg" alt="ATI Radeon HD 5770 graphics card with a black and red cooler shroud" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A PC-market Radeon HD 5770, the GPU family Apple fitted as standard in the 2010 and 2012 Mac Pro. Apple says the cards it offered lack Metal support, so Mojave needs a replacement card. Photo: Monstapix, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:ATI_Radeon_HD_5770_front_side.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Apple names five cards as compatible: the MSI Gaming Radeon RX 560, Sapphire Radeon Pulse RX 580, Sapphire Radeon HD 7950 Mac Edition, NVIDIA Quadro K5000 for Mac and GeForce GTX 680 Mac Edition. It says other RX 570, Vega 56 and 64 and Radeon Pro WX cards "might also be compatible." An RX 580 is a sensible pick, because it is on Apple's list and OCLP can patch Polaris cards on Ventura and later.
+
+Many third-party cards show nothing at startup, so you cannot log in to FileVault, choose another startup disk or run some diagnostics, and holding Option does not work; switch systems in the Startup Disk pane.
+
+The Mojave installer also delivers the final firmware. [Greg Gant's guide](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html), built on a table by MacRumors member tsialex, lists Boot ROM 138.0.0.0.0 (5GT/s for every PCIe 2.0 card), 140.0.0.0.0 (NVMe boot) and 144.0.0.0.0 ("lots of corrections, booting improvements"), the last firmware-released version. The order that works:
+
+1. Note your Boot ROM Version under About This Mac, System Report, Hardware Overview.
+2. Update to High Sierra 10.13.6 in the App Store.
+3. Fit a Metal-capable card and confirm "Supported" next to Metal in System Information under Graphics/Displays.
+4. Turn off FileVault.
+5. Download Mojave from [Apple's App Store link](https://support.apple.com/en-us/102662) and install it.
+6. Confirm the Boot ROM Version reads 144.0.0.0.0. If it is stuck at 138 or 140, install High Sierra on a spare drive, download Mojave 10.14.6 from it and install that.
+
+## Which newer macOS versions can a Mac Pro 5,1 run?
+
+OCLP supports Big Sur 11 through Sequoia 15 on the 5,1, and Monterey is the last version that can run with no patches written to the system volume, if you have a supported GPU and wireless card. The [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says the patcher "is designed to target macOS Big Sur 11.x to macOS Sequoia 15.x," and the [supported models page](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) lists MacPro5,1. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) sends Mojave and Catalina users to dosdude1's patchers.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-latest-os/rx-580.jpg" alt="Backplate of a Sapphire Nitro+ Radeon RX 580 graphics card" width="1200" height="682" loading="lazy" decoding="async">
+<figcaption>The backplate of a Sapphire Nitro+ RX 580. Apple's Mojave list names the Sapphire Pulse RX 580, and OCLP can patch Polaris cards like this one on Ventura and later. Photo: Verte95, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Sapphire_RX_580_Nitro%2B.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| macOS | Route | What a 5,1 needs | What changes |
+| :--- | :--- | :--- | :--- |
+| Mojave 10.14 | Apple | Metal GPU, High Sierra first | [Last macOS with 32-bit apps](https://support.apple.com/en-us/103076) |
+| Catalina 10.15 | dosdude1 patcher or manual OpenCore | Metal GPU | 32-bit apps stop working |
+| Big Sur 11 | OCLP or OpenCore | Metal GPU (stock cards need OCLP's non-Metal patches) | Apple no longer supports the 5,1 |
+| Monterey 12 | OCLP or OpenCore | Metal GPU; BCM94360 or BCM943602 card to skip root patches | Stock Wi-Fi and Bluetooth chipsets lose support; with new hardware, no root patches and SIP can stay on |
+| Ventura 13 | OCLP | A GPU OCLP can patch (Polaris, Vega); USB hub | AVX2 required, USB 1.1 drivers removed, lowered SIP |
+| Sonoma 14 | OCLP 1.0.0 or later | Same as Ventura | Some USB hubs stop working |
+| Sequoia 15 | OCLP 2.0.0 or later | Same as Ventura | iPhone Mirroring and Apple Intelligence do not work |
+| Tahoe 26 | OCLP 3.0.0 release candidates | Not documented for the 5,1 | Pre-release only |
+
+Ventura is the break. OCLP's [Ventura page](https://dortania.github.io/OpenCore-Legacy-Patcher/VENTURA-DROP.html) says macOS now needs AVX2 for native graphics acceleration and that "no pre-2019 Mac Pros" can get a CPU with it. OCLP can patch AMD Polaris and Vega to work without it, but Navi (RX 5000 and 6000) cards do not work in a 5,1 on Ventura or newer. The 5,1's CPUs predate AVX: Apple lists a "128-bit SSE4 SIMD engine," and the FAQ says AVX arrived with Sandy Bridge.
+
+### OCLP or plain OpenCore?
+
+Use OCLP unless you want to maintain the configuration yourself, and use it for Ventura and later, which need on-disk patches that it applies for you. OCLP is built on Acidanthera's OpenCore boot loader, which [patches macOS in memory instead of on disk](https://dortania.github.io/OpenCore-Legacy-Patcher/START.html).
+
+Plain OpenCore usually means the [manually configured guide on MacRumors](https://forums.macrumors.com/threads/manually-configured-opencore-on-the-mac-pro.2207814/) or Martin Lo's packaged version. Greg Gant calls it the standard route for Mojave through Monterey, with a boot picker and an unpatched OS but a complex setup. He also says it requires a Westmere CPU, which would exclude single-CPU quad-core models (Apple's [2010 specs](https://support.apple.com/en-us/112578) show a Xeon W3530 "Nehalem"), and OCLP's docs state no such limit.
+
+## How do you upgrade a Mac Pro 5,1 to Monterey or later?
+
+Update to Mojave first, fit a Metal GPU, then boot an OpenCore installer from a USB drive. OCLP says to update to the Mac's latest native macOS "to ensure you're on the highest firmware."
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-latest-os/usb-hub.jpg" alt="A black four-port USB 2.0 hub with its attached cable" width="1200" height="749" loading="lazy" decoding="async">
+<figcaption>A plain USB 2.0 hub. On Ventura and later, a 5,1's keyboard and mouse need one in between, because macOS dropped the USB 1.1 drivers the Mac Pro's ports use for a directly connected keyboard and mouse. Photo: メイド理世, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:USB_2.0_4ports.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+1. Install Mojave as above so the Boot ROM reaches 144.0.0.0.0, and fit a Metal GPU, plus a BCM94360 or BCM943602 wireless card if you want Monterey with no root patches.
+2. In OCLP, create the installer on a USB drive; the [installer guide](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html) recommends 32GB because later Sonoma and Sequoia builds do not fit on 16GB.
+3. Build OpenCore, install it to the USB drive, restart holding Option and choose the EFI Boot entry with the OpenCore icon. If your card shows no boot screen, the [boot guide](https://dortania.github.io/OpenCore-Legacy-Patcher/BOOT.html) gives a Recovery Terminal method that uses \`bless\`.
+4. Install macOS. On Ventura or later, connect the keyboard and mouse through a USB 2.0 or 3.0 hub.
+5. Build OpenCore again and install it to the internal drive so the USB drive is not needed, then apply root patches if OCLP offers them ([post-install guide](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)).
+6. Turn off automatic updates, use a USB installer for major upgrades such as 13 to 14, and reinstall root patches after every update, because updates wipe them ([FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)).
+
+## Which Wi-Fi, Bluetooth and NVMe upgrades matter?
+
+A BCM94360 or BCM943602 wireless card removes the most patching, and NVMe boot works once the firmware is current.
+
+Apple's specs ([2010](https://support.apple.com/en-us/112578), [2012](https://support.apple.com/en-us/118464)) list built-in AirPort Extreme 802.11n Wi-Fi and Bluetooth 2.1 + EDR. OCLP's [Monterey page](https://dortania.github.io/OpenCore-Legacy-Patcher/MONTEREY-DROP.html) says the BCM94322 Wi-Fi and BRCM2046 and BRCM2070 Bluetooth chipsets in the MacPro5,1 lost support in Monterey and that OCLP patches them back; its Ventura page says BCM943224, BCM94331, BCM94360 and BCM943602 cards "are still fully supported" and advises upgrading. Greg Gant says a classic Mac Pro can take an 802.11ac and Bluetooth 4.0 card, which makes AirDrop work and lets Handoff and Continuity be enabled. His table dates the stock card's loss to Catalina and OCLP's docs date it to Monterey; this article follows OCLP because its pages track the patches version by version.
+
+Boot ROM 140.0.0.0.0 added NVMe boot, so a 5,1 on 144.0.0.0.0 can boot from an NVMe SSD on a PCIe adapter. [Low End Mac](https://lowendmac.com/2022/one-last-push-turbo-charging-the-mac-pro-51-through-2025-and-maybe-slightly-beyond/) says a Metal GPU plus that firmware is what lets you "install NVMe storage." The slots are PCIe 2.0 without bifurcation, so a plain adapter tops out near 1,500MB/s, while x8 cards with a switch chip such as the ASM2824 or PLX8747 reach about 3GB/s in real use. [PCIe lanes explained](/blog/pcie-lanes-explained) covers why cards end up at x4 or x8.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-latest-os/nvme-adapter.jpg" alt="An XPG M.2 NVMe SSD mounted on a PCIe x4 adapter card with a full-height bracket" width="1200" height="540" loading="lazy" decoding="async">
+<figcaption>An M.2 NVMe SSD on a plain PCIe x4 adapter, the kind of card a 5,1 can boot from on Boot ROM 140.0.0.0.0 or later. In the Mac Pro's PCIe 2.0 slots, a plain adapter like this tops out near 1,500MB/s. Photo: HiyoriX, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Adata_XPG_SX8200_Pro_pcie_adapter_view.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+## Which macOS versions still get security updates?
+
+Of the versions a 5,1 can reach, only Sequoia and Tahoe still do, as of September 28, 2026. Apple's [security releases page](https://support.apple.com/en-us/100100), published that day, lists Tahoe 26.7.1 and Sequoia 15.8.1 and nothing newer for Sonoma than 14.8.9. Older rows come from Apple's archives for [2020 to 2021](https://support.apple.com/en-us/120989) and [2022 to 2023](https://support.apple.com/en-us/121012).
+
+| macOS | Last security update Apple lists |
+| :--- | :--- |
+| High Sierra 10.13 | [Security Update 2020-006](https://support.apple.com/en-us/103047) on November 12, 2020 |
+| Mojave 10.14 | [Security Update 2021-005](https://support.apple.com/en-us/103140) on July 21, 2021, then a [Safari 14.1.2](https://support.apple.com/en-us/103151) WebKit fix on September 13, 2021 |
+| Big Sur 11 | 11.7.10 on September 11, 2023; 11.7.11 on February 2, 2026 lists no CVE entries |
+| Monterey 12 | 12.7.6 on July 29, 2024 |
+| Ventura 13 | 13.7.8 on August 20, 2025 |
+| Sonoma 14 | 14.8.9 on August 6, 2026 |
+| Sequoia 15 | 15.8.1 on September 28, 2026 |
+| Tahoe 26 | 26.7.1 on September 28, 2026 |
+
+Google says [Chrome on Mac needs macOS 13 Ventura or later](https://support.google.com/chrome/a/answer/7100626?hl=en), and Mozilla lists [macOS 10.15 or later for Firefox 157](https://www.mozilla.org/en-US/firefox/system-requirements/), so Mojave runs neither current browser and Monterey runs Firefox but not Chrome. On Ventura and later, OCLP's [post-install guide](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html) says "All unsupported systems require lowered SIP."
+
+## Is Sequoia or Tahoe realistic on a Mac Pro 5,1?
+
+Sequoia is realistic if you accept the upkeep, and Tahoe is not realistic yet. OCLP's [changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md) shows Sequoia support arriving in 2.0.0 for the MacPro3,1 through 6,1, and Apple still patches it. The costs are lowered SIP, root patches after every update, a USB hub for input devices, and apps that need AVX or AVX2 crashing with "illegal instruction," per the FAQ. OCLP's [Sequoia page](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html) adds that iPhone Mirroring and Apple Intelligence will not work on most patched Macs.
+
+Point releases can also break things. The 2.2.0 changelog lists "Resolved JavaScriptCore on pre-AVX Macs on macOS Sequoia 15.2/Safari 18.2," and a MacRumors owner thread reports [Safari and App Store problems after upgrading a 5,1 to macOS 15.2](https://forums.macrumors.com/threads/opencore-legacy-patcher-2-2-0-on-mac-pro-5-1-issue-with-safari-and-app-store-after-upgrading-on-macos-15-2.2445415/). The FAQ advises waiting a few days after an update to see whether patches break.
+
+Tahoe depends on a pre-release. The README says OCLP "officially supports patching to run macOS Big Sur through Tahoe," but the FAQ still targets Big Sur through Sequoia and the docs have no Tahoe page. The [releases page](https://github.com/dortania/OpenCore-Legacy-Patcher/releases) shows 2.5.1 as the latest release, with 3.0.0 release candidates flagged as pre-releases whose notes warn to expect instability, system crashes and potential data loss. Nothing in the docs or changelog names the 5,1 for Tahoe, and the README says the project is offered "on an AS-IS basis."
+
+Tahoe is also the end of the line: Apple lists macOS 27 only for Apple silicon Macs, and [9to5Mac](https://9to5mac.com/2025/06/09/apple-will-end-support-for-intel-macs/) reported that Tahoe would be the last macOS for Intel.
+
+## Which macOS should you run on a Mac Pro 5,1?
+
+Run Monterey for stable day-to-day work on a trusted network, Mojave for 32-bit software, and Sequoia when the Mac needs current patches and you accept the upkeep.
+
+| If you need | Run | Trade-off |
+| :--- | :--- | :--- |
+| 32-bit apps | Mojave 10.14.6 | Apple-supported, no OCLP; no security fixes since 2021 and no current Chrome or Firefox, so keep it off the open internet |
+| Modern 64-bit apps, least upkeep | Monterey 12 | No root patches with a supported GPU and a BCM94360 card; Apple's last update was July 29, 2024 and Chrome is unsupported |
+| Daily internet use with current patches | Sequoia 15 with OCLP | The only OCLP-supported version Apple still patches, with lowered SIP, root patches after every update and AVX2 gaps |
+| The newest macOS | Wait for a stable OCLP 3.0.0 | Tahoe is pre-release in OCLP and the last macOS any Intel Mac gets |
+
+Skip Ventura and Sonoma: they carry the same AVX2 patching as Sequoia, and Apple's last updates for them were August 20, 2025 and August 6, 2026. Mojave needs a Metal-capable GPU, and later versions run better with one, because [OCLP's FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says many newer apps fail on non-Metal GPUs.
+
+## What breaks
+
+**Keyboard and mouse stop working on Ventura or later.** Ventura removed the USB 1.1 drivers, and OCLP's [issue 1021](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1021) explains that a mouse plugged into a MacPro5,1 uses that legacy controller, while a USB 2.0 hub starts the controller macOS still supports. Fix: connect the keyboard and mouse through a USB 2.0 or 3.0 hub and install OCLP's root patches; on Sonoma, try another hub if one fails ([hardware troubleshooting](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html)).
+
+**A PC graphics card gives a black screen until macOS loads.** Apple's firmware shows no startup graphics from many third-party cards, so there is no boot picker or FileVault login. Fix: turn off FileVault before installing Mojave, switch systems in the Startup Disk pane, and use OCLP's \`bless\` method to make OpenCore the default entry.
+
+**Apps crash with "illegal instruction," or Safari misbehaves after an update.** The 5,1's CPUs lack AVX and AVX2, and, as [OCLP's FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) explains, newer software assumes both. Fix: keep OCLP current, wait a few days after point updates, install older app versions, or stay on Monterey or Mojave.
+
+**Wi-Fi or Bluetooth disappears after Monterey.** Monterey dropped the stock Wi-Fi and Bluetooth chipsets, and OCLP's [Sonoma page](https://dortania.github.io/OpenCore-Legacy-Patcher/SONOMA-DROP.html) notes that Bluetooth may fail after boot on pre-2012 models, which includes a 2010 5,1. Fix: apply OCLP's root patches, reset NVRAM, or fit a BCM94360 or BCM943602 card.
+
+**Graphics acceleration is gone after an update or a GPU swap.** Updates wipe root patches, and installing with the stock card, then swapping in a Metal GPU, leaves the wrong patch set in place. Fix: reinstall root patches after each update, revert them after a GPU swap and patch again, and use Ethernet so OCLP can download what it needs.
+
+**The Mac reboots when it should sleep, or will not sleep.** OCLP lists "Reboot when entering Hibernation (Sleep Wake Failure)" as a known issue on some models, and Greg Gant says USB cards that need external power can stop a Mac Pro sleeping. Fix: run \`sudo pmset -a hibernatemode 0\` as [OCLP suggests](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-MISC.html), and test without powered USB cards.
+
+## Frequently asked questions
+
+### Is a 2012 Mac Pro newer than a 2010 for macOS support?
+
+No. Apple lists both under MacPro5,1 with Mojave as the newest macOS and the same Metal requirement, and Greg Gant says they differ only in the CPUs and GPUs Apple offered.
+
+### Do I have to install Mojave before OpenCore?
+
+Install it if your Boot ROM is older than 144.0.0.0.0, because Apple's installers are what update Mac Pro firmware. OCLP itself does not flash firmware: its README lists "Zero firmware patching required."
+
+### Can a Mac Pro 5,1 run Sonoma or Sequoia?
+
+Yes, with OCLP, which added Sonoma in 1.0.0 and Sequoia in 2.0.0. Both need a patchable GPU, lowered SIP and root patches after updates. Apple's last Sonoma update was August 6, 2026, so choose Sequoia if you go that far.
+
+### Can a Mac Pro 5,1 run macOS Tahoe?
+
+Not in a stable OCLP release. The README claims Tahoe support, but only the 3.0.0 release candidates carry it, and Tahoe is the last macOS for Intel Macs.
+
+## What this means
+
+Fit a Metal-capable graphics card first, because Mojave requires one and later versions run poorly without one, and install Mojave to bring the firmware to 144.0.0.0.0. Stay on Mojave for 32-bit apps, move to Monterey for the lowest-upkeep modern setup, and choose Sequoia only if you need Apple's current patches. Leave Tahoe until OCLP ships a stable 3.0.0.
+
+## References
+
+- [Apple: Identify your Mac Pro model](https://support.apple.com/en-us/102887)
+- [Apple: Install macOS 10.14 Mojave on Mac Pro (Mid 2010) and Mac Pro (Mid 2012)](https://support.apple.com/en-us/101330)
+- [Apple: Mac Pro (Mid 2010) technical specifications](https://support.apple.com/en-us/112578)
+- [Apple: Mac Pro (Mid 2012) technical specifications](https://support.apple.com/en-us/118464)
+- [Apple: How to download and install macOS](https://support.apple.com/en-us/102662)
+- [Apple: 32-bit app compatibility with macOS](https://support.apple.com/en-us/103076)
+- [Apple: Apple security releases](https://support.apple.com/en-us/100100)
+- [Apple: Apple security updates (2022 to 2023)](https://support.apple.com/en-us/121012)
+- [Apple: Apple security updates (2020 to 2021)](https://support.apple.com/en-us/120989)
+- [Apple: About the security content of Security Update 2020-006 High Sierra and Mojave](https://support.apple.com/en-us/103047)
+- [Apple: About the security content of Security Update 2021-005 Mojave](https://support.apple.com/en-us/103140)
+- [Apple: About the security content of Safari 14.1.2](https://support.apple.com/en-us/103151)
+- [OpenCore Legacy Patcher: Supported models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OpenCore Legacy Patcher: FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)
+- [OpenCore Legacy Patcher: What is OpenCore?](https://dortania.github.io/OpenCore-Legacy-Patcher/START.html)
+- [OpenCore Legacy Patcher: Creating macOS installers](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html)
+- [OpenCore Legacy Patcher: Booting OpenCore and macOS](https://dortania.github.io/OpenCore-Legacy-Patcher/BOOT.html)
+- [OpenCore Legacy Patcher: Post-installation](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+- [OpenCore Legacy Patcher: macOS Monterey](https://dortania.github.io/OpenCore-Legacy-Patcher/MONTEREY-DROP.html)
+- [OpenCore Legacy Patcher: macOS Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/VENTURA-DROP.html)
+- [OpenCore Legacy Patcher: macOS Sonoma](https://dortania.github.io/OpenCore-Legacy-Patcher/SONOMA-DROP.html)
+- [OpenCore Legacy Patcher: macOS Sequoia](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html)
+- [OpenCore Legacy Patcher: Hardware issues](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html)
+- [OpenCore Legacy Patcher: Booting, installer and other issues](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-MISC.html)
+- [OpenCore Legacy Patcher: README](https://github.com/dortania/OpenCore-Legacy-Patcher)
+- [OpenCore Legacy Patcher: changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md)
+- [OpenCore Legacy Patcher: releases](https://github.com/dortania/OpenCore-Legacy-Patcher/releases)
+- [OpenCore Legacy Patcher: Legacy UHCI/OHCI support in Ventura and newer (issue 1021)](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1021)
+- [Greg Gant: The Definitive Classic Mac Pro (2006-2012) Upgrade Guide](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html)
+- [Low End Mac: One Last Push, Turbo Charging the Mac Pro 5,1](https://lowendmac.com/2022/one-last-push-turbo-charging-the-mac-pro-51-through-2025-and-maybe-slightly-beyond/)
+- [EveryMac: Mac Pro Twelve Core 3.06 (Mid 2012) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html)
+- [Google: Chrome browser system requirements](https://support.google.com/chrome/a/answer/7100626?hl=en)
+- [Mozilla: Firefox system requirements](https://www.mozilla.org/en-US/firefox/system-requirements/)
+- [9to5Mac: Apple will end support for Intel Macs next year](https://9to5mac.com/2025/06/09/apple-will-end-support-for-intel-macs/)
+- [MacRumors forums: Manually Configured OpenCore on the Mac Pro](https://forums.macrumors.com/threads/manually-configured-opencore-on-the-mac-pro.2207814/)
+- [MacRumors forums: OCLP 2.2.0 on Mac Pro 5,1, Safari and App Store issue on macOS 15.2](https://forums.macrumors.com/threads/opencore-legacy-patcher-2-2-0-on-mac-pro-5-1-issue-with-safari-and-app-store-after-upgrading-on-macos-15-2.2445415/)
+`,
+  },
+  {
+    slug: "opencore-legacy-patcher-tahoe",
+    title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
+    date: "2026-10-05",
+    tags: ["apple", "tools", "hardware", "troubleshooting"],
+    excerpt:
+      "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
+    coverImage: "/images/blog/opencore-legacy-patcher-tahoe.jpg",
+    coverCredit: {
+      author: "Amada44",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Macbook_A1286.jpg",
+    },
+    content: `
+## The short answer
+
+OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
+
+## Does OpenCore Legacy Patcher support macOS Tahoe?
+
+It does in pre-release and does not in the stable build. [Pull request 1187, "Implement support for macOS Tahoe,"](https://github.com/dortania/OpenCore-Legacy-Patcher/pull/1187) merged 42 commits into the main branch on October 4, 2026. The [3.0.0 changelog](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/main/CHANGELOG.md) lists Tahoe support, improved wireless patches, improved non-Metal graphics patches, restored FileVault 2 support on macOS 26 and USB mappings for macOS 26.
+
+The same day, the project published two release candidates, separated by [one commit](https://github.com/dortania/OpenCore-Legacy-Patcher/compare/3.0.0-rc.1...3.0.0-rc.2): "Update HDA patch and enable Tahoe patching without developer enablement." The [rc.1 source](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/3.0.0-rc.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) refuses to root patch anything newer than Sequoia unless a developer file exists. The [rc.2 source](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/sys_patch/patchsets/detect.py) raises the limit to Tahoe. [PatcherSupportPkg](https://github.com/dortania/PatcherSupportPkg/releases) 2.0.0 and 2.0.1 (October 3 and 4, 2026) added the Tahoe patch files, credited to EduCovas and ASentientBot.
+
+The documentation has not caught up. The [README](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/main/README.md) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says the patcher "is designed to target macOS Big Sur 11.x to macOS Sequoia 15.x," and the [supported models page](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) never mentions Tahoe. Treat "officially" as intent, not a tested-hardware list.
+
+## What is the latest OpenCore Legacy Patcher version?
+
+The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.2 pre-release. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
+
+| Version | Published | Status | macOS range in its source |
+| :--- | :--- | :--- | :--- |
+| 3.0.0-rc.2 | October 4, 2026 | Pre-release | Big Sur through Tahoe |
+| 3.0.0-rc.1 | October 4, 2026 | Pre-release | Tahoe only with a developer file |
+| 2.5.1 | September 19, 2026 | Latest stable | [Big Sur through Sequoia](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.5.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) |
+| 2.4.1 | September 1, 2025 | Older stable | [Big Sur through Sequoia](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.4.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) |
+
+The in-app updater only [asks GitHub for the release marked Latest](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/support/updates.py), so it never offers a release candidate. Download \`OpenCore-Patcher.pkg\` from the Releases page yourself, and only from \`github.com/dortania/OpenCore-Legacy-Patcher\`. Third-party sites rank for these searches, and at least one, opencorelegacypatcher.net, says "Independent guide. Not affiliated with Apple or Dortania" while listing 2.4.1 as the current stable version.
+
+## Which Macs can run Tahoe, with or without OCLP?
+
+Apple's own Tahoe list holds only four Intel Macs, and every other Intel Mac needs a patcher or an older macOS. [Apple's compatibility page](https://support.apple.com/en-us/122867) lists the MacBook Pro (16-inch, 2019), MacBook Pro (13-inch, 2020, four Thunderbolt 3 ports), iMac (Retina 5K, 27-inch, 2020) and Mac Pro (2019). All four are [T2 Macs](https://support.apple.com/en-us/103265), and none needs OCLP.
+
+<figure>
+<img src="/images/blog/opencore-legacy-patcher-tahoe/macbook-pro-2019.jpg" alt="Keyboard of a space gray 2019 16-inch MacBook Pro" width="1200" height="628" loading="lazy" decoding="async">
+<figcaption>A 2019 16-inch MacBook Pro, one of only four Intel Macs on Apple's Tahoe list. It needs no patcher for Tahoe, and macOS 27 leaves it behind. Photo: Jack Baty from Grand Rapids, MI, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:2019_16-inch_MacBook_Pro_(49183242933).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Tahoe dropped the 13-inch and 15-inch MacBook Pro from 2018 to 2019, the two-port 2020 13-inch MacBook Pro, the 2020 MacBook Air, the 2018 Mac mini, the iMac Pro and the 2019 iMac, [per the project](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1167). Every one except the iMac has a T2 chip, and the project wrote in 2025 that "T2 machines have panic issues when booting the OS through OpenCorePkg," with panics still occurring. The project's Sequoia page traces the panic to an [AppleKeyStore timeout with the T2 chip](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html).
+
+The picture is not uniform. The same page says the MacBookPro15,2 and Macmini8,1 did not panic in the project's own tests, but [Low End Mac](https://lowendmac.com/2025/oclp-tahoe-and-2018-mac-mini-a-no-go-so-far/) reported a failed Tahoe attempt on a 2018 Mac mini in June 2025, and nothing published says Tahoe boots on either. For the chip itself, see [Apple's T2 chip in the Mac Pro](/blog/apple-t2-security-chip).
+
+Older Macs are in scope: the README lists "Supports Penryn and newer Macs," and the models page excludes PowerPC and Apple silicon. The rc.2 source has Tahoe-specific code for the graphics classes below, for T1 (Touch ID) Macs and for audio, and [it allows non-Metal acceleration on Tahoe](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/constants.py). That shows intent, not testing. The [release notes](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2) list no models, and the [non-Metal](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/108) and legacy Metal tracking issues still end at Sequoia.
+
+| GPU class | Typical Macs | Tahoe handling in the rc.2 source |
+| :--- | :--- | :--- |
+| Non-Metal: Intel HD 3000, NVIDIA Tesla, AMD TeraScale | 2008 to 2011 | Acceleration allowed on Tahoe |
+| Metal 3802: Intel Ivy Bridge and Haswell, NVIDIA Kepler | 2012 to 2015 | Replaces the [RenderBox Metal library](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/sys_patch/patchsets/shared_patches/tahoe_graphics.py) on disk |
+| Metal 31001: Intel Broadwell, AMD GCN, Polaris, Vega, Navi | 2013 to 2017, upgraded Mac Pros | Same patch plus Tahoe driver bundles, and GCN cards need a Kernel Debug Kit |
+
+## What does the end of Intel support in macOS 27 mean for OCLP?
+
+It means Tahoe is the last macOS OCLP will target. Apple released macOS 27 Golden Gate on September 14, 2026, and it [runs only on Apple silicon](https://www.apple.com/macos/). [MacRumors](https://www.macrumors.com/2026/09/14/macos-golden-gate-marks-the-end-of-an-era-2/) confirmed that none of the four Intel Macs on Apple's Tahoe list can run Golden Gate.
+
+The OCLP team said on June 15, 2026 that "there are currently no plans to attempt working with Golden Gate." Its [issue 1183](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183) says Apple removed most Intel kernel and driver extensions in beta 1 and that what remains "is not enough to grant entry to this release of macOS." OCLP also [does not support Apple silicon](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html), so there is nothing for it to patch beyond Tahoe.
+
+The team has also shrunk. [AppleInsider](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing) reported in March 2026 that lead developer Mykola Grymalyuk had left for a job at Apple, and the project [stopped taking donations on March 22, 2026](https://opencollective.com/opencore-legacy-patcher/updates/closing-off-to-new-donations). In June it said it could not "provide ETAs as before."
+
+Apple says macOS 26 is ["the last macOS release with full support for Intel-based Mac computers"](https://support.apple.com/en-gb/guide/deployment/depd567c9ffa/web) and that Intel Macs keep getting security updates "for three years." The Eclectic Light Company says Tahoe 26.7 [began its first two years of security-only support](https://eclecticlight.co/2026/09/14/apple-has-released-macos-golden-gate-and-security-updates-to-tahoe-26-7-sequoia-15-8/) while Sequoia 15.8 began its final year. A patched Mac on Tahoe may therefore get Apple fixes about a year longer than one on Sequoia, but each Tahoe update can break root patches that a small team must repair.
+
+## How do you install or update OCLP safely?
+
+Back up first, test on a spare disk and treat every macOS update as a reinstall of the patches. The steps follow the project's [installer](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html) and [update](https://dortania.github.io/OpenCore-Legacy-Patcher/UPDATE.html) guides.
+
+1. Read the Model Identifier in System Information and check the [models page](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) and Apple's Tahoe list. If Apple supports your Mac, use Software Update instead.
+2. Update the Mac to its newest native macOS first, which the project calls "extremely recommended" for current firmware.
+3. Back up with Time Machine, which [needs a drive at least twice your Mac's capacity](https://support.apple.com/en-us/104984), and keep a second copy under the [3-2-1 rule](/blog/backup-strategy-321-rule). A [Time Machine restore can break](https://dortania.github.io/OpenCore-Legacy-Patcher/TIMEMACHINE.html) while root patches are installed, so [test a restore](/blog/restore-drills-that-matter).
+4. Download 2.5.1 for Sequoia and older, and a release candidate only for a machine you can wipe.
+5. In the app, choose Create macOS Installer. If you build the USB drive on a different Mac than the target, select the target model in Settings first. The project recommends 32GB because later Sonoma and Sequoia installers do not fit with patches on 16GB.
+6. Build and install OpenCore to the USB drive, hold Option at startup, pick the EFI Boot entry and install to a spare disk. On a Touch Bar Mac, erase only the volume, not the whole disk, or the T1 firmware is lost.
+7. After the first boot, install OpenCore to the internal disk and apply root patches over Ethernet, because without a connection the first pass may install only the Wi-Fi driver.
+8. Turn off "Download new updates when available," which the project says can break a patched Mac by staging changes into the system volume.
+9. After each macOS update, update OCLP, rebuild OpenCore on the internal disk and reinstall root patches. The project prefers a USB installer over System Settings for major upgrades.
+
+To see which patcher built your OpenCore, run this in Terminal:
+
+\`\`\`
+nvram 4D1FDA02-38C7-4A6A-9CC6-4BCCA8B30102:OCLP-Version
+\`\`\`
+
+It prints a version such as \`3.0.0\`. Both release candidates report 3.0.0, so note which release you downloaded.
+
+To back out, choose Revert Root Patches in the app. Do not delete OpenCore from a Mac that needs it to boot, because the [project says](https://dortania.github.io/OpenCore-Legacy-Patcher/UNINSTALL.html) the Mac then shows the prohibited symbol.
+
+## What do root patches, SIP and FileVault change?
+
+Root patches write older drivers into the system volume, which is why a patched Mac is not a normal Mac. The [project](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html) says they cover graphics, Wi-Fi, Bluetooth, Touch Bar and T1, camera and USB 1.1 drivers. They also break macOS's sealed system volume, which is why every update downloads a [full copy of macOS](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) and wipes the patches.
+
+<figure>
+<img src="/images/blog/opencore-legacy-patcher-tahoe/macbook-pro-2012-ports.jpg" alt="Left side of a mid-2012 Retina MacBook Pro showing the MagSafe 2 port, two Thunderbolt ports and a USB port" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A mid-2012 Retina MacBook Pro. OCLP groups its Ivy Bridge and Kepler graphics as legacy Metal, which needs root patches on Ventura and newer. Photo: JJ163, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:2012_MacBook_Pro_Retina_15%22_Twin_ThunderBolt_Ports.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+### System Integrity Protection and AMFI
+
+Apple describes [System Integrity Protection](https://support.apple.com/en-us/102149) as "a security technology designed to help prevent potentially malicious software from modifying protected files and folders." On Ventura and newer, OCLP says "All unsupported systems require lowered SIP," and you cannot re-enable SIP after patching "without potentially breaking the current install." Its [patch notes](https://dortania.github.io/OpenCore-Legacy-Patcher/PATCHEXPLAIN.html) also add the boot argument \`amfi=0x80\`, which disables Apple Mobile File Integrity so unsigned root patches load. A patched Mac has weaker system protection than a native one.
+
+### FileVault on Tahoe
+
+The project reported that Tahoe turns FileVault on during installation, "leading to issues with volume decryption," and 3.0.0 restores FileVault 2 support on macOS 26. The rc.2 source [still stops root patching when FileVault is on](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/sys_patch/patchsets/detect.py) unless OCLP has patched APFS to allow it. [Apple advises](https://support.apple.com/guide/mac-help/protect-data-on-your-mac-with-filevault-mh11785/mac) keeping the recovery key somewhere other than the encrypted disk.
+
+## Which macOS should your Mac run?
+
+Pick the newest macOS your Mac runs natively or with a stable OCLP release, and test Tahoe only on spare hardware. Apple's newest Tahoe is 26.7.1 ([September 28, 2026](https://support.apple.com/en-us/100100)), and the project has not said which 26.x builds its release candidates were tested on. The sources checked for this article held no independent test reports of them. Sequoia is in its final year of updates, so plan any Tahoe move for 2027, after a stable 3.x.
+
+| Mac generation | Examples | Tahoe status | Recommendation |
+| :--- | :--- | :--- | :--- |
+| 2019 to 2020 Intel Macs on Apple's list | MacBook Pro 16-inch 2019, iMac 2020, Mac Pro 2019 | Native | Use Software Update. Tahoe is the last macOS for them. |
+| 2018 to 2020 Macs Tahoe dropped | MacBook Pro 2018 to 2019, Mac mini 2018, MacBook Air 2020, iMac Pro, iMac 2019 | No published OCLP path (T2 panics, and Apple removed the analog audio driver) | Stay on [Sequoia](https://support.apple.com/en-us/120282), which Apple supports on these. |
+| 2018 to 2019 MacBook Air | MacBookAir8,1 and 8,2 | Not supported by OCLP (T2) | Sonoma is its last native macOS and no longer gets security updates. |
+| 2016 to 2017 Macs | Touch Bar MacBook Pro, MacBook, iMac 2017 | Tahoe patch code exists, T1 included | Test install candidate, with Sequoia as the daily system. |
+| 2013 to 2015 Macs with Metal GPUs | Retina MacBook Pro, iMac 2013 to 2015 | Tahoe graphics code exists | Best candidates among unsupported Macs, after a stable 3.x. |
+| 2012 Macs and the 2013 Mac Pro | Ivy Bridge MacBook Pro, Mac Pro 6,1 | Code exists, no AVX2 | Stay on Sequoia or older. |
+| 2008 to 2011 Macs, 2009 to 2012 Mac Pro | Early unibody MacBook Pro, Mac Pro 5,1 | Allowed in code, untested | Stay on Monterey or older. |
+
+The last two rows matter because some applications crash with "illegal instruction" on CPUs without AVX2, and AMD Navi cards do not work in 2008 to 2012 Mac Pros on Ventura and newer, [per the project](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html). [AppleInsider](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing) suggested Monterey for owners of 2008 and 2009 Macs, and on Monterey a Mac Pro with an upgraded GPU that does not need its stock Wi-Fi can skip root patching, per the [post-install guide](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html). Macs with 2GB of RAM cannot install Sonoma or newer.
+
+## What breaks
+
+**Graphics acceleration and Wi-Fi vanish after a macOS update.** Updates replace the system volume and wipe root patches. Fix: open OCLP, update it, rebuild OpenCore on the internal disk and reinstall root patches over Ethernet, so downloads such as the Kernel Debug Kit arrive in one pass.
+
+**A T2 Mac panics at boot.** The T2 chip times out when OpenCore boots the Mac, and the AppleKeyStore driver panics. Fix: none exists in OCLP, so stay on the last native macOS for that model.
+
+<figure>
+<img src="/images/blog/opencore-legacy-patcher-tahoe/mac-mini-2018.jpg" alt="Top view of a 2018 Mac mini in black and white" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A 2018 Mac mini, one of the T2 Macs that Tahoe dropped. Low End Mac reported in June 2025 that a Tahoe install on this model failed with OCLP. Photo: Khaosaming, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_mini_2018.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+**Audio, Touch Bar, Wi-Fi or USB input stops working on Tahoe.** The project listed wireless, T1 and USB patches as broken in 2025, Apple removed \`AppleHDA.kext\` for analog audio, and USB 1.1 drivers have been missing since Ventura. Fix: use rc.2 or newer, which updates the audio patch, and never wipe a Touch Bar Mac's whole disk. For keyboards on older Macs, see the FAQ below.
+
+**Fusion Drive volumes appear split, or FileVault blocks patching.** Apple dropped Fusion Drive support in Tahoe, and Tahoe turns FileVault on during installation. Fix: the project has published no Fusion Drive workaround, so keep those Macs on Sequoia or move the system to a single SSD. For FileVault, keep your recovery key and use a build that restores support.
+
+**Apps crash, or Apple features are missing.** Newer apps need AVX or AVX2 instructions, and Apple Intelligence and iPhone Mirroring need hardware OCLP cannot supply. Fix: run older app versions or an older macOS, because the missing features cannot be restored.
+
+## Frequently asked questions
+
+### Is there a stable OpenCore Legacy Patcher release for Tahoe?
+
+No. As of October 5, 2026 the only Tahoe builds are the 3.0.0 release candidates, and the team has said it "cannot provide ETAs as before." In September 2025 Low End Mac reported a [goal of late fall or early winter](https://lowendmac.com/2025/macos-26-0-tahoe/) for 3.0.0, and that window passed.
+
+### Can OCLP run macOS 27 Golden Gate?
+
+No. Golden Gate needs Apple silicon, OCLP supports only Intel Macs, and the team says it has no plans to attempt it.
+
+### Does OCLP work on a 2018 Mac mini or a 2019 15-inch MacBook Pro?
+
+There is no published Tahoe support for either. These T2 Macs are on Apple's Sequoia list, so Sequoia runs natively.
+
+### Why is the keyboard not working after installing macOS with OCLP?
+
+Many Macs from mid-2010 and earlier, and the 2011 Mac mini, use USB 1.1 controllers, and macOS dropped those drivers in Ventura. The [project's guide](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html) says to put a USB hub between the Mac and an external keyboard until root patches install. It covers Ventura and newer and has no Tahoe-specific advice.
+
+### Are the Tahoe forks on GitHub safe to use?
+
+The README and release notes do not mention them. Forks that claim Tahoe patches, such as OCLP-Plus on the InsanelyMac forum, come from other authors. OCLP installs a privileged helper and rewrites the system volume, so use only Dortania's releases.
+
+## What this means
+
+OCLP's Tahoe support is real but unfinished, and it is the project's last chapter. Keep unsupported Macs on the newest macOS that runs well on them, which is Sequoia with 2.5.1 for most 2013 to 2017 models, and run Tahoe on a spare disk until a stable 3.x arrives. If you run a 2019 Mac Pro, Tahoe is native and final, and [running a rack-mount Mac Pro](/blog/mac-pro-rack-mount-homelab) covers that machine.
+
+## References
+
+- [OpenCore Legacy Patcher 3.0.0-rc.2 release notes (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2)
+- [Pull request 1187, Implement support for macOS Tahoe (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/pull/1187)
+- [OpenCore Legacy Patcher changelog (raw file)](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/main/CHANGELOG.md)
+- [Comparison of 3.0.0-rc.1 and 3.0.0-rc.2 (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/compare/3.0.0-rc.1...3.0.0-rc.2)
+- [3.0.0-rc.1 root patch detection source, detect.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/3.0.0-rc.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py)
+- [3.0.0-rc.2 root patch detection source, detect.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/sys_patch/patchsets/detect.py)
+- [2.5.1 root patch detection source, detect.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.5.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py)
+- [2.4.1 root patch detection source, detect.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.4.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py)
+- [3.0.0-rc.2 updater source, updates.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/support/updates.py)
+- [3.0.0-rc.2 constants source, constants.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/constants.py)
+- [3.0.0-rc.2 Tahoe graphics patch source, tahoe_graphics.py](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/d622cd5de86e5cb9a8c975c2809dbdbd2822c86e/opencore_legacy_patcher/sys_patch/patchsets/shared_patches/tahoe_graphics.py)
+- [PatcherSupportPkg releases (GitHub)](https://github.com/dortania/PatcherSupportPkg/releases)
+- [OpenCore Legacy Patcher tags page (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/tags)
+- [OpenCore Legacy Patcher README (raw file)](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/main/README.md)
+- [OpenCore Legacy Patcher FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)
+- [OpenCore Legacy Patcher supported models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OpenCore Legacy Patcher guide: creating macOS installers](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html)
+- [OpenCore Legacy Patcher guide: updating](https://dortania.github.io/OpenCore-Legacy-Patcher/UPDATE.html)
+- [OpenCore Legacy Patcher guide: post-installation and root patches](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+- [OpenCore Legacy Patcher guide: restoring a Time Machine backup](https://dortania.github.io/OpenCore-Legacy-Patcher/TIMEMACHINE.html)
+- [OpenCore Legacy Patcher guide: uninstalling](https://dortania.github.io/OpenCore-Legacy-Patcher/UNINSTALL.html)
+- [OpenCore Legacy Patcher guide: hardware issues](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html)
+- [OpenCore Legacy Patcher guide: explaining the patches](https://dortania.github.io/OpenCore-Legacy-Patcher/PATCHEXPLAIN.html)
+- [OpenCore Legacy Patcher guide: macOS Sequoia and T2 panics](https://dortania.github.io/OpenCore-Legacy-Patcher/SEQUOIA-DROP.html)
+- [Issue 1167, macOS Tahoe 26 and OpenCore Legacy Patcher Support (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1167)
+- [Issue 1183, macOS Golden Gate 27 and the Future of OpenCore Legacy Patcher (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183)
+- [Issue 108, Legacy Non-Metal GPUs and macOS Big Sur through Sequoia (GitHub)](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/108)
+- [OpenCore Legacy Patcher on OpenCollective: Closing off to new donations](https://opencollective.com/opencore-legacy-patcher/updates/closing-off-to-new-donations)
+- [Apple: macOS Tahoe 26 is compatible with these computers](https://support.apple.com/en-us/122867)
+- [Apple: macOS Sequoia is compatible with these computers](https://support.apple.com/en-us/120282)
+- [Apple: Mac computers with the Apple T2 Security Chip](https://support.apple.com/en-us/103265)
+- [Apple: security releases](https://support.apple.com/en-us/100100)
+- [Apple: macOS Golden Gate](https://www.apple.com/macos/)
+- [Apple Platform Deployment: WWDC26 app management updates](https://support.apple.com/en-gb/guide/deployment/depd567c9ffa/web)
+- [Apple: Back up your Mac with Time Machine](https://support.apple.com/en-us/104984)
+- [Apple: About System Integrity Protection on your Mac](https://support.apple.com/en-us/102149)
+- [Apple: Protect data on your Mac with FileVault](https://support.apple.com/guide/mac-help/protect-data-on-your-mac-with-filevault-mh11785/mac)
+- [MacRumors: macOS Golden Gate Marks the End of an Era](https://www.macrumors.com/2026/09/14/macos-golden-gate-marks-the-end-of-an-era-2/)
+- [The Eclectic Light Company: Apple has released macOS Golden Gate, and security updates to Tahoe 26.7, Sequoia 15.8](https://eclecticlight.co/2026/09/14/apple-has-released-macos-golden-gate-and-security-updates-to-tahoe-26-7-sequoia-15-8/)
+- [AppleInsider: OpenCore Legacy Patcher faces uncertainty with the end of Intel Mac support nearing](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing)
+- [Low End Mac: OCLP Tahoe and 2018 Mac mini, a no-go so far](https://lowendmac.com/2025/oclp-tahoe-and-2018-mac-mini-a-no-go-so-far/)
+- [Low End Mac: macOS 26.0 Tahoe](https://lowendmac.com/2025/macos-26-0-tahoe/)
+`,
+  },
+  {
     slug: "fortigate-homelab-license",
     title: "FortiGate Homelab License: What Works Without a Contract",
     date: "2026-10-05",
