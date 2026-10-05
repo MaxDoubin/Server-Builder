@@ -24,7 +24,17 @@ import { getTagPage } from "@/lib/tagPages";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import { formatPostDate } from "@/lib/formatDate";
 
-marked.setOptions({ gfm: true, breaks: true });
+/*
+  breaks: false, so a single newline inside a paragraph is a space, as it is
+  in standard Markdown. With breaks: true every newline became a <br>, and
+  127 posts written with paragraphs wrapped at about 78 characters rendered
+  a hard break in the middle of every few lines, which reads as broken text
+  at any width other than the one the source was wrapped for. Paragraphs are
+  separated by blank lines, and nothing in the archive relied on a single
+  newline as a deliberate break: rendering every post both ways differed
+  only in those <br>s. The prerenderer uses the same setting.
+*/
+marked.setOptions({ gfm: true, breaks: false });
 marked.use(scrollableTables);
 
 const SITE_URL = "https://maxdoubin.com";

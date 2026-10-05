@@ -130,7 +130,8 @@ const SITE_URL = "https://maxdoubin.com";
 const DIST = path.resolve("dist/public");
 const BATCH = 10; // blog posts per parallel batch
 
-const marked = new Marked({ gfm: true, breaks: true });
+// breaks: false matches the client renderer; see CinematicBlogPost.tsx.
+const marked = new Marked({ gfm: true, breaks: false });
 marked.use(scrollableTables);
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
