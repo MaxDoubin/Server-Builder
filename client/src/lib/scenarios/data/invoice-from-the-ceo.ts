@@ -25,8 +25,8 @@ export const invoiceFromTheCeo: Scenario = {
   ],
   start: "inbox",
   reading: [
-    { label: "Centralised logging, for when you need to find who else got it", href: "/blog/syslog-centralized-logging" },
-    { label: "SPF, DKIM and DMARC, and what each one actually proves", href: "/blog/spf-dkim-dmarc-email-auth" },
+    { label: "Centralized logging, for when you need to find who else got it", href: "/blog/syslog-centralized-logging" },
+    { label: "SPF, DKIM and DMARC, and what each one actually proves", href: "/blog/spf-dkim-dmarc" },
   ],
   scenes: [
     {

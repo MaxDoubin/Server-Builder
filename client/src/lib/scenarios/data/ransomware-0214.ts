@@ -26,7 +26,7 @@ export const ransomware0214: Scenario = {
   start: "wake",
   reading: [
     { label: "The 3-2-1 rule, and the copy that has to be offline", href: "/blog/backup-strategy-321-rule" },
-    { label: "Incident response, as a method rather than a panic", href: "/blog/incident-response-methodology" },
+    { label: "Writing the postmortem afterward", href: "/blog/postmortems-team-of-one" },
     { label: "Segmentation with VLANs", href: "/blog/vlan-segmentation-guide" },
     { label: "Log analysis when you do not know what you are looking for", href: "/blog/log-analysis-methodology" },
   ],

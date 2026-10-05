@@ -16005,7 +16005,7 @@ The rule I use: merge when a variant is the only thing a deployment serves and l
 
 ## Treat adapters like build artifacts
 
-The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different [quantization](/blog/model-quantization-by-the-bytes) of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
+The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different [quantization](/blog/local-llm-memory-math) of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
 
 So every adapter I would consider deploying carries a manifest next to it:
 
@@ -19190,6 +19190,12 @@ questions, and dashboards happily plot them on the same axis.
     excerpt:
       "The slot is physically x16 but the card negotiated x4. That is not a fault, it is a lane budget doing exactly what it was configured to do.",
     coverImage: "/images/blog/pcie-lanes-explained.jpg",
+    coverCredit: {
+      author: "instaSHINOBI",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/21050065@N06/6114962032",
+    },
     content: `
 ## Lanes Are a Budget, Not a Feature
 
@@ -22223,6 +22229,12 @@ loud one.
     excerpt:
       "A tokenizer is a compression scheme, not a dictionary. Once you understand what it is actually doing, surprising token counts stop being surprising.",
     coverImage: "/images/blog/why-token-counts-surprise-you.jpg",
+    coverCredit: {
+      author: "Elliot Moore",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/24318458@N00/366179545",
+    },
     content: `
 ## Tokens Are Not Words
 
@@ -22741,7 +22753,7 @@ training framework can execute the model. That portability is the point, and
 the cost is that the graph is a fixed lowering of what your framework did.
 
 **Single file quantized formats** such as GGUF exist to make a model one
-self-contained artifact for a specific runtime. Weights, [quantization](/blog/model-quantization-by-the-bytes) scheme,
+self-contained artifact for a specific runtime. Weights, [quantization](/blog/local-llm-memory-math) scheme,
 tokenizer, and a key value metadata block travel together, which is exactly
 what you want when the deployment target is somebody's laptop and there is no
 package manager involved.
@@ -24722,6 +24734,12 @@ size.
     excerpt:
       "QUIC moved the transport into userspace and encrypted almost all of it. That is good for users and genuinely disruptive to how we monitor and troubleshoot networks.",
     coverImage: "/images/blog/quic-http3-for-operators.jpg",
+    coverCredit: {
+      author: "dvanzuijlekom",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/52365139@N05/9276064862",
+    },
     content: `
 ## What Moved, And Where It Moved To
 
@@ -28452,7 +28470,7 @@ does matter for training pipelines that stream data continuously.
 There are only a few honest options, and they all reduce to moving fewer bytes.
 
 Reduce precision. Half the bytes per weight is roughly half the read time per
-token. This is the single biggest lever available and it is why [quantization](/blog/model-quantization-by-the-bytes) is
+token. This is the single biggest lever available and it is why [quantization](/blog/local-llm-memory-math) is
 so central to local inference.
 
 Batch. Reading the weights once and using them for many sequences raises
@@ -30138,6 +30156,12 @@ If it speaks HTTP and I want observability, retries, and path routing, layer 7. 
     excerpt:
       "RFCs are the actual source of truth for how the internet works, and they are far more readable than their reputation suggests once you know the structure.",
     coverImage: "/images/blog/how-to-read-an-rfc.jpg",
+    coverCredit: {
+      author: "Jordanhill School D&T Dept",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/42042252@N02/5039920492",
+    },
     content: `
 ## Why go to the source
 
@@ -30684,6 +30708,12 @@ Do all four, in that order, on a loop.
     excerpt:
       "Parameter count is only the first term. Here is the arithmetic I run before I try to load a model on hardware I already have.",
     coverImage: "/images/blog/local-llm-memory-math.jpg",
+    coverCredit: {
+      author: "Diego3336",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/31018257@N00/24722340467",
+    },
     content: `
 ## The question everyone asks wrong
 

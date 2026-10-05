@@ -320,12 +320,12 @@ tracepath app.example.com`}</pre>
           <ReadAboutThis href="/mtu" />
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The written version of this, with the capture that finally showed it, is at{" "}
+            The written version of this is at{" "}
             <Link
-              href="/blog/mtu-mismatch-troubleshooting"
+              href="/blog/mtu-and-jumbo-frames"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              the MTU bug that only breaks big transfers
+              MTU black holes and jumbo frames
             </Link>
             . The rest of the practice material is at the{" "}
             <Link

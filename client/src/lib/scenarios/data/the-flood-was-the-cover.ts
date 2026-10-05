@@ -16,8 +16,8 @@ export const theFloodWasTheCover: Scenario = {
   start: "the-bridge",
   reading: [
     { label: "Firewall log analysis", href: "/blog/firewall-log-analysis" },
-    { label: "Incident response as a method", href: "/blog/incident-response-methodology" },
-    { label: "Centralised logging", href: "/blog/syslog-centralized-logging" },
+    { label: "Writing the postmortem afterward", href: "/blog/postmortems-team-of-one" },
+    { label: "Centralized logging", href: "/blog/syslog-centralized-logging" },
   ],
   scenes: [
     {

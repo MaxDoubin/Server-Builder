@@ -15,9 +15,9 @@ export const fourHundredAndThreeDays: Scenario = {
   ],
   start: "the-call",
   reading: [
-    { label: "Incident response as a method", href: "/blog/incident-response-methodology" },
+    { label: "Writing the postmortem afterward", href: "/blog/postmortems-team-of-one" },
     { label: "Log analysis when you do not know what you are looking for", href: "/blog/log-analysis-methodology" },
-    { label: "Centralised logging", href: "/blog/syslog-centralized-logging" },
+    { label: "Centralized logging", href: "/blog/syslog-centralized-logging" },
   ],
   scenes: [
     {
