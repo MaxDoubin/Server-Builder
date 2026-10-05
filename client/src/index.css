@@ -560,37 +560,6 @@
 }
 
 /*
-  A photograph in the body of a post, with its credit.
-
-  Every photograph in a post is someone else's work under a license that
-  requires credit, CC BY or CC BY-SA, so it is written as a figure whose
-  caption names the author and links the license and the source page. The
-  credit is part of the figure rather than a line of prose near it, so it
-  cannot be edited away from the picture it belongs to.
-
-  The img carries its own width and height attributes, so the browser
-  reserves the box before the file arrives and the text below does not jump.
-  `height: auto` here is what lets that box scale with the column while
-  keeping the ratio those attributes describe.
-*/
-.cinematic .cinematic-prose figure {
-  margin: 2em 0;
-}
-
-.cinematic .cinematic-prose figure img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.cinematic .cinematic-prose figcaption {
-  margin-top: 0.7em;
-  color: hsl(var(--brand-ash));
-  font-size: 0.875rem;
-  line-height: 1.55;
-}
-
-/*
   A table's own scroller, from the markdownTables extension.
 
   The table keeps `width: 100%` so it fills the column when it fits, and
