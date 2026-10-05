@@ -1,0 +1,5743 @@
+{
+"the-memory-you-freed-and-still-hold": {
+"title": "The Memory You Freed And Still Hold",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"programming",
+"performance",
+"troubleshooting"
+],
+"words": 1628,
+"photo": false,
+"cover": "/images/blog/the-memory-you-freed-and-still-hold.jpg",
+"refs": 0,
+"inline": 6,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"even-is-not-stable": {
+"title": "Even Is Not Stable",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"networking",
+"operations",
+"performance"
+],
+"words": 1156,
+"photo": false,
+"cover": "/images/blog/even-is-not-stable.jpg",
+"refs": 0,
+"inline": 5,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"three-alignments-and-one-errno": {
+"title": "Three Alignments And One Errno",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"programming",
+"storage",
+"troubleshooting"
+],
+"words": 1128,
+"photo": false,
+"cover": "/images/blog/three-alignments-and-one-errno.jpg",
+"refs": 0,
+"inline": 5,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-cache-you-cannot-drop": {
+"title": "The Cache You Cannot Drop",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"performance"
+],
+"words": 1192,
+"photo": false,
+"cover": "/images/blog/the-cache-you-cannot-drop.jpg",
+"refs": 0,
+"inline": 5,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"one-descriptor-too-many": {
+"title": "One Descriptor Too Many",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"programming",
+"troubleshooting",
+"operations"
+],
+"words": 1542,
+"photo": false,
+"cover": "/images/blog/one-descriptor-too-many.jpg",
+"refs": 0,
+"inline": 5,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"three-boundaries-and-two-signals": {
+"title": "Three Boundaries And Two Signals",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"programming",
+"troubleshooting",
+"operations"
+],
+"words": 1420,
+"photo": false,
+"cover": "/images/blog/three-boundaries-and-two-signals.jpg",
+"refs": 0,
+"inline": 5,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-log-that-lost-three-quarters-of-itself": {
+"title": "The Log That Lost Three Quarters Of Itself",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"programming"
+],
+"words": 1014,
+"photo": false,
+"cover": "/images/blog/the-log-that-lost-three-quarters-of-itself.jpg",
+"refs": 0,
+"inline": 6,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-copy-filled-the-disk-the-original-never-touched": {
+"title": "The Copy Filled The Disk The Original Never Touched",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"storage"
+],
+"words": 1271,
+"photo": false,
+"cover": "/images/blog/the-copy-filled-the-disk-the-original-never-touched.jpg",
+"refs": 0,
+"inline": 7,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-sum-of-rss-is-not-an-amount-of-memory": {
+"title": "The Sum Of RSS Is Not An Amount Of Memory",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"performance"
+],
+"words": 1486,
+"photo": false,
+"cover": "/images/blog/the-sum-of-rss-is-not-an-amount-of-memory.jpg",
+"refs": 0,
+"inline": 6,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"a-ceiling-and-not-a-request": {
+"title": "A Ceiling And Not A Request",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"security",
+"operations",
+"programming"
+],
+"words": 910,
+"photo": false,
+"cover": "/images/blog/a-ceiling-and-not-a-request.jpg",
+"refs": 0,
+"inline": 6,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"one-byte-and-two-kinds-of-news": {
+"title": "One Byte And Two Kinds Of News",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"programming",
+"troubleshooting"
+],
+"words": 965,
+"photo": false,
+"cover": "/images/blog/one-byte-and-two-kinds-of-news.jpg",
+"refs": 0,
+"inline": 6,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"a-thousand-signals-and-one-handler-call": {
+"title": "A Thousand Signals And One Handler Call",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"programming",
+"troubleshooting"
+],
+"words": 1103,
+"photo": false,
+"cover": "/images/blog/a-thousand-signals-and-one-handler-call.jpg",
+"refs": 0,
+"inline": 6,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-lock-that-two-programs-both-held": {
+"title": "The Lock That Two Programs Both Held",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"programming"
+],
+"words": 1403,
+"photo": false,
+"cover": "/images/blog/the-lock-that-two-programs-both-held.jpg",
+"refs": 0,
+"inline": 5,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-client-that-the-server-never-saw": {
+"title": "The Client That The Server Never Saw",
+"date": "2026-09-20",
+"tags": [
+"networking",
+"linux",
+"operations",
+"troubleshooting"
+],
+"words": 1638,
+"photo": false,
+"cover": "/images/blog/the-client-that-the-server-never-saw.jpg",
+"refs": 0,
+"inline": 6,
+"code": 10,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"the-log-line-with-another-log-line-inside-it": {
+"title": "The Log Line With Another Log Line Inside It",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"observability"
+],
+"words": 1176,
+"photo": false,
+"cover": "/images/blog/the-log-line-with-another-log-line-inside-it.jpg",
+"refs": 0,
+"inline": 4,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"eloop-does-not-mean-there-is-a-loop": {
+"title": "ELOOP Does Not Mean There Is a Loop",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"storage"
+],
+"words": 1063,
+"photo": false,
+"cover": "/images/blog/eloop-does-not-mean-there-is-a-loop.jpg",
+"refs": 0,
+"inline": 5,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"argument-list-too-long-and-the-limit-is-not-arg-max": {
+"title": "Argument List Too Long, and the Limit Is Not ARG_MAX",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"tooling"
+],
+"words": 1063,
+"photo": false,
+"cover": "/images/blog/argument-list-too-long-and-the-limit-is-not-arg-max.jpg",
+"refs": 0,
+"inline": 4,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"eight-bytes-forty-four-milliseconds": {
+"title": "Eight Bytes, Forty Four Milliseconds",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"networking",
+"performance",
+"troubleshooting"
+],
+"words": 1318,
+"photo": false,
+"cover": "/images/blog/eight-bytes-forty-four-milliseconds.jpg",
+"refs": 0,
+"inline": 5,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-read-that-wrote-a-thousand-inodes": {
+"title": "The Read That Wrote a Thousand Inodes",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"performance",
+"storage"
+],
+"words": 1548,
+"photo": false,
+"cover": "/images/blog/the-read-that-wrote-a-thousand-inodes.jpg",
+"refs": 0,
+"inline": 6,
+"code": 11,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"no-space-left-on-device-with-nineteen-gigabytes-free": {
+"title": "No Space Left on Device, With Nineteen Gigabytes Free",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"tooling"
+],
+"words": 922,
+"photo": false,
+"cover": "/images/blog/no-space-left-on-device-with-nineteen-gigabytes-free.jpg",
+"refs": 0,
+"inline": 5,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit": {
+"title": "CommitLimit Is Half the Memory, and It Is Not a Memory Limit",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"performance"
+],
+"words": 1118,
+"photo": false,
+"cover": "/images/blog/commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit.jpg",
+"refs": 0,
+"inline": 4,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-time-wait-knob-everybody-turns-governs-a-different-state": {
+"title": "The TIME_WAIT Knob Everybody Turns Governs a Different State",
+"date": "2026-09-20",
+"tags": [
+"networking",
+"linux",
+"operations",
+"troubleshooting"
+],
+"words": 1374,
+"photo": false,
+"cover": "/images/blog/the-time-wait-knob-everybody-turns-governs-a-different-state.jpg",
+"refs": 0,
+"inline": 5,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not": {
+"title": "The Socket Buffer You Tuned Is Smaller Than the One You Did Not",
+"date": "2026-09-20",
+"tags": [
+"networking",
+"linux",
+"operations",
+"troubleshooting"
+],
+"words": 974,
+"photo": false,
+"cover": "/images/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not.jpg",
+"refs": 0,
+"inline": 4,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"too-many-open-files-and-which-of-the-four-limits-it-was": {
+"title": "Too Many Open Files, and Which of the Four Limits It Was",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"containers"
+],
+"words": 1195,
+"photo": false,
+"cover": "/images/blog/too-many-open-files-and-which-of-the-four-limits-it-was.jpg",
+"refs": 0,
+"inline": 5,
+"code": 10,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end": {
+"title": "The Page Cache Is a Buffer and You Tuned the Wrong End",
+"date": "2026-09-20",
+"tags": [
+"linux",
+"operations",
+"troubleshooting",
+"storage"
+],
+"words": 1423,
+"photo": false,
+"cover": "/images/blog/the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end.jpg",
+"refs": 0,
+"inline": 4,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-table-was-full-and-the-kernel-could-not-shrink-it": {
+"title": "The Table Was Full and the Kernel Could Not Shrink It",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"linux",
+"troubleshooting",
+"operations"
+],
+"words": 1173,
+"photo": false,
+"cover": "/images/blog/the-table-was-full-and-the-kernel-could-not-shrink-it.jpg",
+"refs": 0,
+"inline": 0,
+"code": 7,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"tcp-retries2-is-not-a-count": {
+"title": "tcp_retries2 Is Not a Count",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"linux",
+"troubleshooting",
+"operations"
+],
+"words": 1460,
+"photo": false,
+"cover": "/images/blog/tcp-retries2-is-not-a-count.jpg",
+"refs": 0,
+"inline": 0,
+"code": 7,
+"tables": 3,
+"internal": 0,
+"imgs": 0
+},
+"the-connection-refused-by-a-daemon-doing-nothing": {
+"title": "The Connection Refused by a Daemon Doing Nothing",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"networking",
+"security",
+"operations"
+],
+"words": 1655,
+"photo": false,
+"cover": "/images/blog/the-connection-refused-by-a-daemon-doing-nothing.jpg",
+"refs": 0,
+"inline": 0,
+"code": 6,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"bus-error-with-sixty-four-gigabytes-free": {
+"title": "Bus Error, With Sixty Four Gigabytes Free",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"containers",
+"troubleshooting",
+"operations"
+],
+"words": 1246,
+"photo": false,
+"cover": "/images/blog/bus-error-with-sixty-four-gigabytes-free.jpg",
+"refs": 7,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-arp-cache-holds-a-thousand-and-twenty-four": {
+"title": "The ARP Cache Holds A Thousand And Twenty Four",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"linux",
+"troubleshooting"
+],
+"words": 1361,
+"photo": false,
+"cover": "/images/blog/the-arp-cache-holds-a-thousand-and-twenty-four.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-service-that-crashed-faster-is-the-one-that-stopped": {
+"title": "The Service That Crashed Faster Is The One That Stopped",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"systemd",
+"operations",
+"troubleshooting"
+],
+"words": 1504,
+"photo": false,
+"cover": "/images/blog/the-service-that-crashed-faster-is-the-one-that-stopped.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"it-works-in-chrome": {
+"title": "It Works in Chrome",
+"date": "2026-09-19",
+"tags": [
+"security",
+"encryption",
+"troubleshooting"
+],
+"words": 1924,
+"photo": false,
+"cover": "/images/blog/it-works-in-chrome.jpg",
+"refs": 11,
+"inline": 0,
+"code": 11,
+"tables": 0,
+"internal": 4,
+"imgs": 0
+},
+"swappiness-is-not-a-percentage": {
+"title": "Swappiness Is Not a Percentage",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"memory",
+"operations"
+],
+"words": 1902,
+"photo": false,
+"cover": "/images/blog/swappiness-is-not-a-percentage.jpg",
+"refs": 7,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"it-works-in-the-shell": {
+"title": "It Works in the Shell",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"operations",
+"automation"
+],
+"words": 1898,
+"photo": false,
+"cover": "/images/blog/it-works-in-the-shell.jpg",
+"refs": 9,
+"inline": 0,
+"code": 16,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"the-first-certificate-in-the-file": {
+"title": "The First Certificate in the File",
+"date": "2026-09-19",
+"tags": [
+"security",
+"servers",
+"operations"
+],
+"words": 1954,
+"photo": false,
+"cover": "/images/blog/the-first-certificate-in-the-file.jpg",
+"refs": 18,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"fifty-certificates-a-week": {
+"title": "Fifty Certificates a Week",
+"date": "2026-09-19",
+"tags": [
+"security",
+"operations",
+"automation"
+],
+"words": 1988,
+"photo": false,
+"cover": "/images/blog/fifty-certificates-a-week.jpg",
+"refs": 9,
+"inline": 0,
+"code": 4,
+"tables": 1,
+"internal": 2,
+"imgs": 0
+},
+"deleted-and-still-growing": {
+"title": "Deleted, and Still Growing",
+"date": "2026-09-19",
+"tags": [
+"linux",
+"operations",
+"storage"
+],
+"words": 1944,
+"photo": false,
+"cover": "/images/blog/deleted-and-still-growing.jpg",
+"refs": 11,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"the-first-probe-is-two-hours-late": {
+"title": "The First Probe Is Two Hours Late",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 1866,
+"photo": false,
+"cover": "/images/blog/the-first-probe-is-two-hours-late.jpg",
+"refs": 10,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"the-connection-opened-and-then-nothing-happened": {
+"title": "The Connection Opened And Then Nothing Happened",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"linux",
+"operations",
+"troubleshooting"
+],
+"words": 2000,
+"photo": false,
+"cover": "/images/blog/the-connection-opened-and-then-nothing-happened.jpg",
+"refs": 8,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 4,
+"imgs": 0
+},
+"forty-minutes-dark": {
+"title": "Forty Minutes Dark, And A Third Of The Office Fell Off",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"operations",
+"troubleshooting"
+],
+"words": 2162,
+"photo": false,
+"cover": "/images/blog/forty-minutes-dark.jpg",
+"refs": 7,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ten-queries-for-one-name": {
+"title": "Ten Queries for One Name",
+"date": "2026-09-19",
+"tags": [
+"networking",
+"dns",
+"operations"
+],
+"words": 1950,
+"photo": false,
+"cover": "/images/blog/ten-queries-for-one-name.jpg",
+"refs": 7,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"nothing-translates-the-reply": {
+"title": "Nothing Translates the Reply",
+"date": "2026-09-08",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 1749,
+"photo": false,
+"cover": "/images/blog/nothing-translates-the-reply.jpg",
+"refs": 5,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"minus-one-thousand-is-not-a-hint": {
+"title": "Minus One Thousand Is Not a Hint",
+"date": "2026-09-08",
+"tags": [
+"linux",
+"operations",
+"kernel"
+],
+"words": 1833,
+"photo": false,
+"cover": "/images/blog/minus-one-thousand-is-not-a-hint.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-alert-was-pending-all-day": {
+"title": "The Alert Was Pending All Day",
+"date": "2026-09-08",
+"tags": [
+"monitoring",
+"prometheus",
+"operations"
+],
+"words": 1800,
+"photo": false,
+"cover": "/images/blog/the-alert-was-pending-all-day.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"forty-and-nothing-was-running": {
+"title": "Forty, and Nothing Was Running",
+"date": "2026-09-09",
+"tags": [
+"linux",
+"operations",
+"monitoring"
+],
+"words": 1892,
+"photo": false,
+"cover": "/images/blog/forty-and-nothing-was-running.jpg",
+"refs": 5,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"stopped-not-slow": {
+"title": "Stopped, Not Slow",
+"date": "2026-09-09",
+"tags": [
+"linux",
+"containers",
+"operations"
+],
+"words": 1766,
+"photo": false,
+"cover": "/images/blog/stopped-not-slow.jpg",
+"refs": 4,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"it-ran-out-at-four-hundred-and-seventy": {
+"title": "It Ran Out at Four Hundred and Seventy",
+"date": "2026-09-09",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 1532,
+"photo": false,
+"cover": "/images/blog/it-ran-out-at-four-hundred-and-seventy.jpg",
+"refs": 4,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-file-was-right-and-nobody-read-it": {
+"title": "The File Was Right and Nobody Read It",
+"date": "2026-09-09",
+"tags": [
+"linux",
+"systemd",
+"operations"
+],
+"words": 1391,
+"photo": false,
+"cover": "/images/blog/the-file-was-right-and-nobody-read-it.jpg",
+"refs": 4,
+"inline": 0,
+"code": 8,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"the-free-column-was-always-going-to-be-zero": {
+"title": "The Free Column Was Always Going to Be Zero",
+"date": "2026-09-09",
+"tags": [
+"linux",
+"operations",
+"monitoring"
+],
+"words": 1431,
+"photo": false,
+"cover": "/images/blog/the-free-column-was-always-going-to-be-zero.jpg",
+"refs": 4,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"alignment-is-what-runs-out": {
+"title": "Alignment Is What Runs Out",
+"date": "2026-09-08",
+"tags": [
+"networking",
+"ipv4",
+"design"
+],
+"words": 1023,
+"photo": false,
+"cover": "/images/blog/alignment-is-what-runs-out.jpg",
+"refs": 4,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"four-faults-one-sentence": {
+"title": "Four Faults, One Sentence",
+"date": "2026-09-08",
+"tags": [
+"dns",
+"networking",
+"troubleshooting"
+],
+"words": 1147,
+"photo": false,
+"cover": "/images/blog/four-faults-one-sentence.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"first-match-wins": {
+"title": "First Match Wins",
+"date": "2026-09-08",
+"tags": [
+"networking",
+"security",
+"linux"
+],
+"words": 930,
+"photo": false,
+"cover": "/images/blog/first-match-wins.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-cache-was-never-told-what-a-user-is": {
+"title": "The Cache Was Never Told What a User Is",
+"date": "2026-09-08",
+"tags": [
+"security",
+"networking",
+"operations"
+],
+"words": 1777,
+"photo": false,
+"cover": "/images/blog/the-cache-was-never-told-what-a-user-is.jpg",
+"refs": 7,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-disk-was-not-full": {
+"title": "The Disk Was Not Full",
+"date": "2026-09-08",
+"tags": [
+"linux",
+"operations",
+"storage"
+],
+"words": 1804,
+"photo": false,
+"cover": "/images/blog/the-disk-was-not-full.jpg",
+"refs": 8,
+"inline": 0,
+"code": 10,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"the-clock-is-the-last-thing-anybody-checks": {
+"title": "The Clock Is the Last Thing Anybody Checks",
+"date": "2026-09-08",
+"tags": [
+"security",
+"operations",
+"networking"
+],
+"words": 1774,
+"photo": false,
+"cover": "/images/blog/the-clock-is-the-last-thing-anybody-checks.jpg",
+"refs": 7,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-request-arrived-the-reply-did-not": {
+"title": "The Request Arrived, the Reply Did Not",
+"date": "2026-09-08",
+"tags": [
+"networking",
+"security",
+"operations"
+],
+"words": 1150,
+"photo": false,
+"cover": "/images/blog/the-request-arrived-the-reply-did-not.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"the-broken-one-feels-faster": {
+"title": "The Broken One Feels Faster",
+"date": "2026-09-08",
+"tags": [
+"engineering",
+"operations",
+"networking"
+],
+"words": 1203,
+"photo": false,
+"cover": "/images/blog/the-broken-one-feels-faster.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"a-base-score-is-not-a-queue": {
+"title": "A Base Score Is Not a Queue",
+"date": "2026-09-08",
+"tags": [
+"security",
+"operations",
+"engineering"
+],
+"words": 1378,
+"photo": false,
+"cover": "/images/blog/a-base-score-is-not-a-queue.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"permissions-do-not-add-up": {
+"title": "Permissions Do Not Add Up",
+"date": "2026-09-08",
+"tags": [
+"linux",
+"security",
+"engineering"
+],
+"words": 1597,
+"photo": false,
+"cover": "/images/blog/permissions-do-not-add-up.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-authentication-passed-anyway": {
+"title": "The Authentication Passed Anyway",
+"date": "2026-09-08",
+"tags": [
+"security",
+"email",
+"training"
+],
+"words": 1288,
+"photo": false,
+"cover": "/images/blog/the-authentication-passed-anyway.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"sixty-five-files-nothing-imported": {
+"title": "Sixty-Five Files That Nothing Imported",
+"date": "2026-09-08",
+"tags": [
+"engineering",
+"tools",
+"operations"
+],
+"words": 1466,
+"photo": false,
+"cover": "/images/blog/sixty-five-files-nothing-imported.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"rarity-counted-from-the-graph": {
+"title": "How Rare Is That Ending? Count the Paths",
+"date": "2026-09-08",
+"tags": [
+"engineering",
+"tools"
+],
+"words": 1218,
+"photo": false,
+"cover": "/images/blog/rarity-counted-from-the-graph.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"a-shell-that-has-to-be-right": {
+"title": "A Shell That Has to Be Right",
+"date": "2026-09-08",
+"tags": [
+"engineering",
+"linux",
+"tools"
+],
+"words": 1238,
+"photo": false,
+"cover": "/images/blog/a-shell-that-has-to-be-right.jpg",
+"refs": 5,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"csp-blocked-its-own-models": {
+"title": "The Content Security Policy That Blocked Its Own 3D Models",
+"date": "2026-09-07",
+"tags": [
+"security",
+"engineering",
+"operations"
+],
+"words": 1277,
+"photo": false,
+"cover": "/images/blog/csp-blocked-its-own-models.jpg",
+"refs": 8,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"dollar-sign-string-replace": {
+"title": "A Dollar Sign Ate a Third of Five Articles",
+"date": "2026-09-07",
+"tags": [
+"engineering",
+"tools",
+"operations"
+],
+"words": 1170,
+"photo": false,
+"cover": "/images/blog/dollar-sign-string-replace.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"one-tab-no-way-out": {
+"title": "One Tab, and There Was No Way Out",
+"date": "2026-09-07",
+"tags": [
+"engineering",
+"tools",
+"operations"
+],
+"words": 1068,
+"photo": false,
+"cover": "/images/blog/one-tab-no-way-out.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"one-blue-two-jobs": {
+"title": "One Blue Cannot Be Both a Button and a Link",
+"date": "2026-09-06",
+"tags": [
+"engineering",
+"tools",
+"operations"
+],
+"words": 1141,
+"photo": false,
+"cover": "/images/blog/one-blue-two-jobs.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"rack-diagram-that-cannot-be-switched-on": {
+"title": "The Rack Diagram That Cannot Be Switched On",
+"date": "2026-09-06",
+"tags": [
+"servers",
+"hardware",
+"operations"
+],
+"words": 1375,
+"photo": false,
+"cover": "/images/blog/rack-diagram-that-cannot-be-switched-on.jpg",
+"refs": 2,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ci-gate-blamed-fourteen-innocents": {
+"title": "The CI Gate That Blamed Fourteen Innocent Devices",
+"date": "2026-09-06",
+"tags": [
+"operations",
+"tools",
+"servers"
+],
+"words": 1661,
+"photo": false,
+"cover": "/images/blog/ci-gate-blamed-fourteen-innocents.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"nist-password-rules-changed": {
+"title": "Fifteen Characters, And No Complexity Rules At All",
+"date": "2026-09-06",
+"tags": [
+"security",
+"cybersecurity",
+"operations"
+],
+"words": 1255,
+"photo": false,
+"cover": "/images/blog/nist-password-rules-changed.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"what-an-optic-tells-the-switch": {
+"title": "What An Optic Tells The Switch About Itself",
+"date": "2026-09-05",
+"tags": [
+"networking",
+"hardware",
+"operations",
+"homelab"
+],
+"words": 1381,
+"photo": false,
+"cover": "/images/blog/what-an-optic-tells-the-switch.jpg",
+"refs": 7,
+"inline": 0,
+"code": 5,
+"tables": 1,
+"internal": 2,
+"imgs": 0
+},
+"certificate-lifetimes-are-200-days-now": {
+"title": "Certificates Are 200 Days Now, And 47 By 2029",
+"date": "2026-09-06",
+"tags": [
+"security",
+"cybersecurity",
+"operations",
+"networking"
+],
+"words": 1302,
+"photo": false,
+"cover": "/images/blog/certificate-lifetimes-are-200-days-now.jpg",
+"refs": 7,
+"inline": 0,
+"code": 0,
+"tables": 2,
+"internal": 1,
+"imgs": 0
+},
+"post-quantum-tls-handshake-bytes": {
+"title": "What Post-Quantum Cost The TLS Handshake",
+"date": "2026-09-05",
+"tags": [
+"security",
+"networking",
+"cybersecurity"
+],
+"words": 1091,
+"photo": false,
+"cover": "/images/blog/post-quantum-tls-handshake-bytes.jpg",
+"refs": 7,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"service-worker-served-a-stale-document": {
+"title": "A Service Worker That Served Yesterday's Map Of The Site",
+"date": "2026-09-04",
+"tags": [
+"operations",
+"engineering",
+"homelab"
+],
+"words": 1603,
+"photo": false,
+"cover": "/images/blog/service-worker-served-a-stale-document.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"why-models-stall-at-eighty-three-percent": {
+"title": "Eighty Three Percent, Forever",
+"date": "2026-09-03",
+"tags": [
+"engineering",
+"operations",
+"hardware"
+],
+"words": 1402,
+"photo": false,
+"cover": "/images/blog/why-models-stall-at-eighty-three-percent.jpg",
+"refs": 7,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 1
+},
+"snmp-versus-streaming-telemetry": {
+"title": "SNMP Polling Versus Streaming Telemetry",
+"date": "2026-05-09",
+"tags": [
+"networking",
+"monitoring",
+"automation"
+],
+"words": 983,
+"photo": true,
+"cover": "/images/blog/snmp-versus-streaming-telemetry.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"netfilter-hook-order": {
+"title": "Netfilter Hooks And The Order Your Rules Really Run In",
+"date": "2026-06-23",
+"tags": [
+"linux",
+"networking",
+"security"
+],
+"words": 923,
+"photo": false,
+"cover": "/images/blog/netfilter-hook-order.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"oom-killer-and-swap-sizing": {
+"title": "Who Gets Killed When The Server Runs Out Of Memory",
+"date": "2026-07-03",
+"tags": [
+"linux",
+"servers",
+"operations"
+],
+"words": 946,
+"photo": false,
+"cover": "/images/blog/oom-killer-and-swap-sizing.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ebpf-observability-basics": {
+"title": "eBPF Is How I Ask The Kernel Questions",
+"date": "2026-07-04",
+"tags": [
+"linux",
+"monitoring",
+"tools"
+],
+"words": 849,
+"photo": false,
+"cover": "/images/blog/ebpf-observability-basics.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"raid-rebuild-risk-math": {
+"title": "The Arithmetic Of A RAID Rebuild",
+"date": "2026-07-05",
+"tags": [
+"storage",
+"hardware",
+"operations"
+],
+"words": 1033,
+"photo": false,
+"cover": "/images/blog/raid-rebuild-risk-math.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"gpu-driver-stack-linux": {
+"title": "The Layers Between Your Model And The Silicon",
+"date": "2026-07-06",
+"tags": [
+"ai",
+"linux",
+"operations"
+],
+"words": 926,
+"photo": false,
+"cover": "/images/blog/gpu-driver-stack-linux.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"buying-used-enterprise-gear": {
+"title": "How I Evaluate Used Enterprise Gear",
+"date": "2026-07-07",
+"tags": [
+"hardware",
+"homelab",
+"career"
+],
+"words": 992,
+"photo": false,
+"cover": "/images/blog/buying-used-enterprise-gear.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"lora-adapters-operations": {
+"title": "LoRA Adapters From The Operations Side",
+"date": "2026-07-08",
+"tags": [
+"ai",
+"ml",
+"operations"
+],
+"words": 993,
+"photo": false,
+"cover": "/images/blog/lora-adapters-operations.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"spf-dkim-dmarc": {
+"title": "SPF, DKIM, And DMARC Without The Mystery",
+"date": "2026-07-09",
+"tags": [
+"security",
+"networking",
+"operations"
+],
+"words": 923,
+"photo": true,
+"cover": "/images/blog/spf-dkim-dmarc.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"flash-caching-tiers": {
+"title": "Putting Flash In Front Of Spinning Disks",
+"date": "2026-07-10",
+"tags": [
+"storage",
+"linux",
+"hardware"
+],
+"words": 1048,
+"photo": true,
+"cover": "/images/blog/flash-caching-tiers.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"policy-based-routing-linux": {
+"title": "Routing By Policy, Not Just Destination",
+"date": "2026-07-11",
+"tags": [
+"networking",
+"routing",
+"linux"
+],
+"words": 1014,
+"photo": false,
+"cover": "/images/blog/policy-based-routing-linux.jpg",
+"refs": 5,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"inference-determinism": {
+"title": "Why The Same Prompt Gives Two Different Answers",
+"date": "2026-07-12",
+"tags": [
+"ai",
+"ml",
+"operations"
+],
+"words": 1007,
+"photo": true,
+"cover": "/images/blog/inference-determinism.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"postmortems-team-of-one": {
+"title": "Writing A Postmortem When You Are The Whole Team",
+"date": "2026-07-13",
+"tags": [
+"operations",
+"learning",
+"career"
+],
+"words": 1064,
+"photo": false,
+"cover": "/images/blog/postmortems-team-of-one.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 2,
+"internal": 0,
+"imgs": 0
+},
+"spf-dkim-dmarc-email-auth": {
+"title": "SPF, DKIM, and DMARC: Making Your Domain Hard to Forge",
+"date": "2026-07-14",
+"tags": [
+"security",
+"networking",
+"operations"
+],
+"words": 883,
+"photo": false,
+"cover": "/images/blog/spf-dkim-dmarc-email-auth.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"gpu-memory-fragmentation": {
+"title": "Why the GPU Says Out of Memory With Memory Free",
+"date": "2026-07-15",
+"tags": [
+"ai",
+"ml",
+"hardware"
+],
+"words": 854,
+"photo": false,
+"cover": "/images/blog/gpu-memory-fragmentation.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"database-connection-pooling": {
+"title": "Connection Pooling Is Not Just a Performance Trick",
+"date": "2026-07-16",
+"tags": [
+"operations",
+"servers",
+"tools"
+],
+"words": 836,
+"photo": false,
+"cover": "/images/blog/database-connection-pooling.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ssh-certificate-authority": {
+"title": "SSH Certificate Authorities Beat authorized_keys Sprawl",
+"date": "2026-07-17",
+"tags": [
+"security",
+"linux",
+"operations"
+],
+"words": 778,
+"photo": false,
+"cover": "/images/blog/ssh-certificate-authority.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"speculative-decoding-explained": {
+"title": "Speculative Decoding: Two Models, One Output Stream",
+"date": "2026-07-18",
+"tags": [
+"ai",
+"ml",
+"servers"
+],
+"words": 945,
+"photo": false,
+"cover": "/images/blog/speculative-decoding-explained.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"http-caching-headers-etags": {
+"title": "Cache-Control and ETags: Telling the Truth About Freshness",
+"date": "2026-07-19",
+"tags": [
+"networking",
+"operations",
+"tools"
+],
+"words": 907,
+"photo": true,
+"cover": "/images/blog/http-caching-headers-etags.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"luks-at-rest-encryption": {
+"title": "LUKS and What At-Rest Encryption Actually Protects",
+"date": "2026-07-20",
+"tags": [
+"security",
+"storage",
+"linux"
+],
+"words": 933,
+"photo": true,
+"cover": "/images/blog/luks-at-rest-encryption.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"gpu-sharing-time-slicing": {
+"title": "Sharing One Accelerator Between Several Workloads",
+"date": "2026-07-25",
+"tags": [
+"ai",
+"virtualization",
+"hardware"
+],
+"words": 908,
+"photo": false,
+"cover": "/images/blog/gpu-sharing-time-slicing.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"wal-point-in-time-recovery": {
+"title": "Write-Ahead Logs and Recovering to a Point in Time",
+"date": "2026-07-27",
+"tags": [
+"storage",
+"operations",
+"servers"
+],
+"words": 923,
+"photo": false,
+"cover": "/images/blog/wal-point-in-time-recovery.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"dataset-versioning-for-ml": {
+"title": "Versioning Datasets Like You Version Code",
+"date": "2026-07-30",
+"tags": [
+"ml",
+"ai",
+"operations"
+],
+"words": 825,
+"photo": true,
+"cover": "/images/blog/dataset-versioning-for-ml.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"read-replicas-replication-lag": {
+"title": "Read Replicas and the Lag You Have to Design Around",
+"date": "2026-08-14",
+"tags": [
+"operations",
+"servers",
+"monitoring"
+],
+"words": 907,
+"photo": false,
+"cover": "/images/blog/read-replicas-replication-lag.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"guardrail-classifier-layers": {
+"title": "Guardrails Are a Classifier Layer, Not a Prompt",
+"date": "2026-08-18",
+"tags": [
+"ai",
+"security",
+"operations"
+],
+"words": 1050,
+"photo": true,
+"cover": "/images/blog/guardrail-classifier-layers.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"blue-green-canary-deploys": {
+"title": "Blue-Green and Canary: Two Ways to Not Break Everything",
+"date": "2026-08-21",
+"tags": [
+"operations",
+"automation",
+"servers"
+],
+"words": 990,
+"photo": true,
+"cover": "/images/blog/blue-green-canary-deploys.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"slaac-vs-dhcpv6": {
+"title": "SLAAC, DHCPv6, And How A Host Really Gets Its Address",
+"date": "2026-04-10",
+"tags": [
+"networking",
+"homelab",
+"linux"
+],
+"words": 1012,
+"photo": false,
+"cover": "/images/blog/slaac-vs-dhcpv6.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"mtu-and-jumbo-frames": {
+"title": "MTU, Jumbo Frames, and the Path That Silently Drops Your Packets",
+"date": "2026-04-11",
+"tags": [
+"networking",
+"troubleshooting",
+"operations"
+],
+"words": 1067,
+"photo": true,
+"cover": "/images/blog/mtu-and-jumbo-frames.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 1,
+"imgs": 0
+},
+"pxe-network-boot-chain": {
+"title": "Network Boot From Power On To Installer",
+"date": "2026-04-12",
+"tags": [
+"servers",
+"networking",
+"automation",
+"homelab"
+],
+"words": 936,
+"photo": false,
+"cover": "/images/blog/pxe-network-boot-chain.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"linux-disk-io-troubleshooting": {
+"title": "Troubleshooting Disk I/O on Linux Without Guessing",
+"date": "2026-04-13",
+"tags": [
+"linux",
+"storage",
+"operations"
+],
+"words": 995,
+"photo": true,
+"cover": "/images/blog/linux-disk-io-troubleshooting.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"gpu-utilization-metrics": {
+"title": "GPU Utilization Is Not A Utilization Number",
+"date": "2026-04-14",
+"tags": [
+"ai",
+"hardware",
+"monitoring",
+"operations"
+],
+"words": 907,
+"photo": true,
+"cover": "/images/blog/gpu-utilization-metrics.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"pcie-lanes-explained": {
+"title": "PCIe Lanes, Bifurcation, and Why Your Card Is Running at x4",
+"date": "2026-04-15",
+"tags": [
+"hardware",
+"servers",
+"storage"
+],
+"words": 1024,
+"photo": false,
+"cover": "/images/blog/pcie-lanes-explained.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"rag-pipeline-engineering": {
+"title": "The Unglamorous Parts of Building a RAG Pipeline",
+"date": "2026-04-16",
+"tags": [
+"ai",
+"ml",
+"operations"
+],
+"words": 1089,
+"photo": true,
+"cover": "/images/blog/rag-pipeline-engineering.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"threat-modeling-homelab": {
+"title": "How I Threat Model My Own Lab",
+"date": "2026-04-17",
+"tags": [
+"security",
+"homelab",
+"cybersecurity"
+],
+"words": 1090,
+"photo": false,
+"cover": "/images/blog/threat-modeling-homelab.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"cgroups-resource-limits": {
+"title": "cgroups v2: Making One Server Behave Like Several",
+"date": "2026-04-18",
+"tags": [
+"linux",
+"virtualization",
+"operations"
+],
+"words": 970,
+"photo": true,
+"cover": "/images/blog/cgroups-resource-limits.jpg",
+"refs": 5,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"rate-limiting-algorithms": {
+"title": "Token Bucket, Leaky Bucket, And Where To Put The Limiter",
+"date": "2026-04-19",
+"tags": [
+"networking",
+"security",
+"operations"
+],
+"words": 954,
+"photo": false,
+"cover": "/images/blog/rate-limiting-algorithms.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"object-storage-fundamentals": {
+"title": "Object Storage Is Not a Weird Filesystem",
+"date": "2026-04-20",
+"tags": [
+"storage",
+"servers",
+"operations"
+],
+"words": 1173,
+"photo": false,
+"cover": "/images/blog/object-storage-fundamentals.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ml-network-anomaly-detection": {
+"title": "How I Would Evaluate ML for Network Anomaly Detection",
+"date": "2026-04-21",
+"tags": [
+"ai",
+"networking",
+"monitoring"
+],
+"words": 1214,
+"photo": true,
+"cover": "/images/blog/ml-network-anomaly-detection.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"tcp-congestion-control-basics": {
+"title": "TCP Congestion Control for People Who Run Networks",
+"date": "2026-04-22",
+"tags": [
+"networking",
+"linux",
+"troubleshooting"
+],
+"words": 1156,
+"photo": false,
+"cover": "/images/blog/tcp-congestion-control-basics.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"gpu-power-and-cooling": {
+"title": "Powering and Cooling Accelerators Is the Real Constraint",
+"date": "2026-04-23",
+"tags": [
+"hardware",
+"power",
+"ai"
+],
+"words": 1199,
+"photo": true,
+"cover": "/images/blog/gpu-power-and-cooling.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"certificate-rotation-automation": {
+"title": "Certificates Expire On A Saturday",
+"date": "2026-04-24",
+"tags": [
+"security",
+"automation",
+"operations"
+],
+"words": 945,
+"photo": true,
+"cover": "/images/blog/certificate-rotation-automation.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"mlops-for-infrastructure-people": {
+"title": "MLOps Is Just Operations With Worse Reproducibility",
+"date": "2026-04-25",
+"tags": [
+"ml",
+"operations",
+"automation"
+],
+"words": 1143,
+"photo": true,
+"cover": "/images/blog/mlops-for-infrastructure-people.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"queueing-theory-for-operators": {
+"title": "Why Latency Falls Off A Cliff At Eighty Percent",
+"date": "2026-04-26",
+"tags": [
+"operations",
+"monitoring",
+"servers"
+],
+"words": 935,
+"photo": true,
+"cover": "/images/blog/queueing-theory-for-operators.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"local-llm-inference-limits": {
+"title": "What Actually Limits Local LLM Inference",
+"date": "2026-04-27",
+"tags": [
+"ai",
+"hardware",
+"homelab"
+],
+"words": 912,
+"photo": false,
+"cover": "/images/blog/local-llm-inference-limits.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mtu-mismatch-troubleshooting": {
+"title": "The MTU Bug That Only Breaks Big Transfers",
+"date": "2026-04-28",
+"tags": [
+"networking",
+"operations",
+"linux"
+],
+"words": 950,
+"photo": false,
+"cover": "/images/blog/mtu-mismatch-troubleshooting.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"model-quantization-by-the-bytes": {
+"title": "Quantization, Explained By The Bytes",
+"date": "2026-04-29",
+"tags": [
+"ai",
+"ml",
+"hardware"
+],
+"words": 913,
+"photo": true,
+"cover": "/images/blog/model-quantization-by-the-bytes.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"wireguard-vs-ipsec-tunnels": {
+"title": "WireGuard Or IPsec: Picking A Tunnel",
+"date": "2026-04-30",
+"tags": [
+"networking",
+"security",
+"routing"
+],
+"words": 947,
+"photo": false,
+"cover": "/images/blog/wireguard-vs-ipsec-tunnels.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"vector-search-internals": {
+"title": "How Vector Search Actually Finds Things",
+"date": "2026-05-01",
+"tags": [
+"ai",
+"storage",
+"ml"
+],
+"words": 958,
+"photo": false,
+"cover": "/images/blog/vector-search-internals.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"numa-and-vm-performance": {
+"title": "NUMA Is Why Your Big VM Got Slower",
+"date": "2026-05-02",
+"tags": [
+"virtualization",
+"servers",
+"operations"
+],
+"words": 931,
+"photo": false,
+"cover": "/images/blog/numa-and-vm-performance.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"http2-http3-quic": {
+"title": "HTTP/2, HTTP/3, And Where Head Of Line Blocking Went",
+"date": "2026-05-03",
+"tags": [
+"networking",
+"security",
+"operations"
+],
+"words": 896,
+"photo": true,
+"cover": "/images/blog/http2-http3-quic.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"config-drift-and-idempotence": {
+"title": "Idempotence Is A Property You Have To Test For",
+"date": "2026-05-04",
+"tags": [
+"automation",
+"operations",
+"linux",
+"tools"
+],
+"words": 890,
+"photo": true,
+"cover": "/images/blog/config-drift-and-idempotence.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"filesystem-journal-explained": {
+"title": "What A Filesystem Journal Actually Protects",
+"date": "2026-05-05",
+"tags": [
+"storage",
+"linux",
+"servers"
+],
+"words": 980,
+"photo": false,
+"cover": "/images/blog/filesystem-journal-explained.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"tokenizers-and-context-budget": {
+"title": "Tokens Are Not Words, And Your Context Budget Knows It",
+"date": "2026-05-06",
+"tags": [
+"ai",
+"ml",
+"learning"
+],
+"words": 908,
+"photo": true,
+"cover": "/images/blog/tokenizers-and-context-budget.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"model-weights-are-artifacts": {
+"title": "Model Weights Are Artifacts, Not Magic",
+"date": "2026-05-07",
+"tags": [
+"ai",
+"storage",
+"security",
+"operations"
+],
+"words": 935,
+"photo": true,
+"cover": "/images/blog/model-weights-are-artifacts.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"why-token-counts-surprise-you": {
+"title": "Why Token Counts Never Match Your Word Count",
+"date": "2026-05-08",
+"tags": [
+"ai",
+"ml",
+"tools"
+],
+"words": 938,
+"photo": false,
+"cover": "/images/blog/why-token-counts-surprise-you.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"secrets-without-a-vault-team": {
+"title": "Secrets Management Without A Vault Team",
+"date": "2026-05-10",
+"tags": [
+"security",
+"operations",
+"tools"
+],
+"words": 974,
+"photo": false,
+"cover": "/images/blog/secrets-without-a-vault-team.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"power-and-heat-limit-gpus": {
+"title": "Power And Heat Are The Real Accelerator Limits",
+"date": "2026-05-11",
+"tags": [
+"hardware",
+"power",
+"ai"
+],
+"words": 961,
+"photo": false,
+"cover": "/images/blog/power-and-heat-limit-gpus.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"model-file-formats-and-safetensors": {
+"title": "What Is Actually Inside A Model File",
+"date": "2026-05-12",
+"tags": [
+"ai",
+"ml",
+"security",
+"storage"
+],
+"words": 988,
+"photo": false,
+"cover": "/images/blog/model-file-formats-and-safetensors.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"cgroups-resource-limits-debugging": {
+"title": "Cgroups Are Why The Container Stopped",
+"date": "2026-05-13",
+"tags": [
+"linux",
+"operations",
+"virtualization"
+],
+"words": 952,
+"photo": true,
+"cover": "/images/blog/cgroups-resource-limits-debugging.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"recursive-resolver-internals": {
+"title": "What A Recursive Resolver Actually Does",
+"date": "2026-06-17",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 1033,
+"photo": true,
+"cover": "/images/blog/recursive-resolver-internals.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"gpu-passthrough-proxmox": {
+"title": "GPU Passthrough on Proxmox Without the Guesswork",
+"date": "2026-06-18",
+"tags": [
+"virtualization",
+"linux",
+"homelab"
+],
+"words": 965,
+"photo": true,
+"cover": "/images/blog/gpu-passthrough-proxmox.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"inference-cost-per-request": {
+"title": "The Arithmetic Behind One Inference Request",
+"date": "2026-06-19",
+"tags": [
+"ai",
+"ml",
+"operations"
+],
+"words": 985,
+"photo": false,
+"cover": "/images/blog/inference-cost-per-request.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"nvme-over-fabrics-explained": {
+"title": "NVMe over Fabrics, Explained From the Queue Up",
+"date": "2026-06-20",
+"tags": [
+"storage",
+"networking",
+"servers"
+],
+"words": 897,
+"photo": false,
+"cover": "/images/blog/nvme-over-fabrics-explained.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"vector-database-indexes": {
+"title": "How Vector Indexes Actually Find Neighbors",
+"date": "2026-06-21",
+"tags": [
+"ai",
+"storage",
+"tools"
+],
+"words": 964,
+"photo": false,
+"cover": "/images/blog/vector-database-indexes.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"linux-network-namespaces": {
+"title": "Building a Network Lab Inside One Linux Box",
+"date": "2026-06-22",
+"tags": [
+"linux",
+"networking",
+"homelab"
+],
+"words": 983,
+"photo": false,
+"cover": "/images/blog/linux-network-namespaces.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"network-boot-chain-pxe": {
+"title": "The Network Boot Chain, One Hop At A Time",
+"date": "2026-06-24",
+"tags": [
+"servers",
+"networking",
+"automation",
+"homelab"
+],
+"words": 939,
+"photo": false,
+"cover": "/images/blog/network-boot-chain-pxe.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"constrained-decoding-structured-output": {
+"title": "Making A Model Return JSON You Can Parse",
+"date": "2026-06-25",
+"tags": [
+"ai",
+"ml",
+"tools"
+],
+"words": 973,
+"photo": false,
+"cover": "/images/blog/constrained-decoding-structured-output.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"zfs-arc-l2arc-tuning": {
+"title": "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
+"date": "2026-06-26",
+"tags": [
+"storage",
+"linux",
+"servers"
+],
+"words": 1027,
+"photo": false,
+"cover": "/images/blog/zfs-arc-l2arc-tuning.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"threat-modeling-small-networks": {
+"title": "Threat Modeling a Network You Actually Own",
+"date": "2026-06-27",
+"tags": [
+"security",
+"networking",
+"cybersecurity"
+],
+"words": 938,
+"photo": false,
+"cover": "/images/blog/threat-modeling-small-networks.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"idempotence-and-config-drift": {
+"title": "Idempotence Is The Whole Point Of Config Management",
+"date": "2026-06-28",
+"tags": [
+"automation",
+"operations",
+"linux"
+],
+"words": 968,
+"photo": true,
+"cover": "/images/blog/idempotence-and-config-drift.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ceph-distributed-storage-intro": {
+"title": "Ceph From First Principles: CRUSH, Placement Groups, Failure Domains",
+"date": "2026-06-29",
+"tags": [
+"storage",
+"servers",
+"homelab"
+],
+"words": 1126,
+"photo": false,
+"cover": "/images/blog/ceph-distributed-storage-intro.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"cli-tools-i-actually-use": {
+"title": "The Command Line Tools I Reach For First",
+"date": "2026-06-30",
+"tags": [
+"tools",
+"linux",
+"operations"
+],
+"words": 919,
+"photo": true,
+"cover": "/images/blog/cli-tools-i-actually-use.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"model-serving-observability": {
+"title": "Serving a Model Like It Is a Service",
+"date": "2026-07-01",
+"tags": [
+"ai",
+"operations",
+"monitoring"
+],
+"words": 1013,
+"photo": false,
+"cover": "/images/blog/model-serving-observability.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"embedding-changes-and-reindexing": {
+"title": "Change The Embedding Model, Rebuild The Index",
+"date": "2026-07-02",
+"tags": [
+"ai",
+"ml",
+"storage",
+"operations"
+],
+"words": 1004,
+"photo": true,
+"cover": "/images/blog/embedding-changes-and-reindexing.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"quic-http3-for-operators": {
+"title": "QUIC From The Operator's Chair",
+"date": "2026-07-21",
+"tags": [
+"networking",
+"operations",
+"security"
+],
+"words": 1088,
+"photo": false,
+"cover": "/images/blog/quic-http3-for-operators.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mtu-blackhole-troubleshooting": {
+"title": "The Failure Where Small Packets Work and Big Ones Vanish",
+"date": "2026-07-22",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 893,
+"photo": false,
+"cover": "/images/blog/mtu-blackhole-troubleshooting.jpg",
+"refs": 5,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"evaluating-without-a-benchmark": {
+"title": "Evaluating A Model When There Is No Benchmark",
+"date": "2026-07-23",
+"tags": [
+"ai",
+"ml",
+"learning"
+],
+"words": 1072,
+"photo": false,
+"cover": "/images/blog/evaluating-without-a-benchmark.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"write-amplification-ssd-endurance": {
+"title": "Write Amplification and Why SSDs Wear Out Early",
+"date": "2026-07-24",
+"tags": [
+"storage",
+"hardware",
+"servers"
+],
+"words": 842,
+"photo": true,
+"cover": "/images/blog/write-amplification-ssd-endurance.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"dns-negative-caching": {
+"title": "Negative Caching Is Why Your DNS Fix Did Not Take",
+"date": "2026-07-26",
+"tags": [
+"networking",
+"operations",
+"linux"
+],
+"words": 989,
+"photo": true,
+"cover": "/images/blog/dns-negative-caching.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"linux-network-tuning-without-cargo-cult": {
+"title": "Tuning the Linux Network Stack Without Cargo Culting",
+"date": "2026-07-28",
+"tags": [
+"linux",
+"networking",
+"operations"
+],
+"words": 949,
+"photo": true,
+"cover": "/images/blog/linux-network-tuning-without-cargo-cult.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"wifi-channel-planning": {
+"title": "Channel Planning Is Most Of Wireless Performance",
+"date": "2026-07-29",
+"tags": [
+"networking",
+"homelab",
+"hardware"
+],
+"words": 1045,
+"photo": false,
+"cover": "/images/blog/wifi-channel-planning.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"certifications-versus-projects": {
+"title": "Certifications Versus Projects: How I Split My Time",
+"date": "2026-07-31",
+"tags": [
+"career",
+"learning"
+],
+"words": 1087,
+"photo": false,
+"cover": "/images/blog/certifications-versus-projects.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"caching-model-endpoint": {
+"title": "Putting A Cache In Front Of A Model Endpoint",
+"date": "2026-08-01",
+"tags": [
+"ai",
+"operations",
+"tools"
+],
+"words": 985,
+"photo": true,
+"cover": "/images/blog/caching-model-endpoint.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"object-storage-on-premises": {
+"title": "Object Storage On Premises and What S3 Compatibility Buys You",
+"date": "2026-08-02",
+"tags": [
+"storage",
+"servers",
+"homelab"
+],
+"words": 897,
+"photo": false,
+"cover": "/images/blog/object-storage-on-premises.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"restore-drills-that-matter": {
+"title": "A Backup You Have Not Restored Is Just Hope",
+"date": "2026-08-03",
+"tags": [
+"operations",
+"storage",
+"homelab"
+],
+"words": 936,
+"photo": true,
+"cover": "/images/blog/restore-drills-that-matter.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"cpu-inference-simd": {
+"title": "What Makes CPU Inference Fast: SIMD, Threads, And Layout",
+"date": "2026-08-04",
+"tags": [
+"ai",
+"hardware",
+"linux"
+],
+"words": 1013,
+"photo": true,
+"cover": "/images/blog/cpu-inference-simd.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"terminal-workflow-many-machines": {
+"title": "My Terminal Workflow for Managing a Lot of Machines",
+"date": "2026-08-05",
+"tags": [
+"tools",
+"linux",
+"operations"
+],
+"words": 794,
+"photo": true,
+"cover": "/images/blog/terminal-workflow-many-machines.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"prompts-as-versioned-code": {
+"title": "Treating Prompts Like Code",
+"date": "2026-08-06",
+"tags": [
+"ai",
+"tools",
+"automation"
+],
+"words": 922,
+"photo": false,
+"cover": "/images/blog/prompts-as-versioned-code.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"pxe-network-boot": {
+"title": "PXE Boot, From DHCP Option To Running Kernel",
+"date": "2026-08-07",
+"tags": [
+"servers",
+"networking",
+"automation"
+],
+"words": 1083,
+"photo": false,
+"cover": "/images/blog/pxe-network-boot.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"numa-aware-server-tuning": {
+"title": "NUMA Is Why Your Server Is Slower Than Its Spec Sheet",
+"date": "2026-08-08",
+"tags": [
+"servers",
+"linux",
+"operations",
+"hardware"
+],
+"words": 934,
+"photo": true,
+"cover": "/images/blog/numa-aware-server-tuning.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"quantization-memory-math": {
+"title": "Quantization Math: Will The Model Fit The Card You Have",
+"date": "2026-08-09",
+"tags": [
+"ai",
+"ml",
+"hardware",
+"homelab"
+],
+"words": 978,
+"photo": true,
+"cover": "/images/blog/quantization-memory-math.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mtu-black-hole-troubleshooting": {
+"title": "The MTU Black Hole: When The Handshake Works And Nothing Else Does",
+"date": "2026-08-10",
+"tags": [
+"networking",
+"routing",
+"operations"
+],
+"words": 1030,
+"photo": false,
+"cover": "/images/blog/mtu-black-hole-troubleshooting.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"hnsw-index-real-costs": {
+"title": "What An HNSW Vector Index Actually Costs You",
+"date": "2026-08-11",
+"tags": [
+"ai",
+"ml",
+"storage",
+"servers"
+],
+"words": 901,
+"photo": true,
+"cover": "/images/blog/hnsw-index-real-costs.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"threat-modeling-services-you-run": {
+"title": "Threat Modeling The Services You Actually Run",
+"date": "2026-08-12",
+"tags": [
+"security",
+"cybersecurity",
+"homelab"
+],
+"words": 987,
+"photo": false,
+"cover": "/images/blog/threat-modeling-services-you-run.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"pcie-lanes-and-bifurcation": {
+"title": "PCIe Lanes And Bifurcation: The Slot Fits, The Card Is Slow",
+"date": "2026-08-13",
+"tags": [
+"hardware",
+"servers",
+"homelab"
+],
+"words": 922,
+"photo": true,
+"cover": "/images/blog/pcie-lanes-and-bifurcation.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"choosing-tcp-congestion-control": {
+"title": "CUBIC, BBR, And Choosing Congestion Control On Purpose",
+"date": "2026-08-15",
+"tags": [
+"networking",
+"linux",
+"operations"
+],
+"words": 941,
+"photo": false,
+"cover": "/images/blog/choosing-tcp-congestion-control.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"prompt-injection-trust-boundaries": {
+"title": "Prompt Injection Is A Trust Boundary Problem",
+"date": "2026-08-16",
+"tags": [
+"security",
+"ai",
+"cybersecurity"
+],
+"words": 1070,
+"photo": true,
+"cover": "/images/blog/prompt-injection-trust-boundaries.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"fsync-and-what-saved-means": {
+"title": "fsync, Write Barriers, And What Saved Really Means",
+"date": "2026-08-17",
+"tags": [
+"storage",
+"linux",
+"servers"
+],
+"words": 974,
+"photo": false,
+"cover": "/images/blog/fsync-and-what-saved-means.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"memory-bandwidth-is-the-spec": {
+"title": "Memory Bandwidth Is The Accelerator Spec That Matters",
+"date": "2026-08-19",
+"tags": [
+"hardware",
+"ai",
+"ml"
+],
+"words": 1013,
+"photo": false,
+"cover": "/images/blog/memory-bandwidth-is-the-spec.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"systemd-service-hardening": {
+"title": "Hardening A systemd Service In Twenty Lines",
+"date": "2026-08-20",
+"tags": [
+"linux",
+"security",
+"operations"
+],
+"words": 833,
+"photo": false,
+"cover": "/images/blog/systemd-service-hardening.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"sriov-and-device-passthrough": {
+"title": "SR-IOV And Passthrough: Giving A VM Real Hardware",
+"date": "2026-08-22",
+"tags": [
+"virtualization",
+"networking",
+"servers"
+],
+"words": 960,
+"photo": true,
+"cover": "/images/blog/sriov-and-device-passthrough.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"running-llms-locally-hardware": {
+"title": "What Running a Model Locally Asks of Your Hardware",
+"date": "2026-05-14",
+"tags": [
+"ai",
+"hardware",
+"homelab"
+],
+"words": 907,
+"photo": false,
+"cover": "/images/blog/running-llms-locally-hardware.jpg",
+"refs": 5,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"pcie-lanes-bandwidth-servers": {
+"title": "PCIe Lanes Are the Budget Nobody Checks",
+"date": "2026-05-15",
+"tags": [
+"hardware",
+"servers",
+"homelab"
+],
+"words": 826,
+"photo": true,
+"cover": "/images/blog/pcie-lanes-bandwidth-servers.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"gpu-memory-math-inference": {
+"title": "Doing the VRAM Math Before You Buy the Accelerator",
+"date": "2026-05-16",
+"tags": [
+"ai",
+"hardware",
+"ml"
+],
+"words": 810,
+"photo": false,
+"cover": "/images/blog/gpu-memory-math-inference.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"jumbo-frames-path-mtu": {
+"title": "Jumbo Frames, MTU, and the Ping That Tells the Truth",
+"date": "2026-05-17",
+"tags": [
+"networking",
+"storage",
+"operations"
+],
+"words": 825,
+"photo": true,
+"cover": "/images/blog/jumbo-frames-path-mtu.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"training-vs-inference-profiles": {
+"title": "Training and Inference Want Different Machines",
+"date": "2026-05-18",
+"tags": [
+"ai",
+"ml",
+"servers"
+],
+"words": 876,
+"photo": true,
+"cover": "/images/blog/training-vs-inference-profiles.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"threat-modeling-a-project": {
+"title": "Threat Modeling Without a Whiteboard Full of Buzzwords",
+"date": "2026-05-19",
+"tags": [
+"security",
+"cybersecurity",
+"learning"
+],
+"words": 835,
+"photo": false,
+"cover": "/images/blog/threat-modeling-a-project.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"vector-databases-infrastructure": {
+"title": "Vector Databases From the Operations Side",
+"date": "2026-05-20",
+"tags": [
+"ai",
+"storage",
+"ml"
+],
+"words": 876,
+"photo": false,
+"cover": "/images/blog/vector-databases-infrastructure.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"linux-page-cache-and-io": {
+"title": "The Page Cache Is Doing More Than You Think",
+"date": "2026-05-21",
+"tags": [
+"linux",
+"storage",
+"servers"
+],
+"words": 910,
+"photo": false,
+"cover": "/images/blog/linux-page-cache-and-io.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"rag-pipeline-plumbing": {
+"title": "RAG Is Mostly Plumbing",
+"date": "2026-05-22",
+"tags": [
+"ai",
+"ml",
+"tools"
+],
+"words": 844,
+"photo": true,
+"cover": "/images/blog/rag-pipeline-plumbing.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"systemd-units-that-behave": {
+"title": "Writing systemd Units That Behave",
+"date": "2026-05-23",
+"tags": [
+"linux",
+"operations",
+"automation"
+],
+"words": 861,
+"photo": false,
+"cover": "/images/blog/systemd-units-that-behave.jpg",
+"refs": 5,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"llm-application-attack-surface": {
+"title": "The Attack Surface of an LLM Application",
+"date": "2026-05-24",
+"tags": [
+"security",
+"ai",
+"cybersecurity"
+],
+"words": 939,
+"photo": false,
+"cover": "/images/blog/llm-application-attack-surface.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"load-balancing-l4-vs-l7": {
+"title": "Layer 4 and Layer 7 Load Balancing",
+"date": "2026-05-25",
+"tags": [
+"networking",
+"operations",
+"tools"
+],
+"words": 954,
+"photo": true,
+"cover": "/images/blog/load-balancing-l4-vs-l7.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"how-to-read-an-rfc": {
+"title": "How I Read an RFC",
+"date": "2026-05-26",
+"tags": [
+"learning",
+"networking",
+"tools"
+],
+"words": 945,
+"photo": false,
+"cover": "/images/blog/how-to-read-an-rfc.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"smart-data-drive-failure": {
+"title": "Reading SMART Data Before the Drive Reads You Its Last Rites",
+"date": "2026-05-27",
+"tags": [
+"storage",
+"monitoring",
+"hardware"
+],
+"words": 995,
+"photo": false,
+"cover": "/images/blog/smart-data-drive-failure.jpg",
+"refs": 4,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ai-in-network-operations": {
+"title": "Where I Think AI Actually Helps Network Operations",
+"date": "2026-05-28",
+"tags": [
+"ai",
+"networking",
+"operations",
+"monitoring"
+],
+"words": 1034,
+"photo": true,
+"cover": "/images/blog/ai-in-network-operations.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"live-migration-internals": {
+"title": "How Live Migration Actually Moves a Running VM",
+"date": "2026-05-29",
+"tags": [
+"virtualization",
+"servers",
+"operations"
+],
+"words": 1031,
+"photo": false,
+"cover": "/images/blog/live-migration-internals.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"certifications-vs-projects": {
+"title": "Certs, Projects, and What I Actually Learn From Each",
+"date": "2026-05-30",
+"tags": [
+"career",
+"learning",
+"cybersecurity"
+],
+"words": 1220,
+"photo": true,
+"cover": "/images/blog/certifications-vs-projects.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"local-llm-memory-math": {
+"title": "Local LLM Memory Math: Will This Model Actually Fit?",
+"date": "2026-05-31",
+"tags": [
+"ai",
+"ml",
+"hardware",
+"homelab"
+],
+"words": 888,
+"photo": false,
+"cover": "/images/blog/local-llm-memory-math.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"gpu-basics-for-infrastructure": {
+"title": "GPU Fundamentals For Infrastructure People",
+"date": "2026-06-01",
+"tags": [
+"ai",
+"hardware",
+"servers"
+],
+"words": 813,
+"photo": true,
+"cover": "/images/blog/gpu-basics-for-infrastructure.jpg",
+"refs": 5,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"numa-and-cpu-pinning": {
+"title": "NUMA, CPU Pinning, And Why Your VM Feels Slow",
+"date": "2026-06-02",
+"tags": [
+"virtualization",
+"servers",
+"hardware"
+],
+"words": 754,
+"photo": false,
+"cover": "/images/blog/numa-and-cpu-pinning.jpg",
+"refs": 5,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"inference-vs-training-workloads": {
+"title": "Inference And Training Are Not The Same Workload",
+"date": "2026-06-03",
+"tags": [
+"ai",
+"ml",
+"servers"
+],
+"words": 832,
+"photo": false,
+"cover": "/images/blog/inference-vs-training-workloads.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"mtu-jumbo-frames-pmtud": {
+"title": "MTU, Jumbo Frames, And The Black Hole In The Middle",
+"date": "2026-06-04",
+"tags": [
+"networking",
+"switching",
+"operations"
+],
+"words": 828,
+"photo": true,
+"cover": "/images/blog/mtu-jumbo-frames-pmtud.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"vector-databases-explained": {
+"title": "How Vector Databases Actually Work",
+"date": "2026-06-05",
+"tags": [
+"ai",
+"ml",
+"storage"
+],
+"words": 915,
+"photo": true,
+"cover": "/images/blog/vector-databases-explained.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"storage-benchmarking-fio": {
+"title": "Benchmarking Storage With fio Without Fooling Yourself",
+"date": "2026-06-06",
+"tags": [
+"storage",
+"linux",
+"operations"
+],
+"words": 752,
+"photo": true,
+"cover": "/images/blog/storage-benchmarking-fio.jpg",
+"refs": 3,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"rag-chunking-and-evaluation": {
+"title": "Chunking And Evaluation Decide Your RAG Quality",
+"date": "2026-06-07",
+"tags": [
+"ai",
+"ml",
+"tools"
+],
+"words": 864,
+"photo": false,
+"cover": "/images/blog/rag-chunking-and-evaluation.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"cgroups-v2-resource-limits": {
+"title": "Cgroups v2: Actually Limiting What A Service Can Take",
+"date": "2026-06-08",
+"tags": [
+"linux",
+"virtualization",
+"operations"
+],
+"words": 821,
+"photo": true,
+"cover": "/images/blog/cgroups-v2-resource-limits.jpg",
+"refs": 4,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"llm-app-attack-surface": {
+"title": "The Attack Surface Of An LLM Application",
+"date": "2026-06-09",
+"tags": [
+"security",
+"ai",
+"cybersecurity"
+],
+"words": 850,
+"photo": true,
+"cover": "/images/blog/llm-app-attack-surface.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"systemd-units-homelab": {
+"title": "Stop Running Services In A Terminal Multiplexer",
+"date": "2026-06-10",
+"tags": [
+"linux",
+"operations",
+"homelab"
+],
+"words": 760,
+"photo": false,
+"cover": "/images/blog/systemd-units-homelab.jpg",
+"refs": 5,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"serving-models-batching-kv-cache": {
+"title": "Serving A Model: Batching, KV Cache, And Concurrency",
+"date": "2026-06-11",
+"tags": [
+"ai",
+"servers",
+"operations"
+],
+"words": 822,
+"photo": true,
+"cover": "/images/blog/serving-models-batching-kv-cache.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"object-storage-on-prem": {
+"title": "Running S3 Compatible Object Storage On Your Own Hardware",
+"date": "2026-06-12",
+"tags": [
+"storage",
+"servers",
+"homelab"
+],
+"words": 907,
+"photo": false,
+"cover": "/images/blog/object-storage-on-prem.jpg",
+"refs": 4,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ai-in-security-operations": {
+"title": "How I Would Evaluate AI In Security Operations",
+"date": "2026-06-13",
+"tags": [
+"ai",
+"security",
+"monitoring"
+],
+"words": 987,
+"photo": true,
+"cover": "/images/blog/ai-in-security-operations.jpg",
+"refs": 4,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"internal-pki-private-ca": {
+"title": "Running An Internal CA Without Regretting It",
+"date": "2026-06-14",
+"tags": [
+"security",
+"tools",
+"operations"
+],
+"words": 964,
+"photo": true,
+"cover": "/images/blog/internal-pki-private-ca.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"reading-rfcs-practically": {
+"title": "How To Actually Read An RFC",
+"date": "2026-06-15",
+"tags": [
+"learning",
+"networking",
+"career"
+],
+"words": 871,
+"photo": true,
+"cover": "/images/blog/reading-rfcs-practically.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"threat-modeling-your-own-builds": {
+"title": "Threat Modeling Something You Built Yourself",
+"date": "2026-06-16",
+"tags": [
+"security",
+"homelab",
+"learning"
+],
+"words": 841,
+"photo": false,
+"cover": "/images/blog/threat-modeling-your-own-builds.jpg",
+"refs": 5,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"building-hyperscale": {
+"title": "Building Hyperscale: A 3D Datacenter Simulator",
+"date": "2026-02-20",
+"tags": [
+"three.js",
+"react",
+"simulation",
+"servers"
+],
+"words": 1800,
+"photo": true,
+"cover": "/images/blog/building-hyperscale.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"why-homelabs-matter": {
+"title": "Why Homelabs Matter for Learning Networking",
+"date": "2026-02-10",
+"tags": [
+"networking",
+"homelab",
+"servers"
+],
+"words": 1462,
+"photo": false,
+"cover": "/images/blog/why-homelabs-matter.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"ncl-competition-lessons": {
+"title": "Lessons from Competing in the National Cyber League",
+"date": "2026-01-28",
+"tags": [
+"cybersecurity",
+"competition",
+"networking"
+],
+"words": 1633,
+"photo": true,
+"cover": "/images/blog/ncl-competition-lessons.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mac-pro-rack-mount-homelab": {
+"title": "Running a Rack-Mount Mac Pro in a Homelab",
+"date": "2026-02-18",
+"tags": [
+"apple",
+"mac-pro",
+"servers",
+"homelab"
+],
+"words": 1511,
+"photo": false,
+"cover": "/images/blog/mac-pro-rack-mount-homelab.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"dell-poweredge-r740-deep-dive": {
+"title": "Dell PowerEdge R740: The Backbone of My Homelab",
+"date": "2026-02-15",
+"tags": [
+"dell",
+"servers",
+"homelab",
+"hardware"
+],
+"words": 1908,
+"photo": true,
+"cover": "/images/blog/dell-poweredge-r740-deep-dive.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"apple-silicon-server-future": {
+"title": "Could Apple Silicon Replace x86 in the Server Room?",
+"date": "2026-02-12",
+"tags": [
+"apple",
+"servers",
+"hardware",
+"mac-pro"
+],
+"words": 1583,
+"photo": true,
+"cover": "/images/blog/apple-silicon-server-future.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"zfs-on-enterprise-hardware": {
+"title": "Running ZFS on Dell Enterprise Hardware",
+"date": "2026-02-08",
+"tags": [
+"storage",
+"zfs",
+"servers",
+"homelab"
+],
+"words": 1963,
+"photo": true,
+"cover": "/images/blog/zfs-on-enterprise-hardware.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"10gbe-networking-homelab": {
+"title": "Upgrading to 10GbE Networking in a Homelab",
+"date": "2026-02-05",
+"tags": [
+"networking",
+"homelab",
+"hardware"
+],
+"words": 1690,
+"photo": true,
+"cover": "/images/blog/10gbe-networking-homelab.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"ipmi-remote-management": {
+"title": "IPMI and Out-of-Band Management Explained",
+"date": "2026-02-02",
+"tags": [
+"servers",
+"hardware",
+"networking"
+],
+"words": 1741,
+"photo": true,
+"cover": "/images/blog/ipmi-remote-management.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"server-rack-cable-management": {
+"title": "Cable Management in a Server Rack",
+"date": "2026-01-30",
+"tags": [
+"servers",
+"homelab",
+"hardware"
+],
+"words": 1981,
+"photo": true,
+"cover": "/images/blog/server-rack-cable-management.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"proxmox-vs-esxi": {
+"title": "Proxmox vs ESXi: Which Hypervisor for a Homelab",
+"date": "2026-01-25",
+"tags": [
+"virtualization",
+"servers",
+"homelab"
+],
+"words": 1899,
+"photo": true,
+"cover": "/images/blog/proxmox-vs-esxi.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ecc-ram-explained": {
+"title": "ECC RAM: What It Is and Why Servers Use It",
+"date": "2026-01-22",
+"tags": [
+"hardware",
+"servers",
+"storage"
+],
+"words": 1862,
+"photo": true,
+"cover": "/images/blog/ecc-ram-explained.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mac-pro-vs-poweredge-comparison": {
+"title": "Mac Pro vs Dell PowerEdge: An Honest Comparison",
+"date": "2026-01-20",
+"tags": [
+"apple",
+"mac-pro",
+"dell",
+"servers"
+],
+"words": 1581,
+"photo": true,
+"cover": "/images/blog/mac-pro-vs-poweredge-comparison.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 1,
+"internal": 1,
+"imgs": 0
+},
+"ups-sizing-homelab": {
+"title": "How to Size a UPS for a Home Server Rack",
+"date": "2026-01-18",
+"tags": [
+"hardware",
+"servers",
+"homelab",
+"power"
+],
+"words": 1469,
+"photo": true,
+"cover": "/images/blog/ups-sizing-homelab.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"vlan-segmentation-guide": {
+"title": "Network Segmentation with VLANs: A Practical Guide",
+"date": "2026-01-15",
+"tags": [
+"networking",
+"security",
+"homelab"
+],
+"words": 1689,
+"photo": true,
+"cover": "/images/blog/vlan-segmentation-guide.jpg",
+"refs": 6,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"fortigate-firewall-homelab": {
+"title": "Running a FortiGate Firewall in a Homelab",
+"date": "2026-01-12",
+"tags": [
+"networking",
+"security",
+"homelab",
+"fortinet"
+],
+"words": 1542,
+"photo": false,
+"cover": "/images/blog/fortigate-firewall-homelab.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"server-cpu-selection-guide": {
+"title": "Choosing the Right Server CPU: Xeon, EPYC, and Apple",
+"date": "2026-01-10",
+"tags": [
+"hardware",
+"servers",
+"apple"
+],
+"words": 1739,
+"photo": true,
+"cover": "/images/blog/server-cpu-selection-guide.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"hot-cold-aisle-containment": {
+"title": "Hot and Cold Aisle Containment: Why Airflow Matters",
+"date": "2026-01-08",
+"tags": [
+"servers",
+"datacenter",
+"hardware"
+],
+"words": 1692,
+"photo": true,
+"cover": "/images/blog/hot-cold-aisle-containment.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"pdu-selection-guide": {
+"title": "Choosing a PDU for Your Server Rack",
+"date": "2026-01-05",
+"tags": [
+"hardware",
+"servers",
+"power",
+"homelab"
+],
+"words": 1884,
+"photo": true,
+"cover": "/images/blog/pdu-selection-guide.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 1,
+"internal": 2,
+"imgs": 0
+},
+"wireshark-packet-analysis": {
+"title": "Practical Packet Analysis with Wireshark",
+"date": "2026-01-02",
+"tags": [
+"networking",
+"cybersecurity",
+"tools"
+],
+"words": 1743,
+"photo": false,
+"cover": "/images/blog/wireshark-packet-analysis.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"nmap-scanning-techniques": {
+"title": "Nmap Scanning Techniques for Network Discovery",
+"date": "2025-12-28",
+"tags": [
+"cybersecurity",
+"networking",
+"tools"
+],
+"words": 1883,
+"photo": true,
+"cover": "/images/blog/nmap-scanning-techniques.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"mac-pro-2019-teardown-analysis": {
+"title": "Inside the 2019 Mac Pro: Engineering Analysis",
+"date": "2025-12-25",
+"tags": [
+"apple",
+"mac-pro",
+"hardware"
+],
+"words": 1671,
+"photo": false,
+"cover": "/images/blog/mac-pro-2019-teardown-analysis.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"linux-server-hardening": {
+"title": "Linux Server Hardening: The Basics That Matter",
+"date": "2025-12-22",
+"tags": [
+"cybersecurity",
+"linux",
+"servers"
+],
+"words": 1672,
+"photo": true,
+"cover": "/images/blog/linux-server-hardening.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"active-directory-homelab": {
+"title": "Setting Up Active Directory in a Homelab",
+"date": "2025-12-18",
+"tags": [
+"servers",
+"networking",
+"windows"
+],
+"words": 1882,
+"photo": true,
+"cover": "/images/blog/active-directory-homelab.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"sfp-transceivers-explained": {
+"title": "SFP, SFP+, and QSFP: Transceivers Explained",
+"date": "2025-12-15",
+"tags": [
+"networking",
+"hardware"
+],
+"words": 1635,
+"photo": true,
+"cover": "/images/blog/sfp-transceivers-explained.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"backup-strategy-321-rule": {
+"title": "The 3-2-1 Backup Rule and How I Implement It",
+"date": "2025-12-12",
+"tags": [
+"storage",
+"servers",
+"homelab"
+],
+"words": 1845,
+"photo": true,
+"cover": "/images/blog/backup-strategy-321-rule.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"network-monitoring-tools": {
+"title": "Network Monitoring Tools I Actually Use",
+"date": "2025-12-08",
+"tags": [
+"networking",
+"tools",
+"homelab"
+],
+"words": 1588,
+"photo": false,
+"cover": "/images/blog/network-monitoring-tools.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"thunderbolt-networking": {
+"title": "Thunderbolt Networking: Apple's Approach to High-Speed Connectivity",
+"date": "2025-12-05",
+"tags": [
+"apple",
+"networking",
+"hardware"
+],
+"words": 1712,
+"photo": true,
+"cover": "/images/blog/thunderbolt-networking.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"cisco-switching-fundamentals": {
+"title": "Cisco Switching Fundamentals Every Network Engineer Needs",
+"date": "2025-12-01",
+"tags": [
+"networking",
+"cisco",
+"homelab"
+],
+"words": 1829,
+"photo": true,
+"cover": "/images/blog/cisco-switching-fundamentals.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"dell-idrac-tips-tricks": {
+"title": "Dell iDRAC Tips and Tricks for Power Users",
+"date": "2025-11-28",
+"tags": [
+"dell",
+"servers",
+"hardware"
+],
+"words": 1552,
+"photo": true,
+"cover": "/images/blog/dell-idrac-tips-tricks.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"mac-pro-storage-expansion": {
+"title": "Expanding Storage on the Mac Pro",
+"date": "2025-11-25",
+"tags": [
+"apple",
+"mac-pro",
+"storage",
+"hardware"
+],
+"words": 1684,
+"photo": true,
+"cover": "/images/blog/mac-pro-storage-expansion.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"subnetting-practical-guide": {
+"title": "Subnetting Made Practical: A Real-World Guide",
+"date": "2025-11-22",
+"tags": [
+"networking",
+"homelab"
+],
+"words": 1557,
+"photo": true,
+"cover": "/images/blog/subnetting-practical-guide.jpg",
+"refs": 6,
+"inline": 0,
+"code": 10,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"server-bios-configuration": {
+"title": "Server BIOS Settings That Actually Matter",
+"date": "2025-11-18",
+"tags": [
+"servers",
+"hardware",
+"performance"
+],
+"words": 1915,
+"photo": true,
+"cover": "/images/blog/server-bios-configuration.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"dns-fundamentals-infrastructure": {
+"title": "DNS: The Infrastructure Most People Ignore",
+"date": "2025-11-15",
+"tags": [
+"networking",
+"servers",
+"homelab"
+],
+"words": 1888,
+"photo": true,
+"cover": "/images/blog/dns-fundamentals-infrastructure.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"xserve-apple-server-legacy": {
+"title": "The Apple Xserve: A Look at Apple's Server Legacy",
+"date": "2025-11-12",
+"tags": [
+"apple",
+"servers",
+"hardware",
+"history"
+],
+"words": 1708,
+"photo": true,
+"cover": "/images/blog/xserve-apple-server-legacy.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"raid-levels-comparison": {
+"title": "RAID Levels Explained: When to Use Each One",
+"date": "2025-11-08",
+"tags": [
+"storage",
+"servers",
+"hardware"
+],
+"words": 2050,
+"photo": true,
+"cover": "/images/blog/raid-levels-comparison.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"python-network-automation": {
+"title": "Automating Network Tasks with Python",
+"date": "2025-11-05",
+"tags": [
+"networking",
+"automation",
+"tools"
+],
+"words": 1763,
+"photo": true,
+"cover": "/images/blog/python-network-automation.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"server-rack-planning": {
+"title": "Planning a Server Rack: Layout, Power, and Cooling",
+"date": "2025-11-01",
+"tags": [
+"servers",
+"hardware",
+"homelab"
+],
+"words": 1629,
+"photo": true,
+"cover": "/images/blog/server-rack-planning.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"stp-troubleshooting": {
+"title": "Troubleshooting Spanning Tree Protocol Issues",
+"date": "2025-10-28",
+"tags": [
+"networking",
+"cisco",
+"troubleshooting"
+],
+"words": 1706,
+"photo": true,
+"cover": "/images/blog/stp-troubleshooting.jpg",
+"refs": 6,
+"inline": 0,
+"code": 11,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"mac-pro-afterburner-card": {
+"title": "The Apple Afterburner Card: Hardware Video Acceleration",
+"date": "2025-10-25",
+"tags": [
+"apple",
+"mac-pro",
+"hardware"
+],
+"words": 1534,
+"photo": true,
+"cover": "/images/blog/mac-pro-afterburner-card.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"firewall-policy-design": {
+"title": "Designing Firewall Policies That Actually Work",
+"date": "2025-10-22",
+"tags": [
+"security",
+"networking",
+"fortinet"
+],
+"words": 1894,
+"photo": true,
+"cover": "/images/blog/firewall-policy-design.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 1,
+"internal": 1,
+"imgs": 0
+},
+"virtualization-networking-concepts": {
+"title": "Networking Inside Virtual Environments",
+"date": "2025-10-18",
+"tags": [
+"networking",
+"virtualization",
+"servers"
+],
+"words": 1684,
+"photo": false,
+"cover": "/images/blog/virtualization-networking-concepts.jpg",
+"refs": 6,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"log-analysis-methodology": {
+"title": "How I Approach Log Analysis for Troubleshooting",
+"date": "2025-10-15",
+"tags": [
+"cybersecurity",
+"tools",
+"servers"
+],
+"words": 1647,
+"photo": true,
+"cover": "/images/blog/log-analysis-methodology.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"apple-t2-security-chip": {
+"title": "Apple's T2 Security Chip in the Mac Pro",
+"date": "2025-10-12",
+"tags": [
+"apple",
+"mac-pro",
+"security",
+"hardware"
+],
+"words": 1684,
+"photo": true,
+"cover": "/images/blog/apple-t2-security-chip.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"network-documentation-best-practices": {
+"title": "Network Documentation That Actually Gets Used",
+"date": "2025-10-08",
+"tags": [
+"networking",
+"homelab",
+"tools"
+],
+"words": 1525,
+"photo": true,
+"cover": "/images/blog/network-documentation-best-practices.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"power-consumption-monitoring": {
+"title": "Monitoring and Reducing Server Power Consumption",
+"date": "2025-10-05",
+"tags": [
+"servers",
+"hardware",
+"homelab",
+"power"
+],
+"words": 1580,
+"photo": true,
+"cover": "/images/blog/power-consumption-monitoring.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"incident-response-methodology": {
+"title": "Incident Response: What to Do When Things Break",
+"date": "2025-10-01",
+"tags": [
+"cybersecurity",
+"networking",
+"servers"
+],
+"words": 1730,
+"photo": false,
+"cover": "/images/blog/incident-response-methodology.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"mac-pro-gpu-compute": {
+"title": "GPU Compute on the Mac Pro: Metal and Beyond",
+"date": "2025-09-28",
+"tags": [
+"apple",
+"mac-pro",
+"hardware"
+],
+"words": 1592,
+"photo": true,
+"cover": "/images/blog/mac-pro-gpu-compute.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ssl-tls-certificates-explained": {
+"title": "SSL/TLS Certificates: What They Are and How They Work",
+"date": "2025-09-25",
+"tags": [
+"security",
+"networking",
+"servers"
+],
+"words": 1755,
+"photo": true,
+"cover": "/images/blog/ssl-tls-certificates-explained.jpg",
+"refs": 6,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"apple-file-system-apfs": {
+"title": "APFS: Apple's Modern Filesystem and Its Server Implications",
+"date": "2025-09-22",
+"tags": [
+"apple",
+"storage",
+"mac-pro"
+],
+"words": 1814,
+"photo": true,
+"cover": "/images/blog/apple-file-system-apfs.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"homelab-network-evolution": {
+"title": "How My Home Network Evolved Over Three Years",
+"date": "2025-09-18",
+"tags": [
+"networking",
+"homelab",
+"hardware"
+],
+"words": 1869,
+"photo": false,
+"cover": "/images/blog/homelab-network-evolution.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"container-orchestration-basics": {
+"title": "Container Orchestration: Docker and LXC in a Homelab",
+"date": "2025-09-15",
+"tags": [
+"virtualization",
+"servers",
+"homelab"
+],
+"words": 1548,
+"photo": false,
+"cover": "/images/blog/container-orchestration-basics.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"bgp-for-network-engineers": {
+"title": "BGP for Network Engineers: A Practical Introduction",
+"date": "2026-02-21",
+"tags": [
+"networking",
+"bgp",
+"routing"
+],
+"words": 1817,
+"photo": true,
+"cover": "/images/blog/bgp-for-network-engineers.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"fortigate-cli-essentials": {
+"title": "FortiGate CLI: Commands You Will Use Every Day",
+"date": "2026-02-22",
+"tags": [
+"fortinet",
+"firewall",
+"networking"
+],
+"words": 1555,
+"photo": true,
+"cover": "/images/blog/fortigate-cli-essentials.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"kvm-proxmox-esxi-comparison": {
+"title": "KVM vs Proxmox vs ESXi: Choosing a Hypervisor",
+"date": "2026-02-23",
+"tags": [
+"virtualization",
+"servers",
+"homelab"
+],
+"words": 1678,
+"photo": true,
+"cover": "/images/blog/kvm-proxmox-esxi-comparison.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"nvme-vs-sata-enterprise-storage": {
+"title": "NVMe vs SATA in Enterprise Storage",
+"date": "2026-02-24",
+"tags": [
+"storage",
+"hardware",
+"servers"
+],
+"words": 1907,
+"photo": true,
+"cover": "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"network-monitoring-system-build": {
+"title": "Building a Network Monitoring System from Scratch",
+"date": "2026-02-25",
+"tags": [
+"networking",
+"monitoring",
+"homelab"
+],
+"words": 1760,
+"photo": true,
+"cover": "/images/blog/network-monitoring-system-build.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"redundant-power-supplies": {
+"title": "Redundant Power Supplies: How and Why They Work",
+"date": "2026-02-26",
+"tags": [
+"hardware",
+"servers",
+"homelab"
+],
+"words": 1624,
+"photo": true,
+"cover": "/images/blog/redundant-power-supplies.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"spanning-tree-protocol-deep-dive": {
+"title": "Spanning Tree Protocol: What It Does and Why It Breaks Things",
+"date": "2026-02-27",
+"tags": [
+"networking",
+"switching",
+"homelab"
+],
+"words": 1761,
+"photo": true,
+"cover": "/images/blog/spanning-tree-protocol-deep-dive.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"ssh-hardening-linux-servers": {
+"title": "SSH Hardening: Locking Down Remote Access",
+"date": "2026-02-28",
+"tags": [
+"linux",
+"security",
+"servers"
+],
+"words": 1470,
+"photo": false,
+"cover": "/images/blog/ssh-hardening-linux-servers.jpg",
+"refs": 6,
+"inline": 0,
+"code": 11,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ipv6-in-the-real-world": {
+"title": "IPv6 in the Real World: What Actually Changes",
+"date": "2026-03-01",
+"tags": [
+"networking",
+"ipv6"
+],
+"words": 1625,
+"photo": true,
+"cover": "/images/blog/ipv6-in-the-real-world.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"cisco-ios-fundamentals": {
+"title": "Cisco IOS Fundamentals Every Network Engineer Should Know",
+"date": "2026-03-02",
+"tags": [
+"cisco",
+"networking",
+"routing"
+],
+"words": 1724,
+"photo": true,
+"cover": "/images/blog/cisco-ios-fundamentals.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"storage-area-networks-explained": {
+"title": "Storage Area Networks Explained",
+"date": "2026-03-03",
+"tags": [
+"storage",
+"networking",
+"servers"
+],
+"words": 1745,
+"photo": true,
+"cover": "/images/blog/storage-area-networks-explained.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"proxmox-clustering-high-availability": {
+"title": "Proxmox Clustering and High Availability Setup",
+"date": "2026-03-04",
+"tags": [
+"proxmox",
+"virtualization",
+"homelab"
+],
+"words": 1616,
+"photo": true,
+"cover": "/images/blog/proxmox-clustering-high-availability.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"fortigate-sdwan-configuration": {
+"title": "FortiGate SD-WAN: Intelligent WAN Link Selection",
+"date": "2026-03-05",
+"tags": [
+"fortinet",
+"networking",
+"firewall"
+],
+"words": 1591,
+"photo": false,
+"cover": "/images/blog/fortigate-sdwan-configuration.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"network-security-zones-dmz": {
+"title": "Network Security Zones and DMZ Design",
+"date": "2026-03-06",
+"tags": [
+"security",
+"networking",
+"firewall"
+],
+"words": 1623,
+"photo": true,
+"cover": "/images/blog/network-security-zones-dmz.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"power-over-ethernet-poe": {
+"title": "Power over Ethernet: How PoE Works in Enterprise Networks",
+"date": "2026-03-07",
+"tags": [
+"networking",
+"hardware",
+"switching"
+],
+"words": 1650,
+"photo": true,
+"cover": "/images/blog/power-over-ethernet-poe.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"server-memory-architecture": {
+"title": "Server Memory Architecture: DIMM Slots, Channels, and ECC",
+"date": "2026-03-08",
+"tags": [
+"hardware",
+"servers",
+"memory"
+],
+"words": 1782,
+"photo": true,
+"cover": "/images/blog/server-memory-architecture.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"soc-home-lab-build": {
+"title": "Building a SOC Home Lab for Cybersecurity Practice",
+"date": "2026-03-09",
+"tags": [
+"cybersecurity",
+"homelab",
+"security"
+],
+"words": 1680,
+"photo": true,
+"cover": "/images/blog/soc-home-lab-build.jpg",
+"refs": 6,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"iscsi-storage-protocol": {
+"title": "iSCSI Storage: How to Configure and Use It",
+"date": "2026-03-10",
+"tags": [
+"storage",
+"networking",
+"servers"
+],
+"words": 1785,
+"photo": true,
+"cover": "/images/blog/iscsi-storage-protocol.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"dns-security-dnssec": {
+"title": "DNS Security: DNSSEC, DoH, and Protecting Name Resolution",
+"date": "2026-03-11",
+"tags": [
+"security",
+"networking",
+"dns"
+],
+"words": 1809,
+"photo": true,
+"cover": "/images/blog/dns-security-dnssec.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"high-availability-clustering": {
+"title": "High Availability Clustering with Pacemaker and Corosync",
+"date": "2026-03-12",
+"tags": [
+"linux",
+"servers",
+"high-availability"
+],
+"words": 1556,
+"photo": true,
+"cover": "/images/blog/high-availability-clustering.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"network-access-control-8021x": {
+"title": "Network Access Control with 802.1X",
+"date": "2026-03-13",
+"tags": [
+"networking",
+"security",
+"switching"
+],
+"words": 1629,
+"photo": true,
+"cover": "/images/blog/network-access-control-8021x.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"vxlan-network-virtualization": {
+"title": "VXLAN and Network Virtualization Explained",
+"date": "2026-03-14",
+"tags": [
+"networking",
+"virtualization",
+"datacenter"
+],
+"words": 1697,
+"photo": true,
+"cover": "/images/blog/vxlan-network-virtualization.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"troubleshooting-packet-captures": {
+"title": "Troubleshooting Network Issues with Packet Captures",
+"date": "2026-03-15",
+"tags": [
+"networking",
+"troubleshooting",
+"wireshark"
+],
+"words": 1696,
+"photo": true,
+"cover": "/images/blog/troubleshooting-packet-captures.jpg",
+"refs": 6,
+"inline": 0,
+"code": 9,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"runbooks-infrastructure-teams": {
+"title": "Writing Runbooks That Actually Get Used",
+"date": "2026-03-16",
+"tags": [
+"operations",
+"documentation",
+"servers"
+],
+"words": 1454,
+"photo": true,
+"cover": "/images/blog/runbooks-infrastructure-teams.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"ospf-routing-protocol": {
+"title": "OSPF: The Interior Routing Protocol That Powers Enterprise Networks",
+"date": "2026-03-17",
+"tags": [
+"networking",
+"routing",
+"ospf"
+],
+"words": 1677,
+"photo": true,
+"cover": "/images/blog/ospf-routing-protocol.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"idrac-advanced-features": {
+"title": "Dell iDRAC Advanced Features You Should Be Using",
+"date": "2026-03-18",
+"tags": [
+"dell",
+"servers",
+"hardware"
+],
+"words": 1611,
+"photo": false,
+"cover": "/images/blog/idrac-advanced-features.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"syslog-centralized-logging": {
+"title": "Centralized Logging with Syslog: A Practical Guide",
+"date": "2026-03-19",
+"tags": [
+"operations",
+"monitoring",
+"servers"
+],
+"words": 1434,
+"photo": true,
+"cover": "/images/blog/syslog-centralized-logging.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"container-networking-fundamentals": {
+"title": "Container Networking Fundamentals: How Pods and Containers Communicate",
+"date": "2026-03-20",
+"tags": [
+"networking",
+"containers",
+"kubernetes"
+],
+"words": 1551,
+"photo": true,
+"cover": "/images/blog/container-networking-fundamentals.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 2,
+"imgs": 0
+},
+"ssh-key-based-authentication": {
+"title": "SSH Key-Based Authentication: Setup and Best Practices",
+"date": "2026-03-21",
+"tags": [
+"linux",
+"security",
+"servers"
+],
+"words": 1575,
+"photo": false,
+"cover": "/images/blog/ssh-key-based-authentication.jpg",
+"refs": 6,
+"inline": 0,
+"code": 12,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"nfs-vs-smb-network-storage": {
+"title": "NFS vs SMB: Choosing the Right Network Filesystem",
+"date": "2026-03-22",
+"tags": [
+"storage",
+"networking",
+"servers"
+],
+"words": 1806,
+"photo": true,
+"cover": "/images/blog/nfs-vs-smb-network-storage.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"ntp-enterprise-networks": {
+"title": "NTP: Why Time Synchronization Matters in Enterprise Networks",
+"date": "2026-03-23",
+"tags": [
+"networking",
+"servers",
+"operations"
+],
+"words": 1610,
+"photo": true,
+"cover": "/images/blog/ntp-enterprise-networks.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"nginx-reverse-proxy-setup": {
+"title": "Setting Up Nginx as a Reverse Proxy for Lab Services",
+"date": "2026-03-24",
+"tags": [
+"linux",
+"networking",
+"servers"
+],
+"words": 1499,
+"photo": true,
+"cover": "/images/blog/nginx-reverse-proxy-setup.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"lacp-link-aggregation": {
+"title": "LACP and Link Aggregation: Combining Links for More Bandwidth",
+"date": "2026-03-25",
+"tags": [
+"networking",
+"switching",
+"hardware"
+],
+"words": 1582,
+"photo": true,
+"cover": "/images/blog/lacp-link-aggregation.jpg",
+"refs": 6,
+"inline": 0,
+"code": 2,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"enterprise-wifi-vs-consumer": {
+"title": "Enterprise WiFi vs Consumer Grade: What Actually Differs",
+"date": "2026-03-26",
+"tags": [
+"networking",
+"wireless",
+"hardware"
+],
+"words": 1818,
+"photo": true,
+"cover": "/images/blog/enterprise-wifi-vs-consumer.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"dhcp-snooping-arp-inspection": {
+"title": "DHCP Snooping and Dynamic ARP Inspection: Layer 2 Security",
+"date": "2026-03-27",
+"tags": [
+"networking",
+"security",
+"switching"
+],
+"words": 1460,
+"photo": true,
+"cover": "/images/blog/dhcp-snooping-arp-inspection.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"prometheus-server-monitoring": {
+"title": "Monitoring Infrastructure with Prometheus and Grafana",
+"date": "2026-03-28",
+"tags": [
+"monitoring",
+"servers",
+"operations"
+],
+"words": 1517,
+"photo": true,
+"cover": "/images/blog/prometheus-server-monitoring.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"bgp-route-filtering-security": {
+"title": "BGP Route Filtering and Security Best Practices",
+"date": "2026-03-29",
+"tags": [
+"networking",
+"bgp",
+"security"
+],
+"words": 1504,
+"photo": true,
+"cover": "/images/blog/bgp-route-filtering-security.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"secure-network-design-principles": {
+"title": "Secure Network Design: Principles That Actually Matter",
+"date": "2026-03-30",
+"tags": [
+"security",
+"networking",
+"architecture"
+],
+"words": 1580,
+"photo": true,
+"cover": "/images/blog/secure-network-design-principles.jpg",
+"refs": 6,
+"inline": 0,
+"code": 3,
+"tables": 0,
+"internal": 3,
+"imgs": 0
+},
+"scaling-homelab-lessons": {
+"title": "Scaling a Homelab: Lessons from Growing a Lab Environment",
+"date": "2026-03-31",
+"tags": [
+"homelab",
+"servers",
+"networking"
+],
+"words": 1586,
+"photo": true,
+"cover": "/images/blog/scaling-homelab-lessons.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 1,
+"internal": 2,
+"imgs": 0
+},
+"firewall-log-analysis": {
+"title": "Firewall Log Analysis: Finding What Matters",
+"date": "2026-04-01",
+"tags": [
+"security",
+"firewall",
+"operations"
+],
+"words": 1640,
+"photo": true,
+"cover": "/images/blog/firewall-log-analysis.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"qos-enterprise-networks": {
+"title": "Quality of Service in Enterprise Networks",
+"date": "2026-04-02",
+"tags": [
+"networking",
+"qos",
+"switching"
+],
+"words": 1730,
+"photo": true,
+"cover": "/images/blog/qos-enterprise-networks.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 1,
+"internal": 0,
+"imgs": 0
+},
+"ansible-network-automation": {
+"title": "Automating Network Configuration with Ansible",
+"date": "2026-04-03",
+"tags": [
+"networking",
+"automation",
+"operations"
+],
+"words": 1438,
+"photo": false,
+"cover": "/images/blog/ansible-network-automation.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"network-engineer-role-2026": {
+"title": "The Network Engineer Role in 2026: What Has Changed",
+"date": "2026-04-04",
+"tags": [
+"networking",
+"career",
+"technology"
+],
+"words": 1332,
+"photo": true,
+"cover": "/images/blog/network-engineer-role-2026.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 4,
+"imgs": 0
+},
+"penetration-testing-basics": {
+"title": "Penetration Testing Basics: A Defensive Perspective",
+"date": "2026-04-05",
+"tags": [
+"cybersecurity",
+"security",
+"networking"
+],
+"words": 1487,
+"photo": true,
+"cover": "/images/blog/penetration-testing-basics.jpg",
+"refs": 6,
+"inline": 0,
+"code": 1,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"tls-modern-encryption": {
+"title": "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
+"date": "2026-04-06",
+"tags": [
+"security",
+"encryption",
+"networking"
+],
+"words": 1607,
+"photo": true,
+"cover": "/images/blog/tls-modern-encryption.jpg",
+"refs": 6,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"server-consolidation-virtualization": {
+"title": "Server Consolidation with Virtualization: A Practical Guide",
+"date": "2026-04-07",
+"tags": [
+"virtualization",
+"servers",
+"operations"
+],
+"words": 1654,
+"photo": true,
+"cover": "/images/blog/server-consolidation-virtualization.jpg",
+"refs": 6,
+"inline": 0,
+"code": 0,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"personal-brand-in-tech": {
+"title": "Building a Personal Brand in Tech: What Actually Works",
+"date": "2026-04-08",
+"tags": [
+"career",
+"community",
+"technology"
+],
+"words": 1468,
+"photo": true,
+"cover": "/images/blog/personal-brand-in-tech.jpg",
+"refs": 6,
+"inline": 0,
+"code": 5,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"teaching-youth-to-code": {
+"title": "What I've Learned Teaching Youth to Code",
+"date": "2026-04-09",
+"tags": [
+"community",
+"education",
+"coding"
+],
+"words": 1596,
+"photo": true,
+"cover": "/images/blog/teaching-youth-to-code.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"encrypted-dns-and-internal-name-resolution": {
+"title": "Encrypted DNS And Internal Name Resolution",
+"date": "2026-08-23",
+"tags": [
+"networking",
+"security",
+"dns"
+],
+"words": 1260,
+"photo": false,
+"cover": "/images/blog/encrypted-dns-and-internal-name-resolution.jpg",
+"refs": 7,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"how-totp-codes-actually-work": {
+"title": "How TOTP Codes Actually Work",
+"date": "2026-08-24",
+"tags": [
+"security",
+"cybersecurity",
+"operations"
+],
+"words": 1341,
+"photo": false,
+"cover": "/images/blog/how-totp-codes-actually-work.jpg",
+"refs": 7,
+"inline": 0,
+"code": 6,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"init-scripts-to-systemd-units": {
+"title": "From Init Scripts To Unit Files",
+"date": "2026-08-25",
+"tags": [
+"linux",
+"operations",
+"servers"
+],
+"words": 1496,
+"photo": false,
+"cover": "/images/blog/init-scripts-to-systemd-units.jpg",
+"refs": 7,
+"inline": 0,
+"code": 12,
+"tables": 0,
+"internal": 1,
+"imgs": 0
+},
+"the-invoice-is-not-the-ceiling": {
+"title": "The Invoice Is Not the Ceiling",
+"date": "2026-09-08",
+"tags": [
+"networking",
+"performance",
+"tcp"
+],
+"words": 1643,
+"photo": false,
+"cover": "/images/blog/the-invoice-is-not-the-ceiling.jpg",
+"refs": 8,
+"inline": 0,
+"code": 8,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"the-check-that-tested-nothing": {
+"title": "The Check That Tested Nothing",
+"date": "2026-09-08",
+"tags": [
+"engineering",
+"testing",
+"operations"
+],
+"words": 1603,
+"photo": false,
+"cover": "/images/blog/the-check-that-tested-nothing.jpg",
+"refs": 4,
+"inline": 0,
+"code": 7,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+},
+"three-copies-one-credential": {
+"title": "Three Copies, One Credential",
+"date": "2026-09-08",
+"tags": [
+"operations",
+"security",
+"storage"
+],
+"words": 1561,
+"photo": false,
+"cover": "/images/blog/three-copies-one-credential.jpg",
+"refs": 6,
+"inline": 0,
+"code": 4,
+"tables": 0,
+"internal": 0,
+"imgs": 0
+}
+}

@@ -1,0 +1,588 @@
+{
+  "slug": "fortigate-homelab-license",
+  "title": "FortiGate Homelab License: What Works Without a Contract",
+  "excerpt": "What a used FortiGate still does with no FortiCare contract, why Fortinet refuses most secondhand transfers, and the exact limits of the free FortiGate-VM trial.",
+  "tags": [
+    "fortinet",
+    "homelab",
+    "firewall",
+    "virtualization"
+  ],
+  "query": "fortigate homelab license",
+  "gap": "open",
+  "serp": [
+    "Exploring Virtual Network Security: Setting up Secure Home Lab Setup with Fortigate FortiOS!",
+    "Fortigate VM - Home lab environment",
+    "Can i Use Fortigate Without License? - SPOTO Official Blog",
+    "FortiGate Home Lab on a Budget",
+    "fortigate 100 e",
+    "fortigate vm",
+    "0% found this document useful (0 votes)",
+    "www.ebay.com",
+    "fortigate cloud"
+  ],
+  "claims": [
+    {
+      "claim": "A FortiGate keeps working as a firewall when any or all FortiGuard licenses have expired.",
+      "quote": "The FortiGate will still function as a firewall if any or all of the FortiGuard licenses are expired.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "With an expired IPS license, IPS keeps scanning with the existing signatures but gets no new ones.",
+      "quote": "IPS scanning continues to work, but the IPS databases are not updated and no new signatures are added.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "With an expired antivirus license, antivirus keeps scanning with the last database.",
+      "quote": "Antivirus scanning continues to work, but the antivirus database is not updated and no new signatures are added.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Application control, Internet Service Database and device/OS identification keep working but frozen, and they come with all FortiCare support contracts.",
+      "quote": "are included in the base services that are included with all FortiCare support contracts",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Category-based web and DNS filtering stops when the license lapses, because lookups are real-time.",
+      "quote": "Category-based Web and DNS filtering stops working, as URLs and domains are sent to FortiGuard in real-time to determine the category.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "By default, all web and DNS traffic is dropped when web/DNS filtering cannot rate requests.",
+      "quote": "By default, all web and DNS traffic is dropped.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Static URL or domain filters keep working without a license.",
+      "quote": "If static URL or domain filtering is applied in a filter profile, those filters continue to work.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Antispam stops working without a license because it uses real-time queries.",
+      "quote": "Spam filtering stops working, as it queries the FortiGuard spam filtering server in real-time",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Outbreak prevention stops working without a license because it uses real-time lookups.",
+      "quote": "Outbreak prevention stops working, as it uses real-time lookups to the FortiGuard Global Threat Intelligence database.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "IPsec, QoS, VLANs and dynamic routing such as OSPF and BGP work out of the box without a subscription.",
+      "quote": "QOS, static and dynamic (OSPF, BGP, etc.) routing, VLANs, and such will work out of the box.",
+      "url": "https://yurisk.info/2022/12/19/fortigate-buy-used-most-frequently-asked-questions/"
+    },
+    {
+      "claim": "SD-WAN can be enabled on all FortiGate models at no additional cost.",
+      "quote": "No, SD-WAN can be enabled on all FortiGate models at no additional cost.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf"
+    },
+    {
+      "claim": "The 60F datasheet marks application control as included with FortiCare.",
+      "quote": "Application Control --------------included with FortiCare Subscription--------------",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "A FortiGate must be registered before it shows its FortiGuard licenses.",
+      "quote": "It is necessary to register the FortiGate before it can show the FortiGuard licenses.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-verifying-and-troubleshooting-fortiguard-updates-status-and-versions-96886"
+    },
+    {
+      "claim": "diagnose autoupdate versions prints a Contract Expiry Date and Last Updated line per package (example output used in the article).",
+      "quote": "Contract Expiry Date: Fri Jan 21 2022 Last Updated using scheduled update on Sun Apr 25 07:21:32 2021",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-verifying-and-troubleshooting-fortiguard-updates-status-and-versions-96886"
+    },
+    {
+      "claim": "Firmware downloads from FortiCloud require a registered product with an active support contract.",
+      "quote": "Firmware image downloads are available only for registered products with an active support contract.",
+      "url": "https://docs.fortinet.com/document/forticloud/26.1.0/forticare/878850/firmware-images"
+    },
+    {
+      "claim": "On FortiOS 7.4.2 and later, upgrade enforcement compares the firmware license expiry with the first GA release date of the target major or minor version.",
+      "quote": "enforcement is based on the expiry date of the current firmware license compared to the release date of the first GA release of a major or minor version.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "Upgrades by GUI file upload are blocked when the contract expired before the target's .0 GA release.",
+      "quote": "If the contract is expired relative to the major firmware GA .0 version release date, the following upgrade attempt will be blocked in the GUI",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "A blocked TFTP upgrade in Fortinet's example ends with return code -180.",
+      "quote": "Command fail. Return code -180",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "Downgrades between major or minor versions are not blocked.",
+      "quote": "Downgrades from one major or minor version to another are not blocked",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "diagnose test update info contract | grep FMWR shows the FMWR (firmware) contract expiry.",
+      "quote": "by using the diagnose test update info contract | grep FMWR command",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "A FortiGate with no FMWR license information, as on an EVAL license, cannot upgrade firmware.",
+      "quote": "In the special scenario where the FMWR license information is missing, the FortiGate will not be allowed to upgrade. This scenario may occur when running on an EVAL license",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "Since FortiOS 7.4.9 and 7.6.4, FortiGates with an invalid FMWR license must upgrade to the latest patch within their minor version.",
+      "quote": "Since FortiOS 7.4.9 and 7.6.4, FortiGates are required to upgrade to the latest patch within their current minor version when:",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/320693/required-firmware-upgrades-for-fortigates-with-invalid-support-contracts-or-that-have-reached-eoes"
+    },
+    {
+      "claim": "Required upgrades can be postponed in fixed 7-day steps but not canceled.",
+      "quote": "Use the execute auto-upgrade delay-installation command to postpone the installation for a fixed 7-day period.",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/320693/required-firmware-upgrades-for-fortigates-with-invalid-support-contracts-or-that-have-reached-eoes"
+    },
+    {
+      "claim": "The ForcedUpdate flag tells FortiGuard to skip the license check for same-minor upgrades.",
+      "quote": "The ForcedUpdate flag instructs FortiGuard server to ignore the license check for the device and parse its firmware version.",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/320693/required-firmware-upgrades-for-fortigates-with-invalid-support-contracts-or-that-have-reached-eoes"
+    },
+    {
+      "claim": "The 8.0 new features page gives 7.4.8 (not 7.4.9) as the starting version for required upgrades.",
+      "quote": "Since FortiOS 7.4.8 and 7.6.4, FortiGates are required to upgrade to the latest patch when:",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/new-features/153433/enhancements-to-required-upgrade-when-firmware-license-is-invalid-or-device-is-eoes"
+    },
+    {
+      "claim": "The 7.6.4 guide warned that required upgrades may fail because FDS blocks the download.",
+      "quote": "the required upgrade may fail where the firmware download is blocked by FDS",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/320693/required-firmware-upgrades-for-fortigate-appliances-with-invalid-support-contracts-or-that-have-reached-eoes"
+    },
+    {
+      "claim": "FG-IR-24-015 is an out-of-bounds write in sslvpnd with a CVSSv3 score of 9.6.",
+      "quote": "Out-of-bound Write in sslvpnd",
+      "url": "https://www.fortiguard.com/psirt/FG-IR-24-015"
+    },
+    {
+      "claim": "FG-IR-24-015 is fixed in FortiOS 7.4.3 and 7.2.7.",
+      "quote": "FortiOS 7.4.3 or above FortiOS 7.2.7 or above",
+      "url": "https://www.rapid7.com/blog/post/2024/02/12/etr-critical-fortinet-fortios-cve-2024-21762-exploited/"
+    },
+    {
+      "claim": "CISA added CVE-2024-21762 to its Known Exploited Vulnerabilities catalog (release date February 9, 2024).",
+      "quote": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities Catalog, based on evidence of active exploitation.",
+      "url": "https://www.cisa.gov/news-events/alerts/2024/02/09/cisa-adds-one-known-exploited-vulnerability-catalog"
+    },
+    {
+      "claim": "FortiOS 7.6.0 removed SSL VPN web and tunnel mode from models with 2 GB of RAM or less, without upgrading settings.",
+      "quote": "On FortiGate models with 2GB of RAM or below, the SSL VPN web and tunnel mode feature will no longer be available from the GUI or CLI.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/fortios-release-notes/877104/ssl-vpn-removed-from-2gb-ram-models-for-tunnel-and-web-mode"
+    },
+    {
+      "claim": "The 7.6.0 SSL VPN removal covers the 40F and variants, 60F, 61F and FortiGate Rugged 60F.",
+      "quote": "FGT-40F/FWF-40F and variants FGT-60F/FWF-60F FGT-61F/FWF-61F FGR-60F and variants (2GB and 4GB versions)",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/fortios-release-notes/877104/ssl-vpn-removed-from-2gb-ram-models-for-tunnel-and-web-mode"
+    },
+    {
+      "claim": "The 60F datasheet footnotes that SSL VPN is not supported on FortiOS 7.6.0 and above.",
+      "quote": "SSL VPN not supported on FortiOS 7.6.0 and above.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "FortiOS 7.6.3 replaced SSL VPN tunnel mode with IPsec on all models.",
+      "quote": "Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN, which can be configured to use TCP port 443.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/173430/ssl-vpn-tunnel-mode-replaced-with-ipsec-vpn"
+    },
+    {
+      "claim": "Agentless VPN (former SSL VPN web mode) is unavailable on the 40F, 50G, 60F, 61F, 70G, 90G and 91G.",
+      "quote": "FGT-40F/FWF-40F and variants FGT-50G/FWF-50G and variants FGT-60F/FWF-60F FGT-61F/FWF-61F FGR-60F and variants (2GB versions only) FGT-70G/FWF-70G and variants FGT-90G and FGT-91G",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/877104/agentless-vpn-formerly-ssl-vpn-web-mode-not-supported-on-some-fortigate-series-models"
+    },
+    {
+      "claim": "diagnose hardware sysinfo conserve showing total RAM below 2000 MB identifies a 2 GB model.",
+      "quote": "check that the total RAM value is below 2000 MB (1000 MB = 1 GB).",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/877104/agentless-vpn-formerly-ssl-vpn-web-mode-not-supported-on-some-fortigate-series-models"
+    },
+    {
+      "claim": "From FortiOS 7.4.4, 2 GB models no longer support proxy-related features.",
+      "quote": "starting from version 7.4.4, FortiOS no longer supports proxy-related features.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/519079/proxy-related-features-not-supported-on-fortigate-2-gb-ram-models"
+    },
+    {
+      "claim": "After upgrading, proxy-based inspection on a policy is converted to flow mode on 2 GB models.",
+      "quote": "Inspection mode is converted to flow mode.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/519079/proxy-related-features-not-supported-on-fortigate-2-gb-ram-models"
+    },
+    {
+      "claim": "IPsec over TCP is supported from FortiGate 7.4.2 and FortiClient 7.4.1.",
+      "quote": "Configuring TCP as transport is supported on FortiGate firmware version 7.4.2 and later.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/155142/migration-from-ssl-vpn-tunnel-mode-to-ipsec-vpn-7-6-3"
+    },
+    {
+      "claim": "FortiClient TCP transport for IPsec requires FortiClient 7.4.1 or later.",
+      "quote": "supported in FortiClient version 7.4.1 and later",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/155142/migration-from-ssl-vpn-tunnel-mode-to-ipsec-vpn-7-6-3"
+    },
+    {
+      "claim": "TCP 443 transport suits networks where UDP 500 and 4500 are blocked.",
+      "quote": "ideal for environments where traditional IPsec traffic on UDP/500 and UDP/4500 is blocked",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/155142/migration-from-ssl-vpn-tunnel-mode-to-ipsec-vpn-7-6-3"
+    },
+    {
+      "claim": "RFC 9329 standardizes TCP encapsulation of IKE and IPsec.",
+      "quote": "This document describes a method to transport Internet Key Exchange Protocol (IKE) and IPsec packets over a TCP connection",
+      "url": "https://www.rfc-editor.org/rfc/rfc9329"
+    },
+    {
+      "claim": "The FortiCloud registration wizard asks for the partner or reseller.",
+      "quote": "Specify the Fortinet Partner or Reseller that helped you with your asset.",
+      "url": "https://docs.fortinet.com/document/forticloud/latest/asset-management/40/registering-assets"
+    },
+    {
+      "claim": "Unit transfers need written approval from both the current and new account admins.",
+      "quote": "To complete the registration transfer, the Fortinet customer service team needs written consent/approval from Org A and Org B.",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-requirements-for-unit-transfer-request-159244"
+    },
+    {
+      "claim": "Customer Service makes three email attempts and a phone call; transfers typically take 4 to 5 business days.",
+      "quote": "the ticket would typically take 4 to 5 business days to resolve depending on the ticket scenario.",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-requirements-for-unit-transfer-request-159244"
+    },
+    {
+      "claim": "Transfers are denied for units bought through unauthorized sales such as eBay, gray market, or secondhand/auction sales.",
+      "quote": "If the unit is purchased through unauthorized sales (e.g. eBay, Grey Market, Second hand/auction sale, or any other e-commerce platform).",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-requirements-for-unit-transfer-request-159244"
+    },
+    {
+      "claim": "Transfers between generic accounts such as Gmail are denied.",
+      "quote": "Generic to Generic account transfers. (Gmail, Hotmail, Yahoo, Outlook, etc.)",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-requirements-for-unit-transfer-request-159244"
+    },
+    {
+      "claim": "The self-serve Asset Transfer token is for intercompany transfers only, not third-party transfers.",
+      "quote": "The 'Asset Transfer' token tool is intended solely for Intercompany transfers",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-self-serve-asset-transfer-functionality-for-unit-device-transfers-in-the-asset-management-portal-205118"
+    },
+    {
+      "claim": "The Asset Transfer token does not apply to third-party transfers.",
+      "quote": "not applicable for third-party transfers",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-self-serve-asset-transfer-functionality-for-unit-device-transfers-in-the-asset-management-portal-205118"
+    },
+    {
+      "claim": "The FortiOS GUI transfer requires the current FortiCloud account's username and password.",
+      "quote": "enter the username and password for the current account.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/388078/transfer-a-device-to-another-forticloud-account"
+    },
+    {
+      "claim": "Since FortiOS 7.2.1, a FortiGate registered three or more years can be deregistered from the GUI or CLI.",
+      "quote": "An administrator can deregister a FortiGate, if the device has been registered for three or more years, using the GUI or CLI",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/737278/deregistration-from-the-gui-7-2-1"
+    },
+    {
+      "claim": "Deregistering a FortiGate also deregisters its contracts.",
+      "quote": "After the device is deregistered, all associated contracts are also deregistered",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/737278/deregistration-from-the-gui-7-2-1"
+    },
+    {
+      "claim": "Deregistration within three years fails with 'Unit deregistration unsuccessful.'",
+      "quote": "Unit deregistration unsuccessful.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/737278/deregistration-from-the-gui-7-2-1"
+    },
+    {
+      "claim": "Deregistration CLI command.",
+      "quote": "diagnose forticare direct-registration product-deregister <accountID> <password>",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/737278/deregistration-from-the-gui-7-2-1"
+    },
+    {
+      "claim": "In the portal, a decommissioned unit can then be deregistered.",
+      "quote": "When a hardware device is moved to Decommissioned Units you can deregister the unit to purge it from your account.",
+      "url": "https://docs.fortinet.com/document/forticloud/latest/asset-management/622713/viewing-decommissioned-units"
+    },
+    {
+      "claim": "Fortinet's service terms define a customer as someone who bought from an authorized FortiPartner or Fortinet.",
+      "quote": "purchased a Product or Service Contract from an authorized FortiPartner or Fortinet",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/legal/Fortinet-Service-Offering-Terms.pdf"
+    },
+    {
+      "claim": "Fortinet may terminate service contracts if the unit is transferred to a third party.",
+      "quote": "(c) transfer of the unit of Product to a third party",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/legal/Fortinet-Service-Offering-Terms.pdf"
+    },
+    {
+      "claim": "Renewals start the day after the previous contract expired.",
+      "quote": "the effective date of any Renewal Service Contract shall begin the next calendar day following the expiration date of the previous Service Contract.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/legal/Fortinet-Service-Offering-Terms.pdf"
+    },
+    {
+      "claim": "If a renewal is registered more than 180 days after expiry, it is backdated to 180 days before registration.",
+      "quote": "such Renewal Service Contract effective start date will be the date that is one hundred eighty (180) calendar days prior to the actual Registration Date",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/legal/Fortinet-Service-Offering-Terms.pdf"
+    },
+    {
+      "claim": "FortiOS 7.2.1 introduced the permanent FortiGate-VM evaluation license, replacing the 15-day evaluation.",
+      "quote": "A permanent evaluation VM license replaces the 15 day evaluation period for FortiGate-VM.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/7398/permanent-trial-mode-for-fortigate-vm-7-2-1"
+    },
+    {
+      "claim": "The evaluation VM license applies to private clouds such as VMware ESXi and KVM.",
+      "quote": "The evaluation VM license applies to all private cloud (VMware ESXi, KVM, and so on)",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The permanent trial is limited to 1 CPU and 2 GB of memory.",
+      "quote": "Maximum of 1 CPU and 2 GB of memory",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The permanent trial is limited to three interfaces, three firewall policies and three routes.",
+      "quote": "Maximum of three interfaces, firewall policies, and routes",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The permanent trial supports two VDOMs, with root as the admin type.",
+      "quote": "Support for a maximum of two virtual domains (VDOM). When using multi-VDOM mode, the root VDOM must be an admin type",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The permanent trial supports low encryption only, except GUI management and FortiManager.",
+      "quote": "Support for low encryption operation only, except for GUI management access and FortiManager communications",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The permanent trial has no FortiCare or FortiGuard support.",
+      "quote": "No FortiCare support No FortiGuard support",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "One free evaluation copy per FortiCloud account.",
+      "quote": "Maximum of one free evaluation copy per FortiCloud account",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "The trial license does not expire.",
+      "quote": "This VM is using the evaluation license. This license does not expire.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "Activation commands for the trial license.",
+      "quote": "execute vm-license-options account-id xxxx@fortinet.com execute vm-license-options account-password xxxxxxx execute vm-license",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "Expected status after activation.",
+      "quote": "License Status: Valid VM Resources: 1 CPU/1 allowed, 2007 MB RAM/2048 MB allowed",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    },
+    {
+      "claim": "Low encryption models use only 56-bit DES for IPsec and Agentless VPN and cannot perform SSL inspection.",
+      "quote": "LENC models only use 56-bit DES encryption to work with Agentless VPN and IPsec VPN, and they are unable to perform SSL inspection.",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/721455/low-encryption-models"
+    },
+    {
+      "claim": "Testing of the older evaluation license found only DES enabled.",
+      "quote": "means only DES is enabled as algorithm.",
+      "url": "https://yurisk.info/2021/02/28/fortigate-vm-evaluation-license-15-days-limitations/"
+    },
+    {
+      "claim": "RFC 8247 says DES provides no meaningful security and must not be implemented for IKEv2.",
+      "quote": "ENCR_DES can be brute-forced using off-the-shelf hardware. It provides no meaningful security whatsoever and, therefore, MUST NOT be implemented.",
+      "url": "https://www.rfc-editor.org/rfc/rfc8247"
+    },
+    {
+      "claim": "Owner report: a redeployed trial VM showed an invalid license; staff pointed to Customer Service removing the old registration.",
+      "quote": "you may contact the customer support team to remove the registered unit and use the new one.",
+      "url": "https://community.fortinet.com/support-forum-92/how-to-redeploy-a-free-vm-trial-fortigate-136509"
+    },
+    {
+      "claim": "The older 15-day evaluation license applies to FortiOS 7.2.0.",
+      "quote": "FortiOS 7.2.0 supports the older evaluation license, which has a 15-day term.",
+      "url": "https://docs.fortinet.com/document/fortigate-private-cloud/7.2.0/kvm-administration-guide/504166/fortigate-vm-evaluation-license"
+    },
+    {
+      "claim": "When the 15-day trial expires, FortiOS disables functionality until a full license is uploaded.",
+      "quote": "After the trial license expires, FortiOS disables functionality until you upload a full license file.",
+      "url": "https://docs.fortinet.com/document/fortigate-private-cloud/7.2.0/kvm-administration-guide/504166/fortigate-vm-evaluation-license"
+    },
+    {
+      "claim": "All self-paced Fortinet Training Institute lessons are free; on-demand labs are not included.",
+      "quote": "are open free of charge. On-demand labs are not included.",
+      "url": "https://helpdesk.training.fortinet.com/support/solutions/articles/73000524102-how-do-i-register-for-the-free-online-self-paced-training-"
+    },
+    {
+      "claim": "The FortiGate Administrator course is based on FortiOS 7.4.1.",
+      "quote": "FortiOS 7.4.1",
+      "url": "https://training.fortinet.com/local/staticpage/view.php?page=library_fortigate-administrator"
+    },
+    {
+      "claim": "The course estimates 12 hours of lecture and 10 hours of lab.",
+      "quote": "Lecture time (estimated): 12 hours Lab time (estimated): 10 hours",
+      "url": "https://training.fortinet.com/local/staticpage/view.php?page=library_fortigate-administrator"
+    },
+    {
+      "claim": "All FortiGuard bundles include FortiCare Premium.",
+      "quote": "All bundles include FortiCare Premium Services featuring 24x7x365 availability",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "Bundle names on the 60F datasheet.",
+      "quote": "Enterprise Protection Unified Threat Protection Advanced Threat Protection",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "'Allow websites when a rating error occurs' is disabled by default.",
+      "quote": "The setting is disabled by default in the default Web Filter profile and while creating a new Web Filter profile.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-implications-of-having-allow-websites-when-a-rating-error-occurs-enabled-or-disabled-on-the-fortigate-215039"
+    },
+    {
+      "claim": "The error-allow option lets pages with a rating error pass.",
+      "quote": "Allow web pages with a rating error to pass through.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.4/cli-reference/399620/config-webfilter-profile"
+    },
+    {
+      "claim": "set options under ftgd-wf takes a list of options.",
+      "quote": "set options {option1}, {option2}, ...",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.4/cli-reference/399620/config-webfilter-profile"
+    },
+    {
+      "claim": "FortiOS 7.6.1 changed the default IKE TCP port to 443 on new deployments.",
+      "quote": "In FortiOS version 7.6.1, the default IKE TCP port has been changed to port 443 on new deployments.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/584870/gui-access-conflict-with-ipsec-tcp-tunnel-on-the-same-interface"
+    },
+    {
+      "claim": "Fix for the GUI and IKE TCP port collision.",
+      "quote": "set admin-sport <port> end Customize the ike-tcp-port to a value other than 443:",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/584870/gui-access-conflict-with-ipsec-tcp-tunnel-on-the-same-interface"
+    },
+    {
+      "claim": "Wrong system time breaks certificate-based IPsec.",
+      "quote": "Certificate-based IPsec VPN will fail if the system time is outside the certificate's validation window.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-possible-impacts-of-ntp-sync-failure-or-incorrect-time-on-fortigate-210168"
+    },
+    {
+      "claim": "Wrong time can make license validation fail and stall FortiGuard updates.",
+      "quote": "License validation may temporarily fail. Services like Web-filtering, antivirus, IPS, and applications may not update correctly.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-possible-impacts-of-ntp-sync-failure-or-incorrect-time-on-fortigate-210168"
+    },
+    {
+      "claim": "A faulty battery can cause NTP sync problems.",
+      "quote": "A faulty battery can cause hardware to be out of NTP sync.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-possible-impacts-of-ntp-sync-failure-or-incorrect-time-on-fortigate-210168"
+    },
+    {
+      "claim": "Custom NTP server configuration.",
+      "quote": "config system ntp set type custom config ntpserver edit 1 set server pool.ntp.org",
+      "url": "https://community.fortinet.com/fortigate-3/troubleshooting-tip-ntp-synchronization-issue-97166"
+    },
+    {
+      "claim": "Expected output of diagnose sys ntp status when synced.",
+      "quote": "synchronized: yes, ntpsync: enabled, server-mode: disabled",
+      "url": "https://community.fortinet.com/fortigate-3/troubleshooting-tip-ntp-synchronization-issue-97166"
+    },
+    {
+      "claim": "FG-IR-24-015 has a CVSSv3 score of 9.6.",
+      "quote": "CVSSv3 Score 9.6",
+      "url": "https://www.fortiguard.com/psirt/FG-IR-24-015"
+    },
+    {
+      "claim": "CISA's alert adding CVE-2024-21762 was released February 9, 2024.",
+      "quote": "Release Date February 09, 2024",
+      "url": "https://www.cisa.gov/news-events/alerts/2024/02/09/cisa-adds-one-known-exploited-vulnerability-catalog"
+    },
+    {
+      "claim": "CISA's KEV entry names CVE-2024-21762 Fortinet FortiOS Out-of-Bound Write Vulnerability.",
+      "quote": "CVE-2024-21762 Fortinet FortiOS Out-of-Bound Write Vulnerability",
+      "url": "https://www.cisa.gov/news-events/alerts/2024/02/09/cisa-adds-one-known-exploited-vulnerability-catalog"
+    },
+    {
+      "claim": "Customer Service makes three email attempts and a phone call to both admins.",
+      "quote": "The customer service team needs to make mandatory 3 email attempts and a phone call to Org A and Org B",
+      "url": "https://community.fortinet.com/customer-service-42/customer-service-tip-requirements-for-unit-transfer-request-159244"
+    },
+    {
+      "claim": "GUI deregistration arrived in FortiOS 7.2.1.",
+      "quote": "Deregistration from the GUI 7.2.1",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/737278/deregistration-from-the-gui-7-2-1"
+    },
+    {
+      "claim": "FortiOS 7.2.1 introduced the permanent trial license, which requires a FortiCloud account.",
+      "quote": "FortiOS 7.2.1 introduces a new permanent trial license, which requires a FortiCloud account.",
+      "url": "https://docs.fortinet.com/document/fortigate-private-cloud/7.2.0/kvm-administration-guide/504166/fortigate-vm-evaluation-license"
+    },
+    {
+      "claim": "On 2 GB models from 7.4.4, proxy inspection modes and explicit/transparent proxies are unsupported.",
+      "quote": "UTM profile with proxy-based inspection mode Firewall policy with proxy-based inspection mode Explicit and transparent proxies",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/519079/proxy-related-features-not-supported-on-fortigate-2-gb-ram-models"
+    },
+    {
+      "claim": "Video filter, inline CASB and WAF are among the removed proxy-only features on 2 GB models.",
+      "quote": "Video Filter Inline CASB ICAP Web application firewall (WAF)",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/519079/proxy-related-features-not-supported-on-fortigate-2-gb-ram-models"
+    },
+    {
+      "claim": "ZTNA is among the proxy features removed on 2 GB models.",
+      "quote": "Zero Trust Network Access (ZTNA)",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/519079/proxy-related-features-not-supported-on-fortigate-2-gb-ram-models"
+    },
+    {
+      "claim": "The IKE TCP port change can break GUI access when the admin port is also 443.",
+      "quote": "This may affect GUI access for interfaces bound to an IPsec tunnel in the scenario that the GUI admin port is also using port 443.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/584870/gui-access-conflict-with-ipsec-tcp-tunnel-on-the-same-interface"
+    },
+    {
+      "claim": "Required upgrades cannot be canceled once scheduled.",
+      "quote": "You cannot cancel required upgrades after they are scheduled",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/320693/required-firmware-upgrades-for-fortigates-with-invalid-support-contracts-or-that-have-reached-eoes"
+    },
+    {
+      "claim": "Agentless VPN continues on models not listed.",
+      "quote": "FortiGate models not listed above will continue to support Agentless VPN (formerly SSL VPN web mode).",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/877104/agentless-vpn-formerly-ssl-vpn-web-mode-not-supported-on-some-fortigate-series-models"
+    },
+    {
+      "claim": "The 7.6.3 tunnel mode replacement applies to all FortiGate models and settings are not upgraded.",
+      "quote": "Settings will not be upgraded from previous versions. This applies to all FortiGate models.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/fortios-release-notes/173430/ssl-vpn-tunnel-mode-replaced-with-ipsec-vpn"
+    },
+    {
+      "claim": "The 7.6.0 removal does not upgrade SSL VPN settings.",
+      "quote": "Settings will not be upgraded from previous versions.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/fortios-release-notes/877104/ssl-vpn-removed-from-2gb-ram-models-for-tunnel-and-web-mode"
+    },
+    {
+      "claim": "Registration starts from Products, Register More.",
+      "quote": "Go to Products and click the Register More button.",
+      "url": "https://docs.fortinet.com/document/forticloud/latest/asset-management/40/registering-assets"
+    },
+    {
+      "claim": "Base services included with FortiCare on the 60F datasheet.",
+      "quote": "Device/OS Detection, GeoIPs, Trusted CA Certificates, Internet Services and Botnet IPs, DDNS (v4/v6), Local Protection, PSIRT Check, Anti-Phishing",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "An active support contract gives access to firmware upgrades and downgrades.",
+      "quote": "Maintaining an active support contract for your FortiGate allows you to access the latest firmware upgrades and downgrades",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/299518/how-the-fortigate-firmware-license-works"
+    },
+    {
+      "claim": "Signature updates and real-time lookups require valid FortiGuard licenses.",
+      "quote": "Valid FortiGuard licenses are required to receive database and signature updates, and to perform real-time or near-real-time security lookups",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/289376/license-expiration"
+    },
+    {
+      "claim": "Renewal lapses are backdated up to 6 months (secondary source corroborating the 180-day rule).",
+      "quote": "And so forth, up to 6 months back.",
+      "url": "https://yurisk.info/2022/12/19/fortigate-buy-used-most-frequently-asked-questions/"
+    },
+    {
+      "claim": "The trial activation reboots the VM.",
+      "quote": "This operation will reboot the system !",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/441460/permanent-trial-mode-for-fortigate-vm"
+    }
+  ],
+  "photos": [
+    {
+      "file": "File:The Gathering 2019 - Server and firewall (46813726325).jpg",
+      "license": "CC BY 2.0",
+      "why": "Rack-mounted server and firewall hardware at The Gathering 2019, filed under Commons' Fortinet hardware category (author DiFronzo); confirm the FortiGate is visible before use"
+    },
+    {
+      "file": "File:Fortinet FortiGate 6501F.png",
+      "license": "CC BY-SA 4.0",
+      "why": "A FortiGate 6501F appliance (author Premeditated); already the cover image of /blog/fortigate-cli-essentials, so use only as a fallback"
+    }
+  ]
+}

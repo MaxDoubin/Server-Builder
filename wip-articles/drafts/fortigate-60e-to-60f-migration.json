@@ -1,0 +1,647 @@
+{
+  "slug": "fortigate-60e-to-60f-migration",
+  "title": "FortiGate 60E to 60F Migration: Three Paths and What Breaks",
+  "excerpt": "How to move a FortiGate 60E config to a 60F before support ends December 29, 2026: matching FortiOS 7.4, free FortiConverter, header edits, port renames and licenses.",
+  "tags": [
+    "fortinet",
+    "firewall",
+    "networking",
+    "homelab"
+  ],
+  "query": "fortigate 60e to 60f migration",
+  "gap": "open",
+  "checked": "October 5, 2026",
+  "serp": [
+    "Migrate Configuration from 60E to 61F",
+    "Fortigate upgrade from 60E to 60F Using config",
+    "Fortigate Firewall upgrade from 60E to 60F",
+    "FORTINET FORTIGATE-60F FG-60F Security Appliance Lizenz bis 2025/10",
+    "www.ebay.com",
+    "www.ebay.com",
+    "Fortinet Fortigate-60E Network Security Firewall FG-60E weiß ohne Netzteil-",
+    "bn 21825183",
+    "Fortinet FortiGate 60E Next Generation Security Firewall 10x GE RJ45 WAN DMZ-"
+  ],
+  "serp_variant": {
+    "query": "\"60E\" \"60F\" fortigate migrate config guide",
+    "titles": [
+      "Migrating system settings from FortiGate 30E to FortiWiFi-60F",
+      "Fortigate upgrade from 60E to 60F Using config",
+      "Fortigate Firewall upgrade from 60E to 60F - Fortinet Community",
+      "bn 21825183",
+      "0E6 007R 001B8",
+      "community.cisco.com",
+      "0XP 0682 00649",
+      "0% found this document useful (0 votes)",
+      "0% found this document useful (0 votes)"
+    ]
+  },
+  "claims": [
+    {
+      "claim": "The FortiGate 60E reached end of order on December 29, 2021 and reaches end of support on December 29, 2026.",
+      "quote": "The FortiGate 60E reached end of order on 29 December 2021 and reaches end of support on 29 December 2026.",
+      "url": "https://jimber.io/blog/fortigate-hardware-end-of-life-timeline/"
+    },
+    {
+      "claim": "The 60E's last service extension date was December 29, 2025.",
+      "quote": "Its last service extension date passed on 29 December 2025.",
+      "url": "https://jimber.io/blog/fortigate-hardware-end-of-life-timeline/"
+    },
+    {
+      "claim": "Jimber's timeline takes its dates from Fortinet's Product Life Cycle portal.",
+      "quote": "Source for all dates: Fortinet's official Product Life Cycle portal.",
+      "url": "https://jimber.io/blog/fortigate-hardware-end-of-life-timeline/"
+    },
+    {
+      "claim": "Fortinet's lifecycle portal (Hardware table: Product, EOO, LSED, EOS, Last Supported Software Version) lists the FortiGate-60E with EOO December 29, 2021, LSED December 29, 2025, EOS December 29, 2026 and LSSV 7.4.0. The portal is a JavaScript app; this row was read from its data on October 5, 2026 (portal last updated October 2, 2026).",
+      "quote": "FortiGate-60E | 2021-12-29 | 2025-12-29 | 2026-12-29 | 7.4.0",
+      "url": "https://support.fortinet.com/welcome/#/lifecycle"
+    },
+    {
+      "claim": "The FortiGate-60E-POE variant is supported until October 14, 2027.",
+      "quote": "FortiGate-60E-POE | 2022-10-14 | 2026-10-14 | 2027-10-14 | 7.4.0",
+      "url": "https://support.fortinet.com/welcome/#/lifecycle"
+    },
+    {
+      "claim": "Fortinet defines the last service extension date as the last date it accepts an extension of a support or security subscription contract.",
+      "quote": "an order will be accepted for a product that is no longer available for purchase or an extension of an existing contract for support or security subscription services",
+      "url": "https://community.fortinet.com/t5/Customer-Service/Customer-Service-Tip-Product-Life-Cycle-Information-on-Fortinet/ta-p/194438?externalId=FD49527&sliceId=1"
+    },
+    {
+      "claim": "After end of support, Fortinet is under no obligation to provide support services.",
+      "quote": "After this date, Fortinet will not sell, manufacture, or improve the product and is under no obligation to provide support services.",
+      "url": "https://community.fortinet.com/t5/Customer-Service/Customer-Service-Tip-Product-Life-Cycle-Information-on-Fortinet/ta-p/194438?externalId=FD49527&sliceId=1"
+    },
+    {
+      "claim": "The 60F has no end of order date announced.",
+      "quote": "Fortinet has not announced an end-of-order date for the FortiGate 60F, and once it does, hardware support continues for five years.",
+      "url": "https://jimber.io/blog/fortigate-hardware-end-of-life-timeline/"
+    },
+    {
+      "claim": "The 60E is powered by the SoC3.",
+      "quote": "Powered by SPU SoC3",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "The SOC3 contains a CPU, an NP6Lite network processor and a CP9Lite content processor.",
+      "quote": "The NP6Lite is a component of the Fortinet SOC3. The SOC3 includes a CPU, the NP6Lite network processor, and a CP9Lite content processor",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.5/hardware-acceleration/567256/np6lite-processors"
+    },
+    {
+      "claim": "The 60F uses the SOC4 with an NP6XLite and a CP9XLite.",
+      "quote": "SOC4 and uses the SOC4 CPU, NP6XLite processor, and CP9XLite processor",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.6/hardware-acceleration/758378/fortigate-60f-and-61f-fast-path-architecture"
+    },
+    {
+      "claim": "The CP9XLite has five IPsec VPN engines and the CP9Lite has one.",
+      "quote": "For example, the CP9 has sixteen IPsec VPN engines while the CP9XLite has five and the CP9Lite has one.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.3/hardware-acceleration/340357/cp9-cp9xlite-and-cp9lite-capabilities"
+    },
+    {
+      "claim": "Both the 60E and 60F are 2 GB RAM models.",
+      "quote": "on FortiGate models with 2 GB RAM or less, starting from version 7.4.4, FortiOS no longer supports proxy-related features.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.4/fortios-release-notes/768039/2-gb-ram-fortigate-models-no-longer-support-fortios-proxy-related-features"
+    },
+    {
+      "claim": "The affected 2 GB models include the 40F, 60E, 60F, 80E and 90E series.",
+      "quote": "FortiGate/FortiWiFi 40F, 60E, 60F, 80E, and 90E series",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.4/fortios-release-notes/768039/2-gb-ram-fortigate-models-no-longer-support-fortios-proxy-related-features"
+    },
+    {
+      "claim": "60E firewall throughput is 3/3/3 Gbps (1518/512/64-byte UDP).",
+      "quote": "Firewall Throughput (1518 / 512 / 64 byte UDP packets) 3 / 3 / 3 Gbps",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "60E IPsec VPN throughput is 2 Gbps (512-byte).",
+      "quote": "IPsec VPN Throughput (512 byte) 1 2 Gbps",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "60E IPS is 400 Mbps, NGFW 250 Mbps and threat protection 200 Mbps.",
+      "quote": "Firewall IPS NGFW Threat Protection Interfaces 3 Gbps 400 Mbps 250 Mbps 200 Mbps",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "60E SSL inspection is 135 Mbps (IPS, average HTTPS) in the 2019 revision.",
+      "quote": "SSL Inspection Throughput (IPS, avg. HTTPS) 3 135 Mbps",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "60E handles 1.3 million concurrent sessions and 30,000 new sessions per second.",
+      "quote": "Concurrent Sessions (TCP) 1.3 Million New Sessions/Second (TCP) 30,000",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "Fortinet's former 60E datasheet URL now serves the 60F datasheet, which is why the 60E sheet is cited from a reseller copy (both downloads were byte-identical on October 5, 2026).",
+      "quote": "FortiGate 60F Series Data Sheet",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiGate_FortiWiFi_60E_Series.pdf"
+    },
+    {
+      "claim": "The 60E datasheet used is the June 2019 revision (R16).",
+      "quote": "FST-PROD-DS-GT60E FGFWF-60E-DAT-R16-201906",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "60F firewall throughput is 10/10/6 Gbps (1518/512/64-byte UDP).",
+      "quote": "Firewall Throughput (1518 / 512 / 64 byte UDP packets) 10/10/6 Gbps",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "60F IPsec VPN throughput is 6.5 Gbps (512-byte).",
+      "quote": "IPsec VPN Throughput (512 byte) 1 6.5 Gbps",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "60F IPS is 1.4 Gbps, NGFW 1 Gbps and threat protection 700 Mbps.",
+      "quote": "IPS NGFW Threat Protection Interfaces 1.4 Gbps 1 Gbps 700 Mbps",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "60F SSL inspection is 630 Mbps (IPS, average HTTPS).",
+      "quote": "SSL Inspection Throughput (IPS, avg. HTTPS) 3 630 Mbps",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "60F handles 700,000 concurrent sessions and 35,000 new sessions per second.",
+      "quote": "Concurrent Sessions (TCP) 700 000 New Sessions/Second (TCP) 35 000",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "The 2019 60E revision and the 60F sheet both measure SSL inspection as an average of several HTTPS cipher suites.",
+      "quote": "SSL Inspection performance values use an average of HTTPS sessions of different cipher suites.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "The August 2017 60E revision lists SSL inspection at 175 Mbps.",
+      "quote": "SSL Inspection Throughput (IPS, HTTP) 3 175 Mbps",
+      "url": "https://www.corporatearmor.com/documents/fortinet_fortigate_61e_datasheet.pdf"
+    },
+    {
+      "claim": "The 2017 revision tested SSL inspection with a single TLS 1.2 cipher.",
+      "quote": "SSL Inspection performance test uses TLS v1.2 with AES128-SHA256.",
+      "url": "https://www.corporatearmor.com/documents/fortinet_fortigate_61e_datasheet.pdf"
+    },
+    {
+      "claim": "The 2017 revision is dated August 2017 (R7).",
+      "quote": "FGFWF-60E-DAT-R7-201708",
+      "url": "https://www.corporatearmor.com/documents/fortinet_fortigate_61e_datasheet.pdf"
+    },
+    {
+      "claim": "Both models have ten gigabit RJ45 data ports.",
+      "quote": "FortiGate 60E FG-60E 10x GE RJ45 ports (including 7x Internal ports, 2x WAN ports, 1x DMZ port).",
+      "url": "https://www.firewalls.com/pub/media/wysiwyg/datasheets/Fortinet/FG-FW-60E.pdf"
+    },
+    {
+      "claim": "The 60F also has ten gigabit RJ45 ports.",
+      "quote": "FortiGate 60F FG-60F 10x GE RJ45 ports (including 7x Internal ports, 2x WAN ports, 1x DMZ port).",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "The 60E has Ethernet ports 1 to 7 and an RJ45 console port.",
+      "quote": "Ethernet Ports 1 - 7 (RJ-45) Gigabit Ethernet network connections Console (RJ-45)",
+      "url": "https://cdn2.hubspot.net/hubfs/2599369/Hardware%20Manuals/Fortinet/FG-FWF-60E-61E-POE-Supplement.pdf"
+    },
+    {
+      "claim": "The 60E has WAN ports and a DMZ port.",
+      "quote": "WAN Ports (RJ-45) Gigabit Ethernet Internet connections DMZ Port (RJ-45) Optional connection to DMZ network",
+      "url": "https://cdn2.hubspot.net/hubfs/2599369/Hardware%20Manuals/Fortinet/FG-FWF-60E-61E-POE-Supplement.pdf"
+    },
+    {
+      "claim": "The 60E USB port is USB 3.0.",
+      "quote": "USB (USB A) USB 3.0 server port",
+      "url": "https://cdn2.hubspot.net/hubfs/2599369/Hardware%20Manuals/Fortinet/FG-FWF-60E-61E-POE-Supplement.pdf"
+    },
+    {
+      "claim": "The 60F has FortiLink ports A and B.",
+      "quote": "FortiLink Ports A & B (RJ45) 1 Gbps Ethernet FortiLink auto-detect connections",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "The 60F has a DMZ port and WAN1 and WAN2 ports.",
+      "quote": "DMZ (RJ45) 1 Gbps Ethernet interface WAN1 & WAN2 (RJ-5) 1 Gbps Ethernet interfaces",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "The 60F has five numbered Ethernet ports.",
+      "quote": "Ethernet Ports 1 to 5 (RJ45) 1 Gbps Ethernet connections",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "The 60F has an RJ45 console port.",
+      "quote": "Console (RJ45) CLI management computer interface",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "The 60F has a USB 3.0 port.",
+      "quote": "USB (USB A) USB 3.0 server port",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "In FortiOS the 60F's switch-side ports are named internal1 to internal5, a and b.",
+      "quote": "6 internal1 1000M NO 5 internal2 1000M NO 4 internal3 1000M NO 3 internal4 1000M NO 10 internal5 1000M NO 9 a 1000M NO 8 b 1000M NO",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.1/hardware-acceleration/758378/fortigate-60f-and-61f-fast-path-architecture"
+    },
+    {
+      "claim": "In FortiOS the 60F's other ports are named wan1, wan2 and dmz.",
+      "quote": "11 wan1 1000M NO 15 wan2 1000M NO 7 dmz 1000M NO",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.1/hardware-acceleration/758378/fortigate-60f-and-61f-fast-path-architecture"
+    },
+    {
+      "claim": "In FortiOS the 60E ports are named wan1, wan2, dmz and internal1 to internal7.",
+      "quote": "wan1 wan2 dmz internal1 internal2 internal3 internal4 internal5 internal6 internal7",
+      "url": "https://netboxlabs.com/ndx/fortinet/fortinet-fg-60e/"
+    },
+    {
+      "claim": "On the 60F, ports a and b are members of a default aggregate interface named fortilink.",
+      "quote": "edit \"fortilink\" set vdom \"root\" set fortilink enable set ip 10.255.1.1 255.255.255.0 set allowaccess ping fabric set type aggregate set member \"a\" \"b\"",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Using-FortiGate-Port-A-and-Port-B-as-regular/ta-p/355255"
+    },
+    {
+      "claim": "The 60F FortiLink ports can be reconfigured as regular ports.",
+      "quote": "These FortiLink-enabled ports can be reconfigured as regular ports as needed.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "Fortinet documents using ports A and B on the 60F as regular traffic ports.",
+      "quote": "Port A and Port B seen in model FortiGate 60F/61F, 70F/71F, 80F/81F, and 90G/91G can be used as regular traffic ports.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Using-FortiGate-Port-A-and-Port-B-as-regular/ta-p/355255"
+    },
+    {
+      "claim": "For an encrypted backup, model, FortiOS version and password must match.",
+      "quote": "the FortiGate model, FortiOS version, and backup password must match.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "For an unencrypted backup, the models must match.",
+      "quote": "For an unencrypted configuration backup, the source and destination FortiGate models must match.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "If FortiOS versions differ, the FortiGate tries to upgrade the configuration during restore, which can cause unexpected changes (seen in search result text for this Technical Tip).",
+      "quote": "if the FortiOS versions are different, FortiGate attempts to upgrade the configuration during the restore process",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "FortiOS 7.4.12 supports both the FG-60E and FG-60F.",
+      "quote": "FG-60E, FG-60E-DSL, FG-60E-DSLJ, FG-60E-POE, FG-60F, FG-61E, FG-61F, FG-70F",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.12/fortios-release-notes/760203/introduction-and-supported-models"
+    },
+    {
+      "claim": "FortiOS 7.6.0 lists the FG-60F but not the FG-60E.",
+      "quote": "FG-40F, FG-40F-3G4G, FG-60F, FG-61F, FG-70F, FG-71F, FG-80F",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/fortios-release-notes/760203/introduction-and-supported-models"
+    },
+    {
+      "claim": "FortiOS 7.6.7 lists the FG-60F but not the FG-60E.",
+      "quote": "FG-51G, FG-51G-5G, FG-51G-SFP-POE, FG-60F, FG-61F, FG-70F",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/760203/introduction-and-supported-models"
+    },
+    {
+      "claim": "FortiOS 8.0.1 lists the FG-60F but not the FG-60E.",
+      "quote": "FG-50G-SFP-POE, FG-51G-SFP-POE, FG-60F, FG-61F, FG-70F, FG-71F",
+      "url": "https://docs.fortinet.com/document/fortigate/8.0.1/fortios-release-notes/760203/introduction-and-supported-models"
+    },
+    {
+      "claim": "FortiOS 7.4 engineering support ends May 11, 2027.",
+      "quote": "Ends in 7 months (11 May 2027)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 7.4 support ends November 11, 2028.",
+      "quote": "Ends in 2 years (11 Nov 2028)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 7.6 engineering support ends July 25, 2028.",
+      "quote": "Ends in 1 year and 9 months (25 Jul 2028)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 7.6 support ends January 25, 2030.",
+      "quote": "Ends in 3 years (25 Jan 2030)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 8.0 engineering support ends April 21, 2029.",
+      "quote": "Ends in 2 years and 6 months (21 Apr 2029)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 8.0 support ends October 21, 2030.",
+      "quote": "Ends in 4 years (21 Oct 2030)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "FortiOS 7.2 reached end of support on September 30, 2026.",
+      "quote": "Ended 5 days ago (30 Sep 2026)",
+      "url": "https://endoflife.date/fortios"
+    },
+    {
+      "claim": "From 7.4.4, removed proxy features on these models include ZTNA, proxy-based inspection and explicit and transparent proxies (search result text for the release note).",
+      "quote": "Zero Trust Network Access (ZTNA), UTM profile with proxy-based inspection mode, firewall policy with proxy-based inspection mode, explicit and transparent proxies",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.4/fortios-release-notes/768039/2-gb-ram-fortigate-models-no-longer-support-fortios-proxy-related-features"
+    },
+    {
+      "claim": "Proxy-based inspection for email protocols returned in 7.6.5 and 8.0.0 on 2 GB models.",
+      "quote": "Starting FortiOS v7.6.5 and v8.0.0, proxy-based inspection for email protocols has been reinstated on FortiGate models equipped with 2 GB of RAM.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Special-Notice-for-low-end-units-lt-2Gb-RAM/ta-p/328294"
+    },
+    {
+      "claim": "Traffic matching a proxy policy for a non-email protocol is dropped.",
+      "quote": "any traffic matching the policy that corresponds to a non-Email protocol will be dropped.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Special-Notice-for-low-end-units-lt-2Gb-RAM/ta-p/328294"
+    },
+    {
+      "claim": "The 60F does not support SSL VPN on FortiOS 7.6.0 and later.",
+      "quote": "SSL VPN not supported on FortiOS 7.6.0 and above.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf"
+    },
+    {
+      "claim": "Fortinet offers FortiConverter free to existing FortiGate customers moving to new FortiGate models.",
+      "quote": "We offer complimentary FortiConverter Service to existing FortiGate customers upgrading to new FortiGate models.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "Third-party firewall conversions are paid.",
+      "quote": "Migrating from a third-party firewall to a FortiGate model is a paid service.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "The FortiConverter FAQ is dated August 1, 2026.",
+      "quote": "August 1, 2026 10:39 PM / MKTG-3586-A-0-EN",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "BOLL dates free FortiGate-to-FortiGate conversion to June 20, 2025.",
+      "quote": "Update June 20, 2025: FortiGate-to-FortiGate conversions are now available free of charge!",
+      "url": "https://blog.boll.ch/how-to-transfer-a-fortigate-configuration-to-a-newer-model/"
+    },
+    {
+      "claim": "BOLL is a Fortinet distributor.",
+      "quote": "Fortinet Distribution Schweiz",
+      "url": "https://www.boll.ch/fortinet/"
+    },
+    {
+      "claim": "Fortinet's best-practices guide still calls FortiConverter a one time, paid service.",
+      "quote": "Fortinet offers FortiConverter as a one time, paid service that helps migrate configurations to a new FortiGate.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/341043/migration"
+    },
+    {
+      "claim": "The free FortiConverter license applies only to FortiGate-to-FortiGate conversion.",
+      "quote": "The free license is only applicable to FortiGate to FortiGate conversion.",
+      "url": "https://docs.fortinet.com/document/forticonverter-service/25.1.0/online-help/724941/get-free-license-for-fortigate-conversion"
+    },
+    {
+      "claim": "Only FortiGate units without an existing FortiConverter entitlement can be selected for the free license.",
+      "quote": "Only unentitled devices can be selected.",
+      "url": "https://docs.fortinet.com/document/forticonverter-service/25.1.0/online-help/724941/get-free-license-for-fortigate-conversion"
+    },
+    {
+      "claim": "The free license flow sends submissions to AI training with no opt-out after submission.",
+      "quote": "There is no option to opt out of AI training after the ticket submission.",
+      "url": "https://docs.fortinet.com/document/forticonverter-service/25.1.0/online-help/724941/get-free-license-for-fortigate-conversion"
+    },
+    {
+      "claim": "The free license is claimed with the Get Free License button in the support portal.",
+      "quote": "Existing customers can log in to their Fortinet support portal and click on the “Get Free License” button.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "A FortiGate-to-FortiGate conversion takes about two to three business days.",
+      "quote": "normally takes approximately two to three business days after a configuration file with mapping information is uploaded",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "FortiConverter returns a converted configuration file and a report.",
+      "quote": "A converted configuration file and report",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "From FortiOS 7.4.0 the FortiConverter ticket can be opened from the new FortiGate's setup GUI.",
+      "quote": "From FortiOS v7.4.0 and above, the FortiConverter ticket can be opened when going through the initial setup page on the GUI of the FortiGate instead of accessing the portal.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "The source unit option is Allow FortiConverter to obtain config file once under System > Settings (search result text for this page).",
+      "quote": "go to System > Settings and enable \"Allow FortiConverter to obtain config file once\"",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.0/new-features/819483/forticonverter-in-the-gui"
+    },
+    {
+      "claim": "On the target unit, the GUI setup offers Migrate Config with FortiConverter (search result text for this page).",
+      "quote": "on the GUI startup menu click Begin to start \"Migrate Config with FortiConverter\"",
+      "url": "https://docs.fortinet.com/document/fortigate/7.4.0/new-features/819483/forticonverter-in-the-gui"
+    },
+    {
+      "claim": "Managed FortiSwitch, FortiAP, FortiToken and FortiManager upgrades are outside FortiConverter's scope.",
+      "quote": "The upgrades for managed software or external devices (such as FortiAP, FortiToken, FortiClient EMS, FortiManager, and FortiSwitch) are not supported.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "FortiConverter converts hardware switches to software switches when the target cannot support them.",
+      "quote": "Hardware switches will be converted to software switches where the new target device does not support the hardware switch.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "FortiConverter resets the default admin password.",
+      "quote": "For security purposes, the default admin account password will be reset.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "VPN pre-shared keys, certificates and local users generally stay valid if FortiOS is above 5.6.",
+      "quote": "encrypted secret data, credentials, such as VPN pre-shared keys, certificates, local users, and admin passwords will remain valid after cross-model migration if the FortiOS version is above 5.6.",
+      "url": "https://www.fortinet.com/content/dam/fortinet/assets/resources/faq-forticonverter.pdf"
+    },
+    {
+      "claim": "Fortinet does not support manually modified cross-model configuration files.",
+      "quote": "Fortinet Support does not provide support for configuration files that were manually modified to migrate a configuration from one FortiGate model to another.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "Fortinet's example header swaps an 80F model code for a 100F.",
+      "quote": "#config-version=FGT80F-7.0.6-FW-build0366-220606:opmode=0:vdom=0:user=admin",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/541336/migrating-a-fortigate-configuration-manually-using-configuration-files"
+    },
+    {
+      "claim": "A 60F backup on 7.4.11 begins with an FGT60F config-version line.",
+      "quote": "#config-version=FGT60F-7.4.11-FW-build2878-260126:opmode=0:vdom=0:user=szhao",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-how-to-download-fortigate-configuration-file-debug-log-from-gui-and-cli-96675"
+    },
+    {
+      "claim": "Owners report the 60E header carries FGT60E and must be changed to FGT60F.",
+      "quote": "You have to replace the first line in config (part with FGT modell) #config-version=FGT60E-xxx to FGT60F-xxx",
+      "url": "https://community.fortinet.com/t5/Support-Forum/Fortigate-Firewall-upgrade-from-60E-to-60F/td-p/66293"
+    },
+    {
+      "claim": "BOLL's method copies every line starting with # from the new unit's backup (config-version, conf_file_ver, buildno, global_vdom).",
+      "quote": "Open this backup with a text editor and copy the lines with a #",
+      "url": "https://blog.boll.ch/how-to-transfer-a-fortigate-configuration-to-a-newer-model/"
+    },
+    {
+      "claim": "BOLL's example header block includes conf_file_ver, buildno and global_vdom lines after config-version.",
+      "quote": "# conf_file_ver=16381207134220940 # buildno=1828 # global_vdom=1",
+      "url": "https://blog.boll.ch/how-to-transfer-a-fortigate-configuration-to-a-newer-model/"
+    },
+    {
+      "claim": "Owners report mapping 60E ports 6 and 7 to 60F ports A and B (search result text for this thread).",
+      "quote": "60E has ports 6 & 7, you need to map them to port A & B on the 60F",
+      "url": "https://community.fortinet.com/support-forum-92/fortigate-upgrade-from-60e-to-60f-using-config-203165"
+    },
+    {
+      "claim": "Rich-text editors can corrupt the config file.",
+      "quote": "Do not use rich-text editors because formatting functions can replace ASCII characters or introduce encoding changes.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "The default hardware switch is named internal or lan depending on model (search result text for this page).",
+      "quote": "Supported FortiGate models have a default hardware switch called either internal or lan.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/administration-guide/100999/hardware-switch"
+    },
+    {
+      "claim": "Interface references can sit in policies, routes, SD-WAN, IPsec, zones, DHCP servers, VIPs and local-in policies.",
+      "quote": "Interface references can exist in firewall policies, static routes, policy routes, SD-WAN, IPsec VPN, zones, DHCP servers, VIPs, local-in policies, dynamic routing protocols, and other configuration sections.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "diagnose sys cmdb refcnt show system.interface.name lists what references an interface.",
+      "quote": "diagnose sys cmdb refcnt show system.interface.name <INTERFACE>",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-delete-the-default-virtual-Hardware-Switch/ta-p/196365"
+    },
+    {
+      "claim": "Hardware switches can be listed with show system interface and grep.",
+      "quote": "show system interface | grep -f 'set type hard-switch'",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-delete-the-default-virtual-Hardware-Switch/ta-p/196365"
+    },
+    {
+      "claim": "Individual sections can be migrated by copying them from the old backup.",
+      "quote": "Individual configuration sections can be manually migrated by copying the required configuration from the source backup configuration file to the destination configuration file.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "Registration gives access to FortiGuard updates, firmware upgrades and support.",
+      "quote": "Register your device to access FortiGuard updates, cloud management, firmware upgrades, technical support and warranty coverage.",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "Out of the box the 60F GUI is at https://192.168.1.99 on port 1, user admin, no password.",
+      "quote": "Management Computer Port 1 https://192.168.1.99 Username: admin No Password",
+      "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/fd70142f-ff2f-11e9-8977-00505692583a/FG-FWF-40F-60F-Series-QSG.pdf"
+    },
+    {
+      "claim": "Fortinet's Upgrade Path Tool returns the shortest tested upgrade path.",
+      "quote": "The tool returns the shortest tested upgrade path between your current firmware and a target release.",
+      "url": "https://docs.fortinet.com/upgrade-tool"
+    },
+    {
+      "claim": "Fortinet's manual procedure upgrades the new unit to the same firmware first.",
+      "quote": "Upgrade the new FortiGate device to the same firmware version as the old FortiGate device.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/541336/migrating-a-fortigate-configuration-manually-using-configuration-files"
+    },
+    {
+      "claim": "The private data encryption key is 32 hexadecimal digits.",
+      "quote": "Please type your private data encryption key (32 hexadecimal numbers)",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-restore-a-backup-configuration-file-with/ta-p/195668"
+    },
+    {
+      "claim": "Password masking replaces secrets with FortinetPasswordMask (search result text for this page).",
+      "quote": "When password masking is enabled, passwords and secrets will be replaced in the configuration file with FortinetPasswordMask.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/598820/support-backing-up-configurations-with-password-masking-7-2-1"
+    },
+    {
+      "claim": "Restoring a masked file restores the mask, not the secret (search result text for this page).",
+      "quote": "obfuscated passwords and secrets will be restored with the password mask",
+      "url": "https://docs.fortinet.com/document/fortigate/7.2.0/new-features/598820/support-backing-up-configurations-with-password-masking-7-2-1"
+    },
+    {
+      "claim": "Fortinet's example restores a config over TFTP with execute restore config tftp test.conf 10.82.2.2.",
+      "quote": "execute restore config tftp test.conf 10.82.2.2",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Restoring-a-config-file-from-the-CLI-by-using-TFTP/ta-p/191392"
+    },
+    {
+      "claim": "A CLI restore warns that it will overwrite the current settings and could reboot the system.",
+      "quote": "This operation will overwrite the current setting and could possibly reboot the system! Do you want to continue? (y/n)",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Restoring-a-config-file-from-the-CLI-by-using-TFTP/ta-p/191392"
+    },
+    {
+      "claim": "A successful TFTP restore prints Get file from TFTP server OK and File check OK.",
+      "quote": "Get file from TFTP server OK. File check OK.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Restoring-a-config-file-from-the-CLI-by-using-TFTP/ta-p/191392"
+    },
+    {
+      "claim": "The restore output first shows the connection to the TFTP server.",
+      "quote": "Connect to TFTP server 10.82.2.2 ...",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Restoring-a-config-file-from-the-CLI-by-using-TFTP/ta-p/191392"
+    },
+    {
+      "claim": "Fortinet's procedure checks errors with diag debug config-error-log read.",
+      "quote": "Use this command in the CLI to check for errors: #diag debug config-error-log read",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/541336/migrating-a-fortigate-configuration-manually-using-configuration-files"
+    },
+    {
+      "claim": "Example config error log line from Fortinet.",
+      "quote": "\"unset\" \"post-lang\" @ root.firewall.profile-protocol-options.scan.ftp:command parse error (error -61)",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Configuration-is-partially-lost-after-upgrade/ta-p/197603"
+    },
+    {
+      "claim": "Fortinet's procedure swaps the cables after the restore and error check.",
+      "quote": "swap the cables from the old FortiGate device to the new FortiGate device.",
+      "url": "https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/541336/migrating-a-fortigate-configuration-manually-using-configuration-files"
+    },
+    {
+      "claim": "An unconverted file produces the Invalid configuration file or password required error.",
+      "quote": "If the configuration file is not converted as outlined above, users may encounter the error message 'Invalid configuration file or password required' on the FortiGate GUI.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-load-convert-a-FortiGate-configuration-file/ta-p/197247"
+    },
+    {
+      "claim": "Without the private-data-encryption key, encrypted passwords except the system admin are lost.",
+      "quote": "all encrypted passwords (except the system admin) to be lost",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-restore-a-backup-configuration-file-with/ta-p/195668"
+    },
+    {
+      "claim": "Fortinet_Factory is unique to each device.",
+      "quote": "The 'Fortinet_Factory' and 'Fortinet_Factory_Backup' certificates are unique to each device.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Explanation-on-Fortinet-Factory-certificate/ta-p/388146"
+    },
+    {
+      "claim": "Fortinet_Factory is not in the backup.",
+      "quote": "Fortinet_Wifi, Fortinet_Factory, and Fortinet_Factory_Backup do not exist in the backup configuration.",
+      "url": "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Explanation-on-Fortinet-Factory-certificate/ta-p/388146"
+    },
+    {
+      "claim": "Fortinet recommends a unique SSL inspection CA per FortiGate.",
+      "quote": "It is recommended that the CA certificate used for SSL inspection is unique to each FortiGate deployment for security reasons.",
+      "url": "https://community.fortinet.com/fortigate-3/technical-tip-regenerate-the-fortinet-ca-ssl-ca-certificate-used-for-ssl-inspection-94749"
+    },
+    {
+      "claim": "Owners report importing the old CA under a different name works where replacing the default does not.",
+      "quote": "Replacing the certificate doesn't work but adding it with a different name did the trick.",
+      "url": "https://community.fortinet.com/t5/Support-Forum/Migrate-Fortinet-CA-SSL-from-old-Fortigate-to-a-new-one/m-p/239777"
+    },
+    {
+      "claim": "Fortinet approves contract transfers only as RMA transfers.",
+      "quote": "ONLY RMA Transfer will be approved, reach out to customer service for further assistance.",
+      "url": "https://community.fortinet.com/t5/Customer-Service/Customer-Service-Tip-Requirements-for-Contract-Transfer-Request/ta-p/299780"
+    },
+    {
+      "claim": "Contracts are tied to serial numbers.",
+      "quote": "Contract number/Contract letter PDF and the target serial number",
+      "url": "https://community.fortinet.com/t5/Customer-Service/Customer-Service-Tip-Requirements-for-Contract-Transfer-Request/ta-p/299780"
+    },
+    {
+      "claim": "The Trade-Up program allows a service transfer for a compatible stand-alone unit, not a bundle.",
+      "quote": "a compatible hardware stand-alone unit (not a hardware bundle) was purchased, it is possible to perform the Trade-up transfer of services",
+      "url": "https://community.fortinet.com/t5/Customer-Service/Customer-Service-Tip-Registering-products-and-transferring/ta-p/266001"
+    },
+    {
+      "claim": "FortiToken Mobile licenses shipped on or after August 4, 2025 transfer only for an RMA.",
+      "quote": "FortiToken Mobile licenses shipped on or after August 4th 2025, FortiToken Mobile license transfer is only permitted in cases of RMA for a failed device.",
+      "url": "https://community.fortinet.com/fortiauthenticator-8/technical-tip-migrating-users-and-fortitokens-to-another-fortigate-fortiauthenticator-95879"
+    },
+    {
+      "claim": "Older FortiToken Mobile transfers need both serials and the EFT license SKU.",
+      "quote": "The serial number of the FortiToken license (SKU-ID), which starts with EFTxxxxx",
+      "url": "https://community.fortinet.com/fortiauthenticator-8/technical-tip-migrating-users-and-fortitokens-to-another-fortigate-fortiauthenticator-95879"
+    }
+  ],
+  "photos": []
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "macos-server-versions",
+  "title": "macOS Server Versions: Every Release From 1.0 to 5.12.2",
+  "excerpt": "Every macOS Server release from Mac OS X Server 1.0 in 1999 to the final 5.12.2, which macOS each version needs, what Apple removed along the way, and what replaces it.",
+  "tags": ["apple", "servers", "operations"],
+  "query": "macos server versions",
+  "gap": "open",
+  "coverCredit": null,
+  "status": "written, urls checked, ready to integrate (batch 2); cover is an original chart"
+}
