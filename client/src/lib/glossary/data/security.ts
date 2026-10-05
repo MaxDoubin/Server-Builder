@@ -200,4 +200,14 @@ export const SECURITY: Term[] = [
       "Unsalted and fast means a modern GPU rig covers the entire eight-character keyspace in hours. An NTLM hash is close to a plaintext password for anyone who obtains it.",
     see: ["hash", "salt"],
   },
+  {
+    term: "VPN",
+    expansion: "Virtual Private Network",
+    field: "security",
+    definition:
+      "An encrypted tunnel that carries traffic between two networks, or between one device and a network, across an untrusted one such as the internet. IPsec, WireGuard and SSL VPN are the common kinds, and on a firewall the tunnel ends in a policy like any other interface.",
+    confusion:
+      "A VPN protects traffic in transit; it does not make the far end trustworthy. Remote access through one puts the connecting device inside your network, so the firewall policy behind the tunnel matters as much as the encryption.",
+    see: ["TLS", "NAT"],
+  },
 ];
