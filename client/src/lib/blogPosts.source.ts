@@ -50,6 +50,1098 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "dell-boss-card",
+    title: "Dell BOSS Card Explained: BOSS-S1, S2 and N1 Compared",
+    date: "2026-10-05",
+    tags: ["dell", "storage", "servers"],
+    excerpt:
+      "What Dell's Boot Optimized Storage Solution is for, how the BOSS-S1, S2 and N1 differ, which PowerEdge servers take each, and how to replace a failed M.2.",
+    coverImage: "/images/blog/dell-boss-card.jpg",
+    coverCredit: {
+      author: "Jacek Halicki",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:2018_Pami%C4%99%C4%87_Intel_Optane_32GB.jpg",
+    },
+    content: `
+## The short answer
+
+A Dell BOSS card (Boot Optimized Storage Solution) is a small hardware [RAID](/blog/raid-levels-comparison) 1 controller that mirrors two 80 mm M.2 drives for the operating system, so the front drive bays stay free for data. BOSS-S1 (14G, M.2 SATA, PCIe card, no hot-plug) came first, BOSS-S2 (15G, M.2 SATA, hot-plug carriers) followed, and BOSS-N1 (16G, M.2 NVMe, hot-plug on most versions) is current, with DC-MHS variants on 17G. Dell supports only the M.2 drives it ships, recommends BOSS for boot use only, and the N1 cannot pass its drives through individually.
+
+## What is a Dell BOSS card for?
+
+BOSS gives a PowerEdge a separate, mirrored operating system volume without using hot-swap drive bays. Dell's 2017 tech note says it was [developed for a separate, cost-effective hardware RAID 1 solution for operating system drives](https://dl.dell.com/manuals/all-products/esuprt_solutions_int/esuprt_solutions_int_solutions_resources/servers-solution-resources_white-papers10_en-us.pdf), freeing slots for data. Dell's [R640 technical guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf) lists the cases: a full operating system where the dual SD module would otherwise be used, no wish to trade hot-plug bays for the OS, and data drives in passthrough mode on an HBA.
+
+<figure>
+<img src="/images/blog/dell-boss-card/poweredge-r710-servers.jpg" alt="Two Dell PowerEdge R710 servers stacked in a rack, front bezels off" width="1200" height="802" loading="lazy" decoding="async">
+<figcaption>PowerEdge R710 servers, from before BOSS existed. A BOSS card gives a server its own pair of M.2 boot drives, so the operating system no longer takes a front drive bay. Photo: Dell Inc., <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The host sees one disk, which Dell's [deployment KB](https://www.dell.com/support/kbdoc/en-us/000177584/automating-operating-system-deployment-to-dell-boss-techniques-for-different-operating-systems) shows as DELLBOSS VD. S-series cards use the [inbox AHCI driver](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us) and N-series cards the [inbox NVMe driver](https://dl.dell.com/content/manual30863516-dell-boot-optimized-storage-solution-n1-user-s-guide.pdf?language=en-us). Broadcom adds that [OEM vendors agreed to stop supporting SD and USB boot devices](https://knowledge.broadcom.com/external/article?legacyId=85685) on platforms such as Sapphire Rapids and Genoa.
+
+Every generation shares one limit: Dell's [S1](https://gfx3.senetic.com/akeneo-catalog/5/9/1/9/591966c81a8012b3627fe196787aa7676d51ca9e_1711209_4XJTD_icecat_multimedia_other_digital_assets_4_en_GB.pdf), S2 and N1 guides recommend BOSS only as an operating system boot device.
+
+## BOSS-S1, BOSS-S2 and BOSS-N1 compared
+
+The generations differ mainly in drive type, hot-plug and whether drives can pass through to the operating system.
+
+| | BOSS-S1 | BOSS-S2 | BOSS-N1 | BOSS-N1 DC-MHS |
+|---|---|---|---|---|
+| Server generation | 14G, some 15G | 15G | 16G | 17G |
+| M.2 drives | SATA, 80 mm | SATA, 80 mm | NVMe, 80 mm | NVMe, 80 mm |
+| Host link | PCIe 2.0 x2 on an x8 connector | PCIe Gen 2 x4 | PCIe Gen 3 x4 | PCIe Gen 3 x4 |
+| Mounting | Low-profile or full-height PCIe card | Rear module, slide-out carriers | Rear module with carriers | Front or rear card with carriers |
+| Hot-plug and LEDs | No | Yes | Monolithic only | DC-MHS card only |
+| Modes | RAID 1 or passthrough | RAID 1 or passthrough | RAID 1 or one-drive RAID 0 | RAID 1 or one-drive RAID 0 |
+| TRIM | Passthrough only | Passthrough only | None | None |
+| Rebuild | At boot, or manual | On drive swap | On drive swap | On drive swap |
+| Dell-listed drives | Intel S4510, Micron 5100 and 5300 | Solidigm S4520, Micron 5400 | SK hynix PE9010, Micron 7450, Phison D100P, Samsung PM9D3a | Same four |
+| CLI | mvcli, mvsetup | mvcli, mvsetup | mnvcli | mnvcli |
+
+The table draws on Dell's S1 ([A07](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf)), [S2](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us), [N1](https://dl.dell.com/content/manual30863516-dell-boot-optimized-storage-solution-n1-user-s-guide.pdf?language=en-us) and [N1 DC-MHS](https://dl.dell.com/content/manual24888099-dell-boot-optimized-storage-solution-n1-dc-mhs-user-s-guide.pdf?language=en-us) guides. Leaseweb's [operator summary](https://blog.leaseweb.com/2022/11/02/is-it-time-for-a-new-boss-boot-optimized-storage-solution/) describes the S1 as a half-height, half-length PCIe card that must be powered off to replace and the S2 as a hot-swappable unit like a power supply.
+
+N1 also comes as Modular and Modular Extreme Temperature cards with the M.2 mounted directly on the card and no hot-plug. The 17G family adds Modular DC-MHS and an embedded eBOSS-N1, also without hot-plug. Dell's separate [RAID on RISER-N1](https://www.dell.com/support/manuals/en-us/raid-on-riser/ror_n1_ug/dell-raid-on-riser-n1?guid=guid-2fe69dff-0141-4bf9-9ca7-65f16e043077&lang=en-us) covers the XR8640t, XR4520c and XR4510c. As of October 5, 2026, [Dell's BOSS support page](https://www.dell.com/support/product-details/en-us/product/boss-s-1/resources/manuals) lists guides for S1, S2, N1 and N1 DC-MHS and nothing newer.
+
+## Which PowerEdge servers take which BOSS card?
+
+Match the card to the server, because Dell documents each generation for specific models.
+
+| Card | PowerEdge models in Dell's documents |
+|---|---|
+| S1 adapter | C4140, C6525, R240, R340, R440, R540, R640, R740, R740xd, R940, R6415, R6515, R6525, R7415, R7425, R7515, R7525, T140, T340, T440, T640 |
+| S1 modular | C6420, FC640, M640 (M1000e and VRTX), MX740c, MX840c |
+| S2 | R6525 and R7525 in the S2 guide; R350, R550, R650, R750 and T550 in installation manuals |
+| N1 | R260, R360, R660, R6615, R6625, R760, R760xa, R760xd2, R760xs, R7615, R7625, R860, R960, T160, T360, T560, HS5610, HS5620, XE8640, XE9640, XE9680 |
+| N1 DC-MHS | R470, R570, R670, R6715, R6725, R770, R7715, R7725, R7725xd, XE7740, XE7745 |
+
+The S1 rows come from the [S1 guide, Rev. A09](https://gfx3.senetic.com/akeneo-catalog/5/9/1/9/591966c81a8012b3627fe196787aa7676d51ca9e_1711209_4XJTD_icecat_multimedia_other_digital_assets_4_en_GB.pdf), and the [S1 firmware package](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=3p39v) also lists the R250, R740xd2, R750xa, R840, R940xa, T150 and XE8545. The N1 rows are the compatibility lists on Dell's [Monolithic](https://www.dell.com/support/home/en-hk/drivers/driversdetails?driverid=c6mvr) and [DC-MHS](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=cp1t8) firmware packages, so they show where the firmware applies, not a sales list.
+
+Three details matter when shopping. BOSS is not a 13G option: Dell's R640 guide lists the [R630's BOSS module as "None"](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf), though [one Proxmox forum poster reported](https://forum.proxmox.com/threads/install-proxmox-8-1-on-boss-n1-and-using-dell-perc-h965i-controller.140902/) running an S1 in a 13th-generation Dell, which Dell does not document. The S2 guide names only two servers, but Dell's manuals for the [R350](https://www.dell.com/support/manuals/en-us/poweredge-r350/r350_ism_pub/installing-the-boss-s2-module?guid=guid-057deb3f-f773-407c-91ae-e777f2051b99&lang=en-us) and [R750](https://www.dell.com/support/manuals/en-nz/poweredge-r750/per750_ism_pub/boss-s2-module-kit?guid=guid-f111ed88-20d7-45f4-8934-308573c0c969&lang=en-us) describe S2 modules, while the [R250 manual](https://www.dell.com/support/manuals/en-ee/poweredge-r250/per250_ism_pub/installing-the-m2-ssd-module?guid=guid-034d26e1-88d2-4ebd-b22d-035bbd5308bb&lang=en-us) describes an S1 card. And a [PowerEdge R740](/blog/dell-poweredge-r740-deep-dive) takes at most one BOSS card, with the low-profile version in [slot 6](https://www.dell.com/support/manuals/en-us/poweredge-r740/per740_ism_pub/expansion-card-installation-guidelines?guid=guid-2356b79e-a3e7-4d3f-b97f-9d85dfaea34d&lang=en-us).
+
+The 17G R670 and R770 can alternatively ship an M.2 interposer board for two NVMe drives, per Dell's [R670 guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r670-technical-guide.pdf). Dell's guide gives no detail on how it presents them.
+
+## How does BOSS RAID 1 behave?
+
+BOSS is a fixed-function mirror with almost nothing to tune. It builds one virtual disk from both drives, and Dell's S1 guide says [specifying the size is not supported](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf). The cache is write-through with no battery, and Dell's S2 and N1 tables list no hot spare, consistency check or patrol read.
+
+Passthrough is where the generations split. On S1 and S2, [unconfigured drives are automatically non-RAID](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us), so deleting the virtual disk gives two plain disks, and TRIM works only in that mode. N1 has no passthrough: Dell says it [uses only one drive for a RAID 0 volume](https://dl.dell.com/content/manual30863516-dell-boot-optimized-storage-solution-n1-user-s-guide.pdf?language=en-us), with no migration between RAID 0 and RAID 1.
+
+Rebuilds are automatic. Auto-rebuild takes any functional drive on the card that is not in the virtual disk and has equal or greater capacity, without prompting, and [overwrites its data](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us). S1 rebuilds at the next boot, and S2 and N1 rebuild when you hot-plug the replacement. HII (F2, Device Settings) offers a manual rebuild.
+
+Moved drives are foreign. BOSS presents only a virtual disk native to the adapter, so import a mirror from another controller in HII and reboot, because iDRAC cannot import it. Boot in UEFI mode: N1 does not support Legacy BIOS, and two unconfigured S1 drives boot only from slot 0 in legacy mode.
+
+## How do you manage a BOSS card with iDRAC and the BOSS CLI?
+
+iDRAC handles inventory, health, LED blink and staged virtual disk changes, the CLI reads SMART data and events inside the OS, and HII handles import and rebuild. The [iDRAC9 guide](https://gfx3.senetic.com/akeneo-catalog/7/2/1/2/72128faf64ab186f01b2bb9d2128c34004f03afc_1781207_WYKPV_icecat_multimedia_other_digital_assets_8_en_GB.pdf) marks virtual disk create and delete as staged on all three cards, so they apply after a reboot. It marks LED blink and hot-plug as real-time on S2 and N1 and not applicable on S1, and says to keep Collect System Inventory on Reboot (CSIOR) enabled. More iDRAC habits are in [iDRAC tips and tricks](/blog/dell-idrac-tips-tricks).
+
+Dell's [deployment KB](https://www.dell.com/support/kbdoc/en-us/000177584/automating-operating-system-deployment-to-dell-boss-techniques-for-different-operating-systems) creates the RAID 1 from RACADM and sets the boot order, with variables holding the controller and drive IDs:
+
+\`\`\`
+racadm storage createvd:$boss_ctrl -rl r1 -name boss_ssd -pdkey:\${boss_disks[0]},\${boss_disks[1]}
+racadm set BIOS.BootSettings.HddSeq $ahci_ctrl
+\`\`\`
+
+Inside the OS, S1 and S2 use \`mvcli\` (\`mvsetup\` on Windows) and N1 uses \`mnvcli\`. Run them as root or administrator, because Dell lists a ["No Adapter Found" error](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us) for non-root Linux users.
+
+\`\`\`
+./mvcli info -o vd       # S1 and S2: virtual disk state
+./mvcli info -o pd       # S1 and S2: drive state
+./mvcli smart -p 0       # S1 and S2: SMART for drive 0
+./mnvcli smart -i 0      # N1: SMART for drive 0
+./mnvcli event -c 20     # N1: last 20 events
+\`\`\`
+
+In the SMART output, look for [Life Remaining](https://www.dell.com/support/kbdoc/en-us/000215395/how-to-install-the-mvcli-boss-utility-on-esxi-in-order-to-determine-the-m-2-ssd-remaining-endurance), the attribute Dell's ESXi KB uses for endurance. Save the output of \`mvcli event\`, because Dell's [S1 utility KB](https://www.dell.com/support/kbdoc/en-us/000120728/installing-and-using-the-mvcli-mvsetup-boss-s1-utility) warns that reading it may clear the event data.
+
+## How do you replace a failed M.2 and rebuild the mirror?
+
+On S2 and N1 you swap the carrier with the server running, while S1 needs a shutdown. Dell's R750 manual says [installing the BOSS S2 card carrier does not require the system to be powered off](https://www.dell.com/support/manuals/en-nz/poweredge-r750/per750_ism_pub/boss-s2-module-kit?guid=guid-f111ed88-20d7-45f4-8934-308573c0c969&lang=en-us), and the R760 manual says the same for the [N1 carrier](https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/boss-n1-module-kit?guid=guid-c5d1e7f6-6f32-4f2d-ac44-6aba5f6c8c6e&lang=en-us). Only the controller module needs a shutdown.
+
+1. Identify the failed drive. On S2 and N1, a blinking amber status LED means failed (on N1, also a SMART trip), and iDRAC can blink a carrier green to locate it. S1 has no LEDs, so use iDRAC or \`mvcli info -o pd\`.
+2. Confirm the failure first. Dell's KB 000177690 describes a [polling race condition](https://www.dell.com/support/kbdoc/en-us/000177690/false-boss-m-2-failures-reported-by-the-idrac-and-in-the-lcc-log) that can raise a false failure event (SSD0001) and clears at the next 30-second poll or an iDRAC reset.
+3. Pick a replacement of the same type (SATA for S, NVMe for N) with at least the survivor's capacity. For DC-MHS carriers, Dell [recommends replacing both thermal pads](https://dl.dell.com/content/manual24888099-dell-boot-optimized-storage-solution-n1-dc-mhs-user-s-guide.pdf?language=en-us) each time.
+4. Lift the carrier latch, slide the carrier out, remove the M.2 screw, swap the drive and refit it. Dell's [S2 guide](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us) gives 1.7 in-lb (0.19 N-m) for that screw. On N1, leave 30 seconds between removal and insertion for ISE drives, or five minutes for self-encrypting drives.
+5. Slide the carrier in and close the latch. The rebuild starts on its own: the S2 status LED stays green for online or rebuild, and the N1 activity LED blinks green during it.
+6. Watch progress in iDRAC or the CLI. Dell says [HII background activity is not real-time](https://gfx3.senetic.com/akeneo-catalog/5/9/1/9/591966c81a8012b3627fe196787aa7676d51ca9e_1711209_4XJTD_icecat_multimedia_other_digital_assets_4_en_GB.pdf) and recommends the CLI.
+
+For S1, power off, disconnect the server, open it, remove the card, take out the M.2 screw, swap the module, reseat the card and boot. The rebuild starts at boot. If none begins, use HII's RAID Rebuild option, which works only when a degraded volume and a target drive both exist.
+
+## Which firmware and drives should a BOSS card use?
+
+### Firmware and the 2026 Marvell notice
+
+Update with a Dell Update Package, iDRAC (Maintenance, System Update, Manual Update), Lifecycle Controller (F10), or on S1 the UEFI shell or CLI. Updates are staged and a reboot applies them. The newest packages on Dell's pages on October 5, 2026 were [2.5.13.3024 for S1](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=3p39v) (March 6, 2024), [2.5.13.4009 for S2](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=ttr5r) (March 6, 2024), [2.1.13.2037 for N1 Monolithic](https://www.dell.com/support/home/en-hk/drivers/driversdetails?driverid=c6mvr) (August 18, 2025) and [2.2.13.2033 for N1 DC-MHS](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=cp1t8) (March 4, 2025).
+
+S1 and S2 carry a security caveat. Dell's [notice DSN-2026-002](https://www.dell.com/support/kbdoc/en-uk/000461333/dsn-2026-002-marvell-component-vulnerability-in-dell-boot-optimized-server-storage-boss-boss-s1-and-boss-s2), last modified May 26, 2026 (CVE-2026-34880), says the Marvell 88SE9230 chip on those cards, a [PCIe 2.0 to SATA 6 Gb/s controller](https://www.marvell.com/content/dam/marvell/en/public-collateral/storage/marvell-storage-88se92xx-product-brief-2012-04.pdf), has no secure boot or firmware integrity protection, and that Marvell has no fix. The newest S1 and S2 versions above are on the affected list. Dell's workaround is a UEFI tool that computes a SHA-384 checksum of the flash for you to compare with the released image. The notice does not mention N1. Dell's S2 guide describes a signed update path in which the controller is locked except during updates, yet the notice still lists S2 as affected.
+
+### Third-party M.2 drives
+
+Dell says each card is [tested and supported only with the M.2 drives that are shipped with the controller](https://dl.dell.com/content/manual30863516-dell-boot-optimized-storage-solution-n1-user-s-guide.pdf?language=en-us). Support is also firmware-gated: the Samsung PM9D3a needs BOSS-N1 2.1.13.2034 or later, and the Phison D100P needs iDRAC9 7.30.10.50 or later.
+
+Dell staff have not described a lockout. In April 2021, a Dell community reply said Dell [did not block any SSDs in BIOS](https://www.dell.com/community/en/conversations/poweredge-hardware-general/compatible-m2-drives-for-boss-on-t340/647f9254f4ccf8a8de40948a) but cannot support third-party hardware. Owner reports are mixed: one poster reported in 2020 that [Intel D3-S4510 drives worked](https://www.dell.com/community/en/conversations/poweredge-hardware-general/boss-s1-card-with-m2-ssd/647f7f8ef4ccf8a8dee10ef3?page=2), another that about six NVMe and four SATA M.2 drives did not, and a 2023 poster reported Micron 480 GB SATA drives working.
+
+Use SATA for S1 and S2 and NVMe for N1, match or exceed the surviving drive's capacity, prefer read-intensive enterprise models, and keep drive firmware current, as Dell advises.
+
+## Is a BOSS card a good fit for Proxmox, ESXi or TrueNAS?
+
+Yes for a boot mirror on any of the three, provided VMs and data live on other drives.
+
+### ESXi
+
+ESXi is the closest match. Broadcom's [ESXi 8.0 requirements](https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/esx-installation-and-setup/installing-and-setting-up-esxi-install/esxi-requirements-install/esxi-hardware-requirements-install.html) require a boot disk of at least 32 GB, ask for 128 GB or more for ESX-OSData and 128 TBW of endurance, and recommend a RAID 1 mirrored device. BOSS drives start at 240 GB, and at Dell's 1 DWPD rating for S2 drives, 240 GB works out to about 438 TB over five years (arithmetic, not a Dell figure). Broadcom's KB lists 128 GB as the vSphere 9 minimum.
+
+Dell's S1 guide says ESXi on S1 gets no VMFS datastore by default and a custom image [disables VMFS](https://gfx3.senetic.com/akeneo-catalog/5/9/1/9/591966c81a8012b3627fe196787aa7676d51ca9e_1711209_4XJTD_icecat_multimedia_other_digital_assets_4_en_GB.pdf), so treat BOSS as boot only. Dell's KB uses this kickstart line for automated installs:
+
+\`\`\`
+install --overwritevmfs --firstdisk="DELLBOSS VD"
+\`\`\`
+
+### Proxmox
+
+The installer lists the virtual disk like any other. One forum poster reported an S1 mirror made with the CLI that [showed up as an install target](https://forum.proxmox.com/threads/install-proxmox-8-1-on-boss-n1-and-using-dell-perc-h965i-controller.140902/), installed with XFS, and another reported Proxmox on two 480 GB drives in RAID 1 on a BOSS-N1.
+
+The [Proxmox installation guide](https://pve.proxmox.com/pve-docs/chapter-pve-installation.html) says ZFS on top of any hardware RAID is not supported and can result in data loss, and OpenZFS notes that [hardware RAID limits self-healing](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html). With a BOSS RAID 1, choose ext4 or XFS. For a ZFS boot mirror, delete the virtual disk on S1 or S2 and let Proxmox mirror the raw drives, which N1 cannot do. More in [ZFS on enterprise hardware](/blog/zfs-on-enterprise-hardware) and [Proxmox vs ESXi](/blog/proxmox-vs-esxi).
+
+### TrueNAS
+
+TrueNAS's [hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) asks for a 20 GB SSD boot device and warns against hardware RAID cards, so keep pool disks on an HBA and use BOSS for boot only. On May 8, 2024, a TrueNAS forum member [reported](https://forums.truenas.com/t/has-anyone-tried-dell-r730xd-or-r740xd-with-nvme/856?page=2) that all their TrueNAS servers run a BOSS card without problems. FreeBSD-based releases had trouble, as the next section shows.
+
+## What breaks
+
+**The rebuild never starts after a drive swap.** Auto-rebuild accepts only a functional drive outside the virtual disk with equal or greater capacity, and a drive carrying another controller's RAID metadata is not presented to the OS. Fix: use a drive at least as large as the survivor, clear old metadata (Erase Physical Disk in HII on S1 and S2, or Reset Configuration in iDRAC), then reinsert it, or run the manual rebuild in HII.
+
+**ESXi installs fail with an invalid partition table on a BOSS RAID 1.** A member drive still holds an ESXi partition that the installer cannot clear inside a virtual disk. Fix: per Dell's S1 and S2 guides, delete the RAID 1, run Erase Physical Disk on both drives, recreate the RAID 1 with quick initialization on, and reinstall.
+
+**Only one of the two BOSS-N1 drives is in use.** Choosing RAID 0 leaves the second drive unused, and N1 cannot migrate between RAID 0 and RAID 1. Fix: delete the virtual disk and create RAID 1 with both drives before installing the OS.
+
+**The OS or iDRAC shows no virtual disk after a controller swap.** BOSS presents only virtual disks native to the adapter, so the old mirror is foreign. Fix: import it in HII and reboot. iDRAC cannot import it, and Reset Configuration wipes it if you do not need the data.
+
+**FreeBSD-based TrueNAS stops seeing BOSS-S1 drives after a firmware update.** In a 2020 forum thread, an owner reported the [AHCI error "stopping AHCI engine failed"](https://www.truenas.com/community/threads/ahci-driver-problems-with-marvell-88se9230-dell-boss-s1.85128/) on firmware 2.5.13.3022, with no confirmed cause. Fix: owners reported that downgrading to A03 worked, and one poster reported that UEFI boot with the BOSS RAID 1 let TrueNAS SCALE install on October 24, 2022. Weigh a downgrade against DSN-2026-002.
+
+## Frequently asked questions
+
+### Is a Dell BOSS card hot-swappable?
+
+S2 and the N1 Monolithic and DC-MHS cards are, and S1 is not. Only the M.2 carrier is hot-plug: installing the controller module needs a shutdown, and the N1 Modular, Modular DC-MHS and eBOSS-N1 variants have no hot-plug. On S1, Dell's guide says to turn the system off and disconnect it first.
+
+### Can I use a BOSS card for VM storage?
+
+Dell recommends BOSS only as a boot device. An R740 owner with an S1 reported in February 2022 that [reads benchmarked about 4.5 times slower](https://www.dell.com/community/en/conversations/poweredge-hardware-general/boss-s1-performance/647f9a43f4ccf8a8dede29af) than a laptop M.2 drive and 11.5 times slower than the server's PERC-attached drives. That is one report, so keep VMs on data drives.
+
+### Do I need drivers for a BOSS card?
+
+Not for the OS: S1 and S2 use the inbox AHCI driver, and N1 uses the inbox NVMe driver. The CLI is separate, and on Windows the S2 CLI needs a management driver, while Linux and ESXi \`mvcli\` do not.
+
+### Can I move to larger M.2 drives later?
+
+You can replace a failed drive with a larger one, since auto-rebuild accepts equal or greater capacity. Dell lists virtual disk expansion as unsupported on S2 and N1, so using the extra space means recreating the virtual disk and reinstalling.
+
+## What this means
+
+Use BOSS the way Dell designed it: a mirrored operating system volume on a 14G or newer PowerEdge, with VMs and data on other drives. Match the card to the server (S1 for 14G, S2 for most 15G, N1 for 16G and 17G) and check your model's installation manual before buying.
+
+For ESXi, or Proxmox on ext4 or XFS, a BOSS mirror is a clean choice. If you want ZFS to manage the boot mirror, use S1 or S2 in non-RAID mode, because N1 cannot. Stay on Dell-listed drives for support, install the CLI for SMART checks, and read DSN-2026-002 if you run S1 or S2.
+
+## References
+
+- [Dell BOSS-N1 User's Guide, Rev. A01, July 2026](https://dl.dell.com/content/manual30863516-dell-boot-optimized-storage-solution-n1-user-s-guide.pdf?language=en-us)
+- [Dell BOSS-N1 DC-MHS User's Guide, Rev. A01, July 2026](https://dl.dell.com/content/manual24888099-dell-boot-optimized-storage-solution-n1-dc-mhs-user-s-guide.pdf?language=en-us)
+- [Dell BOSS-S2 User's Guide, Rev. A01, July 2023](https://dl.dell.com/content/manual32734952-dell-technologies-boot-optimized-storage-solution-s2-user-s-guide.pdf?language=en-us)
+- [Dell BOSS-S1 User's Guide, Rev. A07, October 2019](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf)
+- [Dell BOSS-S1 User's Guide, Rev. A09, July 2022](https://gfx3.senetic.com/akeneo-catalog/5/9/1/9/591966c81a8012b3627fe196787aa7676d51ca9e_1711209_4XJTD_icecat_multimedia_other_digital_assets_4_en_GB.pdf)
+- [Dell iDRAC9 User's Guide 7.xx, Rev. A09, September 2025](https://gfx3.senetic.com/akeneo-catalog/7/2/1/2/72128faf64ab186f01b2bb9d2128c34004f03afc_1781207_WYKPV_icecat_multimedia_other_digital_assets_8_en_GB.pdf)
+- [Dell Support: Boot Optimized Server Storage (BOSS) manuals](https://www.dell.com/support/product-details/en-us/product/boss-s-1/resources/manuals)
+- [Dell Direct from Development: BOSS-S2](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/direct-from-development-dell-emc-poweredge-boot-optimized-storage-solution-boss-s2.pdf)
+- [Dell BOSS-N1 specification sheet, January 2023](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/dell-poweredge-boot-optimized-storage-solution-datasheet-for-n1.pdf.external)
+- [Dell Direct from Development: BOSS (S1), 2017](https://dl.dell.com/manuals/all-products/esuprt_solutions_int/esuprt_solutions_int_solutions_resources/servers-solution-resources_white-papers10_en-us.pdf)
+- [Dell PowerEdge R640 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf)
+- [Dell PowerEdge R670 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r670-technical-guide.pdf)
+- [Dell PowerEdge R750 Installation and Service Manual: BOSS S2 module kit](https://www.dell.com/support/manuals/en-nz/poweredge-r750/per750_ism_pub/boss-s2-module-kit?guid=guid-f111ed88-20d7-45f4-8934-308573c0c969&lang=en-us)
+- [Dell PowerEdge R760 Installation and Service Manual: BOSS-N1 module kit](https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/boss-n1-module-kit?guid=guid-c5d1e7f6-6f32-4f2d-ac44-6aba5f6c8c6e&lang=en-us)
+- [Dell PowerEdge R740 Installation and Service Manual: expansion card guidelines](https://www.dell.com/support/manuals/en-us/poweredge-r740/per740_ism_pub/expansion-card-installation-guidelines?guid=guid-2356b79e-a3e7-4d3f-b97f-9d85dfaea34d&lang=en-us)
+- [Dell PowerEdge R350 Installation and Service Manual: installing the BOSS S2 module](https://www.dell.com/support/manuals/en-us/poweredge-r350/r350_ism_pub/installing-the-boss-s2-module?guid=guid-057deb3f-f773-407c-91ae-e777f2051b99&lang=en-us)
+- [Dell PowerEdge R250 Installation and Service Manual: installing the M.2 SSD module](https://www.dell.com/support/manuals/en-ee/poweredge-r250/per250_ism_pub/installing-the-m2-ssd-module?guid=guid-034d26e1-88d2-4ebd-b22d-035bbd5308bb&lang=en-us)
+- [Dell RAID on RISER-N1 User's Guide](https://www.dell.com/support/manuals/en-us/raid-on-riser/ror_n1_ug/dell-raid-on-riser-n1?guid=guid-2fe69dff-0141-4bf9-9ca7-65f16e043077&lang=en-us)
+- [Dell KB 000177584: Automating OS deployment to Dell BOSS](https://www.dell.com/support/kbdoc/en-us/000177584/automating-operating-system-deployment-to-dell-boss-techniques-for-different-operating-systems)
+- [Dell KB 000120728: Installing and using the MVCLI MVSETUP BOSS-S1 utility](https://www.dell.com/support/kbdoc/en-us/000120728/installing-and-using-the-mvcli-mvsetup-boss-s1-utility)
+- [Dell KB 000215395: MVCLI on ESXi to check M.2 remaining endurance](https://www.dell.com/support/kbdoc/en-us/000215395/how-to-install-the-mvcli-boss-utility-on-esxi-in-order-to-determine-the-m-2-ssd-remaining-endurance)
+- [Dell KB 000177690: False BOSS M.2 failures reported by iDRAC](https://www.dell.com/support/kbdoc/en-us/000177690/false-boss-m-2-failures-reported-by-the-idrac-and-in-the-lcc-log)
+- [Dell DSN-2026-002: Marvell component vulnerability in BOSS-S1 and BOSS-S2](https://www.dell.com/support/kbdoc/en-uk/000461333/dsn-2026-002-marvell-component-vulnerability-in-dell-boot-optimized-server-storage-boss-boss-s1-and-boss-s2)
+- [Dell BOSS-S1 Adapter firmware 2.5.13.3024](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=3p39v)
+- [Dell BOSS-S2 firmware 2.5.13.4009](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=ttr5r)
+- [Dell BOSS-N1 Monolithic firmware 2.1.13.2037](https://www.dell.com/support/home/en-hk/drivers/driversdetails?driverid=c6mvr)
+- [Dell BOSS-N1 DC-MHS firmware 2.2.13.2033](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=cp1t8)
+- [Dell Community: Compatible M.2 drives for BOSS on T340](https://www.dell.com/community/en/conversations/poweredge-hardware-general/compatible-m2-drives-for-boss-on-t340/647f9254f4ccf8a8de40948a)
+- [Dell Community: BOSS S1 card with M2 SSD](https://www.dell.com/community/en/conversations/poweredge-hardware-general/boss-s1-card-with-m2-ssd/647f7f8ef4ccf8a8dee10ef3?page=2)
+- [Dell Community: BOSS-S1 Performance](https://www.dell.com/community/en/conversations/poweredge-hardware-general/boss-s1-performance/647f9a43f4ccf8a8dede29af)
+- [Leaseweb: Is it time for a new BOSS (Boot Optimized Storage Solution)?](https://blog.leaseweb.com/2022/11/02/is-it-time-for-a-new-boss-boot-optimized-storage-solution/)
+- [Marvell 88SE9220/9230/9235/9215 SATA 6Gb/s Host Controllers product brief](https://www.marvell.com/content/dam/marvell/en/public-collateral/storage/marvell-storage-88se92xx-product-brief-2012-04.pdf)
+- [Broadcom KB: SD card/USB boot device revised guidance](https://knowledge.broadcom.com/external/article?legacyId=85685)
+- [Broadcom ESXi 8.0 hardware requirements](https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/esx-installation-and-setup/installing-and-setting-up-esxi-install/esxi-requirements-install/esxi-hardware-requirements-install.html)
+- [Proxmox VE installation guide](https://pve.proxmox.com/pve-docs/chapter-pve-installation.html)
+- [Proxmox forum: Install Proxmox 8.1 on Boss-N1 and using Dell PERC H965i](https://forum.proxmox.com/threads/install-proxmox-8-1-on-boss-n1-and-using-dell-perc-h965i-controller.140902/)
+- [OpenZFS documentation: Hardware](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [TrueNAS Hardware Guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/)
+- [TrueNAS community: ahci driver problems with Marvell 88SE9230 (Dell BOSS-S1)](https://www.truenas.com/community/threads/ahci-driver-problems-with-marvell-88se9230-dell-boss-s1.85128/)
+- [TrueNAS forums: Has anyone tried Dell R730xd or R740xd with NVMe](https://forums.truenas.com/t/has-anyone-tried-dell-r730xd-or-r740xd-with-nvme/856?page=2)
+`,
+  },
+  {
+    slug: "truenas-on-dell-r730",
+    title: "TrueNAS on a Dell R730: Controllers, Boot Drives and Fans",
+    date: "2026-10-05",
+    tags: ["storage", "dell", "homelab"],
+    excerpt:
+      "How to build a TrueNAS box on a Dell R730 or R730xd: which PERC or HBA passes disks to ZFS, where the boot pool goes, memory, networking and fan noise.",
+    coverImage: "/images/blog/truenas-on-dell-r730.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R610_and_R720.jpg",
+    },
+    content: `
+## The short answer
+
+TrueNAS runs well on a Dell R730 or R730xd as long as ZFS sees the physical disks. The safest controller is the Dell HBA330 Mini, which [Dell lists for both servers](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2). A PERC H730 or H330 in HBA mode is documented by Dell and some owners report it working, but TrueNAS's guidance and its forum regulars still prefer a true HBA. Boot from two SATA or SAS SSDs, not a PCIe NVMe adapter, which R730 owners report will not boot, and install TrueNAS Community Edition 25.10, because CORE is no longer in development.
+
+## Why does TrueNAS want direct disk access?
+
+ZFS checksums every block and repairs bad data from its own redundancy, so it needs to talk to each physical disk. The [OpenZFS hardware documentation](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) says "Hardware [RAID](/blog/raid-levels-comparison) controllers should not be used with ZFS": a controller that handles redundancy limits ZFS's chances to self-heal, and a failed one can force you to find the same model.
+
+[TrueNAS's hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) cites "countless warnings against using hardware RAID cards" and says some cards mask disk serial numbers and S.M.A.R.T. data, run slower than HBAs, and risk data loss when a write cache has a dead battery. Its preferred workaround is a card with HBA mode (passthrough or JBOD mode), which can "perform indistinguishably from a standard HBA." Without that mode, a RAID0 volume per disk is "functional when necessary" but not ideal.
+
+The practical test comes from a [TrueNAS community resource](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/): if you cannot get smartctl output for a device, "you DO NOT HAVE A TRUE HBA." The setup steps include that check, and [Running ZFS on Dell Enterprise Hardware](/blog/zfs-on-enterprise-hardware) covers other Dell models.
+
+## Which TrueNAS version should you run in 2026, and what happened to CORE?
+
+Run TrueNAS Community Edition 25.10 on a new build. TrueNAS [renamed SCALE to Community Edition](https://www.truenas.com/blog/truenas-community-edition-release-2504/) in a May 15, 2025 announcement, its [February 4, 2026 plans post](https://www.truenas.com/blog/truenas-plans-for-2026/) calls 25.10 "Goldeye" the recommended version for new deployments, and the [Software Status page](https://www.truenas.com/docs/softwarestatus/) lists 25.10.7 (September 2, 2026) as the General recommendation and 26.0.0-BETA.3 for early adopters.
+
+CORE, the FreeBSD edition, is finished: the status page says it is "no longer under active development" and lists 13.0-U6.8 (July 14, 2025) and 13.3-U1.2 (April 29, 2025) as the latest releases. Leaving CORE means a fresh ISO install and a configuration upload.
+
+That matters here because most forum threads on this topic come from the CORE era, so their driver advice (mrsas, mpr, mps) describes FreeBSD. On Linux, the [megaraid_sas driver](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/megaraid_sas.h) claims the MegaRAID chips behind the H730 and a stock H330 (IDs 0x005d and 0x005f), and [mpt3sas](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/mpt3sas/mpi/mpi2_cnfg.h) claims the plain SAS3008 HBA chip (0x0097). The [PCI ID database](https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids) maps the H730 Mini to 0x005d and the H330 Mini to 0x005f.
+
+## Which R730 and R730xd controllers pass disks through?
+
+Only the HBA330 Mini is a plain HBA. The H330, H730 and H730P can act like one in HBA mode, and everything else is RAID-only or external. Dell's [PERC 9 guide](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) says these cards "support two personality modes," RAID and HBA.
+
+<figure>
+<img src="/images/blog/truenas-on-dell-r730/lsi-9300-8i-hba.jpg" alt="An LSI SAS 9300-8i host bus adapter card with a heatsink and two mini-SAS HD connectors" width="1200" height="880" loading="lazy" decoding="async">
+<figcaption>An LSI SAS 9300-8i host bus adapter. It uses the same SAS3008 controller as Dell's HBA330, which is why both appear under Linux's mpt3sas driver. Photo: Antonio Kless, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_PCI-E_SAS_HBA.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Controller | Chip, cache | Disks to the OS | TrueNAS verdict |
+|---|---|---|---|
+| PERC S130 | Software RAID | Windows only | No |
+| PERC H330 | LSI 3008, none | HBA mode | Acceptable once verified |
+| PERC H730 | LSI 3108, 1 GB | HBA mode | Acceptable once verified |
+| PERC H730P | LSI 3108, 2 GB | HBA mode | Same as H730 |
+| HBA330 Mini | LSI 3008, none | Native HBA | Best choice |
+| 12Gb/s SAS HBA | LSI 3008, none | Native HBA | External shelves only |
+| PERC H830 | External | RAID | No |
+
+Dell's [R730 technical guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf) (June 2015) lists these controllers but not the HBA330, which appears in Dell's [HBA guide](https://dl.dell.com/topicspdf/dell-sas-hba-12gbps_users-guide_en-us.pdf) beside the external 12Gb/s SAS HBA. The guide simply predates the card, so trust the later firmware page, which lists the R730 and R730xd.
+
+### Can you use the H730 in HBA mode?
+
+Yes, with conditions. Dell documents the switch: press F2 at startup, open Device Settings and the PERC utility, choose Controller Management > Advanced Controller Management > Switch to HBA mode, and reboot after deleting virtual disks, hot spares and foreign configurations. Dell says all disks then "function as non-RAID disks under operating system control," but the controller "does not report SMART errors," so the OS has to.
+
+Owner reports are mixed:
+
+- In 2021 an H730P owner on firmware 25.5.8.0001 [posted full smartctl output](https://www.truenas.com/community/threads/raid-controllers-hba-mode.95368/), serial number included, from Debian.
+- On December 16, 2024 an R730xd owner [saw no drives in the SCALE installer](https://forums.truenas.com/t/bare-metal-install-issues/27715) until updating the H730 to firmware 25.5.9.0001; a T330 owner there said the same controller ran "for more than a year flawlessly in HBA mode."
+- Against that, [new SATA drives vanished](https://www.truenas.com/community/threads/dell-perc-h730-working-with-sas-not-sata.91878/) behind an H730 on TrueNAS 12, an R730xd owner called [performance poor](https://www.truenas.com/community/threads/replacement-for-perc-h730p.114613/), and [another poster](https://forums.truenas.com/t/bare-metal-install-issues/27715) said HBA mode "is not the same as an HBA."
+
+An iXsystems moderator wrote in 2022 that the H730 ["should be replaced by an HBA330"](https://www.truenas.com/community/threads/are-there-anyone-running-truenas-successfully-here-with-dell-r730xd.104972/) because its FreeBSD driver was less mature, and no source reviewed here compares the Linux driver. Treat an H730 you already own as acceptable once its firmware is current and it passes the smartctl check, with an HBA330 as the fallback.
+
+## Should you flash a PERC to IT mode or buy an HBA330?
+
+Buy the HBA330 Mini. It is the route Dell documents, and it avoids a firmware procedure with no Dell recovery path. Dell's HBA guide describes an 8-port LSI 3008 card with "Non-RAID or pass through mode," no battery or cache, and boot support, and the [firmware page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2) lists 16.17.01.00 (May 18, 2020), marked Urgent because it fixes T10 Protection Information errors under Linux.
+
+Crossflashing is community territory. [fohdeesha's guide](https://fohdeesha.com/docs/perc.html) covers 12th generation H310, H710, H710P and H810 cards, not the H330 or H730, and warns that picking the "closest" firmware will brick the card; it also says iDRAC on those servers can lose drive temperatures after an IT flash and hold the fans near 30%. For the H330 the reports go both ways:
+
+- One owner called flashing an H330 to an HBA330 ["quite easy"](https://forums.truenas.com/t/crossflash-dell-perc-h330-to-it-hba-mode/21039) and ran four drives in RAIDZ1 without errors.
+- A [ServeTheHome thread](https://forums.servethehome.com/index.php?threads/crossflash-dell-h330-to-hba330.43573/) shows the catches: record the SAS address with megacli first, and LSI's 16.00.12.00 build fails on the Dell card with "Failed to Validate Mfg Page 2!"
+- [Another owner](https://forums.truenas.com/t/dell-hba330-h330-recover-crossflash/5983) could not find the original H330 firmware to go back.
+
+For the H730, TrueNAS's HBA resource calls the idea ["veering off into" "that might not be a good idea"-land](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/), and no source reviewed here shows Dell converting a PERC into an HBA330. Also check what you receive: one buyer's "HBA330" [showed as "PERC H330 mini"](https://www.truenas.com/community/threads/replacement-for-perc-h730p.114613/) in the configuration utility.
+
+### What changes on an R720?
+
+The R720 has no HBA330 option: the firmware page lists no 12th generation server. Dell's technical guide pairs the R720 with H310, H710, H710P and external H810 controllers, and the [PERC 8 guide](https://dl.dell.com/manuals/all-products/esuprt_ser_stor_net/esuprtl_adapters/poweredge-rc-h310_User's%20Guide_en-us.pdf) says "Only the PERC H310 controller allows configuration of disk drives as Non-RAID," so the H710 and H710P are RAID-only. The usual fix is crossflashing an H310 or H710 with fohdeesha's guide, which says stock firmware uses the MegaRAID driver while IT mode uses mpt3sas. Dell's comparison also lists DDR3, E5-2600 v2 and USB 2.0 for the R720 against DDR4, v3 and USB 3.0 for the R730.
+
+## Where should the boot pool go on a 13th generation Dell?
+
+Put it on two 2.5-inch SATA or SAS SSDs behind the HBA. On an R730xd the optional rear bays are the natural home: a TrueNAS moderator told one buyer ["You can use the rear-mounted 2.5" bays for your boot device."](https://www.truenas.com/community/threads/ready-to-click-purchase-dell-r730-xd-system-just-need-a-sanity-check.111438/) Without them (see [R730 vs R730xd](/blog/dell-r730-vs-r730xd)), use a front bay or an onboard SATA port.
+
+| Boot option | Verdict | Notes |
+|---|---|---|
+| Rear 2.5-inch bays (R730xd) | Best | Optional; the HBA330 lists boot support |
+| Onboard SATA port | Works | One owner [boots from one](https://www.truenas.com/community/threads/are-there-anyone-running-truenas-successfully-here-with-dell-r730xd.104972/) with a slimline power adapter |
+| PCIe NVMe or M.2 adapter | Avoid | Dell moderators say the firmware cannot boot them |
+| Internal USB or SD module | Avoid | TrueNAS says USB drives and SATA DOMs "vary too widely in quality"; Dell aims the SD module at hypervisors |
+| BOSS-S1 card | Unsupported | [Dell's guide](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf) lists no 13th generation server |
+
+Dell's [boot mode paper](https://downloads.dell.com/manuals/common/dellemc-boot-mode-bios-uefi.pdf) says NVMe boot firmware is part of the BIOS "beginning with the 13th generation" and works only in UEFI mode, and its [NVMe guide](https://www.dell.com/support/manuals/en-us/dell-poweredge-exp-fsh-nvme-pcie-ssd/nvme_pcie_ssd_ug/boot-from-an-nvme-pcie-u2-ssd?guid=guid-04daee9b-70bf-4e58-af02-b7e261206dac&lang=en-us) limits booting to "select PowerEdge platforms." Owners report otherwise for third-party adapters: a [Dell moderator replied in 2024](https://www.dell.com/community/en/conversations/poweredge-hardware-general/r730-refuses-to-boot-from-pcie-storage/66b5a8da58ef9a642bc3416f) that "13Gen architecture and firmware have yet to be able to support PCIe M.2 SSD," and a TrueNAS owner's [ASUS adapter](https://www.truenas.com/community/threads/recommended-pcie-to-m-2-nvme-adapter-for-dell-poweredge-r730xd.109483/) worked as storage but was not enumerated at boot. The R730 has no NVMe bays and the [R730xd](https://dl.dell.com/topicspdf/poweredge-r730xd_owners-manual_en-us.pdf) offers up to four (slots 20 to 23). One forum poster says those boot with Dell's U.2 kit, but no Dell source reviewed here confirms it, so use them for pools.
+
+TrueNAS needs a boot device of at least 20 GB, and the installer erases the drive you pick. Install to one SSD, then [attach the second](https://www.truenas.com/docs/scale/25.10/scaletutorials/systemsettings/managebootenvironscale/) under System > Boot > Boot Pool Status to mirror it. Pick BIOS or UEFI first: Dell warns that switching later "may prevent the system from booting."
+
+## How much memory and which network card does it need?
+
+### Memory
+
+TrueNAS wants at least 8 GB of RAM for up to eight drives, plus 1 GB for each drive after eight, and 16 GB or more (32 GB or more is optimal) for iSCSI or VM storage. A 12-drive R730xd works out to a 12 GB floor. Skip deduplication (about 5 GB per TB) and L2ARC (about 1 GB per 50 GB) without a reason; [ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding](/blog/zfs-arc-l2arc-tuning) explains what extra RAM does.
+
+The R730 has 24 DIMM slots, 12 per processor in four channels, and takes only DDR4 RDIMMs or LRDIMMs, up to 768 GB. Dell's [R730 manual](https://dl.dell.com/topicspdf/poweredge-r730-dsms_owners-manual_en-us.pdf) says to populate one DIMM per channel (four modules) per processor first, keep both processors identical, and leave memory mode on the default Optimizer setting, because mirror mode halves usable memory. PCIe slots 1 to 4 need a second CPU, but a TrueNAS moderator advises against [filling the second socket](https://www.truenas.com/community/threads/feedback-on-used-hardware-choice-dell-r730.98829/) "unless it's necessary for PCIe slot activation or DIMMs."
+
+### Networking
+
+Dell's guide lists network daughter cards built on Intel X520, X540 and X710, QLogic 57840S and Broadcom 5720 controllers. TrueNAS's hardware guide says "Intel and Chelsio interfaces are the best-supported options" and prefers one faster interface (10/25/40/100GbE) to aggregating slower ones. Choose an Intel X520 or X710 NDC if you can, or an Intel or Chelsio card in a PCIe slot.
+
+## Why are the fans loud after adding a card?
+
+Dell's 13th generation servers add a fan response when you install a third-party PCIe card. Dell's [knowledge base article](https://www.dell.com/support/kbdoc/en-us/000135682/how-to-disable-the-third-party-pcie-card-default-cooling-response-on-poweredge-13g-servers) says the default response "provisions airflow based on common industry card requirements" and targets "a maximum of 55C inlet air to the PCIe card region." To turn it off over IPMI (IPMI over LAN enabled in iDRAC, Administrator account), run the first command below; the second checks the state, and the output \`16 05 00 00 00 05 00 01 00 00\` means disabled.
+
+\`\`\`bash
+ipmitool -I lanplus -H IDRAC_IP -U IDRAC_USER -P IDRAC_PASSWORD raw 0x30 0xce 0x00 0x16 0x05 0x00 0x00 0x00 0x05 0x00 0x01 0x00 0x00
+ipmitool -I lanplus -H IDRAC_IP -U IDRAC_USER -P IDRAC_PASSWORD raw 0x30 0xce 0x01 0x16 0x05 0x00 0x00 0x00
+\`\`\`
+
+The [RACADM guide](https://dl.dell.com/topicspdf/idrac7-8-lifecycle-controller-v2404040_reference-guide_en-us.pdf) lists the same switch as ThirdPartyPCIFanResponse, enabled by default. Dell says disabling it "only removes the fan response associated with the addition of a third-party PCIe card and does not compromise original thermal algorithm-based cooling needs," and that fans already high for other reasons "may have no effect." Watch the card's temperature afterward. For fan curves and other noise fixes, see [quieting R730 fans](/blog/dell-r730-quiet-fans).
+
+## Parts list and step-by-step setup
+
+### Parts
+
+| Part | Pick |
+|---|---|
+| Controller | Dell HBA330 Mini (or an H730 in HBA mode on firmware 25.5.9.0001) |
+| Boot | Two 2.5-inch SATA or SAS SSDs, 20 GB or more |
+| Memory | Matched DDR4 RDIMMs, 16 GB or more (32 GB for VMs or iSCSI) |
+| Network | Intel X520 or X710 NDC, or an Intel or Chelsio card |
+
+### Steps
+
+1. Update iDRAC, BIOS and controller firmware. [Dell's H730 page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=700gg) lists 25.5.9.0001 (A17, March 5, 2024) for the R730 and R730xd.
+2. HBA330 Mini: nothing to configure. H730: press F2, open Device Settings and the PERC utility, choose Switch to HBA mode, and reboot.
+3. In System Setup, set Boot Settings to BIOS or UEFI, and leave Embedded SATA on AHCI (the default) if the boot SSDs use onboard ports.
+4. Write the ISO to a USB stick. The [install guide](https://www.truenas.com/docs/scale/gettingstarted/install/installingscale/) uses \`dd status=progress if=path/to/.iso of=path/to/USB\` and suggests \`lsblk -po +vendor,model\` to find the stick.
+5. Boot the installer, select the boot SSD, confirm the erase, choose "Administrative user (truenas_admin)" and set a password. The guide's wording for the last prompt is confusing (Yes allows UEFI boot, No is for legacy BIOS hardware), so match your BIOS mode.
+6. Boot TrueNAS, attach the second SSD to the boot pool, then run these checks in the shell:
+
+\`\`\`bash
+lspci -nnk | grep -i -A3 "serial attached\\|raid"
+lsblk -d -o NAME,MODEL,SERIAL,SIZE
+sudo smartctl -a /dev/sda
+\`\`\`
+
+An HBA330 should show the SAS3008 device \`[1000:0097]\` with \`Kernel driver in use: mpt3sas\`; an H730 in HBA mode shows \`[1000:005d]\` with \`megaraid_sas\`. Either way, \`lsblk\` should list each drive's own model and serial, and smartctl should print a full health report. A controller name instead of a drive model, or a smartctl failure, means the disks are not passed through.
+
+Then create the pool, schedule scrubs and SMART tests, and save the configuration file.
+
+## What breaks
+
+**The installer or TrueNAS shows no disks, or only some.** Old PERC firmware, leftover virtual disks or RAID mode can hide drives; one R730xd owner's stayed invisible until firmware 25.5.9.0001. Fix: update the firmware, delete virtual disks, switch to HBA mode, reboot, and try an HBA330 if SATA drives still vanish.
+
+**The installer fails with write errors on every drive.** A bad HBA, cabling or the backplane can cause it; one R730xd owner with an HBA330 Mini [saw cascading failures](https://www.truenas.com/community/threads/beginner-truenas-will-not-install-on-r730xd.96633/) and a moderator suspected the HBA. Fix: run the lspci check, reseat the cables, and test a known-good drive.
+
+**The R730 will not boot from the NVMe adapter.** Reports say 13th generation firmware does not boot third-party PCIe M.2 adapters. Fix: boot from SATA or SAS SSDs and use NVMe for pools.
+
+**The fans run high after adding a card.** The third-party PCIe cooling response is active. Fix: apply Dell's ipmitool setting.
+
+**A crossflash leaves the card dead.** The reports above trace it to wrong firmware, a missing SAS address record or no original firmware to revert to. Fix: use a guide written for your exact card, record the SAS address first, or buy an HBA330 Mini.
+
+## Frequently asked questions
+
+### Is the HBA330 better than an H730 in HBA mode?
+
+For TrueNAS, yes. It is a plain HBA with no cache or RAID firmware, Dell lists it for the R730, and the iXsystems moderator quoted above recommends it over the H730.
+
+### Can TrueNAS boot from NVMe on an R730?
+
+Not reliably. Dell says NVMe boot exists from the 13th generation on select platforms in UEFI mode, but Dell moderators say the R730 cannot boot PCIe M.2 SSDs. Use SATA or SAS boot SSDs.
+
+### Does the R730 support PCIe bifurcation?
+
+Yes. Dell's manual documents per-slot bifurcation: x16 slots can run x16, x8x8 or x4x4x4x4, and x8 slots x8 or x4x4. One owner of an R720, R730 and R730xd reports the R720 lacks it and runs a two-drive NVMe card in an R730.
+
+## What this means
+
+For a new 13th generation build, buy an R730xd with a Dell HBA330 Mini, two small SATA SSDs in the rear bays as a mirrored boot pool, matched DDR4 RDIMMs and an Intel 10GbE NDC, then install Community Edition 25.10. If you already own an H730, switch it to HBA mode on current firmware and prove it with smartctl. Reserve crossflashing for cards a widely used guide covers, such as the R720's H310 and H710.
+
+## References
+
+- [OpenZFS documentation: Hardware](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [TrueNAS Hardware Guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/)
+- [TrueNAS community resource: What's all the noise about HBAs, and why can't I use a RAID controller?](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/)
+- [TrueNAS Software Status](https://www.truenas.com/docs/softwarestatus/)
+- [TrueNAS blog: Community Edition release 25.04](https://www.truenas.com/blog/truenas-community-edition-release-2504/)
+- [TrueNAS blog: TrueNAS plans for 2026](https://www.truenas.com/blog/truenas-plans-for-2026/)
+- [TrueNAS install guide](https://www.truenas.com/docs/scale/gettingstarted/install/installingscale/)
+- [TrueNAS 25.10 boot pool management](https://www.truenas.com/docs/scale/25.10/scaletutorials/systemsettings/managebootenvironscale/)
+- [Dell PERC 9 User's Guide (H330, H730, H830)](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf)
+- [Dell HBA User's Guide: HBA330 and External 12 Gbps SAS HBA](https://dl.dell.com/topicspdf/dell-sas-hba-12gbps_users-guide_en-us.pdf)
+- [Dell PowerEdge R730 and R730xd Technical Guide, version 1.7](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf)
+- [Dell PowerEdge R730 Owner's Manual](https://dl.dell.com/topicspdf/poweredge-r730-dsms_owners-manual_en-us.pdf)
+- [Dell PowerEdge R730xd Owner's Manual](https://dl.dell.com/topicspdf/poweredge-r730xd_owners-manual_en-us.pdf)
+- [Dell PERC H730, H730P, H830 firmware 25.5.9.0001](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=700gg)
+- [Dell HBA330 Mini firmware 16.17.01.00](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2)
+- [Dell KB: How to disable the third-party PCIe card default cooling response on 13G servers](https://www.dell.com/support/kbdoc/en-us/000135682/how-to-disable-the-third-party-pcie-card-default-cooling-response-on-poweredge-13g-servers)
+- [Dell iDRAC7 and iDRAC8 RACADM CLI Reference Guide](https://dl.dell.com/topicspdf/idrac7-8-lifecycle-controller-v2404040_reference-guide_en-us.pdf)
+- [Dell: Boot Mode Considerations, BIOS vs. UEFI](https://downloads.dell.com/manuals/common/dellemc-boot-mode-bios-uefi.pdf)
+- [Dell Express Flash NVMe PCIe SSD User's Guide: Boot from an NVMe PCIe U.2 SSD](https://www.dell.com/support/manuals/en-us/dell-poweredge-exp-fsh-nvme-pcie-ssd/nvme_pcie_ssd_ug/boot-from-an-nvme-pcie-u2-ssd?guid=guid-04daee9b-70bf-4e58-af02-b7e261206dac&lang=en-us)
+- [Dell PERC H310, H710, H710P and H810 User's Guide](https://dl.dell.com/manuals/all-products/esuprt_ser_stor_net/esuprtl_adapters/poweredge-rc-h310_User's%20Guide_en-us.pdf)
+- [Dell BOSS-S1 User's Guide](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf)
+- [Dell Community: R730 refuses to boot from PCIe storage](https://www.dell.com/community/en/conversations/poweredge-hardware-general/r730-refuses-to-boot-from-pcie-storage/66b5a8da58ef9a642bc3416f)
+- [fohdeesha: PERC H310, H710, H710P and H810 IT crossflashing](https://fohdeesha.com/docs/perc.html)
+- [ServeTheHome forums: Crossflash Dell H330 to HBA330](https://forums.servethehome.com/index.php?threads/crossflash-dell-h330-to-hba330.43573/)
+- [TrueNAS forums: Crossflash Dell PERC H330 to IT / HBA mode](https://forums.truenas.com/t/crossflash-dell-perc-h330-to-it-hba-mode/21039)
+- [TrueNAS forums: Dell HBA330 to H330 recover crossflash](https://forums.truenas.com/t/dell-hba330-h330-recover-crossflash/5983)
+- [TrueNAS forums: Bare metal install issues](https://forums.truenas.com/t/bare-metal-install-issues/27715)
+- [TrueNAS community: Dell PERC H730 working with SAS, not SATA](https://www.truenas.com/community/threads/dell-perc-h730-working-with-sas-not-sata.91878/)
+- [TrueNAS community: RAID controllers HBA mode](https://www.truenas.com/community/threads/raid-controllers-hba-mode.95368/)
+- [TrueNAS community: Replacement for PERC H730p](https://www.truenas.com/community/threads/replacement-for-perc-h730p.114613/)
+- [TrueNAS community: Are there anyone running TrueNAS successfully here with Dell R730XD?](https://www.truenas.com/community/threads/are-there-anyone-running-truenas-successfully-here-with-dell-r730xd.104972/)
+- [TrueNAS community: Ready to click purchase (Dell R730-XD system)](https://www.truenas.com/community/threads/ready-to-click-purchase-dell-r730-xd-system-just-need-a-sanity-check.111438/)
+- [TrueNAS community: Feedback on used hardware choice (Dell R730)](https://www.truenas.com/community/threads/feedback-on-used-hardware-choice-dell-r730.98829/)
+- [TrueNAS community: Recommended PCIe to M.2 NVMe adapter for Dell PowerEdge R730xd](https://www.truenas.com/community/threads/recommended-pcie-to-m-2-nvme-adapter-for-dell-poweredge-r730xd.109483/)
+- [TrueNAS community: TrueNAS will not install on R730XD (beginner thread)](https://www.truenas.com/community/threads/beginner-truenas-will-not-install-on-r730xd.96633/)
+- [Linux kernel: megaraid_sas.h](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/megaraid_sas.h)
+- [Linux kernel: mpi2_cnfg.h (mpt3sas)](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/mpt3sas/mpi/mpi2_cnfg.h)
+- [PCI ID database (pci.ids)](https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids)
+`,
+  },
+  {
+    slug: "poweredge-r740-end-of-life",
+    title: "PowerEdge R740 and R640 End of Life: Every Date That Matters",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "homelab"],
+    excerpt:
+      "Last order, warranty, firmware and EOSL dates for the PowerEdge R740 and R640, with the R730 and R630, what keeps working after each, and what to buy next.",
+    coverImage: "/images/blog/poweredge-r740-end-of-life.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
+    },
+    content: `
+## The short answer
+
+Dell has not published an end-of-life or end-of-service-life date for the standalone PowerEdge R740 or R640, so any single date you see online is a reseller's estimate. Dell has published dates for appliances built on the same hardware (end of standard support August 31, 2028 for PowerFlex R640 and R740xd nodes) and one hard cutoff for 14th-generation servers: iDRAC9 software maintenance ends February 1, 2027. Your own service tag's expiry governs parts and phone support. The servers keep running past every date; BIOS 2.28.1 arrived in August 2026, and Windows Server 2022 and ESXi 8.0 are the newest Windows and VMware versions Dell lists for them.
+
+## What does end of life mean for a PowerEdge server?
+
+Six different dates get called end of life, and each ends something different.
+
+<figure>
+<img src="/images/blog/poweredge-r740-end-of-life/server-racks.jpg" alt="Rows of rack-mounted 1U servers with blue status lights in a data center" width="1200" height="800" loading="lazy" decoding="async">
+<figcaption>Racks of 1U servers in a Wikimedia Foundation data center. An end-of-support date changes what Dell will fix, not whether machines like these keep running. Photo: Victor Grigas, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Wikimedia_Foundation_Servers-8055_35.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Date | What it ends | Set by |
+|---|---|---|
+| End of sale (Dell: EOL) | Ordering new units | Dell |
+| Warranty | Included hardware repair; [3 years standard](https://www.delltechnologies.com/asset/en-us/products/multi-product/legal-pricing/h4276-emc-prod-warranty-maint-table.pdf) for R-series 400s and up | Dell, per service tag |
+| End of standard support (EOSS) | Basic and ProSupport coverage | Dell |
+| End of service life (EOSL) | General support | Dell, per service tag |
+| End of software maintenance | New iDRAC security fixes | Dell |
+| Third-party maintenance | Break-fix after Dell stops; one vendor claims 7 to 10 years after EOL | The maintenance firm |
+
+The first four are Dell's hardware lifecycle dates. Dell's [end-of-life spreadsheet](https://supportkb.dell.com/attachment/ka0Do0000003IXsIAM/Dell-Hardware-Release-and-End-of-Service-Life-Notifications_pkb_en_US_1.xlsx) for converged infrastructure and storage does not cover standalone servers, but its wording is Dell's. End of standard support is the date after which "Standard support (Basic, ProSupport, ProSupport MC, ProSupport Plus) is no longer available," and at end of service life Dell "may continue to offer limited support and/or maintenance only on a time and materials basis." Security fixes follow a separate clock: Dell's [ProSupport service description](https://i.dell.com/sites/csdocuments/Legal_Docs/en/us/dell-prosupport-for-infrastructure-sd-en.pdf) says it "does not guarantee the availability of security updates."
+
+## What has Dell published for the R740 and R640?
+
+Dell says no per-model schedule exists. A Dell moderator wrote on July 17, 2026 that Dell ["does not provide a publicly documented End of Life (EOL) or End of Support Life (EOSL) schedule for PowerEdge servers"](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r740/6a572d2f50a08a1eb3bea760). Dell's firmware plan already outruns the five to seven years staff cite: the R740 and R640 [shipped in July 2017](https://datacenternews.asia/story/generation-14-dell-emc-announces-availability-latest-server), and iDRAC9 maintenance runs to February 2027.
+
+The spreadsheet, dated October 2, 2026, has no row for a standalone R640, R740, R630 or R730, but it lists appliances sold on the same hardware:
+
+| Dell product | End of life | End of standard support |
+|---|---|---|
+| PowerFlex Appliance R640 | August 7, 2023 | August 31, 2028 |
+| PowerFlex Appliance R740XD | August 7, 2023 | August 31, 2028 |
+| Azure Stack Hub 14G R640 | November 17, 2023 | November 30, 2028 |
+| Azure Stack Hub 14G R740XD | November 17, 2023 | November 30, 2028 |
+
+Dell's [PowerFlex notice](https://www.dell.com/support/kbdoc/en-us/000305299/powerflex-hardware-and-software-end-of-service-dates) defines end of standard support as "five (5) years after the End of Sale," and these dates fit that rule. Two Dell hints also point away from an early end of sale. The [December 2025 Windows Server matrix](https://dl.dell.com/content/manual83982175-dell-poweredge-microsoft-windows-server-os-support.pdf?language=en-us) stars nearly every 14G model as discontinued but not the R640, R740 or R940, and a Dell moderator said on June 22, 2023 the R740 was ["still available but in Limited Quantities"](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r740-not-discontinue/64a3fbbef4ccf8a8dea4d246).
+
+To get the date for your own server:
+
+1. Read the Service Tag from the front pull-out tab, or run a command below.
+2. Enter it on Dell's support site and open Service Events.
+3. Turn off "Only show active events" to see the End of Service Life date, [per Dell moderators](https://www.dell.com/community/en/conversations/rack-servers/poweredge-servers-end-of-life-and-end-of-support-life/64e67ef5c362560b91c0043e).
+
+\`\`\`
+# On the server, from a Linux shell
+sudo dmidecode -s system-serial-number
+
+# Over SSH to the iDRAC
+racadm getsvctag
+\`\`\`
+
+Both commands come from [Dell's service tag guide](https://www.dell.com/support/contents/en-us/article/product-support/self-support-knowledgebase/locate-service-tag/server-storage).
+
+## Why do other sites show different dates?
+
+None of them cites a Dell notice for the standalone servers, and they contradict each other.
+
+| Source | R640 | R740 | Basis |
+|---|---|---|---|
+| Dell, appliance variants | EOSS August 31, 2028 (PowerFlex) or November 30, 2028 (Azure Stack Hub) | Same, for the R740XD | Dell tables |
+| [hardwarewartung](https://www.hardwarewartung.com/en/dell-poweredge-eol-eosl-2/) (maintenance vendor) | EOL January 20, 2023; EOSL March 31, 2027 | EOL Q4 2023; EOSL August 31, 2028 | None cited |
+| [icd3s](https://icd3s.com/end-of-life/dell/poweredge-r740/) (reseller) | End of sale October 31, 2023; EOSL December 31, 2028 | Same | Links a Dell KB that returns 404 |
+
+Two of these cannot both be right. hardwarewartung ends R640 support 17 months before the R740, while Dell gives its R640 and R740XD nodes identical dates, and December 31, 2028 falls after every Dell appliance date. hardwarewartung itself says that for standalone servers [Dell publishes no fixed EOL or EOSL dates](https://www.hardwarewartung.com/en/dell-poweredge-r740-r740xd-eol-and-eosl/).
+
+Trust them in this order: your service tag's record, then Dell's appliance dates (real, but for a different product), then reseller tables, which are estimates from firms that sell extended coverage.
+
+## What about the R630 and R730?
+
+They preview the end. Dell's last 13th-generation BIOS is [2.19.0, released March 18, 2024](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=km6p8), and its last iDRAC8 build is [2.86.86.86, released April 3, 2024](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=vwf72).
+
+| | R630 and R730 (13G) | R640 and R740 (14G) |
+|---|---|---|
+| Launch | [2014](https://www.dell.com/community/en/conversations/rack-servers/eol-and-eos-r630/647f9f57f4ccf8a8de4226fa) | July 2017 |
+| Management controller | iDRAC8; maintenance ended February 2024 | iDRAC9; maintenance ends February 1, 2027 |
+| Newest Windows Server on Dell's OS page | 2019 | 2022 |
+| Newest ESXi on Dell's OS page | 7.0 | 8.0 |
+
+Dell's [iDRAC8 notice](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8) says it "reaches the End of Software Maintenance as of February 2024," which matches hardwarewartung's 13G end of support. Both generations reach their last firmware roughly nine to ten years after launch, so if 14G follows, expect its last BIOS within months of February 2027.
+
+## What keeps working after each date?
+
+Downloads, hardware and Dell-listed operating systems keep working; new fixes and Dell parts logistics are what stop. The dates that matter, in order:
+
+| Date | What happens | Source |
+|---|---|---|
+| October 31, 2023 | End of sale, as quoted by one reseller | No Dell source |
+| December 31, 2023 | Intel ends baseline updates for Skylake-SP | [Intel](https://www.intel.com/content/www/us/en/support/topics/support-and-servicing-for-processors.html) |
+| June 30, 2025 | Intel ends baseline updates for Cascade Lake | Intel |
+| October 2026 | Windows Server 2022 leaves mainstream support | [Microsoft](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2022) |
+| January 2027 | Windows Server 2016 extended support ends | [Microsoft](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2016) |
+| February 1, 2027 | iDRAC9 software maintenance ends for 14G | Dell |
+| September 30, 2027 | OpenManage Server Administrator sustenance ends | [Dell](https://www.dell.com/support/kbdoc/en-us/000224826/omsa-eol-landing-page) |
+| October 11, 2027 | ESXi 8 general support ends | Third party |
+| August 31 and November 30, 2028 | End of standard support, Dell's R640 and R740XD appliances | Dell |
+| December 31, 2028 | EOSL, as quoted by one reseller | No Dell source |
+| October 11, 2029 | ESXi 8 technical guidance ends | Broadcom |
+| October 2031 | Windows Server 2022 extended support ends | Microsoft |
+
+### Firmware, BIOS and iDRAC
+
+Dell's [iDRAC9 notice](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9) says 14G feature development ended June 30, 2023 and "Software maintenance for iDRAC9 will continue until February 01, 2027." Since July 2023 Dell has shipped nine releases, each labeled "Discretionary Sev1 security fix," the newest 7.00.00.185 in August 2026.
+
+The fixes matter. [DSA-2026-355](https://www.dell.com/support/kbdoc/en-us/000505000/dsa-2026-355-security-update-for-dell-poweredge-server-for-intel-2026-security-advisories-2026-3-ipu) (September 1, 2026, High) lists the R640 and R740 as affected below BIOS 2.28.1. [DSA-2026-392](https://www.dell.com/support/kbdoc/en-us/000504998/dsa-2026-392-security-update-for-dell-idrac9-and-idrac10-vulnerability) (September 3, CVSS 7.2) covers iDRAC9 below 7.00.00.184, and [DSA-2026-415](https://www.dell.com/support/kbdoc/en-us/000509006/dsa-2026-415-security-update-for-dell-idrac9-and-idrac10-vulnerability) (September 14) sets 7.00.00.185. Dell's [published minimums](https://www.dell.com/support/kbdoc/en-us/000227230/minimum-recommended-and-latest-code-versions-for-dell-technologies-poweredge), BIOS 2.25.0 and iDRAC 7.00.00.173, sit below all three.
+
+After February 1, 2027 the downloads stay: "Released iDRAC firmware updates are available regardless of support contract." BIOS has no published end date, and [BIOS 2.28.1](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=188CW) still carries Intel's 2026.3 platform update although Intel's baseline servicing for these CPUs ended in 2023 and 2025, so the BIOS end is Dell's call. A contract does not change this: Dell's [Post Standard Support terms](https://i.dell.com/sites/csdocuments/Legal_Docs/en/us/post-standard-support-en.pdf) say "Hot fixes including security patches are not available."
+
+### Windows Server
+
+Windows Server 2022 is the newest version Dell lists for the R740 and R640. Dell's supported-OS pages for the [R740](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r740) and [R640](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r640) stop at 2022 LTSC, and its matrix marks both models "Qualified" for 2022, 2019 and 2016 with no 2025 column for 14G.
+
+Dell's documents disagree on 2025. The notes for [BIOS 2.22.2](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=f8gph) (October 1, 2024) say "Support for Microsoft Windows Server 2025 Operating System for R740 and R640," but a Dell engineer [wrote on December 26, 2025](https://www.dell.com/community/en/conversations/poweredge-hardware-general/windows-server-2025-compatibility-and-official-driver-support-for-poweredge-r740/694e8377de43d31695a522b0) that "The Poweredge R740 does not support Server 2025, nor do I see it being added." Trust the matrix and the engineer, because a release-note line is not a qualification. Treat 2025 as "may install, no Dell support."
+
+### VMware ESXi
+
+ESXi 8.0 is the last version Dell certifies on these servers, and ESXi 9 works only in a deprecated, confirm-with-the-vendor state. Dell's [vSphere 8.0 list](https://www.dell.com/support/kbdoc/en-us/000217592/dell-poweredge-servers-certified-for-vmware-vsphere-8-0) includes the R640 and R740 but not the R630 or R730. Broadcom lists [end of technical guidance for ESXi 8.0 as October 11, 2029](https://ftpdocs.broadcom.com/cadocs/0/contentimages/Product_EOTG_Dates.pdf), and [Rimini Street](https://www.riministreet.com/blog/vmware-vsphere-8-end-of-support-5-smart-moves-it-leaders-are-making/), a third-party support vendor, puts general support's end at October 11, 2027.
+
+Dell's [ESXi 9.x matrix](https://dl.dell.com/content/manual23955509-vmware-vsphere-esxi-9-x-on-dell-poweredge-systems-compatibility-matrix.pdf?language=en-us) (May 2026, Rev. A03) starts at the R750 and R650. Broadcom's [CPU notice](https://knowledge.broadcom.com/external/article/428874) (updated September 18, 2026) says Cascade Lake is "operating in Deprecated Mode for VCF 9, and is still supported," while Skylake-SP, "previously Discontinued in VCF 9.0," is now "supported in Deprecated Mode for VCF 9.x" through an override install path. Hardware, BIOS and firmware support "is the responsibility of the OEM system / server providers."
+
+So ESXi 9 is a bridge, not a destination, and a Cascade Lake host (the "2nd Generation" Xeon Scalable in Dell's [R740 spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/poweredge-r740-spec-sheet.pdf)) is the cleaner candidate. An April 2026 owner post said the R640 "is not supported on vmware 9," before Broadcom's September change.
+
+### Proxmox VE and Linux
+
+Proxmox VE runs on both models, and nobody certifies it, so the evidence is owner reports. In an [R640 compatibility thread](https://forum.proxmox.com/threads/dell-poweredge-r640-compatibility.182931/), one poster wrote in April 2026 that "there is no official Proxmox PVE+Dell HCL," and another reported "Our R640/R740xd systems running 9.1 have had no issues at all," using H740p [RAID](/blog/raid-levels-comparison) controllers with XFS. Proxmox's [requirements page](https://pve.proxmox.com/wiki/System_Requirements) says "Neither ZFS nor Ceph are compatible with a hardware RAID controller."
+
+[Proxmox VE 9.2](https://pve.proxmox.com/wiki/Roadmap) shipped May 21, 2026 with kernel 7.0. Releases are supported ["at least as long as the corresponding Debian version"](https://pve.proxmox.com/wiki/FAQ). Proxmox's [Backup Server roadmap](https://pbs.proxmox.com/wiki/Roadmap) lists kernel 6.17 boot failures on certain Dell servers, helped by enabling SR-IOV Global and I/OAT DMA, and one R640 owner wrote in August 2026 that the 9.2 installer found no disks (unanswered). Dell's own [Red Hat matrix](https://linux.dell.com/files/supportmatrix/RHEL_Support_Matrix.pdf) stops at RHEL 9.5 for these models, and its [Ubuntu matrix](https://linux.dell.com/files/supportmatrix/Ubuntu_LTS_Support_Matrix.pdf) lists 22.04 LTS but not 24.04 or 26.04.
+
+## What does this mean for a homelab or small business in 2026?
+
+A homelab can keep an R740 or R640 for years if the iDRAC stays unreachable from untrusted networks. A small business should treat February 1, 2027 and its service tag expiry as the real deadlines.
+
+<figure>
+<img src="/images/blog/poweredge-r740-end-of-life/eqiad-cluster.jpg" alt="A tall open rack filled from top to bottom with servers" width="1200" height="1792" loading="lazy" decoding="async">
+<figcaption>A full rack in Wikimedia's EQIAD data center in Ashburn, Virginia. Photo: RobH, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Eqiadwmf_9038.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+For a homelab, update to BIOS 2.28.1 and iDRAC9 7.00.00.185, put the iDRAC on a management VLAN with no internet route (the [iDRAC tips](/blog/dell-idrac-tips-tricks) article covers settings), and run ESXi 8.0 or Proxmox VE 9 ([Proxmox vs ESXi](/blog/proxmox-vs-esxi) compares them). The [R740 deep dive](/blog/dell-poweredge-r740-deep-dive) covers the hardware. [The Register reported](https://www.theregister.com/2025/04/14/vmware_free_esxi_returns/) in April 2025 that Broadcom brought back a free vSphere Hypervisor 8 download.
+
+For a small business, stay current on BIOS and iDRAC while a contract is live, because Dell's ProSupport terms exclude services needed after a customer skips an advised fix. Afterward you have three paths: Dell's Post Standard Support (at Dell's "sole discretion," no security patches), third-party maintenance (one vendor says it ["does not supply Dell or any other OEM software"](https://www.servnetuk.com/server-end-of-life/dell-poweredge-14g-r740-r640)), or replacement.
+
+## What should you buy next?
+
+Buy by the software you need: a used R740 still fits Windows Server 2022, ESXi 8 and Proxmox, while Dell-listed Windows Server 2025 or ESXi 9 starts at the 15th generation.
+
+| Generation | Processors | Memory and PCIe | Windows Server 2025 | ESXi 9 |
+|---|---|---|---|---|
+| 14G ([R740](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/poweredge-r740-spec-sheet.pdf)) | 2nd Gen Xeon Scalable, up to 28 cores | 24 DDR4 slots, 2933 MT/s, PCIe Gen 3 | Not listed | Not listed |
+| 15G ([R750](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/dell-emc-poweredge-r750-spec-sheet.pdf)) | 3rd Gen, up to 40 cores | 32 DDR4 slots, 3200 MT/s, PCIe Gen 4 | Qualified | Listed |
+| 16G ([R760](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r760-spec-sheet.pdf)) | 4th or 5th Gen, up to 56 or 64 cores | 32 DDR5 slots, 4800 or 5600 MT/s | Qualified | Listed |
+| 17G ([R770](https://www.delltechnologies.com/asset/en-my/products/servers/technical-support/poweredge-r770-spec-sheet.pdf)) | Xeon 6, up to 144 E-cores | 32 DDR5 slots, 6400 MT/s | Qualified | Listed |
+
+A used R750 or R650 is the oldest generation Dell lists for both Windows Server 2025 and ESXi 9. Skip the 13th generation now: its last firmware shipped in spring 2024, and Dell lists neither Windows Server 2022 nor ESXi 8 for it. Check the service tag of any used unit before paying, as in [How I Evaluate Used Enterprise Gear](/blog/buying-used-enterprise-gear).
+
+## Pre-end-of-support checklist
+
+Work through these in order, ideally before February 1, 2027.
+
+1. Look up the service tag and screenshot the End of Service Life date with "Only show active events" turned off.
+2. Update BIOS to 2.28.1 and iDRAC9 to 7.00.00.185 or newer.
+3. Export the iDRAC configuration first, using Dell's [export and import KB](https://www.dell.com/support/kbdoc/en-us/000114972/export-and-import-idrac-configuration-information).
+4. Download and archive the final BIOS, iDRAC, RAID controller, network card and drive firmware, which [Dell offers free](https://www.dell.com/support/kbdoc/en-us/000128194).
+5. Isolate the iDRAC on a management network with no inbound internet path.
+6. Decide the support path before the contract lapses: renew ProSupport, ask about Post Standard Support, sign third-party maintenance, or replace.
+7. Stock spares for what fails first: power supplies, fans, memory and drives.
+8. Pick the OS path, test one host, and set a replacement date.
+
+## What breaks
+
+**Windows Server 2025 on a 14G server gets you no Dell support.** Dell's OS pages and matrix list 2022 as newest, and a Dell engineer said 14G will not be added despite the BIOS 2.22.2 note. Fix: run Windows Server 2022, or get Dell's answer in writing for your service tag first.
+
+**The ESXi 9 installer may refuse a Skylake-SP host.** Broadcom discontinued Skylake-SP in 9.0 and now supports it only through an override procedure, and Dell's matrix lists no 14G server. Fix: stay on ESXi 8.0, or use Cascade Lake processors and confirm hardware support with Dell.
+
+**New iDRAC security fixes stop after February 1, 2027.** Dell defines the end of software maintenance as the last date for "any software maintenance releases, security updates, or issue fixes." Fix: install 7.00.00.185 or newer first, keep the iDRAC off reachable networks, and retire any host that must pass a firmware audit.
+
+**A 13th-generation host reboots in a loop when you install Proxmox VE 9.1.** Kernel 6.17 fails on some Dell servers, and one R730xd owner got a Dell error on the next boot. Fix: enable SR-IOV Global and I/OAT DMA in the BIOS, or boot kernel 6.14.
+
+## Frequently asked questions
+
+### Is the PowerEdge R740 end of life?
+
+Dell has not announced an end of life for the standalone R740. Its December 2025 matrix does not star it as discontinued, resellers quote late 2023 for end of sale, and its firmware was still being updated in August 2026.
+
+### When does the R640 reach end of service life?
+
+No Dell source gives a date for the standalone R640. Dell's PowerFlex R640 node reaches end of standard support on August 31, 2028 and its Azure Stack Hub R640 on November 30, 2028. Resellers say March 31, 2027 or December 31, 2028, so use the service tag lookup.
+
+### Will Dell still update R740 firmware in 2027?
+
+iDRAC9 fixes are scheduled to end on February 1, 2027, and Dell has announced no end date for BIOS updates. The 13th generation received its last BIOS in March 2024, weeks after iDRAC8 maintenance ended, so expect the last 14G BIOS near February 2027.
+
+### Can an R740 run Windows Server 2025 or ESXi 9?
+
+Dell lists neither for 14th generation, and its documents disagree on Windows Server 2025. Broadcom still supports Cascade Lake, and Skylake-SP through an override, in ESXi 9.x deprecated mode. Choose Windows Server 2022 or ESXi 8.0 if you need Dell-listed support.
+
+## What this means
+
+Treat the R740 and R640 as safe to run until your service tag's support expires, and as a managed risk after February 1, 2027. Update BIOS and iDRAC now, lock down the management network, pick Windows Server 2022, ESXi 8.0 or Proxmox VE 9, and set a replacement date no later than the second half of 2028. Buy an R750 or newer if you need Dell-listed Windows Server 2025 or ESXi 9.
+
+## References
+
+- [Dell Technologies: 3 years standard](https://www.delltechnologies.com/asset/en-us/products/multi-product/legal-pricing/h4276-emc-prod-warranty-maint-table.pdf)
+- [Dell Support: End-of-life spreadsheet](https://supportkb.dell.com/attachment/ka0Do0000003IXsIAM/Dell-Hardware-Release-and-End-of-Service-Life-Notifications_pkb_en_US_1.xlsx)
+- [Dell: ProSupport service description](https://i.dell.com/sites/csdocuments/Legal_Docs/en/us/dell-prosupport-for-infrastructure-sd-en.pdf)
+- [Dell Community: Does not provide a publicly documented End of Life (EOL) or End of Support Life (EOSL) schedule for PowerEdge servers](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r740/6a572d2f50a08a1eb3bea760)
+- [DataCenter News Asia: Shipped in July 2017](https://datacenternews.asia/story/generation-14-dell-emc-announces-availability-latest-server)
+- [Dell Support: PowerFlex notice](https://www.dell.com/support/kbdoc/en-us/000305299/powerflex-hardware-and-software-end-of-service-dates)
+- [Dell: December 2025 Windows Server matrix](https://dl.dell.com/content/manual83982175-dell-poweredge-microsoft-windows-server-os-support.pdf?language=en-us)
+- [Dell Community: Still available but in Limited Quantities](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r740-not-discontinue/64a3fbbef4ccf8a8dea4d246)
+- [Dell Community: Per Dell moderators](https://www.dell.com/community/en/conversations/rack-servers/poweredge-servers-end-of-life-and-end-of-support-life/64e67ef5c362560b91c0043e)
+- [Dell Support: Dell's service tag guide](https://www.dell.com/support/contents/en-us/article/product-support/self-support-knowledgebase/locate-service-tag/server-storage)
+- [hardwarewartung.com: Hardwarewartung](https://www.hardwarewartung.com/en/dell-poweredge-eol-eosl-2/)
+- [icd3s.com: Icd3s](https://icd3s.com/end-of-life/dell/poweredge-r740/)
+- [hardwarewartung.com: Dell publishes no fixed EOL or EOSL dates](https://www.hardwarewartung.com/en/dell-poweredge-r740-r740xd-eol-and-eosl/)
+- [Dell Support: 2.19.0, released March 18, 2024](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=km6p8)
+- [Dell Support: 2.86.86.86, released April 3, 2024](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=vwf72)
+- [Dell Community: 2014](https://www.dell.com/community/en/conversations/rack-servers/eol-and-eos-r630/647f9f57f4ccf8a8de4226fa)
+- [Dell Support: IDRAC8 notice](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8)
+- [intel.com: Intel](https://www.intel.com/content/www/us/en/support/topics/support-and-servicing-for-processors.html)
+- [Microsoft Learn: Microsoft](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2022)
+- [Microsoft Learn: Microsoft](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2016)
+- [Dell Support: Dell](https://www.dell.com/support/kbdoc/en-us/000224826/omsa-eol-landing-page)
+- [Dell Support: IDRAC9 notice](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9)
+- [Dell Support: DSA-2026-355](https://www.dell.com/support/kbdoc/en-us/000505000/dsa-2026-355-security-update-for-dell-poweredge-server-for-intel-2026-security-advisories-2026-3-ipu)
+- [Dell Support: DSA-2026-392](https://www.dell.com/support/kbdoc/en-us/000504998/dsa-2026-392-security-update-for-dell-idrac9-and-idrac10-vulnerability)
+- [Dell Support: DSA-2026-415](https://www.dell.com/support/kbdoc/en-us/000509006/dsa-2026-415-security-update-for-dell-idrac9-and-idrac10-vulnerability)
+- [Dell Support: Published minimums](https://www.dell.com/support/kbdoc/en-us/000227230/minimum-recommended-and-latest-code-versions-for-dell-technologies-poweredge)
+- [Dell Support: BIOS 2.28.1](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=188CW)
+- [Dell: Post Standard Support terms](https://i.dell.com/sites/csdocuments/Legal_Docs/en/us/post-standard-support-en.pdf)
+- [Dell Support: R740](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r740)
+- [Dell Support: R640](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r640)
+- [Dell Support: BIOS 2.22.2](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=f8gph)
+- [Dell Community: Wrote on December 26, 2025](https://www.dell.com/community/en/conversations/poweredge-hardware-general/windows-server-2025-compatibility-and-official-driver-support-for-poweredge-r740/694e8377de43d31695a522b0)
+- [Dell Support: VSphere 8.0 list](https://www.dell.com/support/kbdoc/en-us/000217592/dell-poweredge-servers-certified-for-vmware-vsphere-8-0)
+- [ftpdocs.broadcom.com: End of technical guidance for ESXi 8.0 as October 11, 2029](https://ftpdocs.broadcom.com/cadocs/0/contentimages/Product_EOTG_Dates.pdf)
+- [riministreet.com: Rimini Street](https://www.riministreet.com/blog/vmware-vsphere-8-end-of-support-5-smart-moves-it-leaders-are-making/)
+- [Dell: ESXi 9.x matrix](https://dl.dell.com/content/manual23955509-vmware-vsphere-esxi-9-x-on-dell-poweredge-systems-compatibility-matrix.pdf?language=en-us)
+- [Broadcom: CPU notice](https://knowledge.broadcom.com/external/article/428874)
+- [Dell: R740 spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/poweredge-r740-spec-sheet.pdf)
+- [Proxmox: R640 compatibility thread](https://forum.proxmox.com/threads/dell-poweredge-r640-compatibility.182931/)
+- [Proxmox: Requirements page](https://pve.proxmox.com/wiki/System_Requirements)
+- [Proxmox: Proxmox VE 9.2](https://pve.proxmox.com/wiki/Roadmap)
+- [Proxmox: At least as long as the corresponding Debian version](https://pve.proxmox.com/wiki/FAQ)
+- [Proxmox: Backup Server roadmap](https://pbs.proxmox.com/wiki/Roadmap)
+- [Dell Support: Red Hat matrix](https://linux.dell.com/files/supportmatrix/RHEL_Support_Matrix.pdf)
+- [Dell Support: Ubuntu matrix](https://linux.dell.com/files/supportmatrix/Ubuntu_LTS_Support_Matrix.pdf)
+- [The Register: The Register reported](https://www.theregister.com/2025/04/14/vmware_free_esxi_returns/)
+- [servnetuk.com: Does not supply Dell or any other OEM software](https://www.servnetuk.com/server-end-of-life/dell-poweredge-14g-r740-r640)
+- [Dell Technologies: R750](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/dell-emc-poweredge-r750-spec-sheet.pdf)
+- [Dell Technologies: R760](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r760-spec-sheet.pdf)
+- [Dell Technologies: R770](https://www.delltechnologies.com/asset/en-my/products/servers/technical-support/poweredge-r770-spec-sheet.pdf)
+- [Dell Support: Export and import KB](https://www.dell.com/support/kbdoc/en-us/000114972/export-and-import-idrac-configuration-information)
+- [Dell Support: Dell offers free](https://www.dell.com/support/kbdoc/en-us/000128194)
+`,
+  },
+  {
+    slug: "dell-r730-vs-r730xd",
+    title: "Dell PowerEdge R730 vs R730xd: Every Bay, Slot and GPU Limit",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "storage", "homelab"],
+    excerpt:
+      "What the R730 and R730xd share, every drive bay, PCIe slot and GPU difference from Dell's documents, and which one to buy for a ZFS box or a GPU host.",
+    coverImage: "/images/blog/dell-r730-vs-r730xd.jpg",
+    content: `
+## The problem
+
+You are comparing a used Dell PowerEdge R730 and R730xd at similar prices and need to know what each one rules out. The two share a platform, but the chassis decides how many drives fit, whether NVMe or a GPU is supported and how many PCIe cards you can add. Here are the exact differences from Dell's documentation, and which one fits a ZFS storage box versus a GPU or virtualization host.
+
+## What the R730 and R730xd share
+
+Both are two-socket 2U servers on Intel's C610 chipset, documented together in one Dell [technical guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf). Behind the drive cage, they are the same platform.
+
+**Processors.** Both take the Xeon E5-2600 v3 and v4 families. The technical guide covers only v3, with up to 18 cores per processor; the later [R730 spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-Spec-Sheet.pdf) lists v4 with up to 22 cores, and the 22-core E5-2699 v4 is a [145 W part](https://www.intel.com/content/www/us/en/products/sku/91317/intel-xeon-processor-e52699-v4-55m-cache-2-20-ghz/specifications.html). Before putting v4 chips in a unit that shipped with v3, check the BIOS: Dell added v4 support in [BIOS 2.0.1](https://www.dell.com/support/home/us/en/04/drivers/driversdetails?driverid=y5w1r), released March 17, 2016, the upgrade path [ServeTheHome's E5-2699 v4 review](https://www.servethehome.com/intel-xeon-e5-2699-v4-benchmarking-the-top-end/) also describes. The one processor difference: the guide marks the 160 W E5-2687W v3 as not supported on the R730xd, and the [R730xd owner's manual](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/standard-operating-temperature?guid=guid-c5c1a8e6-c380-46ea-a788-604fd8778370&lang=en-us) caps its 2.5-inch chassis at 145 W processors. The manuals also list a 120 W limit for the 3.5-inch chassis, but it is one of Dell's [expanded operating temperature restrictions](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/expanded-operating-temperature-restrictions?guid=guid-c7ed6a84-6734-4315-b167-92b007911598&lang=en-us), which apply only outside the standard 10 to 35C range.
+
+**Memory.** Both have 24 DIMM slots, 12 per processor, and take DDR4 RDIMMs or LRDIMMs, never both in one system. The v3 chips in Dell's table top out at 2133MT/s; the R730xd manual lists 2400MT/s, which arrives with v4. Dell's documents disagree on maximum capacity. The technical guide says 768GB, while the R730 spec sheet says up to 3TB with 128GB modules and the R730xd manual gives 768GB for RDIMMs and 3,072GB for LRDIMMs with two processors. The guide predates the larger LRDIMMs (it says 64GB modules were coming), so trust the later documents.
+
+**Management, power and [RAID](/blog/raid-levels-comparison).** Both use iDRAC8 with Lifecycle Controller, Express by default and Enterprise as an upgrade. Both take up to two hot-plug power supplies from the same menu: 495 W, 750 W and 1100 W Platinum AC, a 750 W Titanium AC unit, and 1100 W DC. Both use the PERC9 family: the H330, the H730 with 1GB of non-volatile cache and the H730P with 2GB, as a mini card that takes no PCIe slot or as an adapter. The S130 software RAID option is R730 only.
+
+## Where the two chassis differ
+
+Every difference comes from the chassis, and Dell's guide says the backplane option "must be selected at point of purchase and cannot be changed or upgraded later."
+
+| Feature | R730 | R730xd |
+|---|---|---|
+| Front bays | 8 x 3.5-inch, 8 x 2.5-inch or 16 x 2.5-inch | 12 x 3.5-inch, 24 x 2.5-inch, or 8 x 3.5-inch plus 18 x 1.8-inch SATA SSD |
+| Middle bays | None | 4 x 3.5-inch tray, certain 12-bay configurations only |
+| Rear bays | None | 2 x 2.5-inch, optional |
+| Most drives | 16 | 28 |
+| NVMe (Express Flash) | Not supported | Up to 4 U.2 in slots 20 to 23, 24-bay chassis only |
+| PCIe 3.0 slots | 7, plus PERC slot | 6, plus PERC slot |
+| Riser 3 | Two x8 slots, or one x16 | One x16 slot |
+| Internal GPUs | Two 300 W double-wide or four 150 W single-wide | Not supported |
+| 160 W E5-2687W v3 | Supported | Not supported |
+| Optical drive | Optional slimline SATA DVD-ROM or DVD+/-RW | Not supported |
+| Front panel | LCD panel, 2 USB, vFlash slot | LED panel, 1 USB (iDRAC Direct), vFlash at rear |
+| PERC S130 software RAID | 8 x 2.5-inch chassis only | Not offered |
+
+### Drive bays
+
+The [R730 owner's manual](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/hard-drives?guid=guid-8bf49739-41c1-4642-a4f5-5e42a448116c&lang=en-us) lists only eight-drive systems, in 3.5-inch or 2.5-inch, and sixteen-drive 2.5-inch systems. The [R730xd manual](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/hard-drives?guid=guid-8bf49739-41c1-4642-a4f5-5e42a448116c&lang=en-us) builds every layout from three fronts (12 x 3.5-inch, 24 x 2.5-inch or the 1.8-inch hybrid) plus the optional rear pair, the middle tray or the NVMe bays. The middle tray holds four 3.5-inch drives behind the fan assembly, and the [manual](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r730xd-owners-manual-en-us-180912.pdf) says systems with it "require low-profile heat sinks and do not require or support a cooling shroud." [StorageReview](https://www.storagereview.com/review/dell-poweredge-13g-r730xd-review) and [InfoWorld](https://www.infoworld.com/article/2181612/servers-review-dell-s-13g-poweredge-r730xd-a-workhorse-server-with-a-kick.html) confirm the four NVMe bays.
+
+### Slots and the front panel
+
+Both manuals put three low-profile x8 slots on riser 1, and a full-height x16 plus a full-height x8 on riser 2. Riser 3 is the difference: the [R730](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/expansion-bus-specifications?guid=guid-25fe748e-f8c6-463e-846d-d489758b0870&lang=en-us) gets two full-height x8 slots or, with the alternate riser, one x16, while the [R730xd](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/expansion-bus-specifications?guid=guid-25fe748e-f8c6-463e-846d-d489758b0870&lang=en-us) offers only the single x16. The R730 takes an [optional SATA DVD-ROM or DVD+/-RW drive](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/optical-drive?guid=guid-30864d8a-11ca-4534-a85f-d95217368533&lang=en-us); the guide says the R730xd "does not support an internal optical drive."
+
+## Which one to buy for a ZFS or TrueNAS box
+
+If the pool is spinning disks, the R730xd's 12 x 3.5-inch front is the reason to buy it, because the R730 stops at eight large drives. The rear 2.5-inch pair keeps boot drives out of the pool; InfoWorld's review unit used its rear pair as a RAID-1 mirror for the operating system. The 1.8-inch hybrid chassis pairs 18 SATA SSDs with eight 3.5-inch drives, but Dell's 1.8-inch SSD options topped out at 960GB and Dell ranks it the loudest R730xd chassis at idle.
+
+<figure>
+<img src="/images/blog/dell-r730-vs-r730xd/lsi-9207-hba.jpg" alt="An LSI 9207-4i4e SAS host bus adapter card with one internal and one external connector" width="1200" height="638" loading="lazy" decoding="async">
+<figcaption>An LSI 9207-4i4e, a 6Gb/s SAS host bus adapter with one internal and one external four-lane connector: the kind of card that gives ZFS direct access to its disks. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_9207-4i4e_PCI-E_SAS_HBA.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The controller matters more than the chassis. [OpenZFS](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) says plainly that "Hardware RAID controllers should not be used with ZFS" and recommends an HBA. Dell's HBA330 is an [8-port LSI 3008 card with non-RAID pass-through](https://www.dell.com/support/manuals/en-us/dell-sas-hba-12gbps/dell_hba_ug_publication/dell-hba-card-specifications?guid=guid-06cb2c46-07fb-4f69-b558-fa0a275d1d51&lang=en-us), and Dell's [HBA330 Mini firmware page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2) lists both the R730 and R730xd. If you already have an H330 or H730, Dell's PERC 9 guide describes an [HBA mode](https://www.dell.com/support/manuals/en-us/poweredge-rc-h730/perc9ugpublication/perc-9-personality-management?guid=guid-bc0aac4e-f574-4202-9379-be3a4d6a142c&lang=en-us) with no virtual disks, where all physical disks run "under operating system control." [TrueNAS](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) accepts that: it says not to use a RAID card's RAID facility when the card has an HBA mode, and calls one RAID0 volume per disk "not the ideal setup." The two disagree on strictness; trust OpenZFS for a new build, because TrueNAS's own list of RAID card limitations includes masking disk serial numbers and S.M.A.R.T. data. For pool layout, see [running ZFS on Dell enterprise hardware](/blog/zfs-on-enterprise-hardware).
+
+## Which one to buy for a GPU or virtualization host
+
+For any GPU, buy the R730. Dell supports two 300 W double-wide or four 150 W single-wide GPUs in it, passively cooled only and for compute only: "external video out is not supported." The cards sit on risers 2 and 3: two double-wide cards need the optional single-x16 riser 3, and three or four single-wide cards need the standard riser 3. Dell's guide lists accelerators including the NVIDIA K40, GRID K1 and GRID K2, AMD FirePro S7000 and S9050, and Intel Xeon Phi cards, and the [R730 owner's manual](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/gpu-card-installation-guidelines?guid=guid-c3605f65-c4ae-4beb-9a32-907a90753b81&lang=en-us) adds rules for the NVIDIA K80. [StorageReview's R730 review](https://www.storagereview.com/review/dell-poweredge-13g-r730-server-review) confirms the same options. To hand a card to a VM, see [GPU passthrough on Proxmox](/blog/gpu-passthrough-proxmox).
+
+Without a GPU, processor and memory options match apart from that one 160 W chip, so a virtualization host comes down to the R730's seventh slot and optical drive against the R730xd's extra bays.
+
+## How loud each one is, by Dell's measurements
+
+In Dell's guide, a typical 3.5-inch R730 measured 28 dBA idle and 33 dBA operating, and a typical 3.5-inch R730xd measured 32 dBA idle and 43 dBA operating. Dell's typical R730xd carries ten drives to the R730's six, so treat that as a direction, not a matched test. Dell also says a 3.5-inch R730xd with 16 drives is about 50% louder at idle than one with four (6.2 versus 5.6 bels).
+
+On the R730, any GPGPU card makes it about twice as loud. PCIe SSD configurations need more airflow and can reach 7.0 bels under stress. Low-power chips such as the E5-2650L v3 and E5-2630L v3 run about twice as loud as typical under moderate or heavy load, because they have lower temperature limits. Dell's default Power Optimized (DAPC) profile keeps fans slower than Performance Optimized. Owners report non-Dell PCIe cards raising fan speed: one [R730xd owner](https://forums.developer.nvidia.com/t/dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card/207266) reported about 17,000 RPM at idle with a ConnectX-3 card installed and about 5,000 RPM without it.
+
+## What iDRAC8's end of maintenance means for both
+
+Both are 13th-generation servers with iDRAC8, and [Dell's iDRAC8 support article](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8) gives the dates that matter. iDRAC8 reached End of Sale in December 2021 and End of Software Maintenance in February 2024, and the last iDRAC8 firmware is version 2.86.86.86. Dell defines the maintenance date as the last date for iDRAC engineering to release maintenance releases or fixes, so treat that firmware as final: update to 2.86.86.86 and keep the iDRAC port on an isolated management network. The [iDRAC tips and tricks](/blog/dell-idrac-tips-tricks) post covers day-to-day use.
+
+For the hardware there is no published date: owners who asked on [Dell's community forum](https://www.dell.com/community/en/conversations/rack-servers/poweredge-servers-end-of-life-dates/66e9cfa5631be3413cd3db37) were told by a Dell moderator that no article lists PowerEdge end-of-life dates, and to check each server by service tag.
+
+## What breaks
+
+**Buying an R730xd to run GPUs.**
+
+Dell's guide is blunt: "The R730xd does not support internal or external GPUs." The R730xd's card installation table has no GPU entry, and the GPU enablement kit that carries the power cables is described for the R730 chassis. A card may fit the full-height x16 slot, but its power and cooling are not validated.
+
+Fix: buy an R730 for GPU work, or keep the R730xd as the storage box and put the GPU in a separate host.
+
+**Assuming any 2.5-inch chassis takes NVMe.**
+
+Dell states that "The R730 does not support Express Flash drives," in any chassis. On the R730xd, only the 24-bay layout with U.2 slots 20 to 23 takes NVMe, and the backplane is fixed at purchase. Owners asking on [Dell's community forum](https://www.dell.com/community/en/conversations/rack-servers/r730xd-u2-nvme-enablement-kit-installation/6627b2f9abffb86bf86f5ffb) were told by a Dell moderator that the kit's PCIe extender card goes in slot 4, that slot 4 needs two processors, and that a field change to the backplane is not supported. That matches the [R730xd card table](https://www.dell.com/support/manuals/en-gb/poweredge-r730xd/r730xd_ompublication/expansion-card-installation-guidelines?guid=guid-48fdcedc-e689-4cb6-a83c-7b9ea4e31449&lang=en-us&lwp=rt), which reserves slot 4 for a PCIe bridge card.
+
+Fix: confirm the listing is a 24-bay R730xd with the four NVMe bays, the extender card and two processors. Otherwise, put NVMe on a PCIe add-in card.
+
+**Leaving the PERC in RAID mode for ZFS.**
+
+Dell says PERC9 controllers are "mostly shipped from the factory in RAID mode." If you build a RAID volume, or one RAID0 per drive, and give it to ZFS, ZFS sees the controller's virtual disks instead of the drives, and OpenZFS warns that hardware RAID "will limit opportunities for ZFS to perform self healing on checksum failures."
+
+Fix: fit an HBA330, or switch the H330 or H730 to HBA mode, so ZFS gets every disk directly. Treat one RAID0 per disk as the last resort TrueNAS describes.
+
+**Fitting a GPU to an R730 without Dell's power and cooling conditions.**
+
+Each GPU takes power through the GPU enablement kit's cables, and Dell requires redundant 1100 W power supplies, both processors installed and the kit's low-profile heat sinks. Inlet air is limited to 30C instead of the usual 35C. For the NVIDIA K80, the owner's manual asks for two 1100 W supplies set to non-redundant mode. The processor limit is where Dell disagrees with itself: 120 W or less in the technical guide, 135 W or less in the owner's manual. The manual is the more recent document, since it covers the K80 that the guide's GPU list omits, but 120 W satisfies both.
+
+Fix: buy the GPU enablement kit, fit two 1100 W supplies, choose processors at 120 W or below (the 14-core E5-2695 v3 and E5-2683 v3 are 120 W parts in Dell's table), and keep the rack inlet under 30C.
+
+**Buying a single-processor unit and expecting every slot.**
+
+Slots 1 through 4 are wired to the second processor, and each processor drives 12 of the 24 DIMM slots. A one-processor R730 keeps slots 5 to 7 and a one-processor R730xd keeps slots 5 and 6, each with half the memory slots. That also rules out GPUs, which need both processors, and the R730xd's NVMe extender in slot 4.
+
+Fix: budget for a second processor and heat sink before you count on more than two or three cards.
+
+**Planning to add rear bays, the middle tray or a different backplane later.**
+
+The rear pair and the middle tray are backplane options, which Dell says are fixed at purchase, and the middle tray works only in certain 12-bay configurations, with low-profile heat sinks and no cooling shroud.
+
+Fix: buy the unit with the layout you want already installed; Dell does not support changing the backplane in the field.
+
+## What this means
+
+For a ZFS or TrueNAS box, buy an R730xd with the 12 x 3.5-inch front, fit an HBA330 and use the rear bays for boot. For front-bay NVMe, only a 24-bay R730xd with the four U.2 bays and two processors will do. For any GPU, buy an R730 with 1100 W supplies and the GPU kit. For general virtualization they are the same server with different drive cages, so buy the one that matches your disks. Either way, iDRAC8 stopped getting fixes in February 2024, so keep it off your main network, and run the checks from [evaluating used enterprise gear](/blog/buying-used-enterprise-gear) before you pay.
+
+## References
+
+- [Dell: Dell PowerEdge R730 and R730xd Technical Guide v1 7](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf)
+- [Dell: Dell PowerEdge R730 Spec Sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-Spec-Sheet.pdf)
+- [Dell: poweredge r730xd owners manual en us 180912](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r730xd-owners-manual-en-us-180912.pdf)
+- [Dell: standard operating temperature](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/standard-operating-temperature?guid=guid-c5c1a8e6-c380-46ea-a788-604fd8778370&lang=en-us)
+- [Dell: hard drives](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/hard-drives?guid=guid-8bf49739-41c1-4642-a4f5-5e42a448116c&lang=en-us)
+- [Dell: hard drives](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/hard-drives?guid=guid-8bf49739-41c1-4642-a4f5-5e42a448116c&lang=en-us)
+- [Dell: expansion bus specifications](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/expansion-bus-specifications?guid=guid-25fe748e-f8c6-463e-846d-d489758b0870&lang=en-us)
+- [Dell: expansion bus specifications](https://www.dell.com/support/manuals/en-us/poweredge-r730xd/r730xd_ompublication/expansion-bus-specifications?guid=guid-25fe748e-f8c6-463e-846d-d489758b0870&lang=en-us)
+- [Dell: expansion card installation guidelines](https://www.dell.com/support/manuals/en-gb/poweredge-r730xd/r730xd_ompublication/expansion-card-installation-guidelines?guid=guid-48fdcedc-e689-4cb6-a83c-7b9ea4e31449&lang=en-us&lwp=rt)
+- [Dell: gpu card installation guidelines](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/gpu-card-installation-guidelines?guid=guid-c3605f65-c4ae-4beb-9a32-907a90753b81&lang=en-us)
+- [Dell: optical drive](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/optical-drive?guid=guid-30864d8a-11ca-4534-a85f-d95217368533&lang=en-us)
+- [Dell: expanded operating temperature restrictions](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/expanded-operating-temperature-restrictions?guid=guid-c7ed6a84-6734-4315-b167-92b007911598&lang=en-us)
+- [Dell: driversdetails](https://www.dell.com/support/home/us/en/04/drivers/driversdetails?driverid=y5w1r)
+- [Dell: support for integrated dell remote access controller 8 idrac8](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8)
+- [Dell: perc 9 personality management](https://www.dell.com/support/manuals/en-us/poweredge-rc-h730/perc9ugpublication/perc-9-personality-management?guid=guid-bc0aac4e-f574-4202-9379-be3a4d6a142c&lang=en-us)
+- [Dell: dell hba card specifications](https://www.dell.com/support/manuals/en-us/dell-sas-hba-12gbps/dell_hba_ug_publication/dell-hba-card-specifications?guid=guid-06cb2c46-07fb-4f69-b558-fa0a275d1d51&lang=en-us)
+- [Dell: driversdetails](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2)
+- [Dell: community / en / conversations / rack-servers / r730xd-u2-nvme-enablement-kit-in](https://www.dell.com/community/en/conversations/rack-servers/r730xd-u2-nvme-enablement-kit-installation/6627b2f9abffb86bf86f5ffb)
+- [Dell: community / en / conversations / rack-servers / poweredge-servers-end-of-life-da](https://www.dell.com/community/en/conversations/rack-servers/poweredge-servers-end-of-life-dates/66e9cfa5631be3413cd3db37)
+- [Intel: specifications](https://www.intel.com/content/www/us/en/products/sku/91317/intel-xeon-processor-e52699-v4-55m-cache-2-20-ghz/specifications.html)
+- [ServeTheHome: intel xeon e5 2699 v4 benchmarking the top end](https://www.servethehome.com/intel-xeon-e5-2699-v4-benchmarking-the-top-end/)
+- [openzfs.github.io: Hardware](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [TrueNAS: tnhardwareguide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/)
+- [storagereview.com: dell poweredge 13g r730xd review](https://www.storagereview.com/review/dell-poweredge-13g-r730xd-review)
+- [storagereview.com: dell poweredge 13g r730 server review](https://www.storagereview.com/review/dell-poweredge-13g-r730-server-review)
+- [infoworld.com: servers review dell s 13g poweredge r730xd a workhorse server with a kick](https://www.infoworld.com/article/2181612/servers-review-dell-s-13g-poweredge-r730xd-a-workhorse-server-with-a-kick.html)
+- [NVIDIA: t / dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card / 20726](https://forums.developer.nvidia.com/t/dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card/207266)
+`,
+  },
+  {
+    slug: "dell-r730-quiet-fans",
+    title: "Dell R730 Quiet Fans: Supported Fixes, Raw IPMI, and a Watchdog",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "homelab", "troubleshooting"],
+    excerpt:
+      "What makes an R730 loud, which iDRAC8 settings actually lower fan speed, the raw IPMI override byte by byte, and a watchdog that hands control back when temperatures climb.",
+    coverImage: "/images/blog/dell-r730-quiet-fans.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg",
+    },
+    content: `
+## The problem
+
+You have a Dell PowerEdge R730, or one of its older siblings, the R720 or R710, somewhere people can hear it, and the fans are too loud to live with. You need to know whether something in the build is forcing them up, which Dell settings can bring them down, and how to run the community's manual override without cooking the server.
+
+## Why an R730 runs louder than Dell's numbers
+
+Dell rates a typically configured R730 at 28 dBA idle and 33 to 39 dBA operating, measured at about 23 degrees C in a 24U rack enclosure, according to the [R730 Technical Guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf). The same guide equates 30 dBA with a quiet library. If yours sounds nothing like that, the thermal controller is reacting to something specific. Dell's [PCIe cooling white paper](https://dl.dell.com/manuals/common/poweredge_pcie_cooling.pdf) explains that the installed hardware sets a baseline fan speed, and "Fan speeds may never go below this level unless the inlet ambient temperature or system configuration changes."
+
+| Cause | How to confirm | Supported fix |
+| --- | --- | --- |
+| Non-Dell PCIe card | Message PCI3018 in the Lifecycle Controller log | Disable the third-party response |
+| Non-certified drive | Fans jump when the drive goes in | Use a Dell-certified drive |
+| "L" CPU, GPU or PCIe SSD | Check the parts list | None; the design runs louder |
+| Missing cover, shroud or blank | Fans at maximum, amber temperature light | Put the part back |
+| Performance profile | BIOS or iDRAC profile changed from default | DAPC or Minimum Power |
+| Outdated firmware | Fans high with nothing else wrong | Update iDRAC, BIOS and CPLD singly first |
+
+Third-party cards are a common trigger: Dell's 2015 white paper says the server ["automatically provisions additional cooling for the card."](https://fohdeesha.com/docs/store/perc/ThirdPartyPCIFanResponse.pdf) Owners report one R730xd [idling at 43 percent and locked at 66 percent with a PCIe device installed](https://www.dell.com/community/en/conversations/poweredge-hardware-general/how-to-quiet-r730xd-fans-lower-idle-fan-speed/647fa279f4ccf8a8de7fd4ad), and another with a Mellanox ConnectX-3 running each fan at [about 17,000 rpm against roughly 5,000 without it](https://forums.developer.nvidia.com/t/dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card/207266).
+
+Drives have no off switch. Dell's [fan noise article](https://www.dell.com/support/kbdoc/en-us/000227912/poweredge-how-to-identify-and-troubleshoot-some-common-causes-of-fan-noise) warns that uncertified third-vendor hardware can run the fans "higher than normal or even at maximum speed," and one R730xd owner reports fans going [from 1 percent PWM (2,160 rpm) to 39 to 50 percent (about 8,960 rpm)](https://www.dell.com/community/en/conversations/poweredge-hddscsiraid/r730xd-non-certified-ssd-fan-increasenoise/647f8600f4ccf8a8de4f001b) after adding a non-Dell SSD, unchanged by disabling the third-party response.
+
+Dell's acoustic notes add a surprise: 65W "low-power" CPUs such as the E5-2650L v3 have lower temperature limits and, under moderate or heavy load, run "about twice as loud as typical configurations," as does any GPGPU card. The [R730 Owner's Manual](https://dl.dell.com/topicspdf/poweredge-r730-dsms_owners-manual_en-us.pdf) requires a component or a blank in every bay and fan slot and warns never to run without the air shroud.
+
+## Which iDRAC8 settings can lower fan speed
+
+The thermal controls are under Overview > Hardware > Fans > Setup in the iDRAC8 web interface, or iDRAC Settings > Thermal in F2 System Setup, according to the [iDRAC8 User's Guide](https://dl.dell.com/content/manual40338704-integrated-dell-remote-access-controller-8-version-2-70-70-70-user-s-guide.pdf?language=en-us). Only one of them is a quieting control.
+
+### Thermal profile and the BIOS system profile
+
+Default follows the BIOS System Profile. Maximum Performance gives "Generally, higher fan speeds at idle and stress loads." Minimum Power gives "Generally, lower fan speeds at idle and stress loads," overriding the BIOS profile's thermal behavior, and Dell recommends a reboot after changing it. The R730's BIOS default, Performance Per Watt Optimized (DAPC), runs quieter than Performance Optimized, according to the technical guide. If a previous owner picked Performance, revert it ([server BIOS settings](/blog/server-bios-configuration)) or override it from the iDRAC:
+
+\`\`\`
+racadm set system.thermalsettings.ThermalProfile 2    # 2 = Minimum Power
+racadm get system.thermalsettings.ThermalProfile
+\`\`\`
+
+### Offset and minimum fan speed only add airflow
+
+Fan Speed Offset raises fans "over baseline fan speeds," Minimum Fan Speed keeps them from running "lower than the defined minimum speed," and a lower Maximum Exhaust Temperature Limit (default 70 degrees C) works by adding airflow. None of them goes below the baseline, so their quieting use is undoing someone else's changes. The User's Guide says 255 means no offset and no user minimum, and it documents all of these settings as persistent through reboots and iDRAC or BIOS updates.
+
+\`\`\`
+racadm get system.thermalsettings.FanSpeedOffset     # want 255
+racadm get system.thermalsettings.MinimumFanSpeed    # want 255
+racadm set system.thermalsettings.FanSpeedOffset 255
+\`\`\`
+
+### Turning off the third-party PCIe card response
+
+This is the supported switch that lowers the floor, published for 13th generation servers including the R730 and R730xd in [KB 000135682](https://www.dell.com/support/kbdoc/en-us/000135682/poweredge-how-to-disable-the-third-party-pcie-card-default-cooling-response). Check the Lifecycle Controller log for message PCI3018 first; the 2015 white paper says that without it, "applying these commands will have no effect on fan speeds."
+
+\`\`\`
+# Status, local form (the KB shows -I lanplus)
+ipmitool -I open raw 0x30 0xce 0x01 0x16 0x05 0x00 0x00 0x00
+ 16 05 00 00 00 05 00 00 00 00    <- enabled; ending 05 00 01 00 00 means disabled
+# Disable, then enable again
+ipmitool -I open raw 0x30 0xce 0x00 0x16 0x05 0x00 0x00 0x00 0x05 0x00 0x01 0x00 0x00
+ipmitool -I open raw 0x30 0xce 0x00 0x16 0x05 0x00 0x00 0x00 0x05 0x00 0x00 0x00 0x00
+\`\`\`
+
+Over racadm it is \`racadm set system.thermalsettings.ThirdPartyPCIFanResponse 0\`. The User's Guide and the [iDRAC8 RACADM CLI Guide](https://dl.dell.com/topicspdf/idrac8-lifecycle-controller-v2818181_cli-guide_en-us.pdf) define 0 as Disabled, but the 2015 white paper uses 1 to disable. Trust the two newer documents, which define the attribute, and confirm with \`racadm get\`. Disabling returns the fans to the baseline, not below it. Dell's PCIe paper advises leaving the response on unless you understand the card's cooling needs; its example of a safe case is a card with its own fan.
+
+## The raw IPMI override, byte by byte
+
+When the baseline is still too loud, the homelab community uses Dell OEM commands that take the fans away from the thermal controller entirely.
+
+\`\`\`
+ipmitool raw 0x30 0x30 0x01 0x00         # manual mode
+ipmitool raw 0x30 0x30 0x02 0xff 0x14    # every fan to 0x14, which is 20 percent
+ipmitool raw 0x30 0x30 0x01 0x01         # automatic again
+\`\`\`
+
+The [ipmitool man page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in) gives the syntax as \`raw <netfn> <cmd> [<data>]\`. Only the first byte's meaning comes from a standard; the rest is community documentation:
+
+| Bytes | Meaning | Source |
+| --- | --- | --- |
+| First \`0x30\` | Network function; 30h to 3Fh is the vendor-specific (OEM) range | [IPMB specification](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmp-spec-v1.0.pdf) |
+| Second \`0x30\` | Command number within Dell's OEM function | ipmitool syntax |
+| \`0x01 0x00\` | Stop adjusting fans "no matter the temp" | [White-Raven cheat sheet](https://github.com/White-Raven/PowerEdge-IPMItools) |
+| \`0x01 0x01\` | Return control to the BIOS or iDRAC profile | White-Raven cheat sheet |
+| \`0x02 0xff\` | Set speed; \`0xff\` means every fan at once | [tigerblue77 README](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker) |
+| Last byte | Percentage in hex, \`0x00\` to \`0x64\` | [Hess Industria](https://blog.hessindustria.com/quiet-fans-on-dell-poweredge-servers-via-ipmi/) |
+
+\`printf '0x%02x\\n' 20\` prints \`0x14\`, which is how you convert other percentages. Run the commands on the server, where Linux needs the OpenIPMI kernel driver, or remotely with \`-I lanplus -H <idrac> -U <user> -E\`, where \`-E\` reads the password from the IPMI_PASSWORD environment variable. The account must be an iDRAC Administrator.
+
+The right speed is a matter of owner reports. Hess Industria found 11 percent quietest on an R730 because "the lower speeds had a lower frequency sound which was actually more noticeable." [SPX Labs](https://www.spxlabs.com/blog/2019/3/16/silence-your-dell-poweredge-server) measured about 50 dB at idle and 40 dB at 20 percent on an R330, though the author was unsure whether the UPS was louder. The tigerblue77 project lists the commands as available on iDRAC 6, 7 and 8, which covers the [R710](https://i.dell.com/sites/doccontent/business/solutions/engineering-docs/en/Documents/server-poweredge-r710-tech-guidebook.pdf) (iDRAC6) and the [R720](https://i.dell.com/sites/content/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R720-Spec-Sheet.pdf) (iDRAC7), though one iDRAC6 machine, an R510, refused \`0xff\` and took the command one fan at a time.
+
+The cost is in White-Raven's wording: manual mode holds the speed "no matter the temp." Nothing raises the fans under load unless something you run does.
+
+## A watchdog that hands the fans back
+
+This script holds a fixed speed while temperatures are low and returns control to the iDRAC when any sensor gets hot or the sensors cannot be read.
+
+\`\`\`bash
+#!/usr/bin/env bash
+# fan-watchdog.sh
+LIMIT=70       # hand back to automatic at or above this, in degrees C
+RESUME=60      # take manual control again only below this
+SPEED=0x14     # 20 percent, in hex
+INTERVAL=15    # seconds between checks
+
+auto()   { ipmitool raw 0x30 0x30 0x01 0x01 >/dev/null; }
+manual() { ipmitool raw 0x30 0x30 0x01 0x00 >/dev/null &&
+           ipmitool raw 0x30 0x30 0x02 0xff "$SPEED" >/dev/null; }
+
+trap auto EXIT              # any normal exit returns control to the iDRAC
+trap 'exit 1' INT TERM HUP  # signals become a normal exit
+
+while true; do
+  # Hottest sensor that returned a reading; empty if nothing could be read
+  max=$(ipmitool sdr type temperature 2>/dev/null |
+        awk -F'|' '/degrees C/ { t = $5 + 0; if (t > m) m = t }
+                   END { if (m > 0) printf "%d\\n", m }')
+  if [ -z "$max" ] || [ "$max" -ge "$LIMIT" ]; then
+    auto
+  elif [ "$max" -lt "$RESUME" ]; then
+    manual
+  fi
+  sleep "$INTERVAL" & wait $!   # wait, unlike sleep, is interrupted by signals
+done
+\`\`\`
+
+Each sensor line ends in a reading such as \`28 degrees C\`; sensors showing \`No Reading\` are skipped. At or above LIMIT, or with no reading at all, the script switches to automatic. Below RESUME it reasserts manual mode every cycle, which also recovers from an iDRAC reset, and in between it changes nothing, so it does not flap. The EXIT trap hands control back on Ctrl+C or a systemd stop.
+
+Intel lists a [Tcase of 79 degrees C for the E5-2660 v3](https://www.intel.com/content/www/us/en/products/sku/81706/intel-xeon-processor-e52660-v3-25m-cache-2-60-ghz/specifications.html) used in Dell's typical R730 build, and the tigerblue77 README suggests a threshold slightly below Tcase, so look up your own CPU before choosing LIMIT. Run the script as a systemd service with \`Restart=always\` ([systemd units that behave](/blog/systemd-units-that-behave)) and test it under a synthetic CPU load before trusting it, as Hess advises. The tigerblue77 Docker image is a maintained alternative that applies Dell's default profile when it stops.
+
+## What changes on an R740 with iDRAC9
+
+Community reports agree on the cutoff: iDRAC9 accepts the raw commands up to firmware 3.30.30.30 and refuses them from 3.34.34.34, with 3.31 and 3.32 unreported. In a [Dell community thread](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-eng-is-taking-away-fan-speed-control-away-from-users-idrac-3343434/647f8593f4ccf8a8de47aa9b), a T440 owner got "Insufficient privilege level," and a Dell representative answered, "Going forward access is not going to be allowed as it affects the thermal algorithms and cooling the system." Once an iDRAC9 has taken the June 2024 release (7.00.00.172 on 14th generation servers), it cannot be downgraded to 4.40.10.00 or older, according to [KB 000225924](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers), so there is no road back to 3.30.30.30.
+
+An [R740](/blog/dell-poweredge-r740-deep-dive) keeps Dell's own options: Minimum Power and, where the platform supports it, Sound Cap, which caps CPU power "to limit fan speed" at a performance cost, per Dell's [custom cooling paper](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf). The third-party response became a per-slot setting with "no customer-facing support" over IPMI:
+
+\`\`\`
+racadm get system.pcieslotlfm.1                   # LFMMode=Automatic is the default
+racadm set system.pcieslotlfm.1.lfmmode disabled
+\`\`\`
+
+The custom cooling paper also says the server will not let fans drop below the threshold it needs. If the override matters to you, check the iDRAC9 version before buying or updating an R740.
+
+## Replacing the fans with quieter ones
+
+The R730 has six hot-swappable fans with N+1 redundancy. One owner [swapped all six for Noctua fans](https://www.dell.com/community/en/conversations/rack-servers/r730-noise-when-additional-cards-are-plugged-in/647f9a73f4ccf8a8dee193be) that are "half the depth," soldering the Dell plugs onto the Noctua leads, and reports they "didnt push past 1600rpm," with no heat issues even with a Quadro P2000 installed. That is one report, not a recipe. The risk is the iDRAC deciding a fan has failed: Dell's fan noise article lists a failed fan first among the causes of fans running high, and one R710 owner's log shows ["Fan 1 RPM is operating less than the lower critical threshold"](https://www.dell.com/community/en/conversations/poweredge-hardware-general/fan-problems-with-r710-fan-1-rpm-is-operating-less-than-the-lower-critical-threshold/647f7654f4ccf8a8de462748) with every fan near 12,000 rpm. Compare each fan's Lower Critical value from \`ipmitool sensor list\` with the replacement's minimum speed first.
+
+## What breaks
+
+**The watchdog dies and the fans stay at 20 percent.** SIGKILL cannot be trapped, so an out-of-memory kill or a stop timeout skips the handback and leaves the fans, in the tigerblue77 README's words, "with nothing left to raise them." A local watchdog also dies with a hung OS. Fix: run it under systemd with \`Restart=always\`, don't shorten the stop timeout, and choose a static speed that keeps idle temperatures well under LIMIT.
+
+**Manual mode outlives the session that set it.** SPX Labs said the setting "stuck, even after a few reboots," [angrysysadmins](https://angrysysadmins.tech/index.php/2022/01/grassyloki/idrac-7-8-lower-fan-noise-on-dell-servers/) says it "sometimes does sometimes not survive," and Hess says any iDRAC reset (firmware update, software reset, sustained power outage) restores automatic mode. Fix: assume it survives an OS reboot, start the watchdog at boot, and when you retire it, send \`raw 0x30 0x30 0x01 0x01\` and listen for the ramp.
+
+**The fans are loud again after a firmware update.** An iDRAC update resets the iDRAC, which drops manual mode, even though Dell documents its supported thermal settings as persistent. Fix: after any update, read back \`ThirdPartyPCIFanResponse\` and the \`0xce\` status, and let the watchdog reassert manual mode.
+
+**The raw commands return "Insufficient privilege level."** A non-Administrator account gets the same completion code, [0xd4](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_strings.c), as a firmware without the commands, and on iDRAC9 3.34.34.34 or later it is the firmware. Fix: use an Administrator account, which Dell's KB also requires for the \`0xce\` commands; on newer iDRAC9 there is no fix.
+
+**Remote commands time out.** They need IPMI over LAN enabled (\`racadm set iDRAC.IPMILan.Enable 1\`), and CISA warns that [attackers "can easily identify and access"](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi) Internet-facing IPMI systems. Fix: run locally with \`-I open\`, or keep the iDRAC on a management network, as covered in [IPMI and out-of-band management](/blog/ipmi-remote-management).
+
+**A passive card misbehaves with the third-party response off.** The angrysysadmins write-up lists "packet loss on nics, loss of tcp states, hdd disconnects and smart errors." Fix: re-enable the response for any card without its own fan.
+
+## What this means
+
+Work from the cause outward: blanks and shroud, then DAPC or Minimum Power, then the third-party response if PCI3018 is logged. If the cause was a card, a profile or a missing part, that may be the whole fix, and it stays supported. Reach for the raw override only when the remaining floor is still too loud, and only with a watchdog you have watched hand control back under load. On an R740, iDRAC9 3.30.30.30 is the line: past it, Dell's settings are all you get.
+
+## References
+
+- [Dell: Dell PowerEdge R730 and R730xd Technical Guide v1 7](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf)
+- [Dell: server poweredge r710 tech guidebook](https://i.dell.com/sites/doccontent/business/solutions/engineering-docs/en/Documents/server-poweredge-r710-tech-guidebook.pdf)
+- [Dell: Dell PowerEdge R720 Spec Sheet](https://i.dell.com/sites/content/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R720-Spec-Sheet.pdf)
+- [Dell: poweredge r730 dsms owners manual en us](https://dl.dell.com/topicspdf/poweredge-r730-dsms_owners-manual_en-us.pdf)
+- [Dell: manual40338704 integrated dell remote access controller 8 version 2 70 70 70 user s guide](https://dl.dell.com/content/manual40338704-integrated-dell-remote-access-controller-8-version-2-70-70-70-user-s-guide.pdf?language=en-us)
+- [Dell: idrac8 lifecycle controller v2818181 cli guide en us](https://dl.dell.com/topicspdf/idrac8-lifecycle-controller-v2818181_cli-guide_en-us.pdf)
+- [Dell: poweredge how to disable the third party pcie card default cooling response](https://www.dell.com/support/kbdoc/en-us/000135682/poweredge-how-to-disable-the-third-party-pcie-card-default-cooling-response)
+- [fohdeesha.com: ThirdPartyPCIFanResponse](https://fohdeesha.com/docs/store/perc/ThirdPartyPCIFanResponse.pdf)
+- [Dell: poweredge pcie cooling](https://dl.dell.com/manuals/common/poweredge_pcie_cooling.pdf)
+- [Dell: customcooling poweredge idrac9](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf)
+- [Dell: poweredge how to identify and troubleshoot some common causes of fan noise](https://www.dell.com/support/kbdoc/en-us/000227912/poweredge-how-to-identify-and-troubleshoot-some-common-causes-of-fan-noise)
+- [Dell: rac0181 idrac9 firmware downgrade failures on 14 15g poweredge servers](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers)
+- [raw.githubusercontent.com: ipmitool.1.in](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [raw.githubusercontent.com: ipmi strings.c](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_strings.c)
+- [Intel: ipmp spec v1.0](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmp-spec-v1.0.pdf)
+- [Intel: specifications](https://www.intel.com/content/www/us/en/products/sku/81706/intel-xeon-processor-e52660-v3-25m-cache-2-60-ghz/specifications.html)
+- [cisa.gov: risks using intelligent platform management interface ipmi](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi)
+- [GitHub: Dell iDRAC fan controller Docker](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker)
+- [GitHub: PowerEdge IPMItools](https://github.com/White-Raven/PowerEdge-IPMItools)
+- [blog.hessindustria.com: quiet fans on dell poweredge servers via ipmi](https://blog.hessindustria.com/quiet-fans-on-dell-poweredge-servers-via-ipmi/)
+- [spxlabs.com: silence your dell poweredge server](https://www.spxlabs.com/blog/2019/3/16/silence-your-dell-poweredge-server)
+- [angrysysadmins.tech: idrac 7 8 lower fan noise on dell servers](https://angrysysadmins.tech/index.php/2022/01/grassyloki/idrac-7-8-lower-fan-noise-on-dell-servers/)
+- [Dell: community / en / conversations / poweredge-hardware-general / dell-eng-is-taking](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-eng-is-taking-away-fan-speed-control-away-from-users-idrac-3343434/647f8593f4ccf8a8de47aa9b)
+- [Dell: community / en / conversations / poweredge-hardware-general / how-to-quiet-r730x](https://www.dell.com/community/en/conversations/poweredge-hardware-general/how-to-quiet-r730xd-fans-lower-idle-fan-speed/647fa279f4ccf8a8de7fd4ad)
+- [Dell: community / en / conversations / poweredge-hddscsiraid / r730xd-non-certified-ss](https://www.dell.com/community/en/conversations/poweredge-hddscsiraid/r730xd-non-certified-ssd-fan-increasenoise/647f8600f4ccf8a8de4f001b)
+- [Dell: community / en / conversations / rack-servers / r730-noise-when-additional-cards](https://www.dell.com/community/en/conversations/rack-servers/r730-noise-when-additional-cards-are-plugged-in/647f9a73f4ccf8a8dee193be)
+- [Dell: community / en / conversations / poweredge-hardware-general / fan-problems-with-](https://www.dell.com/community/en/conversations/poweredge-hardware-general/fan-problems-with-r710-fan-1-rpm-is-operating-less-than-the-lower-critical-threshold/647f7654f4ccf8a8de462748)
+- [NVIDIA: t / dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card / 20726](https://forums.developer.nvidia.com/t/dell-pe-r730xd-fans-running-too-fast-because-of-connectx-3-pcie-card/207266)
+`,
+  },
+  {
     slug: "linux-on-mac-pro-7-1",
     title: "Linux on the Mac Pro 7,1: What Works and What the T2 Changes",
     date: "2026-10-05",

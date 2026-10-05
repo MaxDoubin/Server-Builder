@@ -277,6 +277,26 @@ export const SYSTEMS: Term[] = [
     see: ["Secure Boot", "SSD", "UEFI"],
   },
   {
+    term: "BOSS",
+    expansion: "Boot Optimized Storage Solution",
+    field: "storage",
+    definition:
+      "Dell's card for booting a PowerEdge server from two M.2 SSDs mirrored in hardware RAID 1, so the operating system or hypervisor stays off the front drive bays. The BOSS-S1 is a PCIe card for SATA M.2 drives, the BOSS-S2 adds hot-plug carriers so a failed drive can be swapped without opening the server, and the BOSS-N1 moves to NVMe, hot-plug on most versions.",
+    confusion:
+      "It is a boot device, not a place for data. Dell sizes and supports it for the OS, and the small mirrored drives are not meant to hold VMs or a ZFS pool.",
+    see: ["RAID", "HBA", "PERC"],
+  },
+  {
+    term: "PERC",
+    expansion: "PowerEdge RAID Controller",
+    field: "storage",
+    definition:
+      "Dell's name for the RAID controllers in PowerEdge servers, such as the H330, H730 and H740P. They present virtual disks to the operating system and handle the RAID themselves.",
+    confusion:
+      "ZFS and TrueNAS want raw disks, and a PERC in RAID mode hides them behind its own virtual disks. Some PERCs have an HBA or non-RAID mode that passes disks through; the HBA330 is the dedicated pass-through card.",
+    see: ["RAID", "HBA", "BOSS"],
+  },
+  {
     term: "TPM",
     expansion: "Trusted Platform Module",
     field: "security",

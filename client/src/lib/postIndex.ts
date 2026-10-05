@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 268 of them. Regenerate with script/generatePostIndex.ts.
+ * 273 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,55 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "dell-boss-card",
+    title: "Dell BOSS Card Explained: BOSS-S1, S2 and N1 Compared",
+    date: "2026-10-05",
+    tags: ["dell","storage","servers"],
+    excerpt: "What Dell's Boot Optimized Storage Solution is for, how the BOSS-S1, S2 and N1 differ, which PowerEdge servers take each, and how to replace a failed M.2.",
+    coverImage: "/images/blog/dell-boss-card.jpg",
+    coverCredit: {"author":"Jacek Halicki","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:2018_Pami%C4%99%C4%87_Intel_Optane_32GB.jpg"},
+    wordCount: 3408,
+  },
+  {
+    slug: "truenas-on-dell-r730",
+    title: "TrueNAS on a Dell R730: Controllers, Boot Drives and Fans",
+    date: "2026-10-05",
+    tags: ["storage","dell","homelab"],
+    excerpt: "How to build a TrueNAS box on a Dell R730 or R730xd: which PERC or HBA passes disks to ZFS, where the boot pool goes, memory, networking and fan noise.",
+    coverImage: "/images/blog/truenas-on-dell-r730.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R610_and_R720.jpg"},
+    wordCount: 3160,
+  },
+  {
+    slug: "poweredge-r740-end-of-life",
+    title: "PowerEdge R740 and R640 End of Life: Every Date That Matters",
+    date: "2026-10-05",
+    tags: ["dell","servers","homelab"],
+    excerpt: "Last order, warranty, firmware and EOSL dates for the PowerEdge R740 and R640, with the R730 and R630, what keeps working after each, and what to buy next.",
+    coverImage: "/images/blog/poweredge-r740-end-of-life.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
+    wordCount: 3255,
+  },
+  {
+    slug: "dell-r730-vs-r730xd",
+    title: "Dell PowerEdge R730 vs R730xd: Every Bay, Slot and GPU Limit",
+    date: "2026-10-05",
+    tags: ["dell","servers","storage","homelab"],
+    excerpt: "What the R730 and R730xd share, every drive bay, PCIe slot and GPU difference from Dell's documents, and which one to buy for a ZFS box or a GPU host.",
+    coverImage: "/images/blog/dell-r730-vs-r730xd.jpg",
+    wordCount: 2501,
+  },
+  {
+    slug: "dell-r730-quiet-fans",
+    title: "Dell R730 Quiet Fans: Supported Fixes, Raw IPMI, and a Watchdog",
+    date: "2026-10-05",
+    tags: ["dell","servers","homelab","troubleshooting"],
+    excerpt: "What makes an R730 loud, which iDRAC8 settings actually lower fan speed, the raw IPMI override byte by byte, and a watchdog that hands control back when temperatures climb.",
+    coverImage: "/images/blog/dell-r730-quiet-fans.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg"},
+    wordCount: 2675,
+  },
   {
     slug: "linux-on-mac-pro-7-1",
     title: "Linux on the Mac Pro 7,1: What Works and What the T2 Changes",
@@ -2630,10 +2679,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 268;
+export const POST_COUNT = 273;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty eight";
+export const POST_COUNT_SPELLED = "two hundred and seventy three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2642,10 +2691,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1449;
+export const CITATION_COUNT = 1628;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 144;
+export const ATTRIBUTION_URL_COUNT = 146;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1586;
+export const CHECKED_URL_COUNT = 1766;
