@@ -193,24 +193,54 @@ export function CinematicResume() {
           </Section>
 
           <Section title="Competition">
-            <div className="resume-entry">
-              <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
-                National Cyber League · Cyber Skyline
-              </h3>
-              <ul className="mt-2 space-y-1">
-                <Bullet>
-                  Ranked in the top 1 percent of National Cyber League competitors
-                </Bullet>
-                <Bullet>
-                  Helped lead South Career Technical Academy to 7th nationally among high schools in
-                  the Fall 2025 Cyber Power Rankings
-                </Bullet>
-                <Bullet>
-                  Categories: open source intelligence, cryptography, log analysis, hash cracking,
-                  network forensics, and web exploitation
-                </Bullet>
-              </ul>
+            <div className="space-y-4">
+              <div className="resume-entry">
+                <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
+                  CyberWeek@UNLV Capture the Flag
+                </h3>
+                <ul className="mt-2 space-y-1">
+                  <Bullet>
+                    1st place in the Clark County School District capture the flag tournament, October
+                    2026
+                  </Bullet>
+                </ul>
+              </div>
+              <div className="resume-entry">
+                <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
+                  National Cyber League · Cyber Skyline
+                </h3>
+                <ul className="mt-2 space-y-1">
+                  <Bullet>
+                    1st place in the Fall 2026 Gymnasium, the first student to reach 100 percent
+                    completion with 100 percent accuracy
+                  </Bullet>
+                  <Bullet>
+                    Ranked in the top 1 percent of National Cyber League competitors
+                  </Bullet>
+                  <Bullet>
+                    Helped lead South Career Technical Academy to 7th nationally among high schools in
+                    the Fall 2025 Cyber Power Rankings
+                  </Bullet>
+                  <Bullet>
+                    Categories: open source intelligence, cryptography, log analysis, hash cracking,
+                    network forensics, and web exploitation
+                  </Bullet>
+                </ul>
+              </div>
             </div>
+          </Section>
+
+          <Section title="Speaking">
+            <ul className="space-y-1">
+              <Bullet>
+                Keynote panelist, A4LE Southwest Region Conference, April 30, 2026: the student on
+                the panel in the keynote, The Architecture of Trust
+              </Bullet>
+              <Bullet>
+                Presented a network risk assessment to the Clark County School District networking
+                team, May 2026
+              </Bullet>
+            </ul>
           </Section>
 
           <Section title="Leadership and service">
