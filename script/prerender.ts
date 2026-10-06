@@ -1084,7 +1084,7 @@ ${JSON.stringify({
       dir: "resume",
       title: "Resume | Max Doubin",
       description:
-        "Resume for Max Doubin: cybersecurity study at South Career Technical Academy, National Cyber League results, leadership roles, projects, and skills.",
+        "Resume for Max Doubin: cybersecurity study at South Career and Technical Academy, National Cyber League results, leadership roles, projects, and skills.",
       canonical: `${SITE_URL}/resume`,
     },
     {
@@ -1098,7 +1098,7 @@ ${JSON.stringify({
       dir: "coding-camps",
       title: "Youth Coding Camps | Max Doubin",
       description:
-        "Youth coding camps across the Las Vegas Valley taught by Max Doubin: what they cover, what a session looks like, and what a beginner takes home.",
+        "What Max Doubin taught as a volunteer at Code Central's youth coding camps in 2022: what the camps covered, how a session ran, and what beginners took home.",
       canonical: `${SITE_URL}/coding-camps`,
     },
     {
@@ -1363,7 +1363,7 @@ ${JSON.stringify({
       .join("\n    ")}
   </section>
   <section>
-    <h2>Leadership and service</h2>
+    <h2>Experience and leadership</h2>
     ${siteConfig.leadership
       .map(
         (role) => `<h3>${esc(role.title)}, ${esc(role.org)}</h3>
@@ -1641,16 +1641,15 @@ ${JSON.stringify({
   const campsContent = `
 <main>
   <h1>Youth coding camps</h1>
-  <p>Coding camps taught by ${esc(siteConfig.name)} across the Las Vegas Valley. Students write real code from the first session; nothing is dragged into place on their behalf.</p>
+  <p>In 2022 ${esc(siteConfig.name)} volunteered as an instructor at Code Central's youth coding camps, teaching coding to beginners. Students wrote real code from the first session; nothing was dragged into place on their behalf.</p>
   <section>
-    <h2>What the camps cover</h2>
+    <h2>What the camps covered</h2>
     <dl>${dl(COVERS)}</dl>
   </section>
   <section>
-    <h2>What a beginner takes home</h2>
+    <h2>What a beginner took home</h2>
     <dl>${dl(TAKEAWAYS)}</dl>
   </section>
-  <p>To ask about a session, email <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a>.</p>
   ${backLinks([["/contact", "Contact"], ["/projects", "Projects"]])}
 </main>`;
 
@@ -1660,7 +1659,7 @@ ${JSON.stringify({
   <p>${esc(siteConfig.name)}, ${esc(siteConfig.tagline)}. Based in Las Vegas, Nevada.</p>
   <p>Email: <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a></p>
   <p>GitHub: <a href="${siteConfig.social.github.url}">${esc(siteConfig.social.github.handle)}</a></p>
-  <p>Worth reaching out about: cybersecurity competition and club setup, enterprise networking and home lab questions, youth coding instruction, and speaking to student groups. Questions with a general answer are better on <a href="${SITE_URL}/ask">the ask page</a>, where the answer can be published for the next person with the same one.</p>
+  <p>Worth reaching out about: cybersecurity competition and club setup, enterprise networking and home lab questions, server and storage hardware, and speaking to student groups. Questions with a general answer are better on <a href="${SITE_URL}/ask">the ask page</a>, where the answer can be published for the next person with the same one.</p>
   ${backLinks([["/ask", "Ask"], ["/resume", "Resume"], ["/faq", "FAQ"]])}
 </main>`;
 

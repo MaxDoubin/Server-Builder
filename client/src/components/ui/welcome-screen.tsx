@@ -16,12 +16,12 @@ const LIVE_MODULES = [
   {
     title: "Infrastructure",
     subtitle: "Home data center",
-    lines: ["Enterprise networking", "Virtualization", "Large-scale storage"],
+    lines: ["Dell PowerEdge servers", "1 PB raw storage", "Enterprise networking"],
   },
   {
     title: "Leadership",
     subtitle: "School and community",
-    lines: ["South CTA clubs", "Henderson commission", "Youth coding camps"],
+    lines: ["South CTA clubs", "Henderson commission", "Cybersecurity I TA"],
   },
 ] as const;
 
@@ -140,7 +140,7 @@ export function WelcomeScreen({
                   Top 1% NCL
                 </Badge>
                 <Badge className="border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.12)] text-[hsl(var(--brand-bone))]">
-                  Blue Ribbon Commissioner
+                  Commissioner · Henderson
                 </Badge>
               </div>
 
@@ -224,17 +224,17 @@ export function WelcomeScreen({
             <InfoCard
               icon={<Shield className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Cybersecurity"
-              body="Top 1 percent National Cyber League performance, active Cyber Skyline competition work, and continuing study toward Security+, Network+, and CCNA."
+              body="Top 1 percent in the National Cyber League Fall 2025 Individual Game, first place in the CCSD capture the flag tournament at CyberWeek@UNLV, and continuing study toward Security+, Network+, and CCNA."
             />
             <InfoCard
               icon={<Cpu className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Infrastructure"
-              body="A large home data center designed, built, and operated end to end: enterprise switching, virtualization, storage, and long-running systems operations."
+              body="A large home data center designed, built, and operated end to end: Dell PowerEdge servers, about a petabyte of raw storage in RAID 6, enterprise switching, and virtualization."
             />
             <InfoCard
               icon={<Sparkles className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Leadership & Music"
-              body="Student leadership, public service, youth instruction, and Nevada percussion performance credentials alongside technical work."
+              body="Student leadership, public service, teaching, and Nevada percussion performance credentials alongside technical work."
             />
           </div>
         </div>

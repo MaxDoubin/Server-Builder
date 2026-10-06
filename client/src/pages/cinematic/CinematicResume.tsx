@@ -65,7 +65,7 @@ export function CinematicResume() {
   useSEO({
     title: "Resume | Max Doubin",
     description:
-      "Resume for Max Doubin: cybersecurity study at South Career Technical Academy, National Cyber League results, leadership roles, projects, and skills.",
+      "Resume for Max Doubin: cybersecurity study at South Career and Technical Academy, National Cyber League results, leadership roles, projects, and skills.",
     canonical: "https://maxdoubin.com/resume",
   });
 
@@ -94,8 +94,8 @@ export function CinematicResume() {
               {siteConfig.name}
             </h1>
             <p className="mt-3 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Cybersecurity student. Enterprise networking, systems infrastructure, and community
-              leadership. Las Vegas, Nevada.
+              Cybersecurity student focused on large-scale infrastructure management and enterprise
+              networking. Las Vegas, Nevada.
             </p>
             <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
               <li>
@@ -146,12 +146,16 @@ export function CinematicResume() {
           <Section title="Education">
             <div className="resume-entry">
               <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
-                South Career Technical Academy
+                South Career and Technical Academy
               </h3>
               <p className="mt-1 font-mono-tight text-xs uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                 Cybersecurity program · Las Vegas, Nevada · 10th grade
               </p>
               <ul className="mt-2 space-y-1">
+                <Bullet>
+                  Class of 2029, part of the school&apos;s first graduating class, helping build the
+                  cybersecurity program from the ground up
+                </Bullet>
                 <Bullet>
                   Advanced Placement: scored 5, the top of the scale, on both Computer Science
                   Principles and Human Geography
@@ -174,7 +178,7 @@ export function CinematicResume() {
                 Earned
               </h3>
               <ul className="mt-2 space-y-1">
-                <Bullet>CompTIA Tech+</Bullet>
+                <Bullet>CompTIA Tech+, April 2026</Bullet>
               </ul>
             </div>
             <div className="resume-entry mt-4">
@@ -211,15 +215,15 @@ export function CinematicResume() {
                 </h3>
                 <ul className="mt-2 space-y-1">
                   <Bullet>
-                    1st place in the Fall 2026 Gymnasium, the first student to reach 100 percent
-                    completion with 100 percent accuracy
+                    1st place in the Fall 2026 Gymnasium, the preseason practice round, as the first
+                    student to reach 100 percent completion with 100 percent accuracy
                   </Bullet>
                   <Bullet>
-                    Ranked in the top 1 percent of National Cyber League competitors
+                    Top 1 percent of competitors in the Fall 2025 Individual Game
                   </Bullet>
                   <Bullet>
-                    Helped lead South Career Technical Academy to 7th nationally among high schools in
-                    the Fall 2025 Cyber Power Rankings
+                    Helped lead South Career and Technical Academy to 7th nationally among high schools in
+                    the Fall 2025 Cyber Power Rankings, with an all-freshman team
                   </Bullet>
                   <Bullet>
                     Categories: open source intelligence, cryptography, log analysis, hash cracking,
@@ -237,13 +241,14 @@ export function CinematicResume() {
                 the panel in the keynote, The Architecture of Trust
               </Bullet>
               <Bullet>
-                Presented a network risk assessment to the Clark County School District networking
-                team, May 2026
+                Proposed and led a student team&apos;s network security risk assessment, and presented
+                the findings to school administration and the Clark County School District
+                networking team, May 2026
               </Bullet>
             </ul>
           </Section>
 
-          <Section title="Leadership and service">
+          <Section title="Experience and leadership">
             <div className="space-y-4">
               {siteConfig.leadership.map((role) => (
                 <div key={`${role.title}-${role.org}`} className="resume-entry">
@@ -298,9 +303,9 @@ export function CinematicResume() {
 
           <Section title="Recognition">
             <ul className="space-y-1">
-              <Bullet>Nevada All-State Band selection in 6th, 7th, and 9th grade</Bullet>
+              <Bullet>Nevada All-State Band selection in 2023, 2024, and 2026</Bullet>
               <Bullet>Ranked #1 percussionist in the state of Nevada in 2024</Bullet>
-              <Bullet>Student of the Month, South Career Technical Academy</Bullet>
+              <Bullet>Student of the Month, South Career and Technical Academy</Bullet>
             </ul>
           </Section>
 

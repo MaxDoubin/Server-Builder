@@ -1,10 +1,9 @@
 /**
- * What the youth coding camps cover, and what a beginner leaves with.
+ * What the youth coding camps covered, and what a beginner left with, from
+ * Max's 2022 volunteering as an instructor at Code Central's camps.
  *
  * Extracted from the page component so the prerenderer renders the same list
- * into the static HTML. The logistics in CAMP_DETAILS stay in the page: they
- * are deliberately null until confirmed, and a prerendered guess aimed at a
- * parent would be worse than no answer.
+ * into the static HTML.
  */
 
 export const COVERS = [

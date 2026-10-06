@@ -33,7 +33,7 @@ export function CinematicHome() {
     title:
       "Max Doubin | Cybersecurity, Networking, Systems Infrastructure, and Leadership",
     description:
-      "Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
+      "Max Doubin is a 10th-grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
     canonical: "https://maxdoubin.com/",
     ogType: "profile",
     schemaId: "home-schema",
@@ -50,7 +50,7 @@ export function CinematicHome() {
         "Community Leader",
       ],
       description:
-        "10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
+        "10th-grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
       email: "mailto:max@maxdoubin.com",
       image: "https://maxdoubin.com/images/og-image.jpg",
@@ -62,13 +62,17 @@ export function CinematicHome() {
       },
       alumniOf: {
         "@type": "EducationalOrganization",
-        name: "South Career Technical Academy",
+        name: "South Career and Technical Academy",
       },
       award: [
-        "Top 1% · National Cyber League",
-        "South CTA ranked 7th among U.S. high schools in the Cyber Power Rankings",
+        "1st place · CCSD capture the flag tournament at CyberWeek@UNLV, October 2026",
+        "1st place · National Cyber League Fall 2026 Gymnasium",
+        "Top 1% · National Cyber League Fall 2025 Individual Game",
+        "South CTA ranked 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
         "#1 Percussionist · State of Nevada, 2024",
         "PBS Varsity Quiz · State finalist, 2026",
+        "Nevada All-State Band · 2023, 2024, and 2026",
+        "NJHS Outstanding Achievement Award scholarship · 2025",
         "Student of the Month · South CTA",
       ],
       hasCredential: [
@@ -81,7 +85,7 @@ export function CinematicHome() {
       memberOf: [
         {
           "@type": "Organization",
-          name: "City of Henderson Blue Ribbon Commission",
+          name: "City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
         },
         {
           "@type": "Organization",
@@ -89,7 +93,7 @@ export function CinematicHome() {
         },
         {
           "@type": "Organization",
-          name: "Nevada OWINN Youth Advisory Council",
+          name: "Youth Advisory Council, Nevada Office of Workforce Innovation (OWINN)",
         },
       ],
       // Topic coverage. Search engines and AI summarisers use knowsAbout to
@@ -101,12 +105,13 @@ export function CinematicHome() {
         "Enterprise networking",
         "Network segmentation and VLANs",
         "Server infrastructure",
+        "Dell PowerEdge servers",
         "Virtualization",
         "Storage systems",
         "Linux systems administration",
         "Data center operations",
         "Percussion performance",
-        "Youth technology education",
+        "Cybersecurity education",
       ],
       sameAs: [
         "https://github.com/MaxDoubin",

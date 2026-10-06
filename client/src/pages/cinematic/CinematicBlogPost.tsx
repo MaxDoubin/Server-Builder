@@ -157,7 +157,7 @@ export function CinematicBlogPost() {
     title: post ? `${post.title} | Max Doubin` : "Max Doubin | Cybersecurity Student, Las Vegas",
     description:
       post?.excerpt ??
-      "Max Doubin is a 10th grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada.",
+      "Max Doubin is a 10th grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada.",
     canonical: post ? `${SITE_URL}/blog/${post.slug}` : SITE_URL,
     // Same as the rack page: a slug matching no post renders "Post not
     // found", and that should not be indexable.

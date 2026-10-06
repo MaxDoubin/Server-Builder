@@ -44,11 +44,11 @@ export interface NowConfig {
 }
 
 export const nowConfig: NowConfig = {
-  lastUpdated: "2026-08-24",
-  lastUpdatedDisplay: "August 24, 2026",
-  period: "August 2026",
+  lastUpdated: "2026-10-06",
+  lastUpdatedDisplay: "October 6, 2026",
+  period: "October 2026",
   intro:
-    "A snapshot of what has my attention this month: the certifications I am working through, what I am building, and what I am reading. It is deliberately short and it goes out of date on purpose.",
+    "A snapshot of what has my attention this month: the certifications I am working through, what I am building and teaching, and what I am reading. It is deliberately short and it goes out of date on purpose.",
 
   sections: [
     {
@@ -87,6 +87,16 @@ export const nowConfig: NowConfig = {
       heading: "What I am building",
       items: [
         {
+          title: "The South CTA server lab",
+          detail:
+            "Independently designing and deploying the cybersecurity program's server lab for hands-on student training, after writing a 16-page equipment-gap report for district administration and receiving authority and funding to equip it.",
+        },
+        {
+          title: "The home data center",
+          detail:
+            "Dell PowerEdge servers and Cisco switching, with about a petabyte of raw storage across 32 Dell PowerVault disk shelves in RAID 6. Keeping it running is hands-on work: CPU, memory, and drive upgrades, BIOS and firmware, and iDRAC.",
+        },
+        {
           title: "Field Notes",
           detail:
             "A technical post most days on networking, security, storage, virtualization, and operations. The archive is the most honest record of what I actually understand.",
@@ -109,6 +119,19 @@ export const nowConfig: NowConfig = {
           detail:
             "Small utilities I wanted while studying: subnet arithmetic, packet header references, cipher and encoding work. They run locally and upload nothing.",
           href: "/tools",
+        },
+      ],
+    },
+
+    {
+      id: "teaching",
+      label: "· Now · Teaching",
+      heading: "What I am teaching",
+      items: [
+        {
+          title: "Cybersecurity I",
+          detail:
+            "Teaching assistant for the course: guiding freshmen through its hands-on labs and helping students prepare for the National Cyber League.",
         },
       ],
     },

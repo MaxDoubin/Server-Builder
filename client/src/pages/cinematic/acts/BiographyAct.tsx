@@ -11,9 +11,9 @@ interface Pillar {
 }
 
 const HOMELAB_DISCIPLINES: Array<{ label: string; value: string }> = [
-  { value: "Networking", label: "Switching · VLANs · Routing" },
-  { value: "Virtualization", label: "Hypervisors · Clustering" },
-  { value: "Storage", label: "Arrays · Redundancy · Backup" },
+  { value: "Servers", label: "Dell PowerEdge · iDRAC · Firmware" },
+  { value: "Storage", label: "1 PB raw · RAID 6 · Backup" },
+  { value: "Networking", label: "Cisco switching · VLANs · 10G fiber" },
   { value: "Operations", label: "Power · Cooling · Cabling" },
 ];
 
@@ -24,10 +24,11 @@ const PILLARS: Pillar[] = [
     title: "Competition, credentials, and applied practice.",
     accent: "signal",
     lines: [
-      "Top 1% in National Cyber League competition",
-      "Helped lead South CTA to 7th among U.S. high schools in the Cyber Power Rankings",
+      "1st place, CCSD capture the flag tournament at CyberWeek@UNLV, October 2026",
+      "Top 1% in the National Cyber League Fall 2025 Individual Game",
+      "Helped lead South CTA to 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
-      "CompTIA Tech+ certified; Security+, Network+, and CCNA in progress",
+      "CompTIA Tech+ certified (April 2026); Security+, Network+, and CCNA in progress",
     ],
   },
   {
@@ -36,12 +37,14 @@ const PILLARS: Pillar[] = [
     title: "School leadership, civic service, and instruction.",
     accent: "cyan",
     lines: [
-      "President, South CTA Cyber Club",
-      "President, South CTA Music Club (2026/2027)",
-      "Blue Ribbon Commissioner, City of Henderson, Nevada",
+      "Teaching Assistant, Cybersecurity I, South CTA",
+      "Server Lab Architect, South CTA cybersecurity program",
+      "President, South CTA Cyber Club (since 2025)",
+      "President, South CTA Music Club (since 2025)",
+      "Commissioner, City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
+      "Youth Advisory Council Member, Nevada Office of Workforce Innovation (OWINN)",
       "Big Future Ambassador, College Board",
-      "Youth Advisory Council Member, Nevada OWINN",
-      "Lead Instructor for youth coding camps across the Las Vegas Valley",
+      "Volunteer instructor, Code Central coding camps (2022)",
     ],
   },
   {
@@ -50,7 +53,7 @@ const PILLARS: Pillar[] = [
     title: "Performance credentials alongside technical work.",
     accent: "signal",
     lines: [
-      "Nevada All-State Band in 6th, 7th, and 9th grade",
+      "Nevada All-State Band in 2023, 2024, and 2026",
       "Ranked #1 percussionist in Nevada in 2024",
     ],
   },
@@ -60,7 +63,7 @@ const PILLARS: Pillar[] = [
     title: "Coursework in cybersecurity and computing.",
     accent: "cyan",
     lines: [
-      "South Career Technical Academy, Las Vegas, Nevada",
+      "South Career and Technical Academy, Las Vegas, Nevada, in the school's first graduating class",
       "PBS Varsity Quiz state finalist in 2026, on an all-freshman team",
       "AP Computer Science Principles and AP Human Geography",
       "CYBER.ORG coursework in Google Dorking, recon, ARP poisoning, and Wireshark or PCAP analysis",
@@ -188,7 +191,7 @@ export function BiographyAct() {
           ref={leadRef}
           className="mt-8 max-w-[56ch] font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
         >
-          Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.
+          Max Doubin is a 10th-grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.
         </p>
 
         <div
@@ -215,7 +218,7 @@ export function BiographyAct() {
                 <span className="signal-text"> at home.</span>
               </h3>
               <p className="mt-5 max-w-[40ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
-                Max designed, built, and operates a large home data center. The work covers enterprise switching and segmentation, virtualization, large-scale storage, application delivery, and the power, cooling, and structured cabling planning that keeps it all running.
+                Max designed, built, and operates a large home data center of Dell PowerEdge servers and Cisco switching, with about a petabyte of raw storage across 32 Dell PowerVault disk shelves in RAID 6. The work covers enterprise switching and segmentation, virtualization, application delivery, and the power, cooling, and structured cabling planning that keeps it all running.
               </p>
             </div>
             <div className="p-8 md:col-span-7">
