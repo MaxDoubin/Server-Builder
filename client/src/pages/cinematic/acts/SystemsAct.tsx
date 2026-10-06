@@ -93,7 +93,7 @@ function LeadershipCopy() {
         <span className="signal-text">civic, and technical spaces.</span>
       </h2>
       <p className={`mt-5 max-w-[42ch] ${BODY_CLASS}`}>
-        President of the South CTA Cyber Club and South CTA Music Club, Blue Ribbon Commissioner for the City of Henderson, Big Future Ambassador for College Board, OWINN Youth Advisory Council member, and lead instructor for youth coding camps across the Las Vegas Valley.
+        President of the South CTA Cyber Club and South CTA Music Club, teaching assistant for Cybersecurity I, Commissioner on the City of Henderson Blue Ribbon Commission, OWINN Youth Advisory Council member, and Big Future Ambassador for College Board.
       </p>
     </>
   );
@@ -111,7 +111,7 @@ function CredentialsCopy({ alignRight = false }: { alignRight?: boolean }) {
       <p
         className={`mt-5 max-w-[42ch] ${BODY_CLASS}${alignRight ? " md:ml-auto" : ""}`}
       >
-        CompTIA Tech+ is complete. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
+        CompTIA Tech+ is complete (April 2026). Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
       </p>
     </>
   );
@@ -126,15 +126,15 @@ function InfrastructureCopy() {
         <span className="signal-text"> built for serious systems work.</span>
       </h2>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[0.6875rem]">
+        <span>Dell PowerEdge servers</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>1 PB raw storage</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
         <span>Enterprise switching</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
         <span>VLAN segmentation</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
         <span>Virtualization</span>
-        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>Large-scale storage</span>
-        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>Application delivery</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
         <span>Power and cooling</span>
       </div>
@@ -166,7 +166,7 @@ function HighlightsCopy({ counters }: { counters?: CounterRefs }) {
         <Stat label="National Cyber League">
           Top <span ref={counters?.rack}>{counters ? "0" : "1"}</span>%
         </Stat>
-        <Stat label="Team Rank · Nationally">
+        <Stat label="School Rank · Nationally">
           #<span ref={counters?.ram}>{counters ? "0" : "7"}</span>
         </Stat>
         <Stat label="Percussionist · Nevada">

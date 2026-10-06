@@ -8,7 +8,7 @@
 
 /* THANKS */
 
-  The Cyber Club at South Career Technical Academy, for making the
+  The Cyber Club at South Career and Technical Academy, for making the
   competition practice worth showing up for.
 
   Everyone who writes documentation that assumes you want to understand
