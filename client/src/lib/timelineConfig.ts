@@ -11,10 +11,7 @@ import { siteConfig, PRESS } from "./siteConfig";
 export interface TimelineEntry {
   title: string;
   description: string;
-  /**
-   * Displayed under the title. Only ever set when the site actually records
-   * it. Everything else is grouped as undated rather than given a guessed year.
-   */
+  /** Displayed above the title. */
   when?: string;
   href?: string;
   external?: boolean;
@@ -22,7 +19,7 @@ export interface TimelineEntry {
 
 export interface TimelineGroup {
   id: string;
-  /** Year, or the label for the undated group. */
+  /** The year. */
   label: string;
   note?: string;
   entries: TimelineEntry[];
@@ -33,10 +30,11 @@ export interface TimelineGroup {
  * 2026 while preparing his resume: the year each leadership role began, the
  * Code Central volunteering, the Pinecrest technology aide years, the summer
  * 2025 Ruckus deployment, the 2025 NJHS scholarship, the April 2026 CompTIA
- * Tech+ certificate, and the season of the top 1 percent NCL result. A role
- * that spans years sits under the year it began. Anything without a recorded
- * date stays in the undated group. Do not infer a year for an entry from the
- * year next to it: an approximately right date on a portfolio is a wrong date.
+ * Tech+ certificate, and the season of the top 1 percent NCL result. Max
+ * supplied the last two dates himself in October 2026: Big Future Ambassador
+ * for 2025 to 2026, and Student of the Month in October 2025. A role that
+ * spans years sits under the year it began. Ask before adding an entry whose
+ * date is unknown rather than inferring one from the entries around it.
  */
 export const TIMELINE_GROUPS: TimelineGroup[] = [
   {
@@ -152,6 +150,16 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Assisted with installing Ruckus access points and switches during the campus's migration away from Ubiquiti equipment.",
       },
       {
+        title: "Big Future Ambassador, College Board",
+        when: "2025 to 2026",
+        description: "Represented student perspective and outreach through College Board programs.",
+      },
+      {
+        title: "Student of the Month",
+        when: "October 2025",
+        description: "Recognized as Student of the Month at South Career and Technical Academy.",
+      },
+      {
         title: "NJHS Outstanding Achievement Award scholarship",
         when: "2025",
         description:
@@ -186,24 +194,6 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         when: "2022",
         description: "Taught coding to beginners as a volunteer camp instructor.",
         href: "/coding-camps",
-      },
-    ],
-  },
-  {
-    id: "undated",
-    label: "No date on record",
-    note:
-      "These are real and verifiable, but this site does not record when each one happened. They are listed without a date rather than with a guessed one.",
-    entries: [
-      {
-        title: "Big Future Ambassador, College Board",
-        description: "Represents student perspective and outreach through College Board programs.",
-      },
-      {
-        title: "Student of the Month",
-        when: "October",
-        description:
-          "Recognized as Student of the Month at South Career and Technical Academy. The year is not recorded here.",
       },
     ],
   },

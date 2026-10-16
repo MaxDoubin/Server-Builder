@@ -1411,7 +1411,7 @@ ${JSON.stringify({
   const timelineContent = `
 <main>
   <h1>Timeline</h1>
-  <p>Competitions, awards and milestones for ${esc(siteConfig.name)}. Entries carry a date only where one is actually recorded; the rest are grouped as undated rather than given a guessed year.</p>
+  <p>Competitions, awards and milestones for ${esc(siteConfig.name)}, newest first.</p>
   ${TIMELINE_GROUPS.map(
     (group) => `<section>
     <h2>${esc(group.label)}</h2>

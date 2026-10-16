@@ -43,7 +43,7 @@ const PILLARS: Pillar[] = [
       "President, South CTA Music Club (since 2025)",
       "Commissioner, City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
       "Youth Advisory Council Member, Nevada Office of Workforce Innovation (OWINN)",
-      "Big Future Ambassador, College Board",
+      "Big Future Ambassador, College Board (2025 to 2026)",
       "Volunteer instructor, Code Central coding camps (2022)",
     ],
   },

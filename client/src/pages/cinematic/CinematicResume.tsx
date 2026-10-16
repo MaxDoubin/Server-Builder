@@ -305,7 +305,7 @@ export function CinematicResume() {
             <ul className="space-y-1">
               <Bullet>Nevada All-State Band selection in 2023, 2024, and 2026</Bullet>
               <Bullet>Ranked #1 percussionist in the state of Nevada in 2024</Bullet>
-              <Bullet>Student of the Month, South Career and Technical Academy</Bullet>
+              <Bullet>Student of the Month, South Career and Technical Academy, October 2025</Bullet>
             </ul>
           </Section>
 

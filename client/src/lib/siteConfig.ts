@@ -57,7 +57,8 @@ export const siteConfig = {
         "President of the South CTA Cyber Club since 2025",
         "President of the South CTA Music Club since 2025",
         "Commissioner on the City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity since 2025",
-        "Youth Advisory Council member for the Nevada Office of Workforce Innovation (OWINN) since 2025 and Big Future Ambassador for College Board",
+        "Youth Advisory Council member for the Nevada Office of Workforce Innovation (OWINN) since 2025",
+        "Big Future Ambassador for College Board, 2025 to 2026",
         "Keynote panelist at the 2026 A4LE Southwest Region Conference",
         "Proposed and led a student team's network risk assessment, presented to school administration and the Clark County School District networking team",
       ],
@@ -220,7 +221,7 @@ export const siteConfig = {
       title: "Big Future Ambassador",
       org: "College Board",
       details: [
-        "Represents student perspective and outreach through College Board programs",
+        "Represented student perspective and outreach through College Board programs from 2025 to 2026",
       ],
     },
     {
@@ -297,7 +298,7 @@ export const siteConfig = {
     {
       title: "Student of the Month",
       description:
-        "Recognized as Student of the Month in October at South Career and Technical Academy.",
+        "Recognized as Student of the Month at South Career and Technical Academy in October 2025.",
     },
     {
       title: "Volunteer Coding Camp Instructor",

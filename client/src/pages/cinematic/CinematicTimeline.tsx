@@ -1,6 +1,5 @@
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
-import { siteConfig } from "@/lib/siteConfig";
 import { TIMELINE_GROUPS as GROUPS } from "@/lib/timelineConfig";
 
 export function CinematicTimeline() {
@@ -23,8 +22,7 @@ export function CinematicTimeline() {
               Timeline.
             </h1>
             <p className="mt-6 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Competitions, awards, and milestones. Dated where the record carries a date, grouped
-              separately where it does not. Nothing here is estimated.
+              Competitions, awards, and milestones, newest first.
             </p>
           </header>
 
@@ -81,10 +79,6 @@ export function CinematicTimeline() {
             ))}
           </div>
 
-          <p className="mt-16 max-w-[62ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            Every entry above comes from the same record that drives the rest of {siteConfig.name}'s
-            site. If a date is missing here, it is missing there too.
-          </p>
         </div>
       </div>
     </CinematicLayout>
