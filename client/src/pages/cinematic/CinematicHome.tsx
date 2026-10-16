@@ -72,6 +72,8 @@ export function CinematicHome() {
         "#1 Percussionist · State of Nevada, 2024",
         "PBS Varsity Quiz · State finalist, 2026",
         "Nevada All-State Band · 2023, 2024, and 2026",
+        "Honor Band of Nevada · 2022, 2023, and 2024",
+        "Pinecrest Conservatory Outstanding Percussionist Award · 2023 and 2024",
         "NJHS Outstanding Achievement Award scholarship · 2025",
         "Student of the Month · South CTA, October 2025",
       ],
@@ -81,6 +83,17 @@ export function CinematicHome() {
           name: "CompTIA Tech+ (FC0-U71)",
           credentialCategory: "certification",
         },
+        ...[
+          "NSE 1 Certified in Cybersecurity",
+          "NSE 2 Certified in Cybersecurity",
+          "NSE 3 Certified in Cybersecurity",
+          "FortiGate 7.6 Operator",
+        ].map((name) => ({
+          "@type": "EducationalOccupationalCredential",
+          name: `Fortinet ${name}`,
+          credentialCategory: "certificate",
+          recognizedBy: { "@type": "Organization", name: "Fortinet" },
+        })),
       ],
       memberOf: [
         {

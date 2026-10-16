@@ -269,7 +269,7 @@ const techPlus: Cert = {
   level: "Foundational IT",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned. A foundational IT credential covering core hardware, software, and security literacy.",
+  statusDetail: "Earned in April 2026. A foundational IT credential covering core hardware, software, and security literacy.",
   covers:
     "Foundational IT literacy: basic hardware and software concepts, data fundamentals, programming logic, databases, and security basics.",
   worth:
@@ -282,3 +282,95 @@ const techPlus: Cert = {
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
 export const CERTS_EARNED: Cert[] = [techPlus];
 export const ALL_CERTS: Cert[] = [...CERTS_EARNED, ...CERTS_IN_PROGRESS];
+
+/**
+ * Everything earned that is not a proctored exam card: training credentials,
+ * competition results, AP scores and course badges. Max supplied this list in
+ * October 2026. The page and the prerendered HTML both render it from here.
+ */
+export interface CredentialGroup {
+  id: string;
+  heading: string;
+  /** Issuer and date, as one line under the heading. */
+  meta: string;
+  items: string[];
+}
+
+const FORTINET = [
+  "NSE 1 Certified in Cybersecurity",
+  "NSE 2 Certified in Cybersecurity",
+  "NSE 3 Certified in Cybersecurity",
+  "FortiGate 7.6 Operator",
+  "Introduction to the Next Generation Firewall 1.0",
+  "Fortinet Cybersecurity and Cloud Fundamentals 1.0",
+];
+
+const CLAUDE_BADGES = [
+  "Claude 101",
+  "Claude Code 101",
+  "Claude Code in Action",
+  "Claude Platform 101",
+  "Building with the Claude API",
+  "Claude with Amazon Bedrock",
+  "Claude with Google Cloud's Vertex AI",
+  "Introduction to Model Context Protocol",
+  "Model Context Protocol: Advanced Topics",
+  "Introduction to Claude Cowork",
+  "Introduction to Claude Tag",
+  "AI Capabilities and Limitations",
+  "AI Fluency: Framework and Foundations",
+  "AI Fluency for Students",
+  "AI Fluency for Educators",
+  "AI Fluency for pK-12 Educators",
+  "AI Fluency for Builders",
+  "AI Fluency for Creative Work",
+  "AI Fluency for Nonprofits",
+  "AI Fluency for Small Businesses",
+  "Teaching AI Fluency",
+  "Building Effective Human-Agent Teams (beta)",
+  "Deploying Claude Enterprise with Confidence",
+];
+
+const CLAUDE_COURSES = [
+  "AI Fluency for pK-12: Train the Trainer",
+  "The AI-Native SDLC Playbook",
+  "Introduction to Agent Skills",
+  "Introduction to Subagents",
+];
+
+export const CREDENTIAL_GROUPS: CredentialGroup[] = [
+  {
+    id: "fortinet",
+    heading: "Fortinet Training Institute",
+    meta: "Earned October 2026",
+    items: FORTINET,
+  },
+  {
+    id: "competition",
+    heading: "Competition",
+    meta: "National Cyber League and CyberWeek@UNLV",
+    items: [
+      "Top 1% individually, NCL Fall 2025 Individual Game",
+      "1st place, NCL Fall 2026 Gymnasium (preseason)",
+      "1st place, CCSD Capture the Flag at CyberWeek@UNLV, October 2026",
+    ],
+  },
+  {
+    id: "academic",
+    heading: "Academic",
+    meta: "College Board Advanced Placement",
+    items: ["AP Computer Science Principles: 5", "AP Human Geography: 5"],
+  },
+  {
+    id: "claude-academy-badges",
+    heading: "Anthropic Claude Academy badges",
+    meta: `${CLAUDE_BADGES.length} badges, October 2026`,
+    items: CLAUDE_BADGES,
+  },
+  {
+    id: "claude-academy-courses",
+    heading: "Anthropic Claude Academy courses",
+    meta: "Completed October 2026",
+    items: CLAUDE_COURSES,
+  },
+];

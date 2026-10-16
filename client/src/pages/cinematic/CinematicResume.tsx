@@ -178,7 +178,18 @@ export function CinematicResume() {
                 Earned
               </h3>
               <ul className="mt-2 space-y-1">
-                <Bullet>CompTIA Tech+, April 2026</Bullet>
+                <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
+                <Bullet>
+                  Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, October 2026
+                </Bullet>
+                <Bullet>Fortinet FortiGate 7.6 Operator, October 2026</Bullet>
+                <Bullet>
+                  Fortinet Introduction to the Next Generation Firewall and Cybersecurity and Cloud
+                  Fundamentals, October 2026
+                </Bullet>
+                <Bullet>
+                  Anthropic Claude Academy: 23 badges and four completed courses, October 2026
+                </Bullet>
               </ul>
             </div>
             <div className="resume-entry mt-4">
@@ -301,7 +312,10 @@ export function CinematicResume() {
           <Section title="Recognition">
             <ul className="space-y-1">
               <Bullet>Nevada All-State Band selection in 2023, 2024, and 2026</Bullet>
+              <Bullet>Honor Band of Nevada selection in 2022, 2023, and 2024</Bullet>
               <Bullet>Ranked #1 percussionist in the state of Nevada in 2024</Bullet>
+              <Bullet>Pinecrest Conservatory Outstanding Percussionist Award, 2023 and 2024</Bullet>
+              <Bullet>Clark County School District Battle of the Bands competitor</Bullet>
               <Bullet>Student of the Month, South Career and Technical Academy, October 2025</Bullet>
             </ul>
           </Section>

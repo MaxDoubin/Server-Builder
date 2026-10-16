@@ -50,6 +50,20 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         external: true,
       },
       {
+        title: "Fortinet Training Institute credentials",
+        when: "October 2026",
+        description:
+          "NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals.",
+        href: "/certifications",
+      },
+      {
+        title: "Anthropic Claude Academy",
+        when: "October 2026",
+        description:
+          "23 badges and four completed courses, covering the Claude API, Model Context Protocol, Claude Code, agent skills and AI fluency.",
+        href: "/certifications",
+      },
+      {
         title: "1st place, NCL Fall 2026 Gymnasium",
         when: "Fall 2026",
         description:
@@ -172,6 +186,16 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
     label: "2024",
     entries: [
       {
+        title: "Student Council treasurer, Pinecrest Inspirada",
+        when: "2024 to 2025",
+        description: "Served as treasurer on the student council.",
+      },
+      {
+        title: "Hope Squad member, Pinecrest Inspirada",
+        when: "2024 to 2025",
+        description: "Served on Hope Squad, a peer support and suicide prevention program.",
+      },
+      {
         title: "#1 percussionist in the state of Nevada",
         when: "2024",
         description:
@@ -180,9 +204,25 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
     ],
   },
   {
+    id: "y2023",
+    label: "2023",
+    entries: [
+      {
+        title: "Pinecrest Conservatory Outstanding Percussionist Award",
+        when: "2023 and 2024",
+        description: "Received the Pinecrest Conservatory's Outstanding Percussionist Award two years running.",
+      },
+    ],
+  },
+  {
     id: "y2022",
     label: "2022",
     entries: [
+      {
+        title: "Honor Band of Nevada",
+        when: "2022, 2023, and 2024",
+        description: "Selected for the Honor Band of Nevada three years in a row.",
+      },
       {
         title: "Student technology aide, Pinecrest Inspirada",
         when: "2022 to 2025",

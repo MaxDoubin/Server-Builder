@@ -111,7 +111,7 @@ function CredentialsCopy({ alignRight = false }: { alignRight?: boolean }) {
       <p
         className={`mt-5 max-w-[42ch] ${BODY_CLASS}${alignRight ? " md:ml-auto" : ""}`}
       >
-        CompTIA Tech+ is complete (April 2026). Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
+        CompTIA Tech+ is complete (April 2026), along with Fortinet NSE 1 through 3 and FortiGate 7.6 Operator (October 2026). Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
       </p>
     </>
   );

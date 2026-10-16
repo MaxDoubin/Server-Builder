@@ -47,6 +47,7 @@ export const siteConfig = {
         "Top 1 percent of competitors in the National Cyber League Fall 2025 Individual Game",
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "CompTIA Tech+ certified (April 2026), currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
+        "Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity and FortiGate 7.6 Operator (October 2026)",
       ],
     },
     {
@@ -66,7 +67,11 @@ export const siteConfig = {
       category: "Music & Performance",
       items: [
         "Three-time Nevada All-State Band selection (2023, 2024, and 2026)",
+        "Three-time Honor Band of Nevada selection (2022, 2023, and 2024)",
         "Ranked #1 percussionist in the state of Nevada in 2024",
+        "Pinecrest Conservatory Outstanding Percussionist Award (2023 and 2024)",
+        "Clark County School District Battle of the Bands competitor",
+        "President of the South CTA Music Club since 2025",
       ],
     },
     {
@@ -155,6 +160,9 @@ export const siteConfig = {
       name: "Academics & Certifications",
       skills: [
         "CompTIA Tech+ (April 2026)",
+        "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
+        "FortiGate 7.6 Operator (October 2026)",
+        "Anthropic Claude Academy, 23 badges (October 2026)",
         "CompTIA Security+ (in progress)",
         "CompTIA Network+ (in progress)",
         "Cisco CCNA (in progress)",
@@ -224,6 +232,20 @@ export const siteConfig = {
       ],
     },
     {
+      title: "Member",
+      org: "Hope Squad at Pinecrest Inspirada",
+      details: [
+        "Served on Hope Squad, a peer support and suicide prevention program, from 2024 to 2025",
+      ],
+    },
+    {
+      title: "Treasurer",
+      org: "Student Council at Pinecrest Inspirada",
+      details: [
+        "Served as Student Council treasurer from 2024 to 2025",
+      ],
+    },
+    {
       title: "Student Technology Aide",
       org: "Pinecrest Academy of Nevada, Inspirada",
       details: [
@@ -285,9 +307,31 @@ export const siteConfig = {
         "Earned the CompTIA Tech+ certification in April 2026 while continuing work toward Security+, Network+, and Cisco CCNA.",
     },
     {
+      title: "Fortinet Training Institute Credentials",
+      description:
+        "Earned NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals in October 2026.",
+    },
+    {
+      title: "Anthropic Claude Academy",
+      description:
+        "Earned 23 Anthropic Claude Academy badges and completed four Claude Academy courses in October 2026, covering the Claude API, Model Context Protocol, Claude Code, agent skills and AI fluency.",
+    },
+    {
       title: "#1 Percussionist in Nevada",
       description:
         "Ranked #1 percussionist in the state of Nevada in 2024 and selected for Nevada All-State Band in 2023, 2024, and 2026.",
+    },
+    {
+      title: "Honor Band of Nevada",
+      description: "Selected for the Honor Band of Nevada three times, in 2022, 2023, and 2024.",
+    },
+    {
+      title: "Pinecrest Conservatory Outstanding Percussionist Award",
+      description: "Received the Pinecrest Conservatory Outstanding Percussionist Award in 2023 and again in 2024.",
+    },
+    {
+      title: "CCSD Battle of the Bands",
+      description: "Competed in the Clark County School District Battle of the Bands.",
     },
     {
       title: "2026 PBS Varsity Quiz State Finalist",
