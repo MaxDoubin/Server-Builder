@@ -145,8 +145,7 @@ export function CinematicToday() {
             </p>
             {mounted && visits > 1 ? (
               <p className="mt-2 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-                A count, not a streak. Nothing resets if you miss a day, because a number that
-                punishes you for having a life is not a number worth keeping.
+                A count, not a streak. Nothing resets if you miss a day.
               </p>
             ) : null}
           </section>

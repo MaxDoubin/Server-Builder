@@ -455,13 +455,7 @@ ${asMiddlebox(setup)}`}
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI holds the model against the figures its sources print: 924.6 seconds for
-            tcp_retries2 at 15, 7875 for keepalive at 7200 with nine probes at 75, and 432000,
-            1200, 350, 300 and 240 for the five devices in the set. It also asserts the
-            misconception directly. On every case where SO_KEEPALIVE is not set, lowering all
-            three sysctls to 1 must change nothing at all, because a sysctl no socket opted into
-            cannot affect that socket, and a model that got that backwards would still produce
-            internally consistent numbers.
+            Where SO_KEEPALIVE is not set, lowering all three sysctls to 1 changes nothing, because a sysctl cannot affect a socket that never opted in.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For what the same conntrack table does to a reply that never comes back,{" "}

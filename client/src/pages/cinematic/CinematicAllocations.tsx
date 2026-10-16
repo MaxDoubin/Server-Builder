@@ -100,11 +100,7 @@ export function CinematicAllocations() {
           ))}
 
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Marked on behavior, like the firewall exercises: any plan that meets every requirement
-            without overlapping is right, including a tidier one than mine. CI replays a working
-            plan for each of these and refuses the build if one stops being satisfiable, which is
-            not a theoretical worry. One of these six was arithmetically impossible when I wrote it,
-            and the check caught it while I was still calling it an exercise.
+            Any plan that meets every requirement without overlapping is right.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the rules that sit on top of an address plan, the{" "}

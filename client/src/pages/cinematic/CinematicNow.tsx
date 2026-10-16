@@ -103,7 +103,7 @@ export function CinematicNow() {
               >
                 Field Notes archive
               </Link>{" "}
-              is updated far more often than this page is.
+              is where to look.
             </p>
           </section>
         </div>

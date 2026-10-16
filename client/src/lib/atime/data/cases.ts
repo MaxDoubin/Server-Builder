@@ -134,7 +134,7 @@ export const CASES: Case[] = [
       { id: "flag", claim: "No, because the inode carries the A flag", says: { about: "blocked", name: "the A flag on the inode" } },
     ],
     why:
-      "The read-only check is not part of the relatime decision. atime_needs_update says yes, and then touch_atime asks the mount for write access and is refused. Measured on /opt/claude-code/bin/claude, ext4 mounted ro,relatime, with atime equal to mtime and ctime 29 hours newer, so every one of the three tests said update: the read moved nothing.",
+      "The read-only check is not part of the relatime decision. atime_needs_update says yes, and then touch_atime asks the mount for write access and is refused. Measured on a binary on an ext4 image mounted ro,relatime, with atime equal to mtime and ctime 29 hours newer, so every one of the three tests said update: the read moved nothing.",
     fix:
       "Nothing to fix, and worth knowing: access times on a read-only image are the image's, not yours, so they say nothing about what is being used.",
     breaks: "the three relatime rules are the whole decision",

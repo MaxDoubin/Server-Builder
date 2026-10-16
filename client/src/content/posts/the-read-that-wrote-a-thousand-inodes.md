@@ -145,8 +145,8 @@ and files under it are still on relatime's terms, which is usually what you
 want for a tree that gets crawled.
 
 The read-only mount is the odd one out, and it is the clearest illustration of
-where the check actually lives. `/opt/claude-code/bin/claude`, on an ext4 image
-mounted `ro,relatime`:
+where the check actually lives. Take a binary on an ext4 image mounted
+`ro,relatime`:
 
 ```
 atime  1999-12-31    (the image's fixed build date)

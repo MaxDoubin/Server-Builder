@@ -447,7 +447,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","performance","storage"],
     excerpt: "On a relatime mount a read updates the access time only if mtime or ctime is at least as new, or the stored atime is a day old. So most reads write nothing, and a backup that reads 1059 files writes 1059 inodes, once. Reading the same 1059 again writes none. And an access time frozen by noatime does not read as missing: it reads as old, which is how a cleanup job deletes a file being read two hundred times a minute. Measured on one host.",
     coverImage: "/images/blog/the-read-that-wrote-a-thousand-inodes.jpg",
-    wordCount: 1548,
+    wordCount: 1550,
   },
   {
     slug: "no-space-left-on-device-with-nineteen-gigabytes-free",

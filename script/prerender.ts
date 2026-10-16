@@ -2211,8 +2211,7 @@ ${JSON.stringify({
   <p>
     Reading about an incident and being in one are different skills, and only
     one of them is what a bad night asks for. These are the parts of this site
-    that make you do something, grouped by the situation you are in rather
-    than by subject, because the subject is not what anybody arrives knowing.
+    that make you do something, grouped by the situation you are in.
   </p>
 ${GROUPS.map((group) => `  <h2 id="${group}">${esc(GROUP_HEADING[group])}</h2>
   <p>${esc(GROUP_BLURB[group])}</p>
@@ -4163,7 +4162,7 @@ noatime on the mount        nothing under it records a read
 nodiratime on the mount     directories only; files still record
 a read-only mount           the decision is made, then refused</code></pre>
   <p>
-    That last one is worth stating plainly. On <code>/opt/claude-code/bin/claude</code>, an ext4
+    That last one is worth stating plainly. On a binary on an ext4
     image mounted <code>ro,relatime</code>, atime equalled mtime and ctime was 29 hours newer, so all
     three tests said update. Reading it moved nothing. <code>atime_needs_update</code> says yes and
     then <code>touch_atime</code> asks the mount for write access and is told no.
@@ -10085,7 +10084,7 @@ ${JSON.stringify({
         }</dt><dd>${esc(d.summary)}</dd>`,
     )
     .join("\n    ")}</dl>
-  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a>. Weightings follow the published objectives; the vendor revises them, so treat their document as the source of truth.</p>
+  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a>. Weightings follow the published objectives; the vendor revises them, so check their document for the current version.</p>
   <nav><a href="${SITE_URL}/study">All exams</a> · <a href="${SITE_URL}/certifications">Certifications</a> · <a href="${SITE_URL}/flashcards">Flashcards</a></nav>
 </main>`,
     });

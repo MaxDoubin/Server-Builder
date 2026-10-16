@@ -235,7 +235,7 @@ export function CinematicNcl() {
               Mistakes I made
             </h2>
             <p className="mt-3 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              The honest version, so you can skip them.
+              So you can skip them.
             </p>
             <ul className="mt-6 space-y-4">
               {mistakes.map((m, i) => (
