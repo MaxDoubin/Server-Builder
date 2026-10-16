@@ -405,10 +405,7 @@ export function CinematicVlan() {
           <ReadAboutThis href="/vlan" />
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            No case here carries an answer key. Each one declares the frame and the ports it
-            crosses, the model carries it, and the correct option is whichever one's value
-            matches. CI requires exactly one to match, and separately checks the model against the
-            tagging rules over six thousand generated paths: that an access port classifies by
+            The model follows the tagging rules: that an access port classifies by
             port and ignores the tag, that a frame in the sender's native VLAN crosses bare and so
             lands in whatever the receiver calls native, and that a tagged frame is immune to the
             receiver's native VLAN because it says which VLAN it is.

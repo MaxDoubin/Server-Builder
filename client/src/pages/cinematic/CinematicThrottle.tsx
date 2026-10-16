@@ -360,13 +360,6 @@ ${asCpuStat(setup)}`}
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} cgroups`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI runs every one of these a second time, spending quota a tenth of a millisecond at a
-            time instead of computing each period in closed form, and fails the build if the two
-            disagree about the CPU spent or about which periods were stopped. It also checks that
-            the two configurations in the period case still behave differently, because a change
-            that quietly collapses them leaves a case that passes and teaches nothing.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other number that looks like a percentage and is not,{" "}
             <Link

@@ -148,8 +148,8 @@ export function CinematicStudyExam() {
             </h2>
             <p className="mt-3 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Weightings and domain names here follow the published objectives for{" "}
-              {exam.code}. The vendor revises them, so treat their document as the
-              source of truth rather than this page.
+              {exam.code}. The vendor revises them, so check
+              their document for the current version.
             </p>
             <a
               href={exam.officialUrl}

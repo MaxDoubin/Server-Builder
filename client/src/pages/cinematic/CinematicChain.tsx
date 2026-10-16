@@ -92,13 +92,6 @@ export function CinematicChain() {
             ))}
           </ol>
 
-          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI runs every chain through the same validator this page uses and fails the build if a
-            stated fault or a named owner disagrees with it. The owner is the half that would rot
-            silently: an explanation saying only the client can fix this, against a validator
-            naming the server, is a page that teaches someone to open a ticket with the wrong team
-            while looking entirely correct.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For a certificate at a prompt rather than on a page, one of the{" "}
             <Link

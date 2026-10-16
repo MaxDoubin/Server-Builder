@@ -370,9 +370,7 @@ events lost       ${String(lost).padStart(10)}   ${queueOverflows(setup) ? "sile
             times, and through a second path to the same inode as well, while a second instance on
             that directory brought the process to two watches held. With the queue lowered to 64 and
             256 files created, 65 events were read back and 192 were gone, marked by a single
-            IN_Q_OVERFLOW with wd -1, and every read returned success. CI charges the watches one
-            add at a time with a set per instance, walks the errno across a grid of both budgets to
-            check the order, and drains the queue event by event. IN_ONESHOT, IN_MASK_ADD, the
+            IN_Q_OVERFLOW with wd -1, and every read returned success. IN_ONESHOT, IN_MASK_ADD, the
             kernel memory a watch costs and fanotify are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

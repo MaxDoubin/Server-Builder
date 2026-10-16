@@ -185,9 +185,6 @@ export function CinematicResume() {
               <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
                 Studying toward
               </h3>
-              <p className="mt-1 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                In progress. Not held.
-              </p>
               <ul className="mt-2 space-y-1">
                 {STUDYING_TOWARD.map((cert) => (
                   <Bullet key={cert}>{cert}</Bullet>
@@ -325,10 +322,6 @@ export function CinematicResume() {
             </p>
           </Section>
 
-          <p className="resume-noprint mt-14 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            Everything on this page is drawn from the same source of truth as the rest of the site.
-            Certifications marked "studying toward" are in progress, not held.
-          </p>
         </div>
       </div>
     </CinematicLayout>

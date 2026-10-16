@@ -398,10 +398,7 @@ ${asDmesg(setup)}`}
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI recomputes each table's state as four independent predicates and requires exactly one
-            to be true, checks that the set contains a pair of tables identical but for how fast
-            their entries arrived and opposite in outcome, and proves on every case that permanent
-            entries change nothing, because exempt_from_gc means they never reach the counter. Per
+            Per
             device overrides, the unres_qlen backlog and hash table resizing are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

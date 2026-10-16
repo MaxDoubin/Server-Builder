@@ -73,7 +73,7 @@ export const storageRack: RackDefinition = {
       u: 2,
       vendor: "Synology",
       model: "RackStation RS1221+ (hot tier)",
-      role: "Eight bays of SATA on a 2U chassis with four gigabit LAN ports and a PCIe slot, here carrying a 10G card to the switch above. Synology publishes 49.89W while the disks are working and 22.64W with them hibernating, which is an unusually honest pair of numbers for this industry.",
+      role: "Eight bays of SATA on a 2U chassis with four gigabit LAN ports and a PCIe slot, here carrying a 10G card to the switch above. Synology publishes 49.89W while the disks are working and 22.64W with them hibernating.",
       family: "storage",
       finish: "dark",
       // 8x 3.5 inch SATA bays, all fitted on the hot tier.
@@ -151,7 +151,7 @@ export const storageRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Metered rack PDU, 8x C13",
-      role: "Metering matters more here than anywhere else in the library, because the Synology figures are the only published draw in the rack and everything else has to be measured rather than looked up.",
+      role: "Metering matters here, because the Synology figures are the only published draw in the rack and everything else has to be measured rather than looked up.",
       family: "pdu",
       finish: "black",
       ports: run("power", 8, (n) => `C13-${n}`, 5),

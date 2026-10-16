@@ -75,7 +75,7 @@ Version 5 lasted from 2015 to the end, so the point release is what tells you wh
 | 5.11 | Big Sur 11 | [December 14, 2020](https://support.apple.com/en-us/120989) |
 | 5.12 to 5.12.2 | Monterey 12 | 2021 to 2022 |
 
-Version 5.0 was a free upgrade for existing OS X Server users, as [iMore noted](https://www.imore.com/os-x-server-50-released-el-capitan-and-yosemite-users-can-upgrade-free), and 5.2 was the first to carry the name macOS Server. Apple's [Monterey note](https://support.apple.com/en-us/101904) is blunt about the last jump: "macOS Server 5.11.1 and earlier is not compatible with macOS Monterey. To use macOS Server with macOS Monterey, update to macOS Server 5.12." Exact days are missing above where no reliable source gives one. Release dates for 5.6, 5.7.1, 5.10 and the 5.12 builds vary between secondary sources by days or months, so this table gives the season instead.
+Version 5.0 was a free upgrade for existing OS X Server users, as [iMore noted](https://www.imore.com/os-x-server-50-released-el-capitan-and-yosemite-users-can-upgrade-free), and 5.2 was the first to carry the name macOS Server. Apple's [Monterey note](https://support.apple.com/en-us/101904) is blunt about the last jump: "macOS Server 5.11.1 and earlier is not compatible with macOS Monterey. To use macOS Server with macOS Monterey, update to macOS Server 5.12." Release dates for 5.6, 5.7.1, 5.10 and the 5.12 builds vary between secondary sources by days or months.
 
 ## 2017 and 2018: Apple moves the useful parts into macOS
 

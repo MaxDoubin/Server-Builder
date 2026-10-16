@@ -2268,7 +2268,7 @@ Use Docker Desktop or OrbStack for mainstream container workloads, and try Apple
 
 On a 16GB mini, Docker's default is an 8GB ceiling, and its Resource Saver [turns the VM off when idle](https://docs.docker.com/desktop/settings-and-maintenance/settings/). Apple's [technical overview](https://github.com/apple/container/blob/main/docs/technical-overview.md) admits a limitation: pages freed inside a container's VM are not returned to macOS, so memory-hungry containers may need occasional restarts.
 
-Idle-memory figures in blog comparisons vary widely, so this article gives none. The vendors' documented limits describe configured behavior; measure your own with Activity Monitor or \`container stats\`.
+The vendors' documented limits describe configured behavior; measure your own with Activity Monitor or \`container stats\`.
 
 ## How do you add file sharing, a Time Machine server and a media server?
 
@@ -5166,7 +5166,7 @@ Specs come from Apple's tech specs for the [Mid 2010](https://support.apple.com/
 
 ## How much faster is the 7,1?
 
-The 7,1 is more than twice as fast per core as any stock 5,1, and 1.9 to 2.7 times as fast across all cores in Geekbench 6. The scores are EveryMac's averages of user-submitted Geekbench 6 results as read on October 5, 2026; none were measured on this site's hardware.
+The 7,1 is more than twice as fast per core as any stock 5,1, and 1.9 to 2.7 times as fast across all cores in Geekbench 6. The scores are EveryMac's averages of user-submitted Geekbench 6 results as read on October 5, 2026.
 
 | Machine | Single-core | Multi-core |
 | :--- | ---: | ---: |
@@ -5646,7 +5646,7 @@ Version 5 lasted from 2015 to the end, so the point release is what tells you wh
 | 5.11 | Big Sur 11 | [December 14, 2020](https://support.apple.com/en-us/120989) |
 | 5.12 to 5.12.2 | Monterey 12 | 2021 to 2022 |
 
-Version 5.0 was a free upgrade for existing OS X Server users, as [iMore noted](https://www.imore.com/os-x-server-50-released-el-capitan-and-yosemite-users-can-upgrade-free), and 5.2 was the first to carry the name macOS Server. Apple's [Monterey note](https://support.apple.com/en-us/101904) is blunt about the last jump: "macOS Server 5.11.1 and earlier is not compatible with macOS Monterey. To use macOS Server with macOS Monterey, update to macOS Server 5.12." Exact days are missing above where no reliable source gives one. Release dates for 5.6, 5.7.1, 5.10 and the 5.12 builds vary between secondary sources by days or months, so this table gives the season instead.
+Version 5.0 was a free upgrade for existing OS X Server users, as [iMore noted](https://www.imore.com/os-x-server-50-released-el-capitan-and-yosemite-users-can-upgrade-free), and 5.2 was the first to carry the name macOS Server. Apple's [Monterey note](https://support.apple.com/en-us/101904) is blunt about the last jump: "macOS Server 5.11.1 and earlier is not compatible with macOS Monterey. To use macOS Server with macOS Monterey, update to macOS Server 5.12." Release dates for 5.6, 5.7.1, 5.10 and the 5.12 builds vary between secondary sources by days or months.
 
 ## 2017 and 2018: Apple moves the useful parts into macOS
 
@@ -8971,8 +8971,8 @@ and files under it are still on relatime's terms, which is usually what you
 want for a tree that gets crawled.
 
 The read-only mount is the odd one out, and it is the clearest illustration of
-where the check actually lives. \`/opt/claude-code/bin/claude\`, on an ext4 image
-mounted \`ro,relatime\`:
+where the check actually lives. Take a binary on an ext4 image mounted
+\`ro,relatime\`:
 
 \`\`\`
 atime  1999-12-31    (the image's fixed build date)
@@ -9740,7 +9740,6 @@ widen. And read the value back afterward, because the clamp is silent.
 - [net/core/sock.c, sock_setsockopt's SO_RCVBUF path](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/core/sock.c)
 
 Every measurement here was taken on Linux 6.18.44 with 15.7 GiB of memory.
-Only socket options were changed, so there was nothing to restore.
 `,
   },
   {
@@ -10158,7 +10157,7 @@ write back cache is for.
 - [fsync(2), on what actually makes a write durable](https://man7.org/linux/man-pages/man2/fsync.2.html)
 
 All measurements in this piece were taken on Linux 6.18.44 with 15.7 GiB of
-memory, and every sysctl was restored afterward.
+memory.
 `,
   },
   {
@@ -15572,8 +15571,7 @@ Then three questions:
 2. Which end closes? A server holding TIME_WAIT is a different problem with a
    different fix, and often with no fix needed.
 3. Is there a pool, and is it per destination and larger than the rate? That
-   is the answer, and everything else on this page is what to do while you
-   build it.
+   is the answer.
 
 And if somebody has already set \`tcp_fin_timeout\`, put it back. It changed
 nothing, and leaving it there means the next person spends an afternoon
@@ -16378,8 +16376,7 @@ Traces that reached the end of the chain 17 of 36
 Rule evaluations skipped entirely        31
 \`\`\`
 
-Over half the traces stop before the end of the chain. That is not because
-these examples are contrived; it is what a chain with a DROP in it does. It is
+Over half the traces stop before the end of the chain. That is what a chain with a DROP in it does. It is
 also exactly the situation in which a person adds a rule, reloads, sees no
 change, and adds another one.
 
@@ -16796,8 +16793,7 @@ different questions, and the gap between the answers is diagnostic:
 | \`df\` fine, one user refused | a quota |
 
 Of the six cases, four are settled by \`df\` and \`du\` alone. Two are not, and
-that is worth being honest about rather than pretending the arithmetic
-finishes the job. I will come back to it.
+the arithmetic does not finish the job.
 
 ## Deleting things does not always free space
 
@@ -16862,8 +16858,7 @@ about those two figures separates the two causes, and the fixes have nothing
 in common: one is a signal to a process, the other is a bind mount and an
 \`rm\`.
 
-So the page says so, on those two cases, and names the observation that does
-separate them:
+The observation that separates them:
 
 \`\`\`
 lsof +L1 lists files with no name.
@@ -19398,8 +19393,7 @@ Manager actually runs and where every blade's uplink actually terminates.
 My rack had the chassis and no interconnects. Not a missing cable, a missing
 device, and one that occupies rack units and draws power.
 
-**The honest caveat**, because the first version of this note in my own
-generator overstated it: those same I/O bays will also take a UCS 6324,
+Those same I/O bays will also take a UCS 6324,
 which is a fabric interconnect small enough to live inside the chassis. Cisco
 list both options in the same paragraph:
 
@@ -19407,9 +19401,7 @@ list both options in the same paragraph:
 > 6324 Fabric Interconnect
 
 So "a 5108 cannot run alone" is too strong. What is true is that it needs one
-of those two arrangements, and my rack had neither. I wrote the stronger
-version into a code comment before I had read the datasheet closely enough,
-which is a small example of the same failure this whole article is about.
+of those two arrangements, and my rack had neither.
 
 ## Five racks with a UPS and no PDU
 
@@ -19850,7 +19842,7 @@ of a SIM swap attack, described in order. The standard is not saying SMS is
 weak in the abstract, it is naming the specific sequence that defeats it and
 telling you to watch for it.
 
-The honest summary is that SMS is better than a password alone and worse than
+In short, SMS is better than a password alone and worse than
 anything that binds to the origin. If it is what you have, keep it, and put
 the risk indicators above in front of it.
 
@@ -20386,7 +20378,7 @@ and public keys are far larger than ECDSA's and a certificate chain contains
 several of each. Nobody has yet made a chain of those fit gracefully into a
 handshake that is already spilling out of one packet.
 
-So the honest summary of where this stands: your browser's key agreement is
+So, in summary, where this stands: your browser's key agreement is
 already post-quantum on most of the internet's large properties, your
 certificates are not, and the reason is arithmetic about bytes rather than
 anything about cryptography.
@@ -25346,7 +25338,7 @@ The pitch for machine learning on network telemetry is appealing. Signatures onl
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 
-This post is my opinion on how to evaluate the idea, not a report on any particular product. The reasoning is what transfers.
+This is my opinion on how to evaluate the idea.
 
 ## Your Features Are Flow Records
 
@@ -25426,7 +25418,7 @@ Only after that would I consider a learned model, and I would hold it to a speci
 
 I would also insist on explainability. An alert that says "anomalous" with a score attached is nearly useless to a responder. An alert that says "this host contacted 400 distinct external addresses in 5 minutes, against a normal range of 5 to 20 for this hour" is immediately actionable. If the system cannot produce the second kind of message, it will not survive contact with an on call rotation.
 
-## The Honest Summary
+## Summary
 
 I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay skeptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
 
@@ -27481,9 +27473,7 @@ useful is a small spreadsheet that turns "one request with this input length
 and that output length" into a number of seconds and a number of cents, using
 inputs you measured rather than inputs somebody advertised.
 
-Every figure in this post is a placeholder. I am deliberately not quoting
-throughput or price numbers, because those change and because the whole point
-is to substitute your own measurements. What is durable is the shape of the
+Every figure in this post is a placeholder. What is durable is the shape of the
 arithmetic.
 
 ## Two Phases, Two Completely Different Cost Shapes
@@ -32728,7 +32718,7 @@ Then read one security considerations section a week from any document that inte
 
 Self-Monitoring, Analysis and Reporting Technology is a set of counters and thresholds a drive maintains about itself. Every modern drive exposes it. It is genuinely useful and it is genuinely oversold.
 
-The honest summary: a large fraction of drives fail with no prior SMART warning at all, so a clean SMART report is weak evidence of health. But when specific attributes start moving, that is strong evidence of trouble. SMART is a smoke detector, not a crystal ball. Asymmetric information is still information.
+A large fraction of drives fail with no prior SMART warning at all, so a clean SMART report is weak evidence of health. But when specific attributes start moving, that is strong evidence of trouble. SMART is a smoke detector, not a crystal ball. Asymmetric information is still information.
 
 ## The attributes that matter on spinning disks
 
@@ -35196,7 +35186,7 @@ vCenter is also the cost people forget when they praise ESXi's thin footprint: e
 
 The downside is licensing. The paid licenses are expensive for a homelab, and when you are experimenting freely, licensing friction is a real concern.
 
-Be careful repeating any specific claim about VMware licensing, mine included. Since the Broadcom acquisition closed in late 2023 the terms have moved repeatedly: perpetual licenses gave way to subscription in December 2023, SKUs were consolidated into bundles, and per-core minimums appeared. The free hypervisor was discontinued in February 2024, then reinstated in April 2025 as ESXi 8.0 Update 3e, a download from the Broadcom support portal with the license embedded. Broadcom's knowledge base article for that edition lists its terms: no vCenter, so no vMotion, DRS or HA; no VADP-based backups; at most two physical CPUs per host and 8 vCPUs per VM; and no support. Check the current terms yourself. The stable takeaway is directional rather than numeric: VMware now designs for large enterprises, and a homelab is not a customer it targets.
+Since the Broadcom acquisition closed in late 2023 the terms have moved repeatedly: perpetual licenses gave way to subscription in December 2023, SKUs were consolidated into bundles, and per-core minimums appeared. The free hypervisor was discontinued in February 2024, then reinstated in April 2025 as ESXi 8.0 Update 3e, a download from the Broadcom support portal with the license embedded. Broadcom's knowledge base article for that edition lists its terms: no vCenter, so no vMotion, DRS or HA; no VADP-based backups; at most two physical CPUs per host and 8 vCPUs per VM; and no support. Check the current terms yourself. VMware now designs for large enterprises, and a homelab is not a customer it targets.
 
 There is a second friction that bites homelabs harder than it bites enterprises: the hardware compatibility list. ESXi ships drivers for hardware VMware supports, which is enterprise hardware. A consumer NIC or a desktop SATA controller may simply not be seen. Proxmox, being Debian, drives anything Linux drives, which is most things.
 
@@ -35850,7 +35840,7 @@ I chose a FortiGate firewall for my homelab because Fortinet is widely used in e
 
 I picked up a FortiGate 60F, which is designed for small office deployments but has more than enough throughput for a homelab. It supports hardware-accelerated firewall inspection, VPN, IPS (Intrusion Prevention System), and web filtering.
 
-The throughput numbers on the datasheet are worth reading carefully, because they explain how the box actually works. Fortinet rates the 60F at 10 Gbps of raw stateful firewall throughput, 1.4 Gbps with IPS enabled, 1 Gbps in NGFW mode, and 700 Mbps with the full threat protection stack turned on. That is not marketing inconsistency. The 60F's SoC4 processor offloads plain firewall sessions to hardware, but **the moment a policy has any security profile attached, that session can no longer be offloaded and the general-purpose CPU handles every packet.** A fourteen-fold drop between line-rate filtering and full inspection is the price of inspection, and every vendor pays some version of it. For a homelab on a residential connection none of this matters. On a gigabit fiber line with deep inspection on every policy, the 60F is at its limit.
+The throughput numbers on the datasheet are worth reading carefully, because they explain how the box actually works. Fortinet rates the 60F at 10 Gbps of raw stateful firewall throughput, 1.4 Gbps with IPS enabled, 1 Gbps in NGFW mode, and 700 Mbps with the full threat protection stack turned on. The 60F's SoC4 processor offloads plain firewall sessions to hardware, but **the moment a policy has any security profile attached, that session can no longer be offloaded and the general-purpose CPU handles every packet.** A fourteen-fold drop between line-rate filtering and full inspection is the price of inspection, and every vendor pays some version of it. For a homelab on a residential connection none of this matters. On a gigabit fiber line with deep inspection on every policy, the 60F is at its limit.
 
 There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions and web filtering categories come from FortiGuard, which is a paid subscription, and application control signatures come with a FortiCare support contract, which is also paid ([the license breakdown](/blog/fortigate-homelab-license) has the details). A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and [VLANs](/blog/vlan-segmentation-guide) and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
 
@@ -36110,7 +36100,7 @@ Pick your CPU based on your actual workload:
 
 Servers generate a lot of heat. A single fully loaded PowerEdge R740 can produce over 1,500 BTU per hour. In a datacenter with thousands of servers, managing that heat is the difference between reliable operation and cascading thermal shutdowns.
 
-The number is worth putting on a firmer footing, because it is a definition rather than an estimate. Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
+Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
 
 ## Turning watts into airflow
 
@@ -38843,7 +38833,7 @@ Two of those deserve expanding, because the reasoning matters more than the rule
 
 The weight rule is about the center of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
 
-The blanking panel rule is not about organization at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
+The blanking panel rule is not about organization at all. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
 
 ## My Layout (Top to Bottom)
 
@@ -38871,7 +38861,7 @@ Switches are the awkward exception. Many of them blow side to side, and some blo
 
 I calculated total power draw before installing anything. Each circuit in my house is rated for 15A at 120V, which is 1,800 watts. My rack draws about 1,300 watts under typical load, leaving headroom for peaks. If I add more equipment, I will need a dedicated circuit.
 
-One correction to that arithmetic worth making explicit: a branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
+A branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
 
 The other power failure mode is inrush. Servers with redundant supplies pull a large surge for the first fraction of a second at power-on. A rack that idles happily at 1,300 watts can trip its breaker the moment utility power returns after an outage and every machine tries to boot at once. The fix is staggered start: set a power-on delay in BIOS or iDRAC on each host, or use a switched PDU that sequences its outlets. I stagger mine 30 seconds apart, which costs nothing and removes the failure entirely.
 
@@ -46466,7 +46456,7 @@ the canary zone answered NXDOMAIN, browser policy pushed on the managed
 laptops, port 53 redirected and 853 rejected for everything else. Guest
 devices get the same resolver and no internal zones.
 
-The unmanaged devices still win sometimes, and that is the accurate picture:
+The unmanaged devices still win sometimes:
 this is not a control you enforce, it is a default you make good enough that
 nothing has a reason to route around it. What changed for me was diagnosis
 time. Once "dig works, the browser does not" is a shape you recognize, it is a

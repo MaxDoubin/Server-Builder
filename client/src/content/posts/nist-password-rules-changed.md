@@ -113,7 +113,7 @@ of a SIM swap attack, described in order. The standard is not saying SMS is
 weak in the abstract, it is naming the specific sequence that defeats it and
 telling you to watch for it.
 
-The honest summary is that SMS is better than a password alone and worse than
+In short, SMS is better than a password alone and worse than
 anything that binds to the origin. If it is what you have, keep it, and put
 the risk indicators above in front of it.
 

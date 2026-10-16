@@ -90,8 +90,7 @@ different questions, and the gap between the answers is diagnostic:
 | `df` fine, one user refused | a quota |
 
 Of the six cases, four are settled by `df` and `du` alone. Two are not, and
-that is worth being honest about rather than pretending the arithmetic
-finishes the job. I will come back to it.
+the arithmetic does not finish the job.
 
 ## Deleting things does not always free space
 
@@ -156,8 +155,7 @@ about those two figures separates the two causes, and the fixes have nothing
 in common: one is a signal to a process, the other is a bind mount and an
 `rm`.
 
-So the page says so, on those two cases, and names the observation that does
-separate them:
+The observation that separates them:
 
 ```
 lsof +L1 lists files with no name.

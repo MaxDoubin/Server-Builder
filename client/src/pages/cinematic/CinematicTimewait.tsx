@@ -364,10 +364,7 @@ tcp_tw_reuse         ${String(setup.twReuse).padEnd(10)} ${reuseHelps(setup) ? "
             the server sat in CLOSE_WAIT and never waited at all. ip_local_port_range read 32768
             60999, which is 28,232 ports and 470 connections a second to one destination.
             tcp_max_tw_buckets was 65536, tcp_tw_reuse was 2, and there is no tcp_tw_recycle file
-            on a 6.18 kernel. CI steps a clock through every duration rather than reading one,
-            sweeps tcp_fin_timeout across 600 settings to check it moves FIN_WAIT2 and never
-            TIME_WAIT, counts tuples one port at a time, and walks all 24 combinations of the
-            reuse conditions. TIME_WAIT assassination, SO_REUSEADDR and tcp_rfc1337 are not
+            on a 6.18 kernel. TIME_WAIT assassination, SO_REUSEADDR and tcp_rfc1337 are not
             modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

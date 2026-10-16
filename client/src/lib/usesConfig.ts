@@ -34,7 +34,7 @@ export interface UsesGroup {
 
 export const usesConfig: { intro: string; groups: UsesGroup[] } = {
   intro:
-    "The software I actually reach for, and the reason each one displaced whatever came before it. Short list on purpose: the win is not in having many tools, it is in knowing a few of them well enough to pick the right one without thinking.",
+    "The software I actually reach for, and the reason each one displaced whatever came before it.",
 
   groups: [
     {

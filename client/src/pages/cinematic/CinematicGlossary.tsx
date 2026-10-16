@@ -175,13 +175,11 @@ export function CinematicGlossary() {
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Every glossary will tell you that VLAN stands for virtual LAN. Almost none of them
               will tell you that a VLAN is not a security boundary, which is the sentence that
-              changes what somebody builds. The expansion is the small print here.
+              changes what somebody builds.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
               {TERMS.filter((term) => term.confusion).length} of the {TERMS.length} entries close
-              with what people get wrong. Nothing here is defined that the site does not use, and a
-              term the writing leans on and this page has not defined fails the build, so the
-              glossary cannot fall behind the articles.
+              with what people get wrong.
             </p>
           </header>
 
@@ -327,9 +325,7 @@ export function CinematicGlossary() {
               className="mt-6 rounded-2xl border border-[hsl(var(--brand-iron))] p-6 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="glossary-empty"
             >
-              Nothing here matches that. The glossary only covers vocabulary the site actually
-              uses, so a term missing from it is usually a subject nothing here has written about
-              yet rather than an omission.
+              Nothing here matches that.
             </p>
           ) : null}
 

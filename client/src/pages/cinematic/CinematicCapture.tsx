@@ -305,7 +305,7 @@ function Workbench({ capture }: { capture: Capture }) {
                       ) : null}
                       {question.id in marked && !right ? (
                         <p className="mt-3 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-amber))]">
-                          Not that. Nothing is scored, so keep looking.
+                          Not that. Keep looking.
                         </p>
                       ) : null}
                       {right ? (

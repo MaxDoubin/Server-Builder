@@ -45,8 +45,7 @@ export function CinematicStudy() {
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Three certifications, broken into the domains the vendor
               publishes, each pointing at the posts and tools here that
-              actually cover it. I am working through these myself, so this is
-              a study plan I use rather than a syllabus I am selling.
+              actually cover it. I am working through these myself.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               Domain names and weightings were read from the vendor's own

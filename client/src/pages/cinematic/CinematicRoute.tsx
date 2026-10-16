@@ -328,8 +328,7 @@ export function CinematicRoute() {
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             One simplification: where two routes tie on everything, a real router installs both and
-            hashes flows across them. This picks the first, and the one table here that reaches
-            that case says so.
+            hashes flows across them. This picks the first.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The rule this contrasts with is at{" "}

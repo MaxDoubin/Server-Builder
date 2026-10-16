@@ -120,7 +120,7 @@ and public keys are far larger than ECDSA's and a certificate chain contains
 several of each. Nobody has yet made a chain of those fit gracefully into a
 handshake that is already spilling out of one packet.
 
-So the honest summary of where this stands: your browser's key agreement is
+So, in summary, where this stands: your browser's key agreement is
 already post-quantum on most of the internet's large properties, your
 certificates are not, and the reason is arithmetic about bytes rather than
 anything about cryptography.

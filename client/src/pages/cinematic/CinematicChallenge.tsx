@@ -178,7 +178,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
                   className="mt-3 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-amber))]"
                   data-testid="flag-wrong"
                 >
-                  Not that one. {attempts >= 3 ? "Open a hint, or show the method." : "Nothing is scored."}
+                  Not that one. {attempts >= 3 ? "Open a hint, or show the method." : ""}
                 </p>
               ) : null}
               {state === "solved" ? (

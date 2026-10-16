@@ -350,9 +350,7 @@ ${asLog(setup)}`}
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The model is a transcription of should_drop_connection from OpenSSH's own source,
-            integer divide and all. CI recomputes every probability by inverting the ramp, using
-            ceiling where the model uses floor, and recomputes every settled occupancy by running
-            an hour of arrivals one second at a time rather than by formula. PerSourceMaxStartups
+            integer divide and all. PerSourceMaxStartups
             and PerSourcePenalties, which are checked before this and have their own timers, are
             not modeled.
           </p>

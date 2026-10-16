@@ -54,10 +54,7 @@ export function CinematicLabs() {
               is broken, and say so.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
-              Nothing here reaches a real machine, and nothing you type leaves the page. Most of
-              these ask for a diagnosis rather than a repair, because that is the shape of nearly
-              all troubleshooting: you are not asked to fix the router, you are asked to say which
-              of six things is wrong before anyone lets you near it.
+              Nothing here reaches a real machine, and nothing you type leaves the page. Most of these ask for a diagnosis rather than a repair: you are asked to say which of six things is wrong before anyone lets you near it.
             </p>
           </header>
 
@@ -81,11 +78,6 @@ export function CinematicLabs() {
             </section>
           ))}
 
-          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Every lab ships a recorded solution that CI replays through the same shell on every
-            push, so a lab that has stopped being solvable fails the build rather than your
-            afternoon.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the decisions rather than the commands, the{" "}
             <Link

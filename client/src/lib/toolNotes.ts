@@ -40,7 +40,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "The asymmetry is worth internalizing because it causes real bugs. An n bit signed range runs from -2^(n-1) to 2^(n-1) - 1, so there is one more negative number than positive: -128 to 127 in a byte, -2147483648 to 2147483647 in a 32 bit int. That means the most negative value has no positive counterpart, so negating it overflows and gives you back itself, and taking its absolute value does the same. That is CWE-191, integer underflow, and it is the mechanism behind a long list of memory corruption bugs where a length check passed because a negative number wrapped around into a very large unsigned one.",
     ],
     [
-      "Width matters as much as signedness. Truncating to a narrower type keeps the low bits and throws the rest away, so 300 stored in a byte becomes 44, and a value that passed a bounds check as a 32 bit integer can fail it as a 16 bit one. This page shows the truncation rather than hiding it: type a number too large for the selected width and it keeps the low bits and says so, which is exactly what the C cast would do.",
+      "Width matters as much as signedness. Truncating to a narrower type keeps the low bits and throws the rest away, so 300 stored in a byte becomes 44, and a value that passed a bounds check as a 32 bit integer can fail it as a 16 bit one. Type a number too large for the selected width and it keeps the low bits and says so, which is exactly what the C cast would do.",
     ],
   ],
   "chmod-calculator": [
@@ -316,7 +316,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
     [
       "NIST SP 800-63B settled the practical argument years ago and most policies still have not caught up. Length is the control that works, because each extra character multiplies the space while each extra composition rule narrows it. Forced periodic rotation and composition rules are both discouraged now, for the same reason: they push people into predictable transformations of one base they can remember. Screen new passwords against a breach corpus instead, because a password that has already leaked sits at the front of every wordlist no matter how many bits it scores here. And if you want a number you can defend, ",
       { em: "generate" },
-      " it: five words drawn from a 7,776 word list is about 64 bits, and that arithmetic is honest because the dice really were uniform.",
+      " it: five words drawn from a 7,776 word list is about 64 bits.",
     ],
   ],
   "port-reference": [
@@ -335,7 +335,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
   ],
   "rack-budget": [
     [
-      "Every figure here comes from the same constants the datacenter simulator on this site runs on, imported rather than copied, so the two cannot disagree. Watts convert to BTU per hour at  ",
+      "Watts convert to BTU per hour at  ",
       String(BTU_PER_WATT),
       ", a cooling ton is 12,000 BTU per hour, and cooling is sized against IT load times ",
       String(IN_ROOM_LOSS_FACTOR),
@@ -451,7 +451,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "The fast way to find the Nth subnet by hand is the block size, sometimes taught as the magic number. Take 256 minus the value of the interesting octet in the mask: a /26 has 192 in the fourth octet, 256 minus 192 is 64, so networks appear at .0, .64, .128 and .192. Real VLSM then allocates largest requirement first, so that the big blocks land on their natural boundaries and the small ones fill in behind them without overlapping.",
     ],
     [
-      "The worked solution under each question is generated from the same numbers as the answer key, so it always matches. Read it even when you got the question right, because the useful thing to check is whether your method matches, not just your answer.",
+      "Read it even when you got the question right, because the useful thing to check is whether your method matches, not just your answer.",
     ],
   ],
   "wireshark-filters": [

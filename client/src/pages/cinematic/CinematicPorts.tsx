@@ -341,13 +341,6 @@ ${rows
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} hosts`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI recounts every occupancy by opening and expiring ports a second at a time rather
-            than multiplying, checks that each destination's headroom is genuinely independent of
-            the others, and checks that <code>tcp_fin_timeout</code> changes nothing anywhere,
-            because a whole case here turns on that and a model that quietly responded to it would
-            make the case a lie.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For what happens to the reply when a port forward is involved,{" "}
             <Link

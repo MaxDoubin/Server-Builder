@@ -33,10 +33,6 @@ export function ReadAboutThis({ href }: { href: string }) {
       <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · Read about this
       </h2>
-      <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-        The written version, where the reasoning is worked through rather than
-        exercised.
-      </p>
       <ul className="mt-5 space-y-2.5">
         {posts.map((post) => (
           <li key={post.slug}>

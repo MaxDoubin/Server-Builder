@@ -383,10 +383,8 @@ ${stalls(setup)
             nine of thirty rounds stalled, the same as setting nothing. TCP_QUICKACK on the receiver
             before every read: 0.05 ms. Across fifty nine stalls the timer ran 40.89 ms at its
             shortest, 44.03 at the median and 49.89 at its longest, so the forty milliseconds
-            everybody quotes is close but not what this host does. CI walks the exchange as a state
-            machine rather than multiplying, and checks that flipping the receiver's TCP_NODELAY
-            changes nothing anywhere on a grid. A first write large enough does avoid the stall, and
-            that boundary is deliberately not modeled: the flip sits between 65486 and 65487 bytes
+            everybody quotes is close but not what this host does. A first write large enough does avoid the stall, and
+            that boundary is not modeled: the flip sits between 65486 and 65487 bytes
             handed over, which looks like a rule about the total and is not one, because 65487 as 4
             plus 65483 ran clean while the same 65487 as 32743 plus 32744 stalled. Every case here
             stays far below one segment, where the behavior is not in doubt. TCP_CORK, how long

@@ -59,7 +59,7 @@ export const mikrotikCrsRack: RackDefinition = {
   slug: "mikrotik-crs-12u",
   name: "MikroTik CRS stack 12U",
   blurb:
-    "Five Cloud Router Switches that look identical from across a room and share no geometry at all: a 48 port copper CRS354, an all optics CRS326-24S, a sixteen cage CRS317, an eight port 10 gigabit copper CRS312, and the CRS326-24G workhorse. Each one measured from its own photograph. MikroTik publish real maximum consumption figures rather than power supply ratings, so unusually for this library the watts here are the devices' own draw.",
+    "Five Cloud Router Switches that look identical from across a room and share no geometry at all: a 48 port copper CRS354, an all optics CRS326-24S, a sixteen cage CRS317, an eight port 10 gigabit copper CRS312, and the CRS326-24G workhorse. MikroTik publish real maximum consumption figures rather than power supply ratings, so the watts here are the devices' own draw.",
   height: 12,
 
   devices: [
@@ -189,7 +189,7 @@ export const mikrotikCrsRack: RackDefinition = {
       u: 2,
       vendor: "Ubiquiti",
       model: "USP-PDU-Pro",
-      role: "The distribution unit, and the one device here whose consumption is not published: Ubiquiti quote its capacity and its outlet count and never what the unit itself draws, so the figure is null rather than guessed. Built from their dimensioned elevation because they publish no 3D model for it either.",
+      role: "The distribution unit, and the one device here whose consumption is not published: Ubiquiti quote its capacity and its outlet count and never what the unit itself draws. Built from their dimensioned elevation because they publish no 3D model for it either.",
       family: "pdu",
       finish: "black",
       accent: ACCENT.power,

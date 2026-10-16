@@ -855,9 +855,9 @@ async function main(): Promise<void> {
 <main>
   <h1>Max Doubin</h1>
   <p>
-    Cybersecurity student in Las Vegas. This site is a working notebook:
+    Cybersecurity student in Las Vegas. This site has
     ${posts.length} articles on enterprise networking, servers, storage and
-    security, each one sourced, plus browser tools, exam study material and an
+    security, plus browser tools, exam study material and an
     openly licensed hardware dataset.
   </p>
   <h2>Start here</h2>
@@ -875,7 +875,7 @@ async function main(): Promise<void> {
     ${PRACTICE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
     practice, none of which need anything installed, none of which reach a
     real machine, and none of which send anything anywhere.
-    Every exercise ships a solution that CI replays on every push.
+   
   </p>
   <ul>
     <li><a href="${SITE_URL}/today">Today</a>, one thing from each of these, chosen by the date.</li>
@@ -1202,7 +1202,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "certifications",
       title: "Certifications | Max Doubin",
       description:
-        "An honest status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
+        "A status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
       canonical: `${SITE_URL}/certifications`,
     },
     {
@@ -1394,7 +1394,7 @@ ${JSON.stringify({
   const projectsContent = `
 <main>
   <h1>Projects</h1>
-  <p>Work by ${esc(siteConfig.name)} across cybersecurity, enterprise networking, 3D simulation and web development. Each one is something that runs, not a description of something planned.</p>
+  <p>Work by ${esc(siteConfig.name)} across cybersecurity, enterprise networking, 3D simulation and web development.</p>
   ${siteConfig.projects
     .map(
       (project) => `<section>
@@ -1431,7 +1431,7 @@ ${JSON.stringify({
   const certificationsContent = `
 <main>
   <h1>Certifications</h1>
-  <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam actually covers. Nothing in progress is listed as earned.</p>
+  <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam actually covers.</p>
   ${ALL_CERTS.map(
     (cert) => `<section>
     <h2>${esc(cert.name)} (${esc(cert.code)})</h2>
@@ -1570,7 +1570,7 @@ ${JSON.stringify({
   const linksContent = `
 <main>
   <h1>Links</h1>
-  <p>Free and freemium resources worth the time, grouped by what they are for. Every entry points at a site root rather than a deep path, because a guessed deep link rots and takes the reader's trust with it.</p>
+  <p>Free and freemium resources worth the time, grouped by what they are for.</p>
   ${LINK_GROUPS.map(
     (group) => `<section>
     <h2>${esc(group.heading)}</h2>
@@ -1852,9 +1852,7 @@ const rackBuilderContent = `
   which is why the frame buttons gray out when something in the build would
   hang below a shorter frame.</p>
   <h2>What a build weighs</h2>
-  <p>The weight is on screen because this page cannot hide it. A drawn
-  elevation costs a reader nothing whatever it contains, and this one costs
-  them a download per distinct device. Bytes are counted once per file,
+  <p>Bytes are counted once per file,
   because the browser caches it, and triangles once per placement, because
   two of the same switch are two of the same switch as far as the GPU is
   concerned. Reporting one figure for both would be wrong in one direction or
@@ -2213,8 +2211,7 @@ ${JSON.stringify({
   <p>
     Reading about an incident and being in one are different skills, and only
     one of them is what a bad night asks for. These are the parts of this site
-    that make you do something, grouped by the situation you are in rather
-    than by subject, because the subject is not what anybody arrives knowing.
+    that make you do something, grouped by the situation you are in.
   </p>
 ${GROUPS.map((group) => `  <h2 id="${group}">${esc(GROUP_HEADING[group])}</h2>
   <p>${esc(GROUP_BLURB[group])}</p>
@@ -2325,8 +2322,7 @@ ${capture.questions.map((question) => `    <li>${esc(question.prompt)}</li>`).jo
   </ol>
   <p>
     ${capture.packets.length} packets. The workbench opens above with a filter
-    bar taking real Wireshark display filter syntax. Answers are not written
-    into this page, because the exercise is finding them.
+    bar taking real Wireshark display filter syntax.
   </p>
   ${backLinks([["/capture", "All captures"], ["/labs", "Hands-on labs"], ["/tools", "Browser tools"]])}
 </main>`,
@@ -2553,10 +2549,7 @@ ${JSON.stringify({
     everybody, and different tomorrow.
   </p>
   <p>
-    The selection is a rotation rather than a shuffle, so each surface walks
-    through everything it has before repeating any of it. Nothing is stored and
-    nothing is fetched: the date is the whole of the state, which is also why a
-    link to this page still shows today's set when you open it twice.
+    Nothing is stored and nothing is fetched.
   </p>
   <h2>What it draws from</h2>
   <ul>
@@ -2642,7 +2635,7 @@ ${item.copies.map((c) => `      <li>${esc(c.name)}: ${esc(c.medium)}, every ${c.
     </ul>
   </article>`).join("\n")}
   <p>
-    The arithmetic here is deliberately optimistic: it assumes you know what
+    The arithmetic here is optimistic. It assumes you know what
     to restore, the media is where the inventory says, and nothing fails
     during the restore. A real recovery is longer than this, every time.
   </p>
@@ -2704,8 +2697,7 @@ ${table.routes.map((route) => `      <li>${prefixOf(route)} via ${esc(route.next
   </article>`).join("\n")}
   <p>
     One simplification: where two routes tie on everything, a real router
-    installs both and hashes flows across them. This picks the first, and the
-    one table here that reaches that case says so.
+    installs both and hashes flows across them.
   </p>
   ${backLinks([["/practice", "All practice material"], ["/firewall", "Firewall exercises, where first match does win"], ["/allocate", "Address plans"]])}
 </main>`,
@@ -4170,7 +4162,7 @@ noatime on the mount        nothing under it records a read
 nodiratime on the mount     directories only; files still record
 a read-only mount           the decision is made, then refused</code></pre>
   <p>
-    That last one is worth stating plainly. On <code>/opt/claude-code/bin/claude</code>, an ext4
+    That last one is worth stating plainly. On a binary on an ext4
     image mounted <code>ro,relatime</code>, atime equalled mtime and ctime was 29 hours newer, so all
     three tests said update. Reading it moved nothing. <code>atime_needs_update</code> says yes and
     then <code>touch_atime</code> asks the mount for write access and is told no.
@@ -8717,19 +8709,14 @@ ${JSON.stringify({
   </p>
   <p>
     So each of these asks for two things: what happened, and which single line
-    settles it. They are marked separately, because an explanation you cannot
-    point at is a guess that happened to be right.
+    settles it.
   </p>
 ${LOGS.map((item) => `  <article>
     <h2>${esc(item.title)}</h2>
     <p>${esc(item.brief)}</p>
     <pre>${item.lines.map((line) => esc(renderLine(item, line))).join("\n")}</pre>
   </article>`).join("\n")}
-  <p>
-    Every line above is rendered to real syslog format and parsed back at
-    build time, so a line no daemon would emit fails the build rather than
-    teaching you to recognize something you will never see.
-  </p>
+
   ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
@@ -8845,9 +8832,7 @@ ${JSON.stringify({
   </p>
   <p>
     ${TERMS.filter((term) => term.confusion).length} of the ${TERMS.length} entries close with what
-    people get wrong. Nothing here is defined that the site does not use, and a term the writing
-    leans on and this page has not defined fails the build, so the glossary cannot fall behind the
-    articles.
+    people get wrong.
   </p>
 ${TERMS.map((term) => `  <article id="${slugFor(term)}">
     <h2>${esc(term.term)}${term.expansion ? ` (${esc(term.expansion)})` : ""}</h2>
@@ -8891,7 +8876,7 @@ ${JSON.stringify({
     RAID 5 is dead comes from.
   </p>
   <p>
-    That calculation is shown twice, on purpose. Once with the manufacturer's
+    That calculation is shown twice. Once with the manufacturer's
     figure, which is a warranty bound rather than a measurement, and once with
     a rate two orders of magnitude better, which is a conservative reading of
     what field studies find. The conclusion moves a very long way between them.
@@ -9037,8 +9022,7 @@ ${plan.requirements
   .join("\n")}
   </ul>
   <p>
-    The exercise is marked by behavior rather than by matching one answer, so
-    any plan that meets every requirement without overlapping is right. The
+    Any plan that meets every requirement without overlapping is right. The
     interactive page draws the block to scale as you fill it and there are
     ${plan.hints.length} hints.
   </p>
@@ -9194,8 +9178,7 @@ ${DNS_CASES.map(
 ).join("\n")}
   </ul>
   <p>
-    Every name is under a reserved suffix and every address is in a
-    documentation range, so nothing here reaches anything real.
+    Every name is under a reserved suffix and every address is in a documentation range.
   </p>
   ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
@@ -9305,8 +9288,7 @@ ${exercise.expectations
   .join("\n")}
   </ul>
   <p>
-    The exercise is marked by behavior rather than by shape, so any chain that
-    produces those verdicts is correct. The interactive page traces any of
+    Any chain that produces those verdicts is correct. The interactive page traces any of
     these packets rule by rule and there are ${exercise.hints.length} hints.
   </p>
   ${backLinks([["/firewall", "All firewall exercises"], ["/labs", "Hands-on labs"], ["/capture", "Packet captures"]])}
@@ -9443,8 +9425,7 @@ ${JSON.stringify({
   <p>
     The flag is checked against a SHA-256 held in the page, which means
     ctrl-F will not find it and a determined reader with the developer tools
-    open absolutely will. There is no score to protect, and the full method
-    sits behind one button on every challenge.
+    open absolutely will. The full method sits behind one button on every challenge.
   </p>
   <ul>
 ${CHALLENGES.map(
@@ -9572,7 +9553,7 @@ ${JSON.stringify({
   <p>
     Every ending says what separated it from the best available outcome, and
     how rare it is: rarity is the share of all routes through the scenario
-    that finish there, counted from the graph rather than guessed.
+    that finish there.
   </p>
   <ul>
 ${SCENARIOS.map(
@@ -9901,7 +9882,7 @@ ${TAG_PAGES.map(
   </p>
   <h2>What it actually models</h2>
   <ul>
-    <li>Heat load derived from IT load at 3.412142 BTU per hour per watt, which is a definition rather than an estimate.</li>
+    <li>Heat load derived from IT load at 3.412142 BTU per hour per watt.</li>
     <li>Cooling capacity in tons, at 3516.85 watts per ton.</li>
     <li>Facility PUE that rises with rack count, so efficiency is something you design for rather than a constant.</li>
     <li>CRAH capacity, in-room losses, and a design ceiling on IT load, so a floor plan can run out of cooling before it runs out of space.</li>
@@ -9912,7 +9893,7 @@ ${TAG_PAGES.map(
     It is a teaching model, not a design tool. The numbers behind it are
     representative figures for a class of hardware, not vendor specifications
     and not measurements taken from a real facility. The
-    <a href="${SITE_URL}/data">dataset page</a> says exactly where each figure
+    <a href="${SITE_URL}/data">dataset page</a> says where each figure
     comes from.
   </p>
   <p>
@@ -9989,7 +9970,7 @@ ${JSON.stringify({
     rootContent: `
 <main>
   <h1>Rack hardware datasets</h1>
-  <p>Two openly licensed datasets, CC BY 4.0, and they are honest about different things.</p>
+  <p>Two openly licensed datasets, CC BY 4.0, covering different things.</p>
   <h2>Rack hardware power and thermal catalog</h2>
   <p>${catalogCount} rack-mount devices with power draw, heat output, rack units, port count and indicative cost. It is the table the datacenter simulator on this site runs on.</p>
   <p>These are modeling figures, not vendor specifications and not measurements. powerDraw is representative for the class of hardware named. heatOutput is derived as watts multiplied by 3.412142. price is order of magnitude. Do not cite them as manufacturer data.</p>
@@ -10103,7 +10084,7 @@ ${JSON.stringify({
         }</dt><dd>${esc(d.summary)}</dd>`,
     )
     .join("\n    ")}</dl>
-  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a>. Weightings follow the published objectives; the vendor revises them, so treat their document as the source of truth.</p>
+  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a>. Weightings follow the published objectives; the vendor revises them, so check their document for the current version.</p>
   <nav><a href="${SITE_URL}/study">All exams</a> · <a href="${SITE_URL}/certifications">Certifications</a> · <a href="${SITE_URL}/flashcards">Flashcards</a></nav>
 </main>`,
     });
@@ -10252,7 +10233,7 @@ ${matched
   const rackListContent = `
 <main>
   <h1>Rack library</h1>
-  <p>Annotated rack elevations drawn from vendor datasheets. Every port count, rack unit and wattage below is the vendor's published figure, and where a vendor publishes no consumption figure the page says so rather than guessing.</p>
+  <p>Annotated rack elevations drawn from vendor datasheets. Every port count, rack unit and wattage below is the vendor's published figure, and where a vendor publishes no consumption figure the page says so.</p>
   <dl>${RACKS.map((r) => {
     const p = publishedWatts(r);
     const power = p.total > 0
@@ -10387,7 +10368,7 @@ ${JSON.stringify({
   const gearContent = `
 <main>
   <h1>Hardware catalog</h1>
-  <p>Every UniFi model this site can draw, ${catalogue.devices.length} of them, with the dimensions read out of each model's own bounding box rather than copied off a datasheet. ${catalogue.devices.filter((d) => d.mount === "rack").length} mount in a nineteen inch frame; the rest go on a wall, a ceiling or a desk.</p>
+  <p>Every UniFi model this site can draw, ${catalogue.devices.length} of them, with the dimensions read out of each model's own bounding box. ${catalogue.devices.filter((d) => d.mount === "rack").length} mount in a nineteen inch frame; the rest go on a wall, a ceiling or a desk.</p>
   ${[...byGroup.entries()]
     .sort((a, b) => b[1].length - a[1].length)
     .map(

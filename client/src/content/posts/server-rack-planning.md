@@ -36,7 +36,7 @@ Two of those deserve expanding, because the reasoning matters more than the rule
 
 The weight rule is about the center of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
 
-The blanking panel rule is not about organization at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
+The blanking panel rule is not about organization at all. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
 
 ## My Layout (Top to Bottom)
 
@@ -64,7 +64,7 @@ Switches are the awkward exception. Many of them blow side to side, and some blo
 
 I calculated total power draw before installing anything. Each circuit in my house is rated for 15A at 120V, which is 1,800 watts. My rack draws about 1,300 watts under typical load, leaving headroom for peaks. If I add more equipment, I will need a dedicated circuit.
 
-One correction to that arithmetic worth making explicit: a branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
+A branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
 
 The other power failure mode is inrush. Servers with redundant supplies pull a large surge for the first fraction of a second at power-on. A rack that idles happily at 1,300 watts can trip its breaker the moment utility power returns after an outage and every machine tries to boot at once. The fix is staggered start: set a power-on delay in BIOS or iDRAC on each host, or use a switched PDU that sequences its outlets. I stagger mine 30 seconds apart, which costs nothing and removes the failure entirely.
 

@@ -87,7 +87,7 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "CompTIA Tech+ certified",
         when: "April 2026",
         description:
-          "The one certification currently held. Security+, Network+, and Cisco CCNA are in progress and are not claimed as earned.",
+          "The one certification currently held. Security+, Network+, and Cisco CCNA are in progress.",
       },
       {
         title: "PBS Varsity Quiz state finalist",

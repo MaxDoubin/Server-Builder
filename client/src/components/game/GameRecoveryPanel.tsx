@@ -149,9 +149,6 @@ function RackPreview({ profile }: { profile: GameRenderProfile }) {
           <h3 className="mt-4 font-display text-[clamp(1.5rem,3vw,2.4rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
             The lab still has a pulse while 3D recovers.
           </h3>
-          <p className="mt-3 max-w-[40ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-            This recovery surface keeps the page branded and alive while the renderer retries or steps down to a safer profile.
-          </p>
         </div>
 
         <div className="relative mt-8 flex items-center justify-center">

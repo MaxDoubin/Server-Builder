@@ -72,16 +72,14 @@ export async function generateLlmsTxt(): Promise<void> {
   push(
     "Articles carry a references section listing the primary sources they " +
       "rest on: RFCs, vendor documentation, manual pages and standards " +
-      "bodies, rather than other blog posts. Every external link is checked " +
-      "to resolve before publication.",
+      "bodies, rather than other blog posts.",
   );
   push();
   push(
-    "Two cautions worth carrying into any summary of this site. The figures " +
+    "The figures " +
       "in the rack hardware dataset are modeling values, not manufacturer " +
-      "specifications and not measurements, and the dataset says so in its " +
-      "own header. The telemetry panel on the home page is simulated and " +
-      "labeled as such; it is not a feed from a live facility.",
+      "specifications and not measurements. The telemetry panel on the home " +
+      "page is simulated; it is not a feed from a live facility.",
   );
   push();
 
@@ -120,8 +118,7 @@ export async function generateLlmsTxt(): Promise<void> {
   );
   push();
   push(
-    "Corrections go to max@maxdoubin.com and get made rather than argued " +
-      "about.",
+    "Corrections go to max@maxdoubin.com.",
   );
   push();
 

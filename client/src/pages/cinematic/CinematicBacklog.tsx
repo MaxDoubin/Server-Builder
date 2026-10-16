@@ -436,14 +436,7 @@ ${asNstat(setup)}
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI checks eight fixed points against listen(2), ip-sysctl and the kernel source, because
-            the numbers here are quoted rather than derived and every one of them is the kind a
-            refactor moves quietly: somaxconn at 4096 since 5.4 and 128 before, the last SYN-ACK
-            retransmission at 31 s, the request given up on at 63 s, and the 924.6 s that
-            tcp_retries2 buys a client. It also walks the exponential backoff one interval at a
-            time and compares it to the kernel's closed form at sixty boundaries, and re-derives
-            every burst by stepping through it connection by connection, because a clamp in the
-            wrong place looks perfectly reasonable in a formula.
+            The figures here: somaxconn is 4096 since 5.4 and 128 before, the last SYN-ACK retransmission is at 31 s, the request is given up on at 63 s, and tcp_retries2 buys a client 924.6 s.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other number on this machine that is flat while something is badly wrong,{" "}

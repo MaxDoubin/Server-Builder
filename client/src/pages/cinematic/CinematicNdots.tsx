@@ -339,10 +339,7 @@ ${asTrace(setup)}`}
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI recomputes every count with a second walk written as one loop, checks that the set
-            shows all three orders the resolver can take, and runs the seven-domain case on both
-            sides of glibc 2.26, where the search list stopped being capped at six. The model is
-            the glibc stub resolver; musl and systemd-resolved differ in detail and are not
+            The model is the glibc stub resolver; musl and systemd-resolved differ in detail and are not
             modeled here.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

@@ -374,15 +374,12 @@ the access
             at byte 4096. A 16384 byte file mapped with a length of 100 reads byte 4095 and takes
             SIGSEGV at byte 4096, measured inside an eight page PROT_NONE reservation so that a
             neighboring mapping could not occupy the address: without the reservation the first
-            attempt reported the access as fine, which is the sort of thing that makes this
-            difficult to measure. A store at byte 200 of the 100 byte file completes, survives an
+            attempt reported the access as fine. A store at byte 200 of the 100 byte file completes, survives an
             msync, leaves the file 100 bytes long, and reads back as zero once the file is grown, so
             it was thrown away. Growing the file from 100 to 4106 under the live mapping makes byte
             4096 readable with no call by the mapping process, and shrinking it back makes that byte
             SIGBUS again, including on a MAP_PRIVATE mapping whose process had already written to
-            that page and therefore owned a private copy of it. CI recomputes every answer by laying
-            the address space out one page at a time and reading the outcome off the page the access
-            lands in, across 12320 combinations of page size, file size, length, resize and offset.
+            that page and therefore owned a private copy of it.
             Network filesystems, huge pages, MAP_POPULATE and mlock, and what a SIGBUS handler can
             usefully do to recover are not modeled.
           </p>

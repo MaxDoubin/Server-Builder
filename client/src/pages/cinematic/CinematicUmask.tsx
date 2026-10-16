@@ -383,8 +383,7 @@ what this means
             leaves the mode alone. A directory in the same place came out 2755, inheriting the bit
             itself, where under the plain parent it was 0755. The shell asks for 0666 and never
             0777, so a redirect gave 0644, 0600 and 0664 at umasks of 0022, 0077 and 0002 and was
-            executable at none of them. CI decides each of the twelve bits on its own rather than
-            evaluating the same masking expression twice, and checks 1920 combinations. Default
+            executable at none of them. Default
             access control lists, which replace the umask for anything created under a directory
             that carries one, mount options that force a mode, and the capabilities that decide
             whether a setuid bit means anything are not modeled.

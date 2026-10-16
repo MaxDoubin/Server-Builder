@@ -240,8 +240,7 @@ export function CinematicRacks() {
             <p className="mt-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Every port count, rack unit and wattage is the vendor's published
               figure, linked at the bottom of each rack. Where a vendor
-              publishes no consumption figure, the page says "not published"
-              rather than guessing. Link lights and traffic are illustrative,
+              publishes no consumption figure, the page says "not published". Link lights and traffic are illustrative,
               and say so.
             </p>
           </header>
@@ -348,11 +347,7 @@ export function CinematicRacks() {
               A rack elevation is how real deployments get planned: one drawing
               that answers what goes where, what it weighs on the circuit, and
               which port feeds which panel. Learning to read one is faster with
-              a rack you can interrogate, which is what these are for. The same
-              discipline the drawings follow, published figures or an explicit
-              "not published", is the habit worth taking to real hardware,
-              because a rack plan built on guessed wattage fails on the day the
-              PoE budget runs out.
+              a rack you can interrogate, which is what these are for. A rack plan built on guessed wattage fails on the day the PoE budget runs out.
             </p>
             <p className="mt-4 font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               To plan a build of your own, the{" "}

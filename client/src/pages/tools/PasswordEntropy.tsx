@@ -615,7 +615,7 @@ export function PasswordEntropy() {
             )}
           </ToolPanel>
 
-          <ToolPanel title="Same strength, honestly generated">
+          <ToolPanel title="Same strength, randomly generated">
             <ul className="space-y-2">
               {EQUIVALENTS.map((item) => (
                 <li

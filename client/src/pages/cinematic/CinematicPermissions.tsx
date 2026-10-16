@@ -340,12 +340,7 @@ export function CinematicPermissions() {
                   Clear the answer
                 </button>
               </div>
-            ) : (
-              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-                The tree is unmarked on purpose. Which of the three sets of bits applies to you at
-                each row is most of the question, so the page does not answer it before you do.
-              </p>
-            )}
+            ) : null}
           </section>
 
           <p
@@ -362,14 +357,6 @@ export function CinematicPermissions() {
 
           <ReadAboutThis href="/permissions" />
 
-          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Nothing above is written down as an answer. Each case declares which option is correct
-            and the verdict comes from a model of the rules, so a case whose prose disagrees with
-            its own tree fails the build. The model is checked separately against the rules
-            themselves rather than against the cases: that owning a file ends the search, that a
-            delete never consults the file, that an unsearchable directory stops everything below
-            it, over four thousand generated paths on every commit.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             To build a mode rather than read one, there is a{" "}
             <Link

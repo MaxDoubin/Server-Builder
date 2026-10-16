@@ -50,7 +50,7 @@ export function CinematicCamps() {
             </h2>
             <p className="mt-3 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Volunteer instructor at Code Central coding camps in 2022, teaching coding to
-              beginners. This page describes that teaching. It is not a camp you can sign up for.
+              beginners.
             </p>
           </section>
 

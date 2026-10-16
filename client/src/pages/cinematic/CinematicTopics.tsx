@@ -63,8 +63,7 @@ export function CinematicTopics() {
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The archive organized by what things are about rather than when
-              they were written. Subjects with only a post or two stay as
-              filters on the index instead of getting a page here.
+              they were written.
             </p>
           </header>
 

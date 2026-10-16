@@ -360,10 +360,7 @@ ${asStatus(setup)}`}
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The model walks each unit one start at a time through a transcription of
-            ratelimit_below from systemd's own source. CI recomputes every outcome a second way,
-            in closed form, and separately checks that at least one case would be answered
-            differently by a sliding window, because that is the distinction the whole surface is
-            about. RestartSteps and RestartMaxDelaySec, which grow RestartSec between attempts
+            ratelimit_below from systemd's own source. RestartSteps and RestartMaxDelaySec, which grow RestartSec between attempts
             since systemd 254, are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

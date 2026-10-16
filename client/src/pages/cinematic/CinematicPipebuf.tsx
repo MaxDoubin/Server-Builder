@@ -365,11 +365,7 @@ ${setup.writers
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The model reproduces the host it was written on, kernel 6.18.44, measured by forking four
             writers onto one pipe, giving each its own repeated character, and counting maximal runs
-            of that character in the raw bytes. The detector took three attempts and the first two
-            both appeared to show the POSIX guarantee being violated: counting fixed size windows
-            breaks as soon as the record sizes differ, and splitting on newlines is worse, because a
-            large writer's torn record swallows the newline around a small writer's intact one and
-            makes it read as broken. Counting runs of one character is immune to both. With four
+            of that character in the raw bytes.  With four
             writers of 200 records each on a 65536 byte pipe, every record size that divides the
             capacity tore nothing in three runs out of three, 4096, 8192, 16384 and 32768; and every
             size that does not tore between 70 and 354 of 800, 4097, 5000, 8193, 12288 and 20000.
@@ -382,10 +378,7 @@ ${setup.writers
             inode lock for the length of a buffered write; that is a measurement of this kernel and
             this filesystem rather than a promise, and it is not true over NFS. F_SETPIPE_SZ rounds
             up to a power of two, so 1 gives 4096, 4097 gives 8192, 40000 gives 65536 and 65537
-            gives 131072, and 2097152 is refused with EPERM against a pipe-max-size of 1048576. CI
-            fills a pipe record by record rather than asking whether a number is under 4096, and
-            drives the writers from a seeded generator rather than a rotation, because a strict
-            rotation makes three of four writers look safe. A reader slower than the writers, writev,
+            gives 131072, and 2097152 is refused with EPERM against a pipe-max-size of 1048576. A reader slower than the writers, writev,
             O_NONBLOCK partial writes and NFS are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

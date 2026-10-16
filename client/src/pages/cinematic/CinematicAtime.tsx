@@ -398,10 +398,8 @@ a pass over the tree
             /usr/lib/x86_64-linux-gnu, listed once already that hour, moved none. A file with
             chattr +A, backdated 26 hours, did not move on a read and moved at once when the flag
             was cleared; backdated 40 days and read 200 times it still reported an access time 40.0
-            days old. On /opt/claude-code/bin/claude, ext4 mounted ro,relatime, all three rules were
-            true and the read moved nothing. CI checks the model against a second transcription that
-            counts forward from a fixed instant instead of backwards from now, on every case and on
-            6144 grid rows, and walks a read pass one file at a time rather than subtracting.
+            days old. On a binary on an ext4 image mounted ro,relatime, all three rules were
+            true and the read moved nothing.
             lazytime, the O_NOATIME open flag, how long a dirty inode waits for writeback and NFS
             are not modeled.
           </p>

@@ -52,9 +52,9 @@
  *
  *     chattr +A on the inode   backdated 26 h, read: atime did not move
  *     the flag cleared         same read: atime moved
- *     a read-only mount        /opt/claude-code, ext4, ro,relatime
+ *     a read-only mount        a binary on ext4, ro,relatime
  *
- * That last one is worth stating plainly. /opt/claude-code/bin/claude had
+ * That last one is worth stating plainly. A binary on a read-only image had
  * atime equal to mtime and ctime 29 hours newer, so all three relatime rules
  * said update, and reading it moved nothing, because the filesystem is
  * mounted read-only and there is nowhere to put the answer.

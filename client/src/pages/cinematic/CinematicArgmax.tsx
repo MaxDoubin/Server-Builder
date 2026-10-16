@@ -360,9 +360,7 @@ would have fitted does not arise`
             to 131071 bytes passing and 131072 failing, which is 32 pages exactly. The double charge
             on the program path is not in any documentation I could find and turned up as a
             discrepancy: a formula without it fit nineteen runs and missed four by exactly one
-            argument, and the size of the miss tracked the length of argv[0]. CI lays the vector out
-            string by string rather than multiplying, and finds the wall by adding one argument at a
-            time rather than dividing. A stack limit of unlimited, where the kernel uses a fixed
+            argument, and the size of the miss tracked the length of argv[0].  A stack limit of unlimited, where the kernel uses a fixed
             ceiling rather than a quarter of infinity, is not modeled, and neither are the lower
             limits the shells and xargs apply before the kernel is reached.
           </p>

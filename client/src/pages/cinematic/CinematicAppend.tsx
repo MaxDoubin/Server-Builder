@@ -355,9 +355,7 @@ what came out
             plain descriptor writing two bytes at offset 0 left the size at ten with the bytes at the
             front, and an O_APPEND descriptor took the size to twelve with the bytes on the end,
             which is the deviation pwrite(2) documents. lseek before a write is ignored the same way.
-            CI replays the writes one at a time over a simulated file, with an offset per open file
-            description, under four interleavings that all have to agree, across 2570 sets of
-            writers. NFS, where O_APPEND is not atomic because the client does the seek itself,
+             NFS, where O_APPEND is not atomic because the client does the seek itself,
             O_DIRECT, and tearing by a crash rather than by another writer are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

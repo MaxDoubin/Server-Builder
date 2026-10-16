@@ -27,7 +27,7 @@ Specs come from Apple's tech specs for the [Mid 2010](https://support.apple.com/
 
 ## How much faster is the 7,1?
 
-The 7,1 is more than twice as fast per core as any stock 5,1, and 1.9 to 2.7 times as fast across all cores in Geekbench 6. The scores are EveryMac's averages of user-submitted Geekbench 6 results as read on October 5, 2026; none were measured on this site's hardware.
+The 7,1 is more than twice as fast per core as any stock 5,1, and 1.9 to 2.7 times as fast across all cores in Geekbench 6. The scores are EveryMac's averages of user-submitted Geekbench 6 results as read on October 5, 2026.
 
 | Machine | Single-core | Multi-core |
 | :--- | ---: | ---: |

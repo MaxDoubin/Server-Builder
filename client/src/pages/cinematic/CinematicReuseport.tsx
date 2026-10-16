@@ -381,11 +381,7 @@ what that costs
             different worker after one listener left, and 3 of the 8 after two joined. The share
             that keeps its listener is the smaller count over the least common multiple of the two,
             so four listeners becoming three keeps a quarter and four becoming six keeps a quarter
-            rather than a sixth. This model said one over the larger count until the gate dealt
-            connections out and disagreed: the two agree whenever the counts are coprime, which
-            both of the measured pairs are, so the measurements alone would not have caught it. CI
-            recomputes every answer by hashing several thousand imagined connections across the
-            listener set and comparing two deals connection by connection, across 630 combinations.
+            rather than a sixth.
             The actual connection loss during a restart, UDP, SO_ATTACH_REUSEPORT_CBPF and the eBPF
             variant, listeners that differ in backlog or bind address, and anything off loopback
             are not modeled.

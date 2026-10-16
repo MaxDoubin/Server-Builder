@@ -385,7 +385,7 @@ export const juniperCoreRack: RackDefinition = {
       u: 4,
       vendor: "Generic",
       model: "Rack UPS with external battery tray",
-      role: "Ride-through for the chassis pair. Its draw depends entirely on the load it carries, so no single consumption figure would be honest here.",
+      role: "Ride-through for the chassis pair. Its draw depends entirely on the load it carries.",
       family: "ups",
       finish: "black",
       display: "ups",

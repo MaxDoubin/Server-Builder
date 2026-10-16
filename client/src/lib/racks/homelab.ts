@@ -118,7 +118,7 @@ export const homelabRack: RackDefinition = {
       u: 2,
       vendor: "Dell",
       model: "PowerEdge R730, 8x 3.5 inch chassis",
-      role: "The homelab workhorse: a two-socket 2U server that sold by the hundred thousand and now costs less used than a mid-range graphics card. This one is the eight-bay 3.5 inch chassis from Dell's spec sheet, running a hypervisor with six bays populated for the ZFS pool. Dell publishes supply ratings for it, not draw, so the honest wattage figure is the one on your own meter.",
+      role: "The homelab workhorse: a two-socket 2U server that sold by the hundred thousand and now costs less used than a mid-range graphics card. This one is the eight-bay 3.5 inch chassis from Dell's spec sheet, running a hypervisor with six bays populated for the ZFS pool. Dell publishes supply ratings for it, not draw, so the figure that matters is the one on your own meter.",
       family: "server",
       finish: "dark",
       display: "server",

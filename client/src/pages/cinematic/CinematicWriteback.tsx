@@ -355,9 +355,7 @@ Dirty:        ${String(Math.round(settled / 1024)).padStart(9)} kB   (${human(se
             memory. Holding 9 GiB of anonymous memory took dirtyable to 5.85 GiB and the ceiling to
             57 MiB: the same 0.39 in both, while the share of installed memory moved from 0.91 to
             0.35 percent. Separately, 64 MiB written to an idle disk stayed at 64 MiB of Dirty for
-            thirty seconds and reached zero at thirty five. CI re-derives the thresholds in
-            mebibytes rather than bytes, replaces the stall test with a queue run second by second,
-            and asserts both measurements. Per-device bdi throttling, the cgroup writeback
+            thirty seconds and reached zero at thirty five. Per-device bdi throttling, the cgroup writeback
             accounting and O_DIRECT are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

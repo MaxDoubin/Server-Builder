@@ -38,7 +38,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What certifications does Max Doubin hold?",
-    a: "Max Doubin holds the CompTIA Tech+ certification, earned in April 2026. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA. Those three are in progress and are not claimed as earned.",
+    a: "Max Doubin holds the CompTIA Tech+ certification, earned in April 2026. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA. Those three are in progress.",
   },
   {
     q: "What does Max Doubin build?",
@@ -71,10 +71,6 @@ export const FAQS: Faq[] = [
   {
     q: "What does Max Doubin want to do after high school?",
     a: "Large-scale infrastructure management and enterprise networking, built on a cybersecurity foundation. Max Doubin is building toward it now rather than waiting for a degree to start: he holds CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, works as a teaching assistant for its Cybersecurity I class, and has five years of hands on infrastructure experience behind him.",
-  },
-  {
-    q: "How can someone verify what this site claims about Max Doubin?",
-    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organizations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog and open source projects on GitHub. Anything else can be confirmed by email at max@maxdoubin.com.",
   },
   {
     q: "How do you contact Max Doubin?",

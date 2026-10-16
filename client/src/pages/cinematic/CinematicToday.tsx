@@ -66,10 +66,7 @@ export function CinematicToday() {
               same {picks.length} for everybody, and different tomorrow.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
-              The selection is a rotation rather than a shuffle, so each surface walks through
-              everything it has before repeating any of it. Nothing is stored and nothing is
-              fetched: the date is the whole of the state, which is also why a link to this page
-              still shows today's set when you open it twice.
+              Nothing is stored and nothing is fetched.
             </p>
           </header>
 
@@ -148,15 +145,13 @@ export function CinematicToday() {
             </p>
             {mounted && visits > 1 ? (
               <p className="mt-2 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-                A count, not a streak. Nothing resets if you miss a day, because a number that
-                punishes you for having a life is not a number worth keeping.
+                A count, not a streak. Nothing resets if you miss a day.
               </p>
             ) : null}
           </section>
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The full set repeats every {cycleDays().toLocaleString()} days, which is the least
-            common multiple of the surface sizes rather than a design goal. Individually each
+            The full set repeats every {cycleDays().toLocaleString()} days. Individually each
             surface comes round much sooner: the shortest is a few days and the longest is a few
             weeks.
           </p>

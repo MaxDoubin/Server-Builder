@@ -447,9 +447,7 @@ what comes back
             the second. One allocate and free between 10 and 31 mebibytes switched the automatic
             trim off for the rest of the process and 32 did not. The first probe read RSS with
             fopen, which allocates a stdio buffer, so every reading after a free came out 64 kB
-            higher than the one before it and the trim looked as if it never fired. CI recomputes
-            every answer by walking the heap a page at a time, from the pages rather than from the
-            survivors, across 6048 combinations. Threads and their per-thread arenas, allocators
+            higher than the one before it and the trim looked as if it never fired.  Threads and their per-thread arenas, allocators
             other than glibc, MALLOC_ARENA_MAX, huge pages, and whether the returned pages help
             under real pressure are not modeled.
           </p>

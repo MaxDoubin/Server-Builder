@@ -6,9 +6,7 @@ useful is a small spreadsheet that turns "one request with this input length
 and that output length" into a number of seconds and a number of cents, using
 inputs you measured rather than inputs somebody advertised.
 
-Every figure in this post is a placeholder. I am deliberately not quoting
-throughput or price numbers, because those change and because the whole point
-is to substitute your own measurements. What is durable is the shape of the
+Every figure in this post is a placeholder. What is durable is the shape of the
 arithmetic.
 
 ## Two Phases, Two Completely Different Cost Shapes

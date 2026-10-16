@@ -25,8 +25,7 @@ export function CinematicLinks() {
             </h1>
             <p className="mt-6 max-w-[64ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The resources I actually recommend when someone asks how to start in networking or
-              security. Everything here is free or has a genuinely useful free tier, and each entry
-              says why it is worth your time rather than just what it is.
+              security. Everything here is free or has a genuinely useful free tier.
             </p>
             <p className="mt-4 max-w-[64ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               These are external sites with no affiliation to me, and no link here is sponsored.

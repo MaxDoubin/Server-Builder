@@ -71,11 +71,10 @@ export function CinematicArray() {
               comes from.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
-              That calculation is shown twice, on purpose. Once with the manufacturer's figure,
+              That calculation is shown twice. Once with the manufacturer's figure,
               which is a warranty bound rather than a measurement, and once with a rate two orders
               of magnitude better, which is a conservative reading of what field studies actually
-              find. The conclusion moves a very long way between them, and a page that prints only
-              one of the two is repeating a rumor with a decimal point in it.
+              find. The conclusion moves a very long way between them.
             </p>
           </header>
 
@@ -252,9 +251,7 @@ export function CinematicArray() {
           </section>
 
           <p className="mt-11 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI checks this arithmetic against a table of capacities, tolerances, rebuild times and
-            probabilities worked out by hand. That table earned its keep immediately: the textbook
-            form of the URE expression silently returns zero for small rates, because subtracting
+            The textbook form of the URE expression silently returns zero for small rates, because subtracting
             1e-17 from 1 in a float64 gives exactly 1, and the wrong answer reads as a very
             reassuring number rather than as an error.
           </p>

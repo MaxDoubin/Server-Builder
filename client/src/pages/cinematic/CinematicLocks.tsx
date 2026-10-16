@@ -412,9 +412,7 @@ the questions, in the order they are decided
             blocked a request for the same bytes and allowed one for bytes 200 to 299; a flock
             holder refused both, because a flock is always the whole file. Two shared locks did not
             conflict and a shared lock did block an exclusive request, on both lists, and a lock
-            survived execve. CI replays each case as a table of descriptors, open file descriptions
-            and records with owners rather than by asking the same conditions twice, and checks all
-            1296 combinations the model can be handed. All of it is a local filesystem, and the
+            survived execve. All of it is a local filesystem, and the
             separation of the two lists is not true elsewhere: over NFS since Linux 2.6.12 and over
             SMB since 5.5, flock is emulated as an fcntl byte-range lock over the whole file, so the
             two interfaces do conflict, which flock(2) documents and which was not measured here

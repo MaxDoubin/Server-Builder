@@ -367,15 +367,12 @@ what happens
             of the name. glibc ships a bounds check and it is off unless the build asks: at
             -D_FORTIFY_SOURCE=0, and with no flag at all on this toolchain, FD_SET(1024) returns
             normally, and at 1, 2 and 3 the process prints bit out of range and terminates. The
-            threshold is the lowest level there is rather than 2, which this model had wrong until
-            all four were measured, because glibc guards this one on __USE_FORTIFY_LEVEL being
+            threshold is the lowest level there is rather than 2, because glibc guards this one on __USE_FORTIFY_LEVEL being
             greater than zero. The kernel
             has no such number: a readable pipe end at descriptor 2000, a hand rolled 512 byte
             bitmap and nfds of 2001 gave select a return of 1 with the bit set on the way back,
             while the same descriptor with nfds left at 1024 gave 0, because the syscall reads
-            ceil(nfds / 8) bytes and stops. CI recomputes every answer by painting the object one
-            byte at a time and handing descriptors out eight to a byte from zero, across 2268
-            combinations of layout, set size, descriptor, nfds, macro and build flag. Thirty two
+            ceil(nfds / 8) bytes and stops. Thirty two
             bit builds, pselect, epoll and any libc other than glibc are not modeled, and neither
             is what the clobbered bit does afterwards, which is the point and is not a property of
             select.

@@ -513,8 +513,7 @@ export function HttpStatusCodes() {
       {filtered.length === 0 ? (
         <ToolPanel>
           <p className="font-mono-tight text-sm text-[hsl(var(--brand-bone-dim))]">
-            Nothing matches "{query}". Every code here is a registered one, so a search for a
-            vendor code such as 499 or 520 will come back empty on purpose.
+            Nothing matches "{query}". Vendor codes such as 499 or 520 are not listed.
           </p>
         </ToolPanel>
       ) : null}

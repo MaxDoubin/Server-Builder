@@ -3,7 +3,7 @@
 
 Servers generate a lot of heat. A single fully loaded PowerEdge R740 can produce over 1,500 BTU per hour. In a datacenter with thousands of servers, managing that heat is the difference between reliable operation and cascading thermal shutdowns.
 
-The number is worth putting on a firmer footing, because it is a definition rather than an estimate. Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
+Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
 
 ## Turning watts into airflow
 

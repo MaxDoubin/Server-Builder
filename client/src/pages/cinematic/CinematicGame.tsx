@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { Link } from "wouter";
-import { Gauge, Layers3, Maximize2, Minimize2, Shield, Sparkles } from "lucide-react";
+import { Gauge, Layers3, Maximize2, Minimize2, Shield } from "lucide-react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { GameRecoveryPanel } from "@/components/game/GameRecoveryPanel";
 import { SiteLoader } from "@/components/ui/site-loader";
@@ -275,9 +275,6 @@ function GameBriefing({
             >
               Hyperscale. <span className="signal-text">An adaptive simulator built to recover.</span>
             </h1>
-            <p className="mt-4 max-w-[58ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base">
-              The interactive lab now boots through an adaptive render ladder with safer startup profiles, smoother camera motion, and graceful recovery when a device cannot sustain the full cinematic pass.
-            </p>
 
             <div
               ref={metaRef}
@@ -327,21 +324,16 @@ function GameBriefing({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <BriefingCard
             icon={<Layers3 className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
             title="Adaptive Profiles"
-            body="Cinematic, balanced, and compatibility profiles let the game step down gracefully instead of failing at first render."
+            body="Cinematic, balanced, and compatibility profiles let the game step down gracefully."
           />
           <BriefingCard
             icon={<Shield className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
             title="Recovery Path"
-            body="Runtime errors now surface actionable recovery controls instead of a blanket WebGL message, with retry and safer-mode fallbacks."
-          />
-          <BriefingCard
-            icon={<Sparkles className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
-            title="Motion Pass"
-            body="The shell, loader, and camera choreography were upgraded to feel smoother, more atmospheric, and more aligned with the rest of the site."
+            body="Runtime errors surface recovery controls, with retry and safer-mode fallbacks."
           />
         </div>
       </div>

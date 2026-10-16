@@ -352,14 +352,11 @@ what this job did
             the same gibibyte to tmpfs took Cached from 212652 to 1261392, took Shmem to 1061396,
             took MemAvailable down by the whole gibibyte, and drop_caches left it at 1261232. The
             baseline survives a drop in both runs, because most of a baseline like that is the
-            mapped pages of whatever is running: an earlier version of this model had drop_caches
-            taking it, and the measurement disagreed. Unlinking a 512 MiB tmpfs file with a
+            mapped pages of whatever is running. Unlinking a 512 MiB tmpfs file with a
             descriptor still open freed nothing, with df reporting 512M until the descriptor
             closed. A tmpfs mounted size=16M stopped at exactly 16777216 bytes and returned ENOSPC
             with 14782776 kB of the machine free, and one mounted with no size= at all reported
-            7.9G, which is half of RAM. A one byte file on tmpfs costs 4096 bytes by df and du. CI
-            recomputes every answer by itemizing the column one contributor at a time and filtering
-            it by what each attempt can take, across 2016 combinations. Swap is not modeled, because
+            7.9G, which is half of RAM. A one byte file on tmpfs costs 4096 bytes by df and du. Swap is not modeled, because
             this machine has none, so every figure here is the pinned case; neither are cgroup v2
             memory.stat, huge pages in tmpfs, or System V shared memory.
           </p>

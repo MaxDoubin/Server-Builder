@@ -68,14 +68,6 @@ export function CinematicHandshake() {
             ))}
           </div>
 
-          <p className="mt-16 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI checks that each break stops at a step that exists, that the breaks within one
-            handshake do not all stop in the same place, and that the directions alternate unless
-            a step declares itself part of a flight. That last rule started without the exception
-            and flagged TLS 1.3 and 802.1X, both of which really do send two messages in a row the
-            same way. The rule was wrong rather than the data, and the exception is declared on the
-            step rather than assumed, so it still catches a direction copied from the line above.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For these exchanges as bytes on the wire, the{" "}
             <Link

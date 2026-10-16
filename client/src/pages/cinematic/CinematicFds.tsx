@@ -354,8 +354,7 @@ ${setup.systemOpen}\t0\t${setup.fileMax}
             under a held hard limit of 20000, a call that only lowered the soft limit was refused
             too. With the soft limit at 200 the two hundredth open gave EMFILE and the highest
             descriptor handed out was 199, while the machine held 563 of 1,645,588, which is 0.034
-            percent. CI walks every setrlimit call in the kernel's own order and counts descriptors
-            one at a time rather than comparing bounds. The cgroup files controller, epoll and
+            percent. The cgroup files controller, epoll and
             inotify instance limits, and ENFILE, which would have taken the machine down to
             measure, are read from the source and not from this host.
           </p>

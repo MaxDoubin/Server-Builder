@@ -622,15 +622,13 @@ export function CinematicRackBuilder() {
               something in the build would hang below a shorter frame.
             </p>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              The weight is on screen because this page cannot hide it. A drawn elevation costs a
-              reader nothing whatever it contains, and this one costs them a download per distinct
-              device. Bytes are counted once per file, because the browser caches it, and
+              Bytes are counted once per file, because the browser caches it, and
               triangles once per placement, because two of the same switch are two of the same
               switch as far as the GPU is concerned. Reporting one figure for both would be wrong
               in one direction or the other.
             </p>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Nothing here is patched, and that is not an omission. A vendor model is a closed box
+              Nothing here is patched. A vendor model is a closed box
               that does not know where its own jacks are. The{" "}
               <Link
                 href="/racks/wired"

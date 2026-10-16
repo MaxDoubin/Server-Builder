@@ -406,12 +406,6 @@ ${setup.start.map((value) => value.toFixed(2)).join(" ")}`}
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} readings`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI folds every one of these a second time, by walking the window a tick at a time
-            instead of multiplying out the sample times, and fails the build if the two disagree by
-            a single unit of the kernel's eleven bit fraction. The figures on this page are the
-            ones a real /proc/loadavg would print, including the ones that look wrong.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other number that is a quantity rather than a hint,{" "}
             <Link

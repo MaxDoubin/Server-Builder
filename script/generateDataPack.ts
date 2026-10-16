@@ -71,7 +71,7 @@ const RACK_PROVENANCE = {
   licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
   attribution: "Max Doubin, maxdoubin.com",
   disclaimer:
-    "Vendor published figures, cited per device, not measurements and not estimates. watts is null wherever the vendor publishes a power supply rating or a PoE budget rather than the device's own consumption, which is most of the enterprise hardware here: quoting a supply rating as a draw would overstate a rack's load several times over. Port link state and drive bay occupancy are illustrative, stated as such on the pages, and describe a plausible fit-out rather than a measured one. Product names are third-party trademarks used to identify the hardware being described.",
+    "Vendor published figures, cited per device, not measurements and not estimates. watts is null wherever the vendor publishes a power supply rating or a PoE budget rather than the device's own consumption, which is most of the enterprise hardware here: quoting a supply rating as a draw would overstate a rack's load several times over. Port link state and drive bay occupancy are illustrative and describe a plausible fit-out, not a measured one. Product names are third-party trademarks used to identify the hardware being described.",
   fields: {
     rack: "rack slug, as used in the page URL",
     rackName: "rack display name",

@@ -246,10 +246,7 @@ export function CinematicSubscribe() {
             </h2>
             <div className="mt-4 max-w-2xl space-y-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <p>
-                Not yet, and there is no hidden form to find. Sending email
-                reliably means holding a list of addresses, and a list of
-                addresses is something that can be lost. Until that is worth
-                doing properly, the feed does the same job better.
+                Not yet, and there is no hidden form to find.
               </p>
               <p>
                 If a newsletter ever exists it will be announced here and on

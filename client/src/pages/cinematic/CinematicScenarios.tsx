@@ -116,8 +116,7 @@ export function CinematicScenarios() {
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
               Every ending says plainly what separated it from the best available outcome, and how
-              rare it is: rarity is the share of all routes through the scenario that finish there,
-              counted from the graph rather than guessed. In several of these the best outcome is
+              rare it is: rarity is the share of all routes through the scenario that finish there. In several of these the best outcome is
               still a bad day, because some incidents have no ending where nothing is lost.
             </p>
           </header>

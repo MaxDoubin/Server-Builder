@@ -147,7 +147,7 @@ export const ROADMAP: RoadmapGroup[] = [
         id: 65,
         title: "Testimonials",
         status: "blocked",
-        note: "Needs real quotes from real people. Inventing these would be dishonest, so the page waits until Max has permission to publish two or three.",
+        note: "Needs real quotes from real people, so the page waits until Max has permission to publish two or three.",
       },
       {
         id: 66,
