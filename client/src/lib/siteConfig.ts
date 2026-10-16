@@ -232,6 +232,27 @@ export const siteConfig = {
       ],
     },
     {
+      title: "Member",
+      org: "Hope Squad",
+      details: [
+        "Served on Hope Squad, a peer support and suicide prevention program, from 2024 to 2025",
+      ],
+    },
+    {
+      title: "Treasurer",
+      org: "Student Council",
+      details: [
+        "Served as Student Council treasurer from 2024 to 2025",
+      ],
+    },
+    {
+      title: "Member",
+      org: "Hope Squad",
+      details: [
+        "Served on Hope Squad, a peer support and suicide prevention program, from 2024 to 2025",
+      ],
+    },
+    {
       title: "Student Technology Aide",
       org: "Pinecrest Academy of Nevada, Inspirada",
       details: [
