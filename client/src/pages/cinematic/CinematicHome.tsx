@@ -73,7 +73,7 @@ export function CinematicHome() {
         "PBS Varsity Quiz · State finalist, 2026",
         "Nevada All-State Band · 2023, 2024, and 2026",
         "NJHS Outstanding Achievement Award scholarship · 2025",
-        "Student of the Month · South CTA",
+        "Student of the Month · South CTA, October 2025",
       ],
       hasCredential: [
         {

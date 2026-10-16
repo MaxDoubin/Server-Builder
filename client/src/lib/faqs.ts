@@ -58,7 +58,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What leadership and civic roles does Max Doubin hold?",
-    a: "Max Doubin has been president of the South CTA Cyber Club and of the South CTA Music Club since 2025. Since 2025 he has also served as a Commissioner on the City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity and as a Youth Advisory Council member for the Nevada Office of Workforce Innovation, and he is a Big Future Ambassador for the College Board. He previously served as chapter president of the National Junior Honor Society at Pinecrest Inspirada, where he received the NJHS Outstanding Achievement Award scholarship in 2025.",
+    a: "Max Doubin has been president of the South CTA Cyber Club and of the South CTA Music Club since 2025. Since 2025 he has also served as a Commissioner on the City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity and as a Youth Advisory Council member for the Nevada Office of Workforce Innovation, and he served as a Big Future Ambassador for the College Board from 2025 to 2026. He previously served as chapter president of the National Junior Honor Society at Pinecrest Inspirada, where he received the NJHS Outstanding Achievement Award scholarship in 2025.",
   },
   {
     q: "Has Max Doubin been featured in the press?",

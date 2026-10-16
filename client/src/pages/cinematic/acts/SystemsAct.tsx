@@ -93,7 +93,7 @@ function LeadershipCopy() {
         <span className="signal-text">civic, and technical spaces.</span>
       </h2>
       <p className={`mt-5 max-w-[42ch] ${BODY_CLASS}`}>
-        President of the South CTA Cyber Club and South CTA Music Club, teaching assistant for Cybersecurity I, Commissioner on the City of Henderson Blue Ribbon Commission, OWINN Youth Advisory Council member, and Big Future Ambassador for College Board.
+        President of the South CTA Cyber Club and South CTA Music Club, teaching assistant for Cybersecurity I, Commissioner on the City of Henderson Blue Ribbon Commission, OWINN Youth Advisory Council member, and Big Future Ambassador for College Board (2025 to 2026).
       </p>
     </>
   );
