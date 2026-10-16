@@ -233,23 +233,16 @@ export const siteConfig = {
     },
     {
       title: "Member",
-      org: "Hope Squad",
+      org: "Hope Squad at Pinecrest Inspirada",
       details: [
         "Served on Hope Squad, a peer support and suicide prevention program, from 2024 to 2025",
       ],
     },
     {
       title: "Treasurer",
-      org: "Student Council",
+      org: "Student Council at Pinecrest Inspirada",
       details: [
         "Served as Student Council treasurer from 2024 to 2025",
-      ],
-    },
-    {
-      title: "Member",
-      org: "Hope Squad",
-      details: [
-        "Served on Hope Squad, a peer support and suicide prevention program, from 2024 to 2025",
       ],
     },
     {

@@ -186,17 +186,12 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
     label: "2024",
     entries: [
       {
-        title: "Student Council treasurer",
+        title: "Student Council treasurer, Pinecrest Inspirada",
         when: "2024 to 2025",
         description: "Served as treasurer on the student council.",
       },
       {
-        title: "Hope Squad member",
-        when: "2024 to 2025",
-        description: "Served on Hope Squad, a peer support and suicide prevention program.",
-      },
-      {
-        title: "Hope Squad member",
+        title: "Hope Squad member, Pinecrest Inspirada",
         when: "2024 to 2025",
         description: "Served on Hope Squad, a peer support and suicide prevention program.",
       },
