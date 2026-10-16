@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { Link } from "wouter";
-import { Gauge, Layers3, Maximize2, Minimize2, Shield, Sparkles } from "lucide-react";
+import { Gauge, Layers3, Maximize2, Minimize2, Shield } from "lucide-react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { GameRecoveryPanel } from "@/components/game/GameRecoveryPanel";
 import { SiteLoader } from "@/components/ui/site-loader";
@@ -324,7 +324,7 @@ function GameBriefing({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <BriefingCard
             icon={<Layers3 className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
             title="Adaptive Profiles"
@@ -334,11 +334,6 @@ function GameBriefing({
             icon={<Shield className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
             title="Recovery Path"
             body="Runtime errors surface recovery controls, with retry and safer-mode fallbacks."
-          />
-          <BriefingCard
-            icon={<Sparkles className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
-            title="Motion Pass"
-            body=""
           />
         </div>
       </div>
