@@ -29,6 +29,7 @@ const PILLARS: Pillar[] = [
       "Helped lead South CTA to 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
       "CompTIA Tech+ certified (April 2026); Security+, Network+, and CCNA in progress",
+      "Fortinet NSE 1, NSE 2 and NSE 3 and FortiGate 7.6 Operator (October 2026)",
     ],
   },
   {
@@ -54,7 +55,11 @@ const PILLARS: Pillar[] = [
     accent: "signal",
     lines: [
       "Nevada All-State Band in 2023, 2024, and 2026",
+      "Honor Band of Nevada in 2022, 2023, and 2024",
       "Ranked #1 percussionist in Nevada in 2024",
+      "Pinecrest Conservatory Outstanding Percussionist Award, 2023 and 2024",
+      "CCSD Battle of the Bands competitor",
+      "President, South CTA Music Club (since 2025)",
     ],
   },
   {

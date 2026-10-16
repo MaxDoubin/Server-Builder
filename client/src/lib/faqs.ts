@@ -38,7 +38,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What certifications does Max Doubin hold?",
-    a: "Max Doubin holds the CompTIA Tech+ certification, earned in April 2026. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA. Those three are in progress.",
+    a: "Max Doubin holds the CompTIA Tech+ certification (FC0-U71), earned in April 2026. In October 2026 he earned six Fortinet Training Institute credentials: NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals. He also holds 23 Anthropic Claude Academy badges and has completed four Claude Academy courses. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA.",
   },
   {
     q: "What does Max Doubin build?",

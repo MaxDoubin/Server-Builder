@@ -4,7 +4,9 @@ import { useSEO } from "@/lib/useSEO";
 import {
   CERTS_EARNED,
   CERTS_IN_PROGRESS,
+  CREDENTIAL_GROUPS,
   type Cert,
+  type CredentialGroup,
   type CertResource,
 } from "@/lib/certConfig";
 
@@ -14,7 +16,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "A status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
+      "Max Doubin's certifications: CompTIA Tech+, six Fortinet Training Institute credentials, competition results, AP scores and Anthropic Claude Academy badges, with Security+, Network+ and CCNA in progress.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -30,9 +32,9 @@ export function CinematicCerts() {
               Certifications.
             </h1>
             <p className="mt-6 font-mono-tight text-base leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              I hold CompTIA Tech+ and I am certifying in Security+, Network+,
-              and the CCNA. This page tracks what each one covers, what it is
-              worth, and how far through the objectives I am.
+              I hold CompTIA Tech+ and six Fortinet Training Institute
+              credentials, and I am certifying in Security+, Network+, and the
+              CCNA.
             </p>
           </header>
 
@@ -67,6 +69,10 @@ export function CinematicCerts() {
             </div>
           </section>
 
+          {CREDENTIAL_GROUPS.map((group) => (
+            <CredentialSection key={group.id} group={group} />
+          ))}
+
           <section className="mt-16" aria-labelledby="progress-heading">
             <h2
               id="progress-heading"
@@ -89,6 +95,38 @@ export function CinematicCerts() {
         </div>
       </div>
     </CinematicLayout>
+  );
+}
+
+function CredentialSection({ group }: { group: CredentialGroup }) {
+  return (
+    <section className="mt-16" aria-labelledby={`${group.id}-heading`}>
+      <h2
+        id={`${group.id}-heading`}
+        className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl"
+      >
+        {group.heading}
+      </h2>
+      <p className="mt-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        {group.meta}
+      </p>
+      <ul
+        data-testid={`credentials-${group.id}`}
+        className="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm sm:grid-cols-2 md:p-8"
+      >
+        {group.items.map((item) => (
+          <li
+            key={item}
+            className="flex items-start gap-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          >
+            <span aria-hidden className="text-[hsl(var(--brand-signal))]">
+              ✓
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

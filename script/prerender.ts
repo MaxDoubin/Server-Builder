@@ -94,7 +94,7 @@ const { nowConfig } = await import("../client/src/lib/nowConfig.ts");
 const { usesConfig } = await import("../client/src/lib/usesConfig.ts");
 const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
 const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
-const { ALL_CERTS } = await import("../client/src/lib/certConfig.ts");
+const { ALL_CERTS, CREDENTIAL_GROUPS } = await import("../client/src/lib/certConfig.ts");
 const { ROADMAP, ROADMAP_UPDATED, roadmapCounts } = await import("../client/src/lib/roadmap.ts");
 const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
 const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
@@ -1202,7 +1202,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "certifications",
       title: "Certifications | Max Doubin",
       description:
-        "A status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
+        "Max Doubin's certifications: CompTIA Tech+, six Fortinet Training Institute credentials, competition results, AP scores and Anthropic Claude Academy badges, with Security+, Network+ and CCNA in progress.",
       canonical: `${SITE_URL}/certifications`,
     },
     {
@@ -1431,7 +1431,7 @@ ${JSON.stringify({
   const certificationsContent = `
 <main>
   <h1>Certifications</h1>
-  <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam actually covers.</p>
+  <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam covers.</p>
   ${ALL_CERTS.map(
     (cert) => `<section>
     <h2>${esc(cert.name)} (${esc(cert.code)})</h2>
@@ -1446,6 +1446,13 @@ ${JSON.stringify({
       })),
     )}</dl>
     <p><a href="${cert.officialUrl}">Official ${esc(cert.code)} objectives</a></p>
+  </section>`,
+  ).join("\n  ")}
+  ${CREDENTIAL_GROUPS.map(
+    (group) => `<section>
+    <h2>${esc(group.heading)}</h2>
+    <p>${esc(group.meta)}</p>
+    <ul>${li(group.items.map(esc))}</ul>
   </section>`,
   ).join("\n  ")}
   ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"]])}
