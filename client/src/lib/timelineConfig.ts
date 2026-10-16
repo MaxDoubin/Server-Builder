@@ -132,6 +132,11 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Participates in the Office of Workforce Innovation's (OWINN) youth advisory work on workforce readiness and opportunity.",
       },
       {
+        title: "Big Future Ambassador, College Board",
+        when: "2025 to 2026",
+        description: "Represented student perspective and outreach through College Board programs.",
+      },
+      {
         title: "Top 1% · National Cyber League",
         when: "Fall 2025",
         description:
@@ -144,20 +149,15 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Helped lead the school to 7th nationally among high schools with an all-freshman team in the Fall 2025 Cyber Power Rankings, which Cyber Skyline compiles from each school's top team, top individual and participation.",
       },
       {
+        title: "Student of the Month",
+        when: "October 2025",
+        description: "Recognized as Student of the Month at South Career and Technical Academy.",
+      },
+      {
         title: "Wireless and switching deployment, Pinecrest Inspirada",
         when: "Summer 2025",
         description:
           "Assisted with installing Ruckus access points and switches during the campus's migration away from Ubiquiti equipment.",
-      },
-      {
-        title: "Big Future Ambassador, College Board",
-        when: "2025 to 2026",
-        description: "Represented student perspective and outreach through College Board programs.",
-      },
-      {
-        title: "Student of the Month",
-        when: "October 2025",
-        description: "Recognized as Student of the Month at South Career and Technical Academy.",
       },
       {
         title: "NJHS Outstanding Achievement Award scholarship",

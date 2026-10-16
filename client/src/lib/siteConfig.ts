@@ -58,7 +58,6 @@ export const siteConfig = {
         "President of the South CTA Music Club since 2025",
         "Commissioner on the City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity since 2025",
         "Youth Advisory Council member for the Nevada Office of Workforce Innovation (OWINN) since 2025",
-        "Big Future Ambassador for College Board, 2025 to 2026",
         "Keynote panelist at the 2026 A4LE Southwest Region Conference",
         "Proposed and led a student team's network risk assessment, presented to school administration and the Clark County School District networking team",
       ],
