@@ -182,7 +182,7 @@ export const CASES: Case[] = [
     why:
       "Measured: store an A at offset 50, msync, then read offset 50 through the file descriptor, and it is an A. This is the case that makes the others confusing. A store inside the file through a MAP_SHARED mapping really does reach the file, with no copying anywhere, because the page you are writing to is the page cache page for that part of the file. The two that fail are the ones that are past the end of it or on a private mapping, and neither of those looks any different in the code.",
     fix:
-      "Nothing to fix. This is the arrangement the other cases are measured against, and the one worth being able to tell apart from them at a glance.",
+      "Nothing to fix.",
     breaks: "storing through a mapping is storing to a copy",
   },
   {

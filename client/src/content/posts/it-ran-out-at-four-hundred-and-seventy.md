@@ -198,8 +198,7 @@ Then three questions:
 2. Which end closes? A server holding TIME_WAIT is a different problem with a
    different fix, and often with no fix needed.
 3. Is there a pool, and is it per destination and larger than the rate? That
-   is the answer, and everything else on this page is what to do while you
-   build it.
+   is the answer.
 
 And if somebody has already set `tcp_fin_timeout`, put it back. It changed
 nothing, and leaving it there means the next person spends an afternoon

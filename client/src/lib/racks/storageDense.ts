@@ -236,7 +236,7 @@ export const storageDenseRack: RackDefinition = {
       u: 4,
       vendor: "Generic",
       model: "Rack UPS with external battery tray",
-      role: "Ride-through matters more here than anywhere. A switch that loses power comes back; an array that loses power mid-write comes back and then has to work out what it was doing. Its draw depends on the load it carries, so no single figure would be honest.",
+      role: "Ride-through matters more here than anywhere. A switch that loses power comes back; an array that loses power mid-write comes back and then has to work out what it was doing. Its draw depends on the load it carries.",
       family: "ups",
       finish: "dark",
       display: "ups",

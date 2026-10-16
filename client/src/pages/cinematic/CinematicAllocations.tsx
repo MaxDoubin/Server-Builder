@@ -23,7 +23,7 @@ export function CinematicAllocations() {
   useSEO({
     title: "Address plans | Max Doubin",
     description:
-      "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, unaligned networks, summary routes and growth, marked on behavior rather than on matching one answer.",
+      "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, unaligned networks, summary routes and growth.",
     canonical: `${SITE_URL}/allocate`,
   });
 

@@ -274,7 +274,7 @@ export function CinematicRestore() {
           <ReadAboutThis href="/restore" />
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The arithmetic here is deliberately optimistic: it assumes you know what to restore, the
+            The arithmetic here is optimistic: it assumes you know what to restore, the
             media is where the inventory says, and nothing fails during the restore. A real
             recovery is longer than the number this page gives you, every time.
           </p>

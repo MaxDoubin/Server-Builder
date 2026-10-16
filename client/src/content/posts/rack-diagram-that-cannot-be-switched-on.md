@@ -37,8 +37,7 @@ Manager actually runs and where every blade's uplink actually terminates.
 My rack had the chassis and no interconnects. Not a missing cable, a missing
 device, and one that occupies rack units and draws power.
 
-**The honest caveat**, because the first version of this note in my own
-generator overstated it: those same I/O bays will also take a UCS 6324,
+Those same I/O bays will also take a UCS 6324,
 which is a fabric interconnect small enough to live inside the chassis. Cisco
 list both options in the same paragraph:
 
@@ -46,9 +45,7 @@ list both options in the same paragraph:
 > 6324 Fabric Interconnect
 
 So "a 5108 cannot run alone" is too strong. What is true is that it needs one
-of those two arrangements, and my rack had neither. I wrote the stronger
-version into a code comment before I had read the datasheet closely enough,
-which is a small example of the same failure this whole article is about.
+of those two arrangements, and my rack had neither.
 
 ## Five racks with a UPS and no PDU
 

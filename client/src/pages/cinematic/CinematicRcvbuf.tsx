@@ -346,10 +346,7 @@ TCP: inuse ${setup.sockets} mem ${setup.chargedPages}          -> ${human(setup.
             socket reported 131072, exactly the tcp_rmem default and undoubled. Setting that same
             131072 reported 262144. Asking for 16 MiB reported 8 MiB, clamped to twice rmem_max,
             and setsockopt returned success. The largest a tuned socket can reach there is 8 MiB
-            against the 32 MiB autotuning is allowed, a factor of four. CI walks setsockopt as
-            separate steps, sweeps the requested size across the whole range to check the clamp is
-            a doubling and then a plateau, and counts tcp_mem's pages one block at a time rather
-            than scaling them. The write side, SO_RCVBUFFORCE, tcp_adv_win_scale and the pressure
+            against the 32 MiB autotuning is allowed, a factor of four. The write side, SO_RCVBUFFORCE, tcp_adv_win_scale and the pressure
             state machine's own hysteresis are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

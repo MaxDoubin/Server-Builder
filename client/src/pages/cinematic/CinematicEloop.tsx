@@ -363,9 +363,7 @@ the three things this errno means
             covers three situations. At a chain of 45, open and stat both give ELOOP while readlink
             returns the next link and lstat reports a symlink, because those two do not follow the
             final component; they still pay for the directories leading to it, which is the part
-            missed when lstat is reached for as a workaround. CI walks the path one link at a time
-            against a single counter rather than adding two numbers, and checks that every way of
-            splitting a total across the components gives the same answer. openat from a directory
+            missed when lstat is reached for as a workaround. openat from a directory
             descriptor, which starts the walk part way along and is the real workaround, is not
             modeled, and neither are procfs magic links or the cost of a mount point inside a chain.
           </p>

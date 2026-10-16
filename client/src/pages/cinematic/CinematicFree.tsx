@@ -352,13 +352,6 @@ ${asMeminfo(setup)}
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} machines`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI recomputes every estimate from a straight transcription of si_mem_available, checks
-            that both arms of that min() are represented in the set, and requires every quantity to
-            be a whole kibibyte, because /proc/meminfo cannot print a fraction of one and a case it
-            could not produce is teaching from a machine that does not exist. The first draft here
-            had 1.2 GiB of slab written as a float and every answer came out ending in .2.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For what happens when the estimate runs out,{" "}
             <Link

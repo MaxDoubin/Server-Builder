@@ -409,14 +409,6 @@ ${asProcLimits(setup)}`}
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} processes`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI states the precedence as a table of nine origin and configuration pairs and checks
-            the model against every one of them, whether or not a case here uses it, so a change
-            that made limits.conf apply to a unit fails the build even if nothing on this page
-            happened to notice. It also checks that raising the per process limit can never turn an
-            ENFILE into a success, because those are different limits with different files behind
-            them.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other limit that runs out at a number nobody expects,{" "}
             <Link

@@ -274,12 +274,10 @@ export function CinematicRackDetail() {
                         : "Nothing here publishes a consumption figure."}{" "}
                       {silentVendors.length > 0 ? (
                         <>
-                          That is the vendors' doing, not an omission on this page.{" "}
                           {silentVendors.join(", ")} publish what a device's power supply
                           is rated for, which is capacity rather than draw: a 715W supply
                           is not a 715W device. Quoting one as the other would overstate a
-                          rack's load several times over, so it reads as not published,
-                          which is true.
+                          rack's load several times over.
                         </>
                       ) : (
                         <>

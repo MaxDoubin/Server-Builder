@@ -296,7 +296,7 @@ export function CinematicPractice() {
       eyebrow: "Plan",
       title: "Exam objectives",
       blurb:
-        "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that genuinely addresses each one.",
+        "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that addresses each one.",
       reachFor: "you need to know what to study next, and for how long",
       stats: [`${EXAMS.length} exams`, `${totals.domains} domains`, "printable sheets"],
       progress: null,

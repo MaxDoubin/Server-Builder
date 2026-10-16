@@ -347,11 +347,7 @@ the killer can still run: ${oomPossible(setup) ? "yes, the limit is above RAM pl
             and 150 gave 4120492, 8240988, 13185584, 16481980 and 24722968 kB, and the model lands
             on all five exactly, which a formula written in kilobytes does not: the kernel floors a
             page count and then multiplies, so it reads 8240988 where the obvious arithmetic says
-            8240990. The mode was never changed, because putting a live container into strict
-            accounting to watch it refuse things is not a measurement worth taking, so the refusals
-            here are computed rather than observed. CI counts the pages a block at a time, walks
-            all 301 ratios, and ties each mode's name to what that mode does, after swapping two of
-            the names left every case with exactly one answer and the whole set wrong.
+            8240990.
             vm.admin_reserve_kbytes, per cgroup memory.max, hugetlb pages and the heuristic's own
             single request rule are not modeled.
           </p>

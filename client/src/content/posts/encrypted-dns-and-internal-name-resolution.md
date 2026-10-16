@@ -170,7 +170,7 @@ the canary zone answered NXDOMAIN, browser policy pushed on the managed
 laptops, port 53 redirected and 853 rejected for everything else. Guest
 devices get the same resolver and no internal zones.
 
-The unmanaged devices still win sometimes, and that is the accurate picture:
+The unmanaged devices still win sometimes:
 this is not a control you enforce, it is a default you make good enough that
 nothing has a reason to route around it. What changed for me was diagnosis
 time. Once "dig works, the browser does not" is a shape you recognize, it is a

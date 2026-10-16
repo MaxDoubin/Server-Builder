@@ -26,8 +26,7 @@ export function CinematicColophon() {
             </h1>
             <p className="mt-6 max-w-[64ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               This page is the technical write up of the site you are reading, including the
-              decisions that were wrong the first time. A portfolio that claims infrastructure work
-              should be willing to show its own build.
+              decisions that were wrong the first time.
             </p>
           </header>
 
@@ -71,8 +70,7 @@ export function CinematicColophon() {
               Decisions that mattered
             </h2>
             <p className="mt-3 max-w-[64ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Most of these exist because the obvious version was measurably worse. The comments
-              explaining them are still in the source.
+              Most of these exist because the obvious version was measurably worse.
             </p>
 
             <div className="mt-8 space-y-10">
@@ -146,14 +144,14 @@ export function CinematicColophon() {
               id="colophon-absent-heading"
               className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl"
             >
-              What is deliberately not here
+              What is not here
             </h2>
             <ul className="mt-6 space-y-3">
               {[
                 "Cloudflare Web Analytics is enabled on the Pages project, so the edge injects a beacon that counts page views and Core Web Vitals. It sets no cookie, records no identifier, and follows nobody between sites. Nothing else reports what you read.",
                 "No content management system. A post is a markdown file and a commit, so there is no admin login to secure and no database to back up.",
                 "No comment system, no chat widget, no newsletter modal.",
-                "No server. The whole site is static files, which is also the strongest security posture available to it.",
+                "No server. The whole site is static files.",
               ].map((line) => (
                 <li
                   key={line}

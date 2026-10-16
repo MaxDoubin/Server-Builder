@@ -378,12 +378,9 @@ export function CinematicShm() {
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The SIGBUS behavior here was measured rather than assumed: on an 8 MiB tmpfs, mapping a
+            The SIGBUS behavior here was measured: on an 8 MiB tmpfs, mapping a
             32 MiB file succeeds and the process dies after touching exactly 8388608 bytes, while
-            dd on the same full filesystem gets an ordinary ENOSPC. CI recomputes each boundary by
-            handing memory out one unit at a time, and proves on a setup where both limits are
-            crossed by the same unit that the answer is SIGBUS, because a page fault the tmpfs
-            cannot satisfy charges nothing to the cgroup. System V shared memory, which has its own
+            dd on the same full filesystem gets an ordinary ENOSPC. System V shared memory, which has its own
             limits, is not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

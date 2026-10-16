@@ -5,7 +5,7 @@ The pitch for machine learning on network telemetry is appealing. Signatures onl
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 
-This post is my opinion on how to evaluate the idea, not a report on any particular product. The reasoning is what transfers.
+This is my opinion on how to evaluate the idea.
 
 ## Your Features Are Flow Records
 
@@ -85,7 +85,7 @@ Only after that would I consider a learned model, and I would hold it to a speci
 
 I would also insist on explainability. An alert that says "anomalous" with a score attached is nearly useless to a responder. An alert that says "this host contacted 400 distinct external addresses in 5 minutes, against a normal range of 5 to 20 for this hour" is immediately actionable. If the system cannot produce the second kind of message, it will not survive contact with an on call rotation.
 
-## The Honest Summary
+## Summary
 
 I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay skeptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
 

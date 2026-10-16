@@ -198,7 +198,7 @@ export const EXAMS: Exam[] = [
     officialUrl: "https://www.comptia.org/certifications/network",
     status: "In progress.",
     intro:
-      "Network+ is the one this archive covers most completely, because most of it is the day-to-day of running a network. Troubleshooting is the single heaviest domain at 24 percent, which is worth knowing before you spend all your time on protocol theory.",
+      "Most of Network+ is the day-to-day of running a network. Troubleshooting is the single heaviest domain at 24 percent, which is worth knowing before you spend all your time on protocol theory.",
     domains: [
       {
         slug: "networking-concepts",

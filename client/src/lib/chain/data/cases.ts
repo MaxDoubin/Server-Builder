@@ -385,7 +385,7 @@ export const CHAIN_CASES: ChainCase[] = [
     explain: [
       "The SHA-1 in the scanner output is Public Root G1's signature on itself, and a root's self-signature is never verified by anything: a root is trusted because it is in the store, not because of its maths. On that narrow question the scanner is wrong.",
       "But read the whole trace before agreeing with the reassuring answer. Public Root G1 expired on 30 September 2021, and this device still trusts it, which is the thing worth acting on.",
-      "It is included because reasoning about one finding in isolation is how the actual problem gets closed as a false positive. The scanner raised the wrong flag and it was looking at something real.",
+      "The scanner raised the wrong flag and it was looking at something real.",
     ],
   },
 ];

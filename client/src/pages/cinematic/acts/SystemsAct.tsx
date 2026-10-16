@@ -156,7 +156,7 @@ type CounterRefs = {
 function HighlightsCopy({ counters }: { counters?: CounterRefs }) {
   return (
     <>
-      <Eyebrow>· Highlights · Verified</Eyebrow>
+      <Eyebrow>· Highlights</Eyebrow>
       <h2 className="mt-3 max-w-[28ch] text-center font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
         Technical work,
         <br />
@@ -451,7 +451,7 @@ export function SystemsAct() {
       <div className="pointer-events-none absolute right-6 top-24 z-20 hidden flex-col items-end gap-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex md:right-10 md:top-28">
         <span>South CTA · Las Vegas</span>
         <span>cybersecurity · networking</span>
-        <span>signal · verified</span>
+       
       </div>
 
       <div

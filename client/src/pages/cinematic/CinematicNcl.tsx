@@ -105,11 +105,10 @@ export function CinematicNcl() {
                 see where you rank against everyone else.
               </p>
               <p>
-                I am describing this in durable, general terms on purpose. The
+                The
                 point values, the tie-break order, and how percentiles are
                 calculated are set by the organizers and can change from season
-                to season, so treat the official rules as the source of truth
-                rather than anything here.
+                to season, so check the official rules.
               </p>
             </div>
           </section>
@@ -201,8 +200,7 @@ export function CinematicNcl() {
                 I also helped the school place 7th nationally among high schools in
                 the Fall 2025 Cyber Power Rankings, with an all-freshman team. That
                 ranking blends a school's top team, its top individual and its
-                participation, so it is not a team result on its own. Those
-                results are the honest summary of where I have gotten to so far.
+                participation, so it is not a team result on its own.
               </p>
               <p>
                 My strongest categories have been the ones I practiced most

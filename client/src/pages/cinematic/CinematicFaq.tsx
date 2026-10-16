@@ -50,8 +50,7 @@ export function CinematicFaq() {
             </h1>
             <p className="mt-6 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Straight answers to what people actually ask about Max Doubin: the school, the
-              competition results, the club, the projects, and how to get in touch. Every answer
-              here is self-contained, and nothing on this page is claimed that is not held.
+              competition results, the club, the projects, and how to get in touch.
             </p>
           </header>
 

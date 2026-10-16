@@ -224,7 +224,7 @@ export const CASES: Case[] = [
     why:
       "BindsTo= is Requires= plus a promise that this unit is never active without the other one, so when the mount goes the share is stopped rather than left pointing at an empty directory. Then the backup's Requires= propagates a stop, which it does with or without After=: that is the one thing a requirement does without needing an ordering. Three units down from one disk, and every step of it is a directive somebody wrote on purpose.",
     fix:
-      "This is the shape to want for anything holding a filesystem open. The alternative, Requires= on a mount, leaves a service running against a directory that is no longer a mount point, quietly writing to the underlying disk. Which is a separate incident with its own article.",
+      "This is the shape to want for anything holding a filesystem open. The alternative, Requires= on a mount, leaves a service running against a directory that is no longer a mount point, quietly writing to the underlying disk.",
     breaks: "a requirement only matters while a unit is starting",
   },
   {

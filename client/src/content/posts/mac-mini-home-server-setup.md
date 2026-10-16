@@ -99,7 +99,7 @@ Use Docker Desktop or OrbStack for mainstream container workloads, and try Apple
 
 On a 16GB mini, Docker's default is an 8GB ceiling, and its Resource Saver [turns the VM off when idle](https://docs.docker.com/desktop/settings-and-maintenance/settings/). Apple's [technical overview](https://github.com/apple/container/blob/main/docs/technical-overview.md) admits a limitation: pages freed inside a container's VM are not returned to macOS, so memory-hungry containers may need occasional restarts.
 
-Idle-memory figures in blog comparisons vary widely, so this article gives none. The vendors' documented limits describe configured behavior; measure your own with Activity Monitor or `container stats`.
+The vendors' documented limits describe configured behavior; measure your own with Activity Monitor or `container stats`.
 
 ## How do you add file sharing, a Time Machine server and a media server?
 

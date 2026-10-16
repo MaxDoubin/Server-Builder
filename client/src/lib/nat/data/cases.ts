@@ -40,7 +40,7 @@ export const CASES: Case[] = [
     slug: "from-outside-it-works",
     name: "The port forward, doing exactly what it says",
     brief:
-      "The ordinary case, first, so the other nine have something to differ from. Somebody on the internet opens the site.",
+      "Somebody on the internet opens the site.",
     router: { name: "gw", nics: [WAN, LAN], rules: [FORWARD_443, MASQUERADE_OUT], upstream: "203.0.113.1" },
     hosts: [web, laptop, visitor],
     from: "visitor",

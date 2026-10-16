@@ -253,7 +253,7 @@ export const dellRowRack: RackDefinition = {
       u: 2,
       vendor: "APC",
       model: "Smart-UPS SMT1500RM2U",
-      role: "A UPS at the bottom, sized to ride out a transfer rather than to carry this row. Five units of spinning disk and three servers are well past what a 1500VA line interactive unit holds for long, and the page says so rather than implying otherwise.",
+      role: "A UPS at the bottom, sized to ride out a transfer rather than to carry this row. Five units of spinning disk and three servers are well past what a 1500VA line interactive unit holds for long.",
       family: "ups",
       finish: "black",
       accent: ACCENT.power,

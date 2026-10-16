@@ -384,10 +384,7 @@ ${asTimeline(setup)}`}
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            CI recomputes every population figure by laying the room out and counting clients one
-            at a time, and every pool figure by keeping an hourly ledger of addresses out and
-            addresses back, so the closed forms on this page are never the only thing that
-            computed them. T1 and T2 are checked against the two fractions RFC 2131 states. What
+            What
             is not modeled is the retransmission schedule inside RENEWING and REBINDING, which
             clients implement differently.
           </p>

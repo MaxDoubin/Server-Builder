@@ -78,7 +78,7 @@ export function CinematicData() {
               Rack hardware datasets
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Two of them, and they are honest about different things. First,{" "}
+              Two of them. First,{" "}
               {count} rack-mount devices with power draw, heat output, rack
               units, port count and indicative cost: the table the datacenter
               simulator on this site runs on, published because a clean openly
@@ -155,8 +155,7 @@ export function CinematicData() {
             >
               CC BY 4.0
             </a>
-            . Use it anywhere, credit Max Doubin and link back. The same
-            disclaimer above is embedded in both files.
+            . Use it anywhere, credit Max Doubin and link back.
           </p>
 
           <section className="mt-14 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.35)] p-6">
@@ -170,7 +169,7 @@ export function CinematicData() {
               simulator. These are vendor published figures: {rackSourced} of
               the {rackDevices} carry the datasheet page their numbers came
               from, and a device whose vendor publishes no consumption figure
-              says so rather than carrying one somebody estimated.
+              says so.
             </p>
             <ul className="mt-4 space-y-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <li>
@@ -185,7 +184,7 @@ export function CinematicData() {
                 <strong className="text-[hsl(var(--brand-bone))]">position</strong>{" "}
                 and <strong className="text-[hsl(var(--brand-bone))]">u</strong>{" "}
                 are the real elevation: every rack&rsquo;s devices add up to
-                its frame, and CI fails the build if they stop doing so.
+                its frame.
               </li>
               <li>
                 Link state and drive bay occupancy on the pages are

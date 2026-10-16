@@ -3,7 +3,7 @@
 
 Self-Monitoring, Analysis and Reporting Technology is a set of counters and thresholds a drive maintains about itself. Every modern drive exposes it. It is genuinely useful and it is genuinely oversold.
 
-The honest summary: a large fraction of drives fail with no prior SMART warning at all, so a clean SMART report is weak evidence of health. But when specific attributes start moving, that is strong evidence of trouble. SMART is a smoke detector, not a crystal ball. Asymmetric information is still information.
+A large fraction of drives fail with no prior SMART warning at all, so a clean SMART report is weak evidence of health. But when specific attributes start moving, that is strong evidence of trouble. SMART is a smoke detector, not a crystal ball. Asymmetric information is still information.
 
 ## The attributes that matter on spinning disks
 

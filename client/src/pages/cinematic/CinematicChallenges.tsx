@@ -68,15 +68,8 @@ export function CinematicChallenges() {
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               An artifact and a question. The log, the hex dump, the scan output and the digests are
-              all printed here in full, because the exercise is reading them, not downloading them.
+              all printed here in full.
               Every answer is one exact string.
-            </p>
-            <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
-              The flag is checked against a SHA-256 held in the page, which means ctrl-F will not
-              find it and a determined reader with the developer tools open absolutely will. That is
-              on purpose. There is no score to protect, and the full method sits behind one button
-              on every challenge, so the only thing the hash buys you is not tripping over the
-              answer before you have tried.
             </p>
           </header>
 
@@ -124,9 +117,7 @@ export function CinematicChallenges() {
           ))}
 
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The categories follow the National Cyber League's, because that is the competition most
-            readers here are pointed at, and because they are a fair description of what you can
-            practice alone with no infrastructure.{" "}
+            The categories follow the National Cyber League's.{" "}
             <Link
               href="/ncl"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"

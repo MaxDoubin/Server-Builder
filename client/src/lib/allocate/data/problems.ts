@@ -16,7 +16,7 @@ export const PROBLEMS: Problem[] = [
     difficulty: "easy",
     tagline: "Four VLANs, one /24, and one of them needs more than a quarter of it.",
     brief: [
-      "A single school building has a /24 to divide between four VLANs. Nothing here is subtle; the point is to get the arithmetic and the alignment right before anything else is added.",
+      "A single school building has a /24 to divide between four VLANs. Get the arithmetic and the alignment right before anything else is added.",
       "Every subnet has to be a real network address for its prefix, sit inside the block, and not overlap anything else.",
     ],
     block: "192.168.10.0/24",

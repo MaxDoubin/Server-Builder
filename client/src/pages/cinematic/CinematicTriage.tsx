@@ -257,10 +257,7 @@ export function CinematicTriage() {
 
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every address and host in this inbox is invented, and the ones that imitate a brand sit
-            under reserved names that resolve to nothing. CI derives each message's signals from its
-            own headers and refuses the build if the written analysis and the artifact disagree,
-            which is the failure mode that would otherwise teach you something untrue without ever
-            looking broken.
+            under reserved names that resolve to nothing.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the rest of the practice material, the{" "}
@@ -431,8 +428,7 @@ function Reader({
                 · Which signal settles it?
               </h3>
               <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
-                Pick the one you would put in the ticket. This is scored separately, because a
-                verdict you cannot point at a header for will not survive a better forgery.
+                Pick the one you would put in the ticket.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {ALL_TELLS.map((tell) => (

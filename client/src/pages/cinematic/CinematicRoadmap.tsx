@@ -85,7 +85,7 @@ export function CinematicRoadmap() {
               Building this in public.
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              One hundred improvements to this site, with honest status on each.
+              One hundred improvements to this site, each with its current status.
               Items marked blocked are waiting on an account, a credential, or a
               decision, and each says what it is waiting for. Nothing here is
               marked done until it is live.

@@ -376,10 +376,7 @@ order, when several are pending
           </p>
 
           <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            The model reproduces the host it was written on, kernel 6.18.44, measured in C: the first
-            attempt used Python, whose C handler sets a flag that the interpreter reads at the next
-            bytecode boundary, so every queued signal collapsed into one call and the result this
-            surface is about disappeared. Every trial blocks the signal, sends it, then unblocks, so
+            The model reproduces the host it was written on, kernel 6.18.44, measured in C. Every trial blocks the signal, sends it, then unblocks, so
             nothing turns on a race. SIGUSR1 and SIGHUP each delivered once whether 1, 2, 5, 100 or
             1000 were sent; SIGRTMIN delivered 1, 2, 5, 100 and 1000. Sending SIGUSR1 with sigqueue
             still delivered one, and sending SIGRTMIN with plain kill still delivered all thousand,
@@ -391,9 +388,7 @@ order, when several are pending
             with sigtimedwait the lowest number always came first, 10, 12, 34, 36, 39 from both a
             scrambled and an ascending send order, while with handlers installed the same five ran
             39, 36, 34, 12, 10 over five runs and four sets, never nesting. Eight SIGRTMIN carrying
-            100 to 107 arrived in that order. CI posts each send into a pending bitmap and a queue
-            with a shared allowance rather than asking the same conditions twice, and checks 5376
-            combinations. Signals 32 and 33, which glibc keeps for its own threading and which are
+            100 to 107 arrived in that order. Signals 32 and 33, which glibc keeps for its own threading and which are
             why SIGRTMIN reads as 34, were not measured. SIGKILL and SIGSTOP, SA_RESTART and EINTR,
             signalfd, the synchronous signals and per-thread delivery are not modeled.
           </p>

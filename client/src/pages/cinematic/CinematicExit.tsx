@@ -371,8 +371,7 @@ the collision range
             exist and 126 for one that is not executable are bash's own and the kernel produces
             neither. A pipeline reports its last member: false piped into true left $? at 0 with
             PIPESTATUS 1 0, and a child killed by SIGKILL piped into true left $? at 0 with
-            PIPESTATUS 137 0. CI packs and unpacks the word with the macros from wait.h transcribed
-            rather than reading the model's conditions twice, and checks 573 endings. WIFSTOPPED and
+            PIPESTATUS 137 0. WIFSTOPPED and
             WIFCONTINUED, the 124 that timeout uses, set -e and set -o pipefail, and what a language
             runtime does to a code on the way out are not modeled.
           </p>

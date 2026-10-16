@@ -202,7 +202,7 @@ export function CinematicResolve() {
               · Eight symptoms
             </h2>
             <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-              Each one is something a person actually said. Look the name up above, read the trace,
+              Look the name up above, read the trace,
               then pick what is wrong. Every wrong option is something a competent person says in
               the first five minutes.
             </p>
@@ -215,10 +215,8 @@ export function CinematicResolve() {
 
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every name here is under a reserved suffix and every address is in a documentation
-            range, and CI checks both, so nothing you copy out of this page reaches anything real.
-            CI also runs each case through the resolver and fails the build if a stated diagnosis
-            and the actual outcome disagree, which is the way this page would otherwise go wrong:
-            a trace and a diagnosis that no longer match, both looking perfectly fine.
+            range, so nothing you copy out of this page reaches anything real.
+           
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For DNS on the wire rather than in the delegation, the{" "}

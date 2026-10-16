@@ -144,7 +144,7 @@ const PRESETS: Preset[] = [
     flags: "gi",
     sample:
       "max@example.com, first.last+tag@sub.domain.co.uk\nnot-an-email@, @nope.com, plain text",
-    note: "Deliberately not RFC 5322. Nothing short of a parser is, and the full grammar matches addresses no mail server will accept.",
+    note: "Not RFC 5322. Nothing short of a parser is, and the full grammar matches addresses no mail server will accept.",
   },
   {
     id: "url",

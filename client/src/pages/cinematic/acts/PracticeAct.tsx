@@ -694,10 +694,6 @@ export function PracticeAct() {
             judge, a firewall chain that will show you which rule stole your packet. All of it runs
             in the browser, none of it reaches a real machine, and nothing you do leaves the page.
           </p>
-          <p className="mt-4 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Every exercise ships a solution that CI replays on every push, so an exercise that has
-            stopped being solvable fails the build rather than your afternoon.
-          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/today"

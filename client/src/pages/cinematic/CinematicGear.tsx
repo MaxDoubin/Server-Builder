@@ -106,7 +106,7 @@ export function CinematicGear() {
   useSEO({
     title: "Hardware catalog | Max Doubin",
     description:
-      "Every UniFi model on this site, measured: switches, access points, cameras, gateways and door hardware, with real dimensions, triangle counts and file sizes taken from the geometry itself.",
+      "Every UniFi model on this site, measured: switches, access points, cameras, gateways and door hardware, with dimensions, triangle counts and file sizes taken from the geometry itself.",
     canonical: `${SITE_URL}/gear`,
   });
 
@@ -198,14 +198,11 @@ export function CinematicGear() {
               {catalogue ? ` ${rackCount} of these ` : " Some of these "}
               mount in a nineteen inch frame and the rest do not: access points for a ceiling,
               cameras for a wall, door readers, handhelds, the small gateways that live on a
-              desk. The rack builder only ever needed the first group, so the other
-              {catalogue ? ` ${devices.length - rackCount} ` : " two hundred "}
-              were here and invisible.
+              desk.
             </p>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The measurements are the model's own bounding box rather than a figure copied
-              off a datasheet, so they describe the geometry your browser will actually load.
-              Triangle counts and file sizes are real for the same reason. Each thumbnail is
+              off a datasheet. Each thumbnail is
               rendered from the model with its background cut away, which is why they are not
               all the same shape: the card follows the hardware. Click any of them to load the
               model itself and turn it around.

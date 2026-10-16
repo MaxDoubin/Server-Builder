@@ -52,7 +52,7 @@ export const mikrotikIspRack: RackDefinition = {
   slug: "mikrotik-isp-24u",
   name: "MikroTik ISP 24U",
   blurb:
-    "What a wireless ISP actually runs, and half the height of a data center cabinet because that is how it is deployed. Three things in here are in no other rack in this library: a shelf of desktop units that have no rack ears at all, a tray with two half width devices side by side in one unit, and an optical distribution frame where the fiber from outside lands. MikroTik also publish real power consumption figures rather than supply ratings, so the numbers on this page are draw rather than capacity.",
+    "What a wireless ISP actually runs, and half the height of a data center cabinet because that is how it is deployed. Three things in here are in no other rack in this library: a shelf of desktop units that have no rack ears at all, a tray with two half width devices side by side in one unit, and an optical distribution frame where the fiber from outside lands. MikroTik also publish real power consumption figures rather than supply ratings.",
   height: 24,
 
   devices: [
@@ -199,7 +199,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Vented shelf with desktop units",
-      role: "A shelf, and the most honest thing in this library. Plenty of MikroTik has no rack ears, so it stands on a tray with its own rubber feet: an RB5009 in black metal, a hEX in white plastic, and a PoE injector. Anyone who has run a small network has this shelf, and no vendor's marketing photography has ever included one.",
+      role: "A shelf. Plenty of MikroTik has no rack ears, so it stands on a tray with its own rubber feet: an RB5009 in black metal, a hEX in white plastic, and a PoE injector. Anyone who has run a small network has this shelf, and no vendor's marketing photography has ever included one.",
       family: "blank",
       look: "shelf",
       finish: "dark",
@@ -376,7 +376,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 2,
       vendor: "Generic",
       model: "Rack UPS, 1500VA",
-      role: "Ride-through for a site that may be at the bottom of a tower with one feed. Its draw depends entirely on the load it carries, so no single consumption figure would be honest here.",
+      role: "Ride-through for a site that may be at the bottom of a tower with one feed. Its draw depends entirely on the load it carries.",
       family: "ups",
       finish: "dark",
       display: "ups",

@@ -67,7 +67,7 @@ export const CASES: Case[] = [
     why:
       "Closing any descriptor to a file releases all of that process's fcntl locks on that file, including locks taken through an entirely different descriptor. Measured: lock on one descriptor, open and close a second, and an outsider took the lock immediately. This is specified behavior and there is no way to opt out of it.",
     fix:
-      "Use an open file description lock, F_OFD_SETLK, which is the same record lock with the ownership fixed. It survives an unrelated close, it was measured surviving one here, and it is otherwise a drop-in for what you already wrote.",
+      "Use an open file description lock, F_OFD_SETLK, which is the same record lock with the ownership fixed. It survives an unrelated close, and it is otherwise a drop-in for what you already wrote.",
     breaks: "only unlocking or exiting releases a lock",
   },
   {
@@ -105,7 +105,7 @@ export const CASES: Case[] = [
     why:
       "An fcntl lock is owned by the process. A second request from the same process is treated as the owner adjusting its own lock, so it is granted, and it silently replaces rather than conflicts. Measured: two descriptors in one process, both got the lock. fcntl gives you no mutual exclusion inside a process at all.",
     fix:
-      "For exclusion between threads or components of one program, use a mutex, or use open file description locks, which are held per descriptor and did block the second request when measured.",
+      "For exclusion between threads or components of one program, use a mutex, or use open file description locks, which are held per descriptor.",
     breaks: "an fcntl lock excludes anything asking for the same file",
   },
   {

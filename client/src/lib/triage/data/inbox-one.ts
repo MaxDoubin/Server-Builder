@@ -200,7 +200,7 @@ export const INBOX_ONE: Message[] = [
     redHerrings: ["external-sender", "payment-change-language"],
     analysis: [
       "Your supplier is orionsupply.com. This came from orion-supply.com. One hyphen, and it is a different company's domain, registered by whoever wanted this to work.",
-      "There is nothing else to find and that is deliberate. The tone is calm, the attachment is a real PDF, the invoice number is plausible, the authentication is clean, and there is no deadline. Every heuristic about urgency and pressure that people are taught in awareness training returns nothing here.",
+      "There is nothing else to find. The tone is calm, the attachment is a real PDF, the invoice number is plausible, the authentication is clean, and there is no deadline. Every heuristic about urgency and pressure that people are taught in awareness training returns nothing here.",
       "Compare this against the message from the same supplier further down the inbox, which is genuine and looks worse. Between the two of them there is exactly one difference that matters, and it is a character in a domain.",
       "The practical control is not vigilance. It is that a change of bank details is confirmed by calling a number you already had on file, from before the request arrived.",
     ],
@@ -456,7 +456,7 @@ export const INBOX_ONE: Message[] = [
     analysis: [
       "Bulk mail from a real sender, with a bounce domain of its own because that is how bulk mail handles bounces at volume.",
       "The From domain is linkedin.com and the link goes to linkedin.com, which is the whole check and it takes about two seconds.",
-      "It is in the inbox because a triage exercise made only of interesting messages is not an inbox. Most of what arrives is this, and the cost of a process that cannot dispose of it quickly is that the process does not get used.",
+      "Most of what arrives is this, and the cost of a process that cannot dispose of it quickly is that the process does not get used.",
     ],
   },
 ];

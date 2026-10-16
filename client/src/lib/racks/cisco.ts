@@ -216,7 +216,7 @@ export const ciscoRack: RackDefinition = {
       u: 2,
       vendor: "APC",
       model: "Smart-UPS SMT1500RM2U",
-      role: "Line-interactive UPS, 1500VA at 120V, feeding six NEMA 5-15R outlets on its rear. The front is the status display. Its draw from the wall depends entirely on the load it carries, so no single consumption figure would be honest here.",
+      role: "Line-interactive UPS, 1500VA at 120V, feeding six NEMA 5-15R outlets on its rear. The front is the status display. Its draw from the wall depends entirely on the load it carries.",
       family: "ups",
       finish: "dark",
       display: "ups",

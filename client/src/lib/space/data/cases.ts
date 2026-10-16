@@ -168,7 +168,7 @@ export const CASES: Case[] = [
     slug: "genuinely-out-of-disk",
     name: "Genuinely out of disk",
     brief:
-      "A metrics volume is full. df says 100%, du accounts for all of it, df -i shows 4% of inodes used, there are no quotas, and the write is from a process running as root. The control case, which is worth having because five of the six things this looks like are not this.",
+      "A metrics volume is full. df says 100%, du accounts for all of it, df -i shows 4% of inodes used, there are no quotas, and the write is from a process running as root. The control case. Five of the six things this looks like are not this.",
     filesystem: {
       mount: "/var/lib/prometheus",
       totalBlocks: 200 * G,
@@ -189,7 +189,7 @@ export const CASES: Case[] = [
       { id: "d", claim: "The reserve, because a compaction is a large write and the margin is thin.", cause: "reserve" },
     ],
     why:
-      "Sometimes the disk is full. It is worth having one of these in the set for the same reason a test suite needs a passing case: every diagnostic habit above is a way of noticing that two numbers disagree, and the way to tell that this is the ordinary one is that none of them do. df and du agree, df -i is nowhere near, there is no quota, and root gets the same answer as everybody else. That is the shape of an actual capacity problem, and reading it correctly takes the same four commands as reading any of the others.",
+      "Sometimes the disk is full. Every diagnostic habit above is a way of noticing that two numbers disagree, and the way to tell that this is the ordinary one is that none of them do. df and du agree, df -i is nowhere near, there is no quota, and root gets the same answer as everybody else. That is the shape of an actual capacity problem, and reading it correctly takes the same four commands as reading any of the others.",
     fix:
       "Retention, compression, or a bigger volume, in that order of cheapness. And an alert on the trend rather than the threshold, because a volume that fills at a predictable rate should not be a page at four in the morning.",
     breaks: "that a diagnosis is only interesting when it is surprising",

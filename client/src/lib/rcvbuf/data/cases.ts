@@ -40,7 +40,7 @@ export const CASES: Case[] = [
   {
     slug: "the-default-is-not-doubled",
     name: "The socket nobody touched",
-    brief: "A service opens a connection and logs getsockopt(SO_RCVBUF) at startup, for the record.",
+    brief: "A service opens a connection and logs getsockopt(SO_RCVBUF) at startup.",
     setup: {
       host: "api-02",
       ramGiB: 16,

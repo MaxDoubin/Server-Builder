@@ -141,4 +141,3 @@ widen. And read the value back afterward, because the clamp is silent.
 - [net/core/sock.c, sock_setsockopt's SO_RCVBUF path](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/core/sock.c)
 
 Every measurement here was taken on Linux 6.18.44 with 15.7 GiB of memory.
-Only socket options were changed, so there was nothing to restore.

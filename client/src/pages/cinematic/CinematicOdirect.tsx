@@ -346,13 +346,7 @@ the call
             +64, +100 and +511, then 3072 from +513 and +1000, 2048 from +2000, 1024 from +3000,
             and nothing at all from +4000. At the boundary, from +1, a length of 3584 writes and
             4096 does not. An accepted write really is direct: mincore finds none of the file's
-            pages resident afterwards, against sixteen for the same write without the flag. Three
-            measurement mistakes were made getting here and are recorded in the notes: reading
-            errno in the same argument list as the call, which printed success for every failure;
-            testing "misaligned" offsets that were all multiples of 512; and testing the one page
-            rule with those same offsets. CI recomputes every answer by cutting the transfer into
-            the device's blocks and asking of each piece whether it could be handed over, across
-            3640 combinations. A device with 4096 byte blocks, any filesystem other than ext4,
+            pages resident afterwards, against sixteen for the same write without the flag.   A device with 4096 byte blocks, any filesystem other than ext4,
             reads rather than writes, the end of the file, and io_uring's registered buffers are
             not modeled.
           </p>

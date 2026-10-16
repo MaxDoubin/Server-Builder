@@ -137,7 +137,7 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     debrief:
-      "A hall can sit comfortably inside its electrical budget and still be outside its thermal one, which is why cooling gets its own meter here. Shedding roughly 60 racks buys back the margin, and in a real hall that shedding is planned in advance: a documented list of which workloads go first, agreed with whoever owns them, so the decision is made on a good day rather than at two in the morning with the aisle at 40 degrees.",
+      "A hall can sit comfortably inside its electrical budget and still be outside its thermal one. Shedding roughly 60 racks buys back the margin, and in a real hall that shedding is planned in advance: a documented list of which workloads go first, agreed with whoever owns them, so the decision is made on a good day rather than at two in the morning with the aisle at 40 degrees.",
     hints: [
       "The rack density slider is the fastest lever. Cooling capacity is fixed while the units are down.",
       "Cooling load is IT load plus six percent for in-room losses, so it always sits above the power number.",

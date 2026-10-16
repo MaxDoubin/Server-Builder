@@ -31,9 +31,6 @@ export function CinematicUses() {
             <p className="mt-6 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {usesConfig.intro}
             </p>
-            <p className="mt-4 max-w-[62ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              Software and services only. This page does not list hardware.
-            </p>
           </header>
 
           <nav aria-label="Sections on this page" className="mt-10">

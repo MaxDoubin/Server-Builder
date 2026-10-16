@@ -55,7 +55,7 @@ export const juniperMxRack: RackDefinition = {
   slug: "juniper-mx-24u",
   name: "Juniper provider edge 24U",
   blurb:
-    "An MX240 card chassis with the rest of the Juniper line arranged around it: an MX204 for compact edge, a QFX5120 leaf pair, EX4400 and a two member EX4300 virtual chassis for access, and an SRX1500 cluster on the boundary. Everything here that carries a Juniper badge is modeled from Juniper's own photographs and hardware guides, and the SRX is drawn with the twelve copper ports it actually has rather than the sixteen interfaces its specification counts.",
+    "An MX240 card chassis with the rest of the Juniper line arranged around it: an MX204 for compact edge, a QFX5120 leaf pair, EX4400 and a two member EX4300 virtual chassis for access, and an SRX1500 cluster on the boundary.",
   height: 24,
 
   devices: [
@@ -151,7 +151,7 @@ export const juniperMxRack: RackDefinition = {
       u: 1,
       vendor: "Juniper",
       model: "QFX5120-48Y",
-      role: "The leaf: forty eight 25 gigabit SFP28 down to servers, eight 100 gigabit QSFP28 up to the spine. The port pitch on this one was measured off Juniper's own transparent product render rather than estimated, which is how the cage openings came out within a tenth of a millimetre of the MSA.",
+      role: "The leaf: forty eight 25 gigabit SFP28 down to servers, eight 100 gigabit QSFP28 up to the spine.",
       family: "switch",
       finish: "light",
       accent: ACCENT.fabric,
@@ -234,7 +234,7 @@ export const juniperMxRack: RackDefinition = {
       u: 1,
       vendor: "Juniper",
       model: "SRX1500",
-      role: "The services gateway on the boundary. Twelve gigabit copper, four SFP and four SFP+, which is the twelve sockets the panel has rather than the sixteen interfaces the specification counts.",
+      role: "The services gateway on the boundary. Twelve gigabit copper, four SFP and four SFP+, which is the twelve sockets the panel has.",
       family: "firewall",
       finish: "dark",
       accent: ACCENT.security,

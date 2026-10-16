@@ -384,9 +384,7 @@ added up
             child that touched nothing reported an RSS of zero for a region it maps in full, because
             Linux does not copy the page tables of a shared anonymous mapping, and a child that read
             16 MiB reported 16384 kB. Killing one of four raised the survivors from 16384 kB to
-            21845 with nothing allocated and nothing freed. CI rebuilds the page table one page at a
-            time and counts who holds which frame rather than doing the same region arithmetic
-            twice, across 28242 combinations. Swap, file backed mappings, huge pages, KSM and cgroup
+            21845 with nothing allocated and nothing freed.  Swap, file backed mappings, huge pages, KSM and cgroup
             accounting are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

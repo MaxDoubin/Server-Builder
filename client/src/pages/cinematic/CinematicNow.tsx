@@ -84,8 +84,7 @@ export function CinematicNow() {
             <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               This is a <strong className="font-medium text-[hsl(var(--brand-bone))]">now page</strong>,
               a convention started by Derek Sivers: one page that says what a person is focused on at
-              this point in their life, updated when that changes rather than kept permanently
-              current. There is a directory of them at{" "}
+              this point in their life, updated when that changes. There is a directory of them at{" "}
               <a
                 href="https://nownownow.com/about"
                 target="_blank"

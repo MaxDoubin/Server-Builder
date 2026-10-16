@@ -140,8 +140,7 @@ export function CinematicLogs() {
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
               So each of these asks for two things: what happened, and which single line settles
-              it. They are marked separately, because an explanation you cannot point at is a
-              guess that happened to be right.
+              it.
             </p>
           </header>
 
@@ -351,9 +350,7 @@ export function CinematicLogs() {
           <ReadAboutThis href="/logs" />
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Every line here is rendered to real syslog format and parsed back at build time, so a
-            line no daemon would emit fails the build rather than teaching you to recognize
-            something you will never see. The timestamps run forwards unless a case is about clocks
+            The timestamps run forwards unless a case is about clocks
             that disagree, and two of them are.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

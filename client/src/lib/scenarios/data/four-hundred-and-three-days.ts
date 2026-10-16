@@ -46,7 +46,7 @@ export const fourHundredAndThreeDays: Scenario = {
       evidence: [
         {
           kind: "terminal",
-          title: "Retention, honestly assessed",
+          title: "Retention by source",
           lines: [
             "SOURCE            RETENTION   REACHES 2 AUG LAST YEAR?",
             "SIEM (full logs)     90 days   no",

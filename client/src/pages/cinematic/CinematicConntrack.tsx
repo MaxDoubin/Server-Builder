@@ -334,10 +334,7 @@ export function CinematicConntrack() {
             of memory, nf_conntrack_max 262144 against nf_conntrack_buckets 262144, and
             nf_conntrack_tcp_timeout_established 432000. With that limit lowered to 20 and the
             table filled with established connections, the measured counters were 296 drops against
-            zero early drops, which is the claim this surface is built on. CI re-derives the sizing
-            by walking memory a gibibyte at a time rather than by branching, checks the assured
-            rule against the definition of assured rather than the model's table, and asserts the
-            measurements. The gc worker, conntrack helpers and per-zone accounting are not modeled.
+            zero early drops. The gc worker, conntrack helpers and per-zone accounting are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other tables that fill up quietly,{" "}

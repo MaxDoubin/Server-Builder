@@ -360,8 +360,7 @@ ${asTrace(setup)}`}
             net/ipv4/tcp_timer.c. Two of its answers were measured rather than derived: on a real
             kernel with the peer black holed, tcp_retries2 at 5 aborted after 13.25 seconds having
             retransmitted 6 segments, and at 6 after 26.39 seconds having retransmitted 7, which is
-            what the model says both times. CI asserts those two measurements, and separately
-            recomputes every budget by summing the backoff intervals rather than by the closed form.
+            what the model says both times.
             tcp_retries1, the SYN path and the orphan path are not modeled.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">

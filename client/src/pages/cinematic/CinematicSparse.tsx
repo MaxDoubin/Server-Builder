@@ -378,8 +378,7 @@ the copy
             out of cp --sparse=never, cat, plain tar and plain dd at 1048580K. dd conv=sparse gave
             4K, 64K, 1024K and 8192K at buffers of 4096, 65536, 1M and 8M, because its holes are one
             buffer wide. Sixty four mebibytes of real zeros came out of cp at 65536K and out of cp
-            --sparse=always at 0K. CI keeps one entry per block and replays the operations over it
-            rather than doing the same run arithmetic twice, across 23328 sequences. The extent tree
+            --sparse=always at 0K. The extent tree
             is not modeled: four extents fit in an ext4 inode and the fifth costs a 4 KiB index
             block, which is the four kilobytes over a round gigabyte in the figures above.
           </p>

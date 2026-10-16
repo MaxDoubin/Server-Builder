@@ -196,4 +196,4 @@ write back cache is for.
 - [fsync(2), on what actually makes a write durable](https://man7.org/linux/man-pages/man2/fsync.2.html)
 
 All measurements in this piece were taken on Linux 6.18.44 with 15.7 GiB of
-memory, and every sysctl was restored afterward.
+memory.

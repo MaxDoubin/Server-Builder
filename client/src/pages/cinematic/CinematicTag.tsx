@@ -70,10 +70,6 @@ export function CinematicTag() {
             <h1 className="mt-4 font-display text-4xl font-medium text-[hsl(var(--brand-bone))]">
               No page for that topic.
             </h1>
-            <p className="mt-4 font-mono-tight text-sm text-[hsl(var(--brand-bone-dim))]">
-              Topics with only a post or two stay as filters on the index
-              rather than getting their own page.
-            </p>
             <Link
               href="/topics"
               className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"

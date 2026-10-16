@@ -147,8 +147,7 @@ export function CinematicStudyDomain() {
             </h2>
             {posts.length === 0 ? (
               <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                Nothing in the archive covers this domain properly yet. Rather
-                than pad the page with loosely related posts, it says so.
+                Nothing in the archive covers this domain properly yet.
               </p>
             ) : (
               <>

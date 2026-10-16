@@ -181,7 +181,7 @@ export const CASES: Case[] = [
       " than half a lease, and why half the lease is the outage it can absorb.",
     fix:
       "nothing. This is the timer working. A server can move T1 with option 58, which is what" +
-      " a later case does on purpose.",
+      " a later case does.",
     breaks: "that a client waits for the lease to run out before renewing",
   },
   {

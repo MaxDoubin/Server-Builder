@@ -179,9 +179,9 @@ export const CASES: Case[] = [
       { id: "some", claim: "It cannot be said, because writeback may or may not have run", says: { about: "largest", value: 512 } },
     ],
     why:
-      "Measured: 0 of the file's pages resident after the direct write, and 16 after the identical write without the flag. This is here so that the rest of the page means something. The three requirements are a real cost, and what they buy is real: the data goes to the device and the page cache is not disturbed, which is what a database wants when it is managing its own.",
+      "Measured: 0 of the file's pages resident after the direct write, and 16 after the identical write without the flag. The three requirements are a real cost, and what they buy is real: the data goes to the device and the page cache is not disturbed, which is what a database wants when it is managing its own.",
     fix:
-      "Nothing to fix. This is the arrangement the other nine cases are measured against.",
+      "Nothing to fix.",
     breaks: "O_DIRECT is advisory and the kernel caches anyway",
   },
   {

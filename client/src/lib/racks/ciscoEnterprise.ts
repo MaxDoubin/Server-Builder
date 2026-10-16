@@ -454,7 +454,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 4,
       vendor: "Generic",
       model: "Rack UPS with external battery tray",
-      role: "Four rack units of ride-through: the electronics above, the battery tray below with its own handle, because the battery is the part that gets replaced. Its draw depends entirely on the load it carries, so no single consumption figure would be honest here.",
+      role: "Four rack units of ride-through: the electronics above, the battery tray below with its own handle, because the battery is the part that gets replaced. Its draw depends entirely on the load it carries.",
       family: "ups",
       finish: "black",
       display: "ups",

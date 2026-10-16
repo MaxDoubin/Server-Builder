@@ -50,8 +50,7 @@ Traces that reached the end of the chain 17 of 36
 Rule evaluations skipped entirely        31
 ```
 
-Over half the traces stop before the end of the chain. That is not because
-these examples are contrived; it is what a chain with a DROP in it does. It is
+Over half the traces stop before the end of the chain. That is what a chain with a DROP in it does. It is
 also exactly the situation in which a person adds a rule, reloads, sees no
 change, and adds another one.
 

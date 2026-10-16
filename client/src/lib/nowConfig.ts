@@ -48,7 +48,7 @@ export const nowConfig: NowConfig = {
   lastUpdatedDisplay: "October 6, 2026",
   period: "October 2026",
   intro:
-    "A snapshot of what has my attention this month: the certifications I am working through, what I am building and teaching, and what I am reading. It is deliberately short and it goes out of date on purpose.",
+    "A snapshot of what has my attention this month: the certifications I am working through, what I am building and teaching, and what I am reading.",
 
   sections: [
     {
@@ -99,7 +99,7 @@ export const nowConfig: NowConfig = {
         {
           title: "Field Notes",
           detail:
-            "A technical post most days on networking, security, storage, virtualization, and operations. The archive is the most honest record of what I actually understand.",
+            "A technical post most days on networking, security, storage, virtualization, and operations.",
           href: "/blog",
         },
         {

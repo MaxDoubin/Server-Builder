@@ -413,20 +413,12 @@ export function CinematicClock() {
           <ReadAboutThis href="/clock" />
 
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Every tolerance here is a real default. Kerberos allows five minutes, which is the
+            Kerberos allows five minutes, which is the
             clockskew default in MIT krb5 and in Active Directory. A one-time code is a thirty
             second step and validators accept a step either side, so thirty seconds is the figure
             that always works and ninety is the figure that sometimes does; the cases use thirty,
             which is the conservative reading. A certificate and an RRSIG have hard edges and no
             tolerance at all, which is why they are the checks that pin the answer down.
-          </p>
-          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            No case carries an answer key. Each states what was observed, the model intersects the
-            intervals, and the correct option is the one whose range matches. CI computes the same
-            range a second way, by walking every second in the fortnight either side of correct and
-            asking the rules directly, because interval arithmetic is exactly the sort of thing
-            that is nearly right and an off-by-one on the complement of a closed interval gives a
-            case two correct answers.
           </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The certificate side of this, where the chain rather than the clock is at fault, is at{" "}

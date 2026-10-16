@@ -33,8 +33,7 @@ export function CinematicCaptures() {
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
               The filter bar supports ==, !=, &gt;, &lt;, contains, field existence, and &amp;&amp;
               || ! with brackets, on any field the packets carry. It refuses what it cannot do
-              rather than quietly ignoring half your expression, because a filter that works only
-              here is worse than no filter at all.
+              rather than quietly ignoring half your expression.
             </p>
           </header>
 

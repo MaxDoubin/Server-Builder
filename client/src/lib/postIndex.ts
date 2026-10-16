@@ -138,7 +138,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Set up a Mac mini as an always-on home server: sleep and power-failure settings, the FileVault trade-off, remote access, containers, file sharing and what breaks.",
     coverImage: "/images/blog/mac-mini-home-server-setup.jpg",
     coverCredit: {"author":"Kyu3a","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:M4_Mac_mini.jpg"},
-    wordCount: 3146,
+    wordCount: 3134,
   },
   {
     slug: "mac-pro-5-1-latest-os",
@@ -266,7 +266,7 @@ export const postIndex: PostMeta[] = [
     tags: ["mac-pro","hardware","apple"],
     excerpt: "Compare the 2010 to 2012 Mac Pro 5,1 with the 2019 7,1 on speed, memory, PCIe, GPUs, power, macOS support and used prices, using benchmarks from one source.",
     coverImage: "/images/blog/mac-pro-5-1-vs-7-1.jpg",
-    wordCount: 3466,
+    wordCount: 3459,
   },
   {
     slug: "apple-server-hardware",
@@ -285,7 +285,7 @@ export const postIndex: PostMeta[] = [
     tags: ["apple","servers","operations"],
     excerpt: "Every macOS Server release from Mac OS X Server 1.0 in 1999 to the final 5.12.2, which macOS each version needs, what Apple removed along the way, and what replaces it.",
     coverImage: "/images/blog/macos-server-versions.jpg",
-    wordCount: 2134,
+    wordCount: 2116,
   },
   {
     slug: "the-memory-you-freed-and-still-hold",
@@ -483,7 +483,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
     coverImage: "/images/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not.jpg",
-    wordCount: 974,
+    wordCount: 963,
   },
   {
     slug: "too-many-open-files-and-which-of-the-four-limits-it-was",
@@ -501,7 +501,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","troubleshooting","storage"],
     excerpt: "vm.dirty_ratio is described everywhere as a percentage of RAM that you raise to make writes faster. It is a percentage of dirtyable memory, which excludes every anonymous page in the machine; it is not where the queue settles, because that is dirty_background_ratio; and raising it on a saturated device buys a longer run between stalls paid for in data you have not written down. Measured: holding 9 GiB of anonymous memory moved the ceiling by exactly the factor dirtyable memory moved by, and 64 MiB written to an idle disk sat in volatile memory for thirty five seconds.",
     coverImage: "/images/blog/the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end.jpg",
-    wordCount: 1423,
+    wordCount: 1417,
   },
   {
     slug: "the-table-was-full-and-the-kernel-could-not-shrink-it",
@@ -700,7 +700,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","linux","operations"],
     excerpt: "A socket is four values, not one, so the ephemeral port range is not a pool shared between destinations: thirty thousand sockets across ten backends is fine and the same thirty thousand against one is not. TIME_WAIT is a sixty second compile time constant with no sysctl, which puts the real ceiling at 470 connections a second per destination, and tcp_fin_timeout is a different state entirely.",
     coverImage: "/images/blog/it-ran-out-at-four-hundred-and-seventy.jpg",
-    wordCount: 1532,
+    wordCount: 1518,
   },
   {
     slug: "the-file-was-right-and-nobody-read-it",
@@ -745,7 +745,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","linux"],
     excerpt: "The rule you added is correct and it does nothing, because a broader rule three lines above already decided. No firewall interface shows you that. I built eight broken chains and counted how often it happens.",
     coverImage: "/images/blog/first-match-wins.jpg",
-    wordCount: 930,
+    wordCount: 922,
   },
   {
     slug: "the-cache-was-never-told-what-a-user-is",
@@ -763,7 +763,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","storage"],
     excerpt: "I built six filesystems that all answer No space left on device. Two are not out of space and one is the filesystem working as designed. On one, df offers 3.7T and the user may write 10G; on another, deleting every named file frees 9G and leaves 41G spent. The diagnosis is never a number, it is which two numbers disagree.",
     coverImage: "/images/blog/the-disk-was-not-full.jpg",
-    wordCount: 1804,
+    wordCount: 1779,
   },
   {
     slug: "the-clock-is-the-last-thing-anybody-checks",
@@ -889,7 +889,7 @@ export const postIndex: PostMeta[] = [
     tags: ["servers","hardware","operations"],
     excerpt: "Auditing sixteen rack elevations found five that held a UPS and nothing to distribute power with, a blade chassis with no fabric interconnect behind it, a tape library with no host, and eight servers with nowhere to land a management port. None of it was a typo. Every one was a device missing because it is the kind of device nobody puts in a diagram.",
     coverImage: "/images/blog/rack-diagram-that-cannot-be-switched-on.jpg",
-    wordCount: 1375,
+    wordCount: 1328,
   },
   {
     slug: "ci-gate-blamed-fourteen-innocents",
@@ -907,7 +907,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","cybersecurity","operations"],
     excerpt: "NIST SP 800-63B revision 4 is final, and most of the password policy your organization runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
     coverImage: "/images/blog/nist-password-rules-changed.jpg",
-    wordCount: 1255,
+    wordCount: 1252,
   },
   {
     slug: "what-an-optic-tells-the-switch",
@@ -934,7 +934,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","networking","cybersecurity"],
     excerpt: "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
     coverImage: "/images/blog/post-quantum-tls-handshake-bytes.jpg",
-    wordCount: 1091,
+    wordCount: 1089,
   },
   {
     slug: "service-worker-served-a-stale-document",
@@ -1283,7 +1283,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Machine learning on network telemetry is a reasonable idea with a brutal math problem underneath it. Here is the arithmetic I would run before believing any of it.",
     coverImage: "/images/blog/ml-network-anomaly-detection.jpg",
     coverCredit: {"author":"Nicola since 1972","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/15216811@N06/8521338394"},
-    wordCount: 1214,
+    wordCount: 1199,
   },
   {
     slug: "tcp-congestion-control-basics",
@@ -1426,7 +1426,7 @@ export const postIndex: PostMeta[] = [
     tags: ["ai","ml","operations"],
     excerpt: "Prefill and decode have completely different cost shapes. Here is how I build a per request cost model from numbers I can measure myself.",
     coverImage: "/images/blog/inference-cost-per-request.jpg",
-    wordCount: 985,
+    wordCount: 962,
   },
   {
     slug: "nvme-over-fabrics-explained",
@@ -1741,7 +1741,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","monitoring","hardware"],
     excerpt: "SMART will not reliably tell you a drive is about to die, but a few specific attributes are worth acting on immediately. Here is which ones and why.",
     coverImage: "/images/blog/smart-data-drive-failure.jpg",
-    wordCount: 995,
+    wordCount: 992,
   },
   {
     slug: "live-migration-internals",
@@ -1942,7 +1942,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
     coverImage: "/images/blog/proxmox-vs-esxi.jpg",
     coverCredit: {"author":"Proxmox Server Solutions GmbH","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Proxmox-VE-8-0-Cluster-Summary.png"},
-    wordCount: 2737,
+    wordCount: 2718,
   },
   {
     slug: "ecc-ram-explained",
@@ -1994,7 +1994,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","homelab","fortinet"],
     excerpt: "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
     coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
-    wordCount: 1559,
+    wordCount: 1554,
   },
   {
     slug: "server-cpu-selection-guide",
@@ -2015,7 +2015,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The principles behind datacenter cooling and how I apply hot/cold aisle concepts even in a homelab environment.",
     coverImage: "/images/blog/hot-cold-aisle-containment.jpg",
     coverCredit: {"author":"Hugovanmeijeren","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cern_datacenter.jpg"},
-    wordCount: 1692,
+    wordCount: 1674,
   },
   {
     slug: "pdu-selection-guide",
@@ -2214,7 +2214,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I planned and organized my server rack, from choosing the right size to power distribution and cooling.",
     coverImage: "/images/blog/server-rack-planning.jpg",
     coverCredit: {"author":"Derrick Coetzee from Berkeley, CA, USA","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_Power_Management_Module,_racks_with_network_cabling_in_NERSC_data_center.jpg"},
-    wordCount: 1629,
+    wordCount: 1615,
   },
   {
     slug: "stp-troubleshooting",
@@ -2769,7 +2769,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","dns"],
     excerpt: "DoH and DoT move the choice of resolver from the network to the application. That is what breaks split-horizon DNS, and here is what actually works on a network you run.",
     coverImage: "/images/blog/encrypted-dns-and-internal-name-resolution.jpg",
-    wordCount: 1260,
+    wordCount: 1254,
   },
   {
     slug: "how-totp-codes-actually-work",

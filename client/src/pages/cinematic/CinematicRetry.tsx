@@ -480,15 +480,6 @@ export function CinematicRetry() {
 
           <ReadAboutThis href="/retry" />
 
-          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            No case here carries an answer key. Each one says which quantity is being asked for,
-            the model computes it, and the correct option is whichever one's value matches. CI
-            requires exactly one to match, which catches a case whose prose and arithmetic have
-            drifted and also catches two options that are accidentally the same answer written
-            twice. That second one happened while these were being written, and it is the kind of
-            thing that survives review forever: reading four plausible options does not tell you
-            that two of them evaluate to the same number.
-          </p>
           <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The fix, in every case except the last, is one budget divided downwards rather than
             four timeouts chosen upwards, and retrying in exactly one place: the layer that knows

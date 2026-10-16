@@ -220,7 +220,7 @@ export function CinematicBlog() {
               <ClipReveal delay={0.4} direction="up">
                 <p className="mt-6 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base">
                   Long-form notes on networking, cybersecurity, infrastructure, and the
-                  nonsense I debug along the way. Unedited. No AI ghostwriting.
+                  nonsense I debug along the way.
                 </p>
               </ClipReveal>
             </div>

@@ -310,8 +310,7 @@ export function CinematicCache() {
               </div>
             ) : (
               <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-                The keys the cache computed are drawn once you have committed to an answer, because
-                the keys are the answer. Everything you need is in the headers above:{" "}
+                The keys the cache computed are drawn once you have committed to an answer. Everything you need is in the headers above:{" "}
                 {varyOn(active.exchanges[0].response).length > 0
                   ? `this response names ${varyOn(active.exchanges[0].response).join(" and ")} in Vary.`
                   : "this response names nothing in Vary."}

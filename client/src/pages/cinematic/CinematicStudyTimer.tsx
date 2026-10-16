@@ -727,8 +727,7 @@ export function CinematicStudyTimer() {
                     Chime
                   </div>
                   <p className="mt-1 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                    A short tone when a phase ends. Off by default, because a
-                    page that makes noise on its own is a page nobody trusts.
+                    A short tone when a phase ends. Off by default.
                   </p>
                 </div>
                 <button
