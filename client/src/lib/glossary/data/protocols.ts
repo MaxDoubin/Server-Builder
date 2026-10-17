@@ -268,4 +268,14 @@ export const PROTOCOLS: Term[] = [
       "The request and response protocol the web runs on. Version 2 multiplexes streams over one connection; version 3 moves that onto QUIC.",
     see: ["QUIC", "TLS"],
   },
+  {
+    term: "SSL",
+    expansion: "Secure Sockets Layer",
+    field: "security",
+    definition:
+      "The original name for the protocol that became TLS. Every SSL version proper is deprecated and disabled in current software, but the name stuck, so a certificate, a port labelled SSL or an \"SSL error\" today almost always means TLS underneath.",
+    confusion:
+      "Turning on \"SSL\" in a config is not weaker than turning on TLS; it is the same handshake under an older label. What matters is which protocol versions are allowed, and every SSL version has been broken for years.",
+    see: ["TLS", "certificate"],
+  },
 ];

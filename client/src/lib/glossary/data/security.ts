@@ -210,4 +210,14 @@ export const SECURITY: Term[] = [
       "A VPN protects traffic in transit; it does not make the far end trustworthy. Remote access through one puts the connecting device inside your network, so the firewall policy behind the tunnel matters as much as the encryption.",
     see: ["TLS", "NAT"],
   },
+  {
+    term: "AD",
+    expansion: "Active Directory",
+    field: "security",
+    definition:
+      "Microsoft's directory service: the central store of user accounts, groups and machine identities a Windows network authenticates against, usually over Kerberos or LDAP. Joining a server to it gives one login and one set of policies across the domain.",
+    confusion:
+      "A domain controller holding the directory is the keys to the whole network, not just another server. Compromise of one account with the right privileges is compromise of every machine that trusts the domain, which is why admin accounts are tiered.",
+    see: ["RADIUS", "NTLM"],
+  },
 ];
