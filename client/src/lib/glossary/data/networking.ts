@@ -235,7 +235,7 @@ export const NETWORKING: Term[] = [
     expansion: "Open Shortest Path First",
     field: "protocols",
     definition:
-      "An interior routing protocol that builds a map of a single network and computes the shortest path across it, so the routers inside one organisation agree on where to send traffic. It reacts to a link going down in seconds rather than minutes.",
+      "An interior routing protocol that builds a map of a single network and computes the shortest path across it, so the routers inside one organization agree on where to send traffic. It reacts to a link going down in seconds rather than minutes.",
     confusion:
       "It routes within one network, where BGP routes between them. Reaching for BGP inside a small site, or for OSPF between two separate companies, is using the wrong half of the pair.",
     see: ["BGP"],

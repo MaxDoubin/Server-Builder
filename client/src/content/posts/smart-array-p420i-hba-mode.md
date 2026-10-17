@@ -28,7 +28,9 @@ Start by clearing the array. HPE's guide warns that entering HBA mode "will disa
 Install the tool. HPE's guide uses the name ssacli, and the Unraid post uses hpssacli. The alfter.us post, whose RAID-disabling step uses a Debian live install image, adds HPE's package repository, imports HPE's signing keys, and installs the tool with apt:
 
 ```bash
-echo "deb http://downloads.linux.hpe.com/SDR/repo/mcp jammy/current non-free" > /etc/apt/sources.list.d/hp-mcp.list
+curl -fsSL https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub \
+  | gpg --dearmor | tee /usr/share/keyrings/hpePublicKey.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/hpePublicKey.gpg] http://downloads.linux.hpe.com/SDR/repo/mcp jammy/current non-free" > /etc/apt/sources.list.d/hp-mcp.list
 apt update && apt install -y ssacli
 ```
 

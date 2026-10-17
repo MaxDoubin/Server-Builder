@@ -137,7 +137,7 @@ export const postIndex: PostMeta[] = [
     tags: ["mac-pro","apple","hardware"],
     excerpt: "Apple's limit is 32GB on a single-processor tray and 64GB on a dual tray. Here is what owners run past it, with the module, speed and macOS rules.",
     coverImage: "/images/blog/mac-pro-5-1-max-ram.jpg",
-    wordCount: 1572,
+    wordCount: 1608,
   },
   {
     slug: "mac-pro-7-1-cpu-upgrade",
@@ -200,7 +200,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","servers","hardware","homelab"],
     excerpt: "Enable HBA mode on a Smart Array P420i with ssacli, the firmware owners report, why boot fails from those disks, and what ZFS needs.",
     coverImage: "/images/blog/smart-array-p420i-hba-mode.jpg",
-    wordCount: 1886,
+    wordCount: 1899,
   },
   {
     slug: "supermicro-x10-vs-x11",
