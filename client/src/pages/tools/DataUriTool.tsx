@@ -35,6 +35,8 @@ interface DataUriParts {
   params: [string, string][];
   base64: boolean;
   payload: string;
+  /** False when the string has no comma, so there is no payload to decode. */
+  valid: boolean;
 }
 
 interface Layer {
@@ -235,6 +237,12 @@ function isBinary(b: Uint8Array): boolean {
 
 function parseDataUri(raw: string): DataUriParts {
   const comma = raw.indexOf(",");
+  if (comma < 0) {
+    // No comma means no header/payload boundary. Without this guard the slices
+    // below treat a truncated header and the whole string as an unencoded
+    // payload, so the tool reports bytes and a MIME type for an invalid URI.
+    return { mime: "", declared: false, params: [], base64: false, payload: "", valid: false };
+  }
   const head = raw.slice(5, comma);
   const pieces = head.split(";");
   const first = (pieces[0] ?? "").trim().toLowerCase();
@@ -250,10 +258,13 @@ function parseDataUri(raw: string): DataUriParts {
     params.push(eq < 0 ? [p, ""] : [p.slice(0, eq), p.slice(eq + 1)]);
   }
   const mime = declared ? first : "text/plain";
-  return { mime, declared, params, base64, payload: raw.slice(comma + 1) };
+  return { mime, declared, params, base64, payload: raw.slice(comma + 1), valid: true };
 }
 
 function layerBytes(parts: DataUriParts): { bytes: Uint8Array | null; error: string; notes: string[] } {
+  if (!parts.valid) {
+    return { bytes: null, error: "Not a data URI: no comma separating the header from the payload.", notes: [] };
+  }
   if (parts.base64) return base64Lenient(parts.payload);
   return { bytes: percentToBytes(parts.payload), error: "", notes: [] };
 }

@@ -15,13 +15,15 @@
 
 import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
 import * as exifr from "exifr";
-import { unzlibSync } from "fflate";
+import { Unzlib } from "fflate";
 import { ToolShell, ToolPanel } from "./ToolShell";
 
 type Bytes = Uint8Array;
 type Channel = "R" | "G" | "B" | "RGB";
 
 const MAX_BYTES = 25 * 1024 * 1024;
+/** Output cap for a compressed PNG text chunk, so a zTXt/iTXt bomb cannot exhaust the tab. */
+const MAX_TEXT_BYTES = 16 * 1024 * 1024;
 const LSB_MAX_PIXELS = 25000000;
 const STRING_MIN = 4;
 const STRING_CAP = 5000;
@@ -376,6 +378,41 @@ function crc32(data: Bytes): number {
   return (c ^ 0xffffffff) >>> 0;
 }
 
+/**
+ * Inflate a zlib stream, stopping once the output would exceed `cap` bytes.
+ *
+ * unzlibSync expands the whole stream before any size can be checked, so a
+ * compressed PNG text chunk (zTXt or iTXt) crafted as a decompression bomb
+ * can exhaust the tab even though the file itself is within the size limit.
+ * The streaming Unzlib emits output in blocks, so throwing from its handler
+ * once the running total crosses the cap bounds the work to roughly the cap.
+ */
+function unzlibCapped(data: Bytes, cap: number): Bytes {
+  const parts: Bytes[] = [];
+  let total = 0;
+  const inflater = new Unzlib((chunk) => {
+    total += chunk.length;
+    if (total > cap) throw new RangeError("decompressed output exceeds the cap");
+    parts.push(chunk);
+  });
+  // Feed the stream in small slices. Pushing the whole buffer at once makes
+  // Unzlib inflate it all and emit the full expansion in a single handler
+  // call, so the cap check would fire only after a bomb had already been
+  // allocated. A 4 KB slice expands by at most the DEFLATE maximum ratio
+  // before the handler can abort, which bounds peak memory to roughly the cap.
+  const step = 4096;
+  for (let start = 0; start < data.length; start += step) {
+    inflater.push(data.subarray(start, Math.min(start + step, data.length)), start + step >= data.length);
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
 function readPngText(type: string, data: Bytes): string | null {
   try {
     if (type === "tEXt") {
@@ -387,7 +424,7 @@ function readPngText(type: string, data: Bytes): string | null {
       const sep = data.indexOf(0);
       if (sep < 0 || sep + 2 > data.length) return null;
       const key = latin1(data.subarray(0, sep));
-      return `${key}: ${latin1(unzlibSync(data.subarray(sep + 2)))}`;
+      return `${key}: ${latin1(unzlibCapped(data.subarray(sep + 2), MAX_TEXT_BYTES))}`;
     }
     if (type === "iTXt") {
       const sep = data.indexOf(0);
@@ -400,7 +437,7 @@ function readPngText(type: string, data: Bytes): string | null {
       if (transEnd < 0) return null;
       const body = data.subarray(transEnd + 1);
       const decoder = new TextDecoder();
-      const text = compressed ? decoder.decode(unzlibSync(body)) : decoder.decode(body);
+      const text = compressed ? decoder.decode(unzlibCapped(body, MAX_TEXT_BYTES)) : decoder.decode(body);
       return `${key}: ${text}`;
     }
     return null;
