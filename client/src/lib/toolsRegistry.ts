@@ -213,6 +213,126 @@ export const TOOLS: ToolEntry[] = [
     category: "infrastructure",
     keywords: ["power", "cooling", "pue", "btu", "crah", "capacity", "datacenter", "rack", "kw", "tons", "budget"],
   },
+  {
+    slug: "data-uri-tool",
+    name: "Data URI tool",
+    blurb:
+      "Encodes files or text as data: URIs in every form, and decodes pasted or scanned data URIs with nested layers, MIME sniffing and previews. Runs in the browser.",
+    category: "encoding",
+    keywords: ["data uri", "data url", "base64", "percent encoding", "rfc 2397", "mime", "magic bytes", "nested", "ctf", "encoding"],
+  },
+  {
+    slug: "file-identifier",
+    name: "File identifier",
+    blurb:
+      "Identifies a file from 92 magic-byte signatures, flags extension mismatches, reads header fields and carves embedded formats, all in the browser.",
+    category: "security",
+    keywords: ["file", "magic bytes", "file signature", "carving", "forensics", "ctf", "binwalk", "file type", "hex dump", "extension mismatch"],
+  },
+  {
+    slug: "frequency-analysis",
+    name: "Frequency analysis",
+    blurb:
+      "Substitution solver aid: letter, bigram and trigram counts, index of coincidence, word patterns and a live decode from a letter mapping. Runs in the browser.",
+    category: "security",
+    keywords: ["frequency analysis", "substitution", "monoalphabetic", "index of coincidence", "bigram", "trigram", "word pattern", "ctf"],
+  },
+  {
+    slug: "hex-viewer",
+    name: "Hex viewer",
+    blurb:
+      "Hex dump of any file or pasted text, hex or base64, with offset in hex and decimal, an ASCII gutter and pattern search. Runs in your browser.",
+    category: "systems",
+    keywords: ["hex dump", "hexdump", "xxd", "hex editor", "magic bytes", "offset", "ctf", "binary", "entropy", "file type"],
+  },
+  {
+    slug: "image-analyzer",
+    name: "Image analyzer",
+    blurb:
+      "Image forensics on one page: EXIF, IPTC, XMP, GPS, magic-byte format check, data past the end marker, strings, hex header and LSB planes. Runs in your browser.",
+    category: "security",
+    keywords: ["exif", "stego", "ctf", "forensics", "metadata", "gps", "lsb", "bit planes", "magic bytes", "steganography"],
+  },
+  {
+    slug: "magic-decoder",
+    name: "Magic decoder",
+    blurb:
+      "Peels an encoded blob one layer at a time, scoring Base64, hex, Base32, ROT13, gzip, zlib and more by printable share and English. Runs in the browser.",
+    category: "security",
+    keywords: ["ctf", "cyberchef", "magic", "base64", "base32", "base58", "hex", "rot13", "rot47", "gzip", "zlib", "zip", "xor", "caesar", "decoder", "forensics"],
+  },
+  {
+    slug: "qr-reader",
+    name: "QR reader",
+    blurb:
+      "Decodes QR codes from uploaded or pasted images with jsQR, classifies payloads (URL, Wi-Fi, vCard, OTP secret), and generates short codes. Runs in the browser.",
+    category: "security",
+    keywords: ["qr", "qr code", "zbar", "jsqr", "barcode", "wifi", "vcard", "otpauth", "steganography", "ctf"],
+  },
+  {
+    slug: "rsa-tool",
+    name: "RSA toy tool",
+    blurb:
+      "Toy RSA for small CTF numbers: factor n by trial division or Fermat, derive d and CRT values, and encrypt or decrypt with every step shown. Browser only.",
+    category: "security",
+    keywords: ["rsa", "modular arithmetic", "factoring", "fermat", "trial division", "extended euclid", "ctf", "bigint"],
+  },
+  {
+    slug: "strings-extractor",
+    name: "Strings extractor",
+    blurb:
+      "Extracts printable ASCII and UTF-16LE strings with byte offsets, a length slider and regex filter, and tags URLs, emails, flags and Base64, in the browser.",
+    category: "security",
+    keywords: ["strings", "ascii", "utf-16", "utf16le", "binary", "ctf", "forensics", "regex", "flag", "base64"],
+  },
+  {
+    slug: "transform-pipeline",
+    name: "Transform pipeline",
+    blurb:
+      "Chain encoders, decoders, ciphers, compression and hashes in any order. Each step shows its output and everything runs in your browser.",
+    category: "encoding",
+    keywords: ["cyberchef", "base64", "base32", "hex", "binary", "rot13", "rot47", "xor", "gzip", "zlib", "sha256", "morse", "ctf", "decode", "encode", "pipeline"],
+  },
+  {
+    slug: "unicode-inspector",
+    name: "Unicode inspector",
+    blurb:
+      "Lists each code point with its category, script, UTF-8 and UTF-16 bytes, and flags zero-width, bidi, tag, lookalike and non-NFC characters. Runs in the browser.",
+    category: "encoding",
+    keywords: ["unicode", "homoglyph", "zero-width", "bidi", "trojan source", "utf-8", "utf-16", "nfc", "nfkc", "tag characters", "osint", "phishing"],
+  },
+  {
+    slug: "url-analyzer",
+    name: "URL analyzer",
+    blurb:
+      "Splits a URL as typed and as browsers parse it, decodes percent-encoding layer by layer, reads punycode hosts, and rebuilds it from edits. Runs in the browser.",
+    category: "networking",
+    keywords: ["url", "uri", "punycode", "idn", "homograph", "percent-encoding", "double-encoding", "open-redirect", "ctf", "web"],
+  },
+  {
+    slug: "vigenere-solver",
+    name: "Vigenere solver",
+    blurb:
+      "Vigenere encrypt and decrypt with a known key, plus a breaker: index of coincidence, Kasiski spacing and per-column chi-squared fit. Runs in the browser.",
+    category: "security",
+    keywords: ["vigenere", "polyalphabetic", "kasiski", "index of coincidence", "chi-squared", "key length", "ctf", "cryptanalysis"],
+  },
+  {
+    slug: "xor-tool",
+    name: "XOR tool",
+    blurb:
+      "XOR hex or text against a key, score all 256 single-byte keys, and recover a repeating key from a known-plaintext crib. Runs in your browser.",
+    category: "security",
+    keywords: ["xor", "single byte", "brute force", "crib", "known plaintext", "repeating key", "ctf", "crypto", "hex", "cryptanalysis"],
+  },
+  {
+    slug: "zip-inspector",
+    name: "Zip inspector",
+    blurb:
+      "Lists every zip entry from the central directory, flags zip slip and header mismatches, reads comments, and handles gzip and zlib. Runs in the browser.",
+    category: "security",
+    keywords: ["zip", "zip slip", "unzip", "zipinfo", "gzip", "zlib", "archive", "central directory", "ctf", "comment"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

@@ -231,8 +231,14 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 730 KB, raised from 729 by /malloctrim at 728.2. A sixth, at the same
  * price, which is now the rate rather than a run of coincidences.
+ *
+ * 740 KB, raised from 730 by the fifteen-tool CTF and forensics batch at
+ * 735.2. Ten kilobytes for fifteen routes, well under the nine tenths a
+ * surface each: the tools themselves are lazy chunks, so the entry carries
+ * only their route, lazy import and hover-prefetch glue, which is the floor
+ * for a routed page rather than anything that ought to have been lazy.
  */
-const BUDGET_BYTES = 730 * 1024;
+const BUDGET_BYTES = 740 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

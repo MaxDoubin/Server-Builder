@@ -44,6 +44,10 @@ const REACHED_ANOTHER_WAY = new Map([
     "client/src/lib/crypto-shim.ts",
     'the target of vite.config.ts\'s "crypto" alias, so nothing names it by path',
   ],
+  [
+    "client/src/types/spark-md5.d.ts",
+    "an ambient `declare module` for the untyped spark-md5 package, picked up by the compiler globally rather than imported by path",
+  ],
 ]);
 
 const walk = (dir) =>

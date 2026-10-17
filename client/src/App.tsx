@@ -551,6 +551,51 @@ const PasswordEntropy = lazyWithRetry(() =>
 const TimestampConverter = lazyWithRetry(() =>
   import("@/pages/tools/TimestampConverter").then((m) => ({ default: m.TimestampConverter })),
 );
+const DataUriTool = lazyWithRetry(() =>
+  import("@/pages/tools/DataUriTool").then((m) => ({ default: m.DataUriTool })),
+);
+const FileIdentifier = lazyWithRetry(() =>
+  import("@/pages/tools/FileIdentifier").then((m) => ({ default: m.FileIdentifier })),
+);
+const FrequencyAnalysis = lazyWithRetry(() =>
+  import("@/pages/tools/FrequencyAnalysis").then((m) => ({ default: m.FrequencyAnalysis })),
+);
+const HexViewer = lazyWithRetry(() =>
+  import("@/pages/tools/HexViewer").then((m) => ({ default: m.HexViewer })),
+);
+const ImageAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/ImageAnalyzer").then((m) => ({ default: m.ImageAnalyzer })),
+);
+const MagicDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/MagicDecoder").then((m) => ({ default: m.MagicDecoder })),
+);
+const QrReader = lazyWithRetry(() =>
+  import("@/pages/tools/QrReader").then((m) => ({ default: m.QrReader })),
+);
+const RsaTool = lazyWithRetry(() =>
+  import("@/pages/tools/RsaTool").then((m) => ({ default: m.RsaTool })),
+);
+const StringsExtractor = lazyWithRetry(() =>
+  import("@/pages/tools/StringsExtractor").then((m) => ({ default: m.StringsExtractor })),
+);
+const TransformPipeline = lazyWithRetry(() =>
+  import("@/pages/tools/TransformPipeline").then((m) => ({ default: m.TransformPipeline })),
+);
+const UnicodeInspector = lazyWithRetry(() =>
+  import("@/pages/tools/UnicodeInspector").then((m) => ({ default: m.UnicodeInspector })),
+);
+const UrlAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/UrlAnalyzer").then((m) => ({ default: m.UrlAnalyzer })),
+);
+const VigenereSolver = lazyWithRetry(() =>
+  import("@/pages/tools/VigenereSolver").then((m) => ({ default: m.VigenereSolver })),
+);
+const XorTool = lazyWithRetry(() =>
+  import("@/pages/tools/XorTool").then((m) => ({ default: m.XorTool })),
+);
+const ZipInspector = lazyWithRetry(() =>
+  import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
+);
 const CinematicTools = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTools").then((m) => ({ default: m.CinematicTools })),
 );
@@ -1524,6 +1569,81 @@ function AnimatedRoutes() {
           <Route path="/tools/timestamp-converter">
             <Suspense fallback={<RouteLoading />}>
               <TimestampConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/data-uri-tool">
+            <Suspense fallback={<RouteLoading />}>
+              <DataUriTool />
+            </Suspense>
+          </Route>
+          <Route path="/tools/file-identifier">
+            <Suspense fallback={<RouteLoading />}>
+              <FileIdentifier />
+            </Suspense>
+          </Route>
+          <Route path="/tools/frequency-analysis">
+            <Suspense fallback={<RouteLoading />}>
+              <FrequencyAnalysis />
+            </Suspense>
+          </Route>
+          <Route path="/tools/hex-viewer">
+            <Suspense fallback={<RouteLoading />}>
+              <HexViewer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/image-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <ImageAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/magic-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <MagicDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/qr-reader">
+            <Suspense fallback={<RouteLoading />}>
+              <QrReader />
+            </Suspense>
+          </Route>
+          <Route path="/tools/rsa-tool">
+            <Suspense fallback={<RouteLoading />}>
+              <RsaTool />
+            </Suspense>
+          </Route>
+          <Route path="/tools/strings-extractor">
+            <Suspense fallback={<RouteLoading />}>
+              <StringsExtractor />
+            </Suspense>
+          </Route>
+          <Route path="/tools/transform-pipeline">
+            <Suspense fallback={<RouteLoading />}>
+              <TransformPipeline />
+            </Suspense>
+          </Route>
+          <Route path="/tools/unicode-inspector">
+            <Suspense fallback={<RouteLoading />}>
+              <UnicodeInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/url-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <UrlAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/vigenere-solver">
+            <Suspense fallback={<RouteLoading />}>
+              <VigenereSolver />
+            </Suspense>
+          </Route>
+          <Route path="/tools/xor-tool">
+            <Suspense fallback={<RouteLoading />}>
+              <XorTool />
+            </Suspense>
+          </Route>
+          <Route path="/tools/zip-inspector">
+            <Suspense fallback={<RouteLoading />}>
+              <ZipInspector />
             </Suspense>
           </Route>
           <Route path="/data">
