@@ -366,4 +366,24 @@ export const SYSTEMS: Term[] = [
       "It talks to the iDRAC, not the host operating system, so a setting changed with racadm can need a reboot of the server to take effect.",
     see: ["IPMI"],
   },
+  {
+    term: "PSU",
+    expansion: "power supply unit",
+    field: "hardware",
+    definition:
+      "The module that converts wall AC into the DC rails a server's board and drives run on. Servers often carry two, so one supply failing or one feed dropping does not take the machine down.",
+    confusion:
+      "Two supplies are only redundancy if each is on a separate feed; both plugged into one PDU or circuit share a single point of failure. A supply's wattage is its ceiling, not the power the machine actually draws.",
+    see: ["PDU", "UPS"],
+  },
+  {
+    term: "LGA",
+    expansion: "Land Grid Array",
+    field: "hardware",
+    definition:
+      "The socket design where the pins live on the motherboard and the processor presents flat contact pads, so a bent pin is a board problem rather than a dead chip. The number after it, such as LGA 3647, counts the contacts and fixes which processors fit.",
+    confusion:
+      "The socket number is not a performance tier; it only says what physically seats. A board and a processor can share an LGA number and still be incompatible over chipset, firmware or power, so the supported-CPU list is what decides.",
+    see: ["CPU", "DIMM"],
+  },
 ];

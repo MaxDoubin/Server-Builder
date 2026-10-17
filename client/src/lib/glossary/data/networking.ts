@@ -230,4 +230,14 @@ export const NETWORKING: Term[] = [
       "It only proves the origin is authorized, not that the path is real. An announcement can be RPKI-valid and still be a hijack if the attacker prepends the legitimate origin, so validation raises the cost of a hijack rather than ending it.",
     see: ["BGP", "prefix", "certificate"],
   },
+  {
+    term: "OSPF",
+    expansion: "Open Shortest Path First",
+    field: "protocols",
+    definition:
+      "An interior routing protocol that builds a map of a single network and computes the shortest path across it, so the routers inside one organization agree on where to send traffic. It reacts to a link going down in seconds rather than minutes.",
+    confusion:
+      "It routes within one network, where BGP routes between them. Reaching for BGP inside a small site, or for OSPF between two separate companies, is using the wrong half of the pair.",
+    see: ["BGP"],
+  },
 ];

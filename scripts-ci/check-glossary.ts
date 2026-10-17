@@ -189,6 +189,15 @@ const NOT_JARGON: Record<string, string> = {
   E5: "part of Intel's Xeon E5 processor family name",
   H330: "a Dell PERC controller model name, like the H730",
   LSI: "a company name, now part of Broadcom",
+  HPE: "a company name (Hewlett Packard Enterprise), like NVIDIA and AMD",
+  RX: "part of AMD's Radeon RX GPU model names (RX 580, RX 6900 XT), not a term",
+  R540: "a Dell PowerEdge server model name, like the R730 and R740",
+  II: "part of the Radeon Pro Vega II product name, a Roman numeral, not an acronym",
+  H730P: "a Dell PERC controller model name, covered by the PERC entry",
+  H755: "a Dell PERC controller model name, covered by the PERC entry",
+  FG: "shorthand for FortiGate in CLI output and model names, not a term",
+  CN: "the Common Name field of an X.509 certificate, covered by the certificate entry",
+  ROM: "Read-Only Memory; appears as DVD-ROM, firmware ROM and Boot ROM, each named in context",
 };
 
 const THRESHOLD = 25;

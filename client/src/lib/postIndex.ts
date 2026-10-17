@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 287 of them. Regenerate with script/generatePostIndex.ts.
+ * 307 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,186 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "dell-hba330-vs-h330",
+    title: "Dell HBA330 vs H330: Pass-Through, Queue Depth and ZFS",
+    date: "2026-10-17",
+    tags: ["dell","storage","servers","homelab"],
+    excerpt: "Which card to buy for ZFS or TrueNAS: the H330 has RAID and no cache, the HBA330 is non-RAID. Dell's queue depths, PowerEdge fit and crossflash risks.",
+    coverImage: "/images/blog/dell-hba330-vs-h330.jpg",
+    wordCount: 1640,
+  },
+  {
+    slug: "do-you-need-a-sas-expander-homelab",
+    title: "Do You Need a SAS Expander in a Homelab: Ports and Bandwidth",
+    date: "2026-10-17",
+    tags: ["storage","homelab","hardware"],
+    excerpt: "An HBA connects drives directly, while an expander adds drive ports and shares one SAS link. Here is the bandwidth math and when a homelab needs one.",
+    coverImage: "/images/blog/do-you-need-a-sas-expander-homelab.jpg",
+    wordCount: 1603,
+  },
+  {
+    slug: "fortios-7-6-vs-7-4",
+    title: "FortiOS 7.6 vs 7.4: SSL VPN, Support Dates and When to Upgrade",
+    date: "2026-10-17",
+    tags: ["fortinet","firewall","networking","homelab"],
+    excerpt: "Which small FortiGates lose SSL VPN on 7.6, which stay on 7.4, how long each branch is supported, and the build Fortinet recommends for the 40F, 60F, 70G and 90G.",
+    coverImage: "/images/blog/fortios-7-6-vs-7-4.jpg",
+    wordCount: 2360,
+  },
+  {
+    slug: "fortiwifi-40f-vs-fortigate-40f",
+    title: "FortiWiFi 40F vs FortiGate 40F: What the Built-In Wi-Fi Changes",
+    date: "2026-10-17",
+    tags: ["fortinet","firewall","hardware","homelab"],
+    excerpt: "The FortiWiFi 40F is the FortiGate 40F with one radio, a higher power draw and the same ports, processor and rated throughput. Here is what to check before you buy.",
+    coverImage: "/images/blog/fortiwifi-40f-vs-fortigate-40f.jpg",
+    wordCount: 1654,
+  },
+  {
+    slug: "idrac-10-vs-idrac-9",
+    title: "iDRAC 10 vs iDRAC 9: Licensing, Removed Features and Defaults",
+    date: "2026-10-17",
+    tags: ["dell","servers","operations","homelab"],
+    excerpt: "iDRAC10 on 17th generation PowerEdge cuts four license tiers to three, removes WSMan and Group Manager, and defaults to TLS 1.3 with SNMP off. Here is what changes for licenses and tools.",
+    coverImage: "/images/blog/idrac-10-vs-idrac-9.jpg",
+    wordCount: 2126,
+  },
+  {
+    slug: "idrac-6-express-vs-enterprise",
+    title: "iDRAC 6 Express vs Enterprise: Which Gets the Virtual Console",
+    date: "2026-10-17",
+    tags: ["dell","servers","hardware","homelab"],
+    excerpt: "Express has no remote console. Enterprise adds the virtual console, virtual media and a dedicated port. Here is how to test which tier your iDRAC6 has, and what breaks.",
+    coverImage: "/images/blog/idrac-6-express-vs-enterprise.jpg",
+    wordCount: 1586,
+  },
+  {
+    slug: "ilo-6-vs-ilo-7",
+    title: "iLO 6 vs iLO 7: Gen11 vs Gen12, Security and Licensing",
+    date: "2026-10-17",
+    tags: ["servers","hardware","security"],
+    excerpt: "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
+    coverImage: "/images/blog/ilo-6-vs-ilo-7.jpg",
+    wordCount: 1604,
+  },
+  {
+    slug: "lsi-9207-8i-vs-9211-8i",
+    title: "LSI 9207-8i vs 9211-8i: Which HBA to Buy for ZFS or TrueNAS",
+    date: "2026-10-17",
+    tags: ["storage","hardware","homelab"],
+    excerpt: "SAS2308 vs SAS2008, PCIe 3.0 vs 2.0 limits, what IT firmware changes, measured speeds, and which card to buy for a ZFS or TrueNAS pool.",
+    coverImage: "/images/blog/lsi-9207-8i-vs-9211-8i.jpg",
+    wordCount: 1603,
+  },
+  {
+    slug: "lsi-9300-8i-cooling",
+    title: "LSI 9300-8i Overheating: Airflow Limits, Symptoms and a Fan",
+    date: "2026-10-17",
+    tags: ["hardware","storage","troubleshooting","homelab"],
+    excerpt: "Why the LSI 9300-8i runs hot, the airflow Broadcom specifies, how overheating shows up in a quiet case, and how to add a fan without blocking the heat sink.",
+    coverImage: "/images/blog/lsi-9300-8i-cooling.jpg",
+    wordCount: 1875,
+  },
+  {
+    slug: "mac-pro-2019-gpu-upgrade",
+    title: "Mac Pro 2019 GPU Upgrade: MPX Modules vs Standard Radeon Cards",
+    date: "2026-10-17",
+    tags: ["mac-pro","hardware","apple","power"],
+    excerpt: "Every graphics MPX module Apple sold for the 2019 Mac Pro, the 300W and 305mm limits on standard cards, which GPUs macOS drives, and what to check before buying used.",
+    coverImage: "/images/blog/mac-pro-2019-gpu-upgrade.jpg",
+    wordCount: 2226,
+  },
+  {
+    slug: "mac-pro-5-1-max-ram",
+    title: "Mac Pro 5,1 Max RAM by Tray: Apple's Limit and What Owners Run",
+    date: "2026-10-17",
+    tags: ["mac-pro","apple","hardware"],
+    excerpt: "Apple's limit is 32GB on a single-processor tray and 64GB on a dual tray. Here is what owners run past it, with the module, speed and macOS rules.",
+    coverImage: "/images/blog/mac-pro-5-1-max-ram.jpg",
+    wordCount: 1608,
+  },
+  {
+    slug: "mac-pro-7-1-cpu-upgrade",
+    title: "Mac Pro 7,1 CPU Upgrade: Which Xeon W Chips Fit and Pay Off",
+    date: "2026-10-17",
+    tags: ["mac-pro","hardware","apple"],
+    excerpt: "Which Xeon W chips a 2019 Mac Pro 7,1 accepts, what the socket and fans allow, and whether a 16-, 24- or 28-core swap is worth it.",
+    coverImage: "/images/blog/mac-pro-7-1-cpu-upgrade.jpg",
+    wordCount: 1699,
+  },
+  {
+    slug: "netapp-ds4246-truenas",
+    title: "NetApp DS4246 on TrueNAS: Cabling, HBAs and 520-Byte Drives",
+    date: "2026-10-17",
+    tags: ["storage","hardware","homelab"],
+    excerpt: "Cable a NetApp DS4246 to TrueNAS with an LSI HBA, reformat its 520-byte drives to 512, and avoid the SMART and pool faults owners report on SCALE.",
+    coverImage: "/images/blog/netapp-ds4246-truenas.jpg",
+    wordCount: 1753,
+  },
+  {
+    slug: "perc-h755-hba-mode",
+    title: "PERC H755 HBA Mode: No Pure HBA, Only Per-Disk Non-RAID",
+    date: "2026-10-17",
+    tags: ["dell","storage","hardware","servers"],
+    excerpt: "Dell's documents show no HBA mode for the PERC H755. Here is what per-disk Non-RAID gives you, why some guides claim eHBA, and which card to buy instead.",
+    coverImage: "/images/blog/perc-h755-hba-mode.jpg",
+    wordCount: 1624,
+  },
+  {
+    slug: "poweredge-r540-vs-r740",
+    title: "PowerEdge R540 vs R740: Bays, Memory, PCIe and GPU Limits",
+    date: "2026-10-17",
+    tags: ["dell","servers","hardware","homelab"],
+    excerpt: "The R540 fits 14 3.5-inch drives, while the R740 takes 24 DIMMs and up to three double-wide GPUs. Here are the bay, slot and memory limits for each.",
+    coverImage: "/images/blog/poweredge-r540-vs-r740.jpg",
+    wordCount: 1713,
+  },
+  {
+    slug: "proliant-dl360p-gen8-fan-noise",
+    title: "ProLiant DL360p Gen8 Fan Noise: Causes, Checks and Fixes",
+    date: "2026-10-17",
+    tags: ["servers","troubleshooting","homelab","hardware"],
+    excerpt: "Why a DL360p Gen8 runs loud fans at idle: unreadable drives, PCIe cards, firmware bugs and missing fan blanks, plus how to read iLO 4 and which fixes to try.",
+    coverImage: "/images/blog/proliant-dl360p-gen8-fan-noise.jpg",
+    wordCount: 2186,
+  },
+  {
+    slug: "replace-idrac-ssl-certificate",
+    title: "Replace an iDRAC SSL Certificate: CSR, Upload and Reset",
+    date: "2026-10-17",
+    tags: ["dell","security","servers"],
+    excerpt: "Generate a CSR with the iDRAC name in the CN and SAN, upload the key and certificate with racadm, and avoid the firmware changes that revert them.",
+    coverImage: "/images/blog/replace-idrac-ssl-certificate.jpg",
+    wordCount: 1644,
+  },
+  {
+    slug: "smart-array-p420i-hba-mode",
+    title: "Smart Array P420i HBA Mode: Firmware, ssacli, Boot and ZFS",
+    date: "2026-10-17",
+    tags: ["storage","servers","hardware","homelab"],
+    excerpt: "Enable HBA mode on a Smart Array P420i with ssacli, the firmware owners report, why boot fails from those disks, and what ZFS needs.",
+    coverImage: "/images/blog/smart-array-p420i-hba-mode.jpg",
+    wordCount: 1899,
+  },
+  {
+    slug: "supermicro-x10-vs-x11",
+    title: "Supermicro X10 vs X11: Sockets, Memory, NVMe Boot and IPMI",
+    date: "2026-10-17",
+    tags: ["servers","hardware","homelab"],
+    excerpt: "X10 and X11 each cover at least two sockets. Compare CPU socket, memory ceiling, NVMe boot and IPMI before you buy a used Supermicro server board.",
+    coverImage: "/images/blog/supermicro-x10-vs-x11.jpg",
+    wordCount: 1826,
+  },
+  {
+    slug: "used-catalyst-9300-for-a-lab",
+    title: "Used Cisco Catalyst 9300 for a Lab: Licenses, Stacking and PoE",
+    date: "2026-10-17",
+    tags: ["switching","cisco","hardware","homelab"],
+    excerpt: "Buying a used Cisco Catalyst 9300 for a lab? Check the license suffix, the Smart Account, the stack cables, the power supplies and the enable password first.",
+    coverImage: "/images/blog/used-catalyst-9300-for-a-lab.jpg",
+    wordCount: 1876,
+  },
   {
     slug: "idrac-fan-speed-offset",
     title: "iDRAC Fan Speed Offset: Every Thermal Setting on iDRAC9 Explained",
@@ -2819,10 +2999,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 287;
+export const POST_COUNT = 307;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty seven";
+export const POST_COUNT_SPELLED = "three hundred and seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2831,10 +3011,10 @@ export const POST_COUNT_SPELLED = "two hundred and eighty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2052;
+export const CITATION_COUNT = 2307;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 160;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2196;
+export const CHECKED_URL_COUNT = 2451;
