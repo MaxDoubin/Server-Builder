@@ -13,7 +13,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { gunzipSync, unzipSync, unzlibSync } from "fflate";
+import { gunzipSync, unzipSync, Unzlib } from "fflate";
 import { ToolShell, ToolPanel } from "./ToolShell";
 
 type Kind = "text" | "encoding" | "file" | "binary";
@@ -307,6 +307,35 @@ function decodeRot47(s: string): Out {
 
 /* ---------- Byte decoders ---------- */
 
+/**
+ * Inflate a zlib stream, stopping once the output would exceed `cap` bytes.
+ *
+ * unzlibSync expands the whole stream before any size can be checked, so a
+ * small but highly compressible input (a decompression bomb) can exhaust the
+ * tab. A zlib stream carries no uncompressed-size header to check first, the
+ * way gzip's ISIZE lets decodeGzip bail early. The streaming Unzlib emits
+ * output in blocks, so throwing from its handler once the running total
+ * crosses the cap bounds the work to roughly the cap rather than the full
+ * expansion.
+ */
+function unzlibCapped(data: Uint8Array, cap: number): Uint8Array {
+  const parts: Uint8Array[] = [];
+  let total = 0;
+  const inflater = new Unzlib((chunk) => {
+    total += chunk.length;
+    if (total > cap) throw new RangeError("decompressed output exceeds the cap");
+    parts.push(chunk);
+  });
+  inflater.push(data, true);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
 function decodeGzip(b: Uint8Array): Out {
   if (b.length < 18 || !startsWith(b, [0x1f, 0x8b])) return null;
   const n = b.length;
@@ -326,7 +355,12 @@ function decodeZlib(b: Uint8Array): Out {
   const cmf = b[0] ?? 0;
   const flg = b[1] ?? 0;
   if ((cmf & 0x0f) !== 8 || ((cmf << 8) | flg) % 31 !== 0) return null;
-  const bytes = unzlibSync(b);
+  let bytes: Uint8Array;
+  try {
+    bytes = unzlibCapped(b, MAX_OUTPUT);
+  } catch {
+    return null;
+  }
   return { bytes, detail: `zlib, ${bytes.length} bytes` };
 }
 
