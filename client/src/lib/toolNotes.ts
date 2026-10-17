@@ -488,4 +488,303 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "Everything on this page is a display filter. Capture filters are a different language with a different job, and the section below covers where they diverge. If a filter you paste in turns the bar red, the usual causes are a capture filter typed into the display box, a protocol name Wireshark renamed between versions (bootp became dhcp, ssl became tls), or a single equals sign where two were needed.",
     ],
   ],
+  "data-uri-tool": [
+    [
+      "A data: URI (RFC 2397) carries a MIME type, optional parameters and a payload in one string. The payload is Base64 when ",
+      { code: ";base64" },
+      " appears in the header, and percent-escaped bytes otherwise. The encoder shows, at once, the Base64 data URI, the percent-encoded data URI for sources up to 1 MB, the bare Base64 payload, an HTML img tag and a CSS declaration, plus byte counts, the Base64 overhead of about 33 percent and a SHA-256 of the raw bytes.",
+    ],
+    [
+      "The decoder accepts standard, URL-safe and unpadded Base64, and the percent escapes that HTML and CSS writers often apply to the payload. It finds every data URI in pasted text or a scanned file, then peels nested layers, where a payload decodes to another data URI, up to eight deep. The innermost layer is identified from its magic bytes, and the declared MIME sits beside the sniffed type, so a PNG labeled as text stands out.",
+    ],
+    [
+      "Decoded content is displayed and never rendered. HTML is shown as text, and SVG and raster images appear only through an img element, which runs no scripts. Next-layer candidates catch Base64 and hex text inside the decoded payload. When scanning text, a payload ends at whitespace, quotes, angle brackets or parentheses; a single URI pasted on its own is decoded whole.",
+    ],
+    [
+      "Limits: 25 MB per input file, image previews up to 5 MB, and percent-encoded output skipped above 1 MB. Some browsers and mail clients cap URL length near 2 MB, and the tool flags anything longer. Sniffing recognizes PNG, JPEG, GIF, WebP, PDF, ZIP, gzip, 7z, RAR, ELF, MZ, SQLite, SVG and HTML signatures. It is not exhaustive.",
+    ],
+  ],
+  "file-identifier": [
+    [
+      "Reads the leading bytes of a file and compares them with a built-in table of 92 magic-byte signatures, the same approach as ",
+      { code: "file" },
+      " and libmagic. Each match shows the signature bytes, the offset they were found at, the MIME type and the extensions the format normally uses. Refinements read a few header fields to name the subtype, such as PE32 or PE32+, the ELF machine type, or a ZIP that is really a Word document.",
+    ],
+    [
+      "The extension is treated as a claim. A mismatch means the name and the bytes disagree, which is a lead to follow, not a verdict. Trailer checks look for bytes after a format's end marker, such as data after a PNG ",
+      { code: "IEND" },
+      " chunk or after a ZIP end-of-central-directory record. Embedded signatures list every other offset where a table entry matches, which exposes concatenated files and appended archives. Hits marked weak use three bytes and are common in compressed data.",
+    ],
+    [
+      "Signatures follow the published specifications where one exists, including the PNG specification (ISO/IEC 15948), RFC 1952 for gzip and the PKWARE ZIP application note. Byte values are hexadecimal. Offsets are decimal with hexadecimal in parentheses.",
+    ],
+    [
+      "A signature table is never complete. A file that matches nothing is described by its content class and entropy instead of a format name, and encrypted or compressed data reads close to 8 bits per byte with no internal structure. Analysis covers files up to 25 MiB and runs entirely on the device.",
+    ],
+  ],
+  "frequency-analysis": [
+    [
+      "Counts each letter A to Z in the pasted text, case folded, with its share of all letters beside the English share. Bigrams and trigrams are overlapping counts over the letter stream with non-letters removed, so a pair can span a word break. Words are ranked by frequency with a pattern that labels each letter by first appearance: ",
+      { code: "THE" },
+      " is ",
+      { code: "ABC" },
+      ", ",
+      { code: "ETHER" },
+      " is ",
+      { code: "ABCAD" },
+      ".",
+    ],
+    [
+      "The index of coincidence is the chance that two letters drawn from the text match, computed as the sum of ",
+      { code: "n(n-1)" },
+      " over ",
+      { code: "N(N-1)" },
+      ". English is near 0.0667 and uniform letters are near 0.0385, or 1/26. Entropy is in bits per letter, about 4.18 for English and 4.70 for uniform letters. A transposition keeps the plaintext values, so a value near English fits plaintext or a monoalphabetic cipher but does not prove one.",
+    ],
+    [
+      "The substitution workspace holds one mapping from cipher letters to plaintext letters. Mapped letters decode in uppercase and unmapped letters stay lowercase. Fill unmapped by rank assigns the most common unused English letters to the remaining cipher letters in frequency order. Duplicate plaintext letters are flagged, because a substitution key is one-to-one.",
+    ],
+    [
+      "Limits: a monoalphabetic solve needs roughly 100 letters or more before the frequency bars settle. Polyalphabetic ciphers such as Vigenere flatten these statistics, so use the Vigenere solver for keyed ciphers. Input is capped at 200,000 characters.",
+    ],
+  ],
+  "hex-viewer": [
+    [
+      "Renders any file, or pasted text (UTF-8), hex or base64, as a hex dump. Each row shows the offset in hex and decimal, the bytes, and an ASCII gutter. Printable ASCII, NUL bytes, whitespace and other non-printable bytes are colored apart, and the selected byte and every match are highlighted in place.",
+    ],
+    [
+      "Search takes an ASCII string, optionally case-folded for ASCII letters, or a hex pattern where ",
+      { code: "??" },
+      " matches any single byte. Matches are listed in offset order, and the view jumps to each one. The byte inspector reads the selected offset as unsigned and signed integers, 32- and 64-bit floats, and Unix time, in both little-endian and big-endian order.",
+    ],
+    [
+      "The file type comes from a table of magic bytes at the start of the data, with a UTF-8 text check when no signature matches. SHA-1 and SHA-256 come from ",
+      { code: "crypto.subtle" },
+      ". Entropy is Shannon entropy over byte values in bits per byte, so data near 8 is usually compressed or encrypted, and the histogram shows how the byte values are distributed.",
+    ],
+    [
+      "Limits: the whole input is held in memory and capped at 25 MB, and the dump is paged 4 KiB at a time. Pasted hex accepts spaces, commas, colons and 0x prefixes, and anything else is reported as an error. Digests need a secure context, which HTTPS provides. Nothing is uploaded.",
+    ],
+  ],
+  "image-analyzer": [
+    [
+      "Reads one image in the browser and shows every layer at once. EXIF, IPTC, XMP, ICC and GPS tags come from ",
+      { code: "exifr" },
+      " (MIT). GPS values are converted from degree, minute and second triples to signed decimal degrees, and the copyable ",
+      { code: "lat,long" },
+      " line carries six decimal places. The magic-byte table identifies the format from the leading bytes, and that result is set against the declared extension and MIME type.",
+    ],
+    [
+      "The pixel views come from a canvas decode, so they show what the browser sees. A bit-plane view draws the chosen bit of each channel, with a set bit shown as white. The z row is a pair test from Westfeld and Pfitzmann: values near zero or below 3 mean the (2k, 2k+1) value pairs have been equalized, which full-capacity LSB replacement produces. Unmodified photographs score far higher.",
+    ],
+    [
+      "The end-of-file checks look for data past the JPEG ",
+      { code: "FF D9" },
+      " marker, the PNG ",
+      { code: "IEND" },
+      " chunk, the GIF trailer, and the BMP and RIFF size fields. PNG chunks are checked against their CRC-32 values, and tEXt, zTXt and iTXt text is read directly or inflated with ",
+      { code: "fflate" },
+      ". The embedded-signature scan looks for PNG, JPEG, GIF, ZIP, gzip, RAR, 7z, PDF and ELF headers at every offset, so an EXIF thumbnail appears as a second JPEG hit.",
+    ],
+    [
+      "Limits: lossy formats rewrite the low bits, so bit planes from JPEG are weak evidence, and color-managed decodes can shift values. Pixel views are skipped above 25 MP, and files over 25 MB are refused. Nothing is uploaded, and the page makes no network request.",
+    ],
+  ],
+  "magic-decoder": [
+    [
+      "Each layer is tried against text decoders (Base64 and URL-safe Base64 per RFC 4648, Base32 per RFC 4648, Base58 with the Bitcoin alphabet, hex, percent-encoding, form encoding, 8-bit binary groups, decimal byte lists, ROT13 and ROT47) and byte decoders (gzip per RFC 1952, zlib per RFC 1950, and zip through ",
+      { code: "fflate" },
+      "). Every result is scored from 0 to 100 on its printable share (printable ASCII, or printable code points in UTF-8 text), English-likeness, a flag-shaped token, and whether it is another encoding or a recognized file. The list is sorted best first.",
+    ],
+    [
+      "A recognized file type scores 80. An encoding scores 84 to 88 only when its decoder yields a recognized file or printable text; when it decodes to binary noise it drops to at most 60, which keeps ROT13 output that happens to look like Base64 out of the top spot. Readable text scores 30 plus up to 40 for printable share and up to 30 for English, with a bonus of 25 for a known flag prefix such as ",
+      { code: "flag{" },
+      " or ",
+      { code: "picoCTF{" },
+      " and 8 for any other flag shape. Binary scores at most 20.",
+    ],
+    [
+      "Auto-peel follows the best unseen candidate, preferring one with a known flag prefix. It continues from encodings and files, and from readable text only when the next result is clearly more English or flagged, so random text is not peeled. It stops after 8 layers, when nothing scores at least 45, or when the text reads as English or carries a flag. Single-byte XOR (255 keys, on the first 1,024 bytes) and Caesar (25 shifts, on the first 2,048 characters) are ranked separately so they do not crowd the list.",
+    ],
+    [
+      "Input is capped at 262,144 characters, and any layer above 4 MB is discarded. Gzip is refused when its trailer declares more than 4 MB. Zlib has no size trailer, so it is only attempted on inputs up to 64 KB. The English measure counts common words and is a heuristic, not a dictionary, so leetspeak or unusual flags can score low; a known flag prefix still ranks them high.",
+    ],
+  ],
+  "qr-reader": [
+    [
+      "The decoder draws the image onto a canvas and scans it with jsQR at the original size, with a white margin of 48 to 64 pixels, at half and quarter scale, and at double scale for small images. The margin and rescaling recover codes that touch the edge or are too fine for the first pass. Each payload is shown as decoded text, as hex and Base64 bytes, with the QR version and the four corner coordinates so the geometry can be checked against the image.",
+    ],
+    [
+      "The classifier recognizes Wi-Fi strings (escaped SSID and password), vCard and iCalendar (unfolded properties), MECARD, otpauth one-time password secrets, mailto, tel and sms, geo, payment URIs, URLs and other schemes. URLs are shown as text and never turned into links. Alternative readings (Base64, hex, percent-decoding, ROT13 and reversed text) appear only when the text supports them, and invisible or bidirectional control characters are counted, because they can make the visible text differ from the data.",
+    ],
+    [
+      "The generator follows the ISO/IEC 18004 layout: byte mode, Reed-Solomon error correction over GF(256) with polynomial 0x11D, format information, the eight masks, and the penalty score that picks the mask. Every generated code is decoded again with jsQR and reported as a round trip. Numeric, alphanumeric and kanji modes, and versions above 6, are not implemented. Level L holds up to 134 bytes, M 106, Q 74 and H 58.",
+    ],
+    [
+      "Each image is capped at 25 MB and yields one code. jsQR does not report a code's error-correction level, so the reader shows the version but not the level. Images are decoded in the page, and nothing is uploaded.",
+    ],
+  ],
+  "rsa-tool": [
+    [
+      "Derives every value of textbook RSA from p and q: ",
+      { code: "n = p q" },
+      ", ",
+      { code: "phi = (p - 1)(q - 1)" },
+      ", d as the inverse of e modulo phi by extended Euclid, and lambda, dp, dq and qInv for reference and for CRT decryption. Each value shows decimal, hex and bit length, and the encryption and decryption panels list each square-and-multiply step.",
+    ],
+    [
+      "Factoring tries odd divisors up to the trial bound, which can be set as high as 2000000. If that fails, Fermat's method tests ",
+      { code: "a" },
+      ", ",
+      { code: "a+1" },
+      " and so on until ",
+      { code: "a^2 - n" },
+      " is a perfect square, which succeeds quickly when p and q are close together. Both methods run locally, with no factor database and no network lookup.",
+    ],
+    [
+      "Encryption is ",
+      { code: "c = m^e mod n" },
+      " and decryption is ",
+      { code: "m = c^d mod n" },
+      ". Text mode packs bytes into blocks of the largest size b with 256^b at or below n, so text needs n of at least 256. Textbook RSA is deterministic and malleable, so it is for learning and CTF arithmetic only.",
+    ],
+    [
+      "Limits: moduli up to 1024 bits. Real keys are 2048 bits or more, use OAEP padding, and come from a vetted library. Text decryption drops trailing zero bytes, so data that ends in zero bytes does not round trip exactly.",
+    ],
+  ],
+  "strings-extractor": [
+    [
+      "The browser counterpart of ",
+      { code: "strings" },
+      ". Every byte offset is scanned for runs of printable ASCII (0x20 to 0x7E) and for UTF-16LE text, which is ASCII code units each followed by a zero high byte. Each run is listed with its decimal and hexadecimal offset, its encoding, its length and its bytes in hex.",
+    ],
+    [
+      "Runs are extracted once at four characters and filtered in memory, so the minimum length slider and the regex respond at once. Runs that look like URLs, email addresses, flag-style braces such as ",
+      { code: "flag{...}" },
+      ", Base64 blobs, file paths or IPv4 addresses are tagged, and each tag shows the text it matched. A Base64 token that decodes to mostly printable text shows the decoded preview.",
+    ],
+    [
+      "The four-character minimum matches the default of GNU ",
+      { code: "strings" },
+      ", and the UTF-16LE mode follows ",
+      { code: "strings -e l" },
+      ", which reads two-byte units with a zero high byte. Flag and Base64 tags are heuristics: a brace pair or a mixed-case token whose length is divisible by four is a lead, not a decoded secret.",
+    ],
+    [
+      "Runs longer than 1024 characters are split, and classification reads the first 1024 characters of each run. Storage is capped at 300,000 strings, and the cap is reported when it is reached. Analysis covers files up to 25 MiB and runs entirely on the device.",
+    ],
+  ],
+  "transform-pipeline": [
+    [
+      "The chain runs top to bottom. Each step receives the bytes its predecessor produced, so an encoding can feed a cipher and then a digest. Text steps decode their input as UTF-8 first. When that decode is lossy, the step is flagged instead of changing the data without notice. The first step reads the pasted text as UTF-8 bytes.",
+    ],
+    [
+      "Read each step's output to find the link that breaks. Base64 decoding accepts the standard and URL-safe alphabets from RFC 4648, with or without padding. Base32 follows RFC 4648 with padding. Gzip, zlib and raw inflate return the decompressed bytes, and a stream that is not valid compressed data stops the chain at that step. ",
+      { code: "crypto.subtle" },
+      " computes SHA-1 through SHA-512, ",
+      { code: "js-sha3" },
+      " computes SHA3-256 and ",
+      { code: "spark-md5" },
+      " computes MD5. Digests are output as lowercase hex, which the next step can decode.",
+    ],
+    [
+      "Limits. The HTML entity decoder covers numeric references and a common subset of named references, not the full HTML5 table. Inflate output is not capped, so a decompression bomb can exhaust memory in the tab. Input past 1,000,000 characters is ignored. Digests need HTTPS or localhost. The result panel previews the first 2,048 bytes of each representation, and its copy buttons take the full text or hex.",
+    ],
+  ],
+  "unicode-inspector": [
+    [
+      "Each code point is listed with its general category and script, read from Unicode property escapes in the regular expression engine, plus its UTF-8 bytes and UTF-16BE code units. Full character names live in the Unicode Character Database, which is too large to bundle, so the category and script stand in for them except for the characters that matter most here.",
+    ],
+    [
+      "Bidirectional controls (UAX #9) reorder displayed text and underpin the Trojan Source attack (CVE-2021-42574). Tag characters in U+E0020 to U+E007E carry hidden ASCII, which is decoded onto its own line. Zero-width, control, private-use and unassigned code points are reported as invisible or unexpected. Lookalikes follow the spirit of the Unicode confusables data (UTS #39), using a subset table rather than the full list.",
+    ],
+    [
+      "Mixed-script words are flagged when Latin letters share a word with Cyrillic, Greek or another script, and the ASCII skeleton shows what the word imitates. The NFC and NFKC forms come from the String normalize method (UAX #15). Input is capped at 20,000 UTF-16 code units, and the code point list shows 500 rows at a time.",
+    ],
+  ],
+  "url-analyzer": [
+    [
+      "The analyzer reads the URL two ways. ",
+      { code: "As typed" },
+      " follows the RFC 3986 grammar and shows the text exactly as written. ",
+      { code: "Parsed" },
+      " is what the WHATWG URL parser produces in browsers: it lowercases hosts, converts IDN labels to punycode, strips tabs and newlines, reads backslashes as slashes and resolves dot segments. Where the two views disagree, the browser is going somewhere the text does not show.",
+    ],
+    [
+      "Percent-decoding runs one layer at a time, so ",
+      { code: "%25252e" },
+      " shows as ",
+      { code: "%252e" },
+      ", then ",
+      { code: "%2e" },
+      ", then ",
+      { code: "." },
+      ". Each extra layer marks a double or triple encoding, a common way to slip a traversal or a filter past a server that decodes once (RFC 3986, section 2.1). Punycode labels with the ",
+      { code: "xn--" },
+      " prefix are decoded per RFC 3492 and checked for mixed scripts and for characters that imitate ASCII.",
+    ],
+    [
+      "Query parameters split on ",
+      { code: "&" },
+      " and the first ",
+      { code: "=" },
+      ", with ",
+      { code: "+" },
+      " read as a space the way form encoding does. Editing a key or value rebuilds the URL, and untouched parts keep their original encoding. The fragment is shown decoded but is never sent to a server. The registrable domain is an estimate, since no public suffix list is applied. Nothing is requested; the URL constructor only parses text.",
+    ],
+  ],
+  "vigenere-solver": [
+    [
+      "Encrypt and decrypt take a key of letters. Non-letters pass through unchanged and do not advance the key, so the key lines up with letters only. The alignment rows show the input, the repeating key and the output for the first 64 letters, and the inverse check confirms that the opposite direction returns the input.",
+    ],
+    [
+      "Step 1 averages the index of coincidence over the ",
+      { code: "k" },
+      " columns for each candidate length. Each column of a true length-",
+      { code: "k" },
+      " key is a single Caesar shift of English, so its index sits near 0.0667, while random letters sit near 0.0385. Multiples of the true length also score high, so the suggestion is the smallest length within 0.005 of the best average. Step 2 finds repeated trigrams and the gaps between them. A gap is a multiple of the key length when the same plaintext trigram lines up under the same key letters, and the divisor table counts how many gaps each length divides.",
+    ],
+    [
+      "Step 3 tests each column against all 26 shifts. The chi-squared statistic compares the shifted letter counts with English letter shares. With 25 degrees of freedom, a correct shift scores near 25 per column and a wrong shift scores far higher. Step 4 joins the best shift from each column into a key and scores the decrypt by the share of words found in a short list of common English words.",
+    ],
+    [
+      "Limits: the breaker works best with several hundred letters of English prose. Very short texts, or keys longer than the text, cannot be recovered this way. Vigenere is a historical cipher and offers no real security. Input is capped at 200,000 characters and the key length at 30.",
+    ],
+  ],
+  "xor-tool": [
+    [
+      "XOR is its own inverse, so applying the key to ciphertext gives the plaintext, and applying it to plaintext gives the ciphertext. The key repeats across the data: data byte ",
+      { code: "i" },
+      " pairs with key byte ",
+      { code: "i mod length" },
+      ". The output panel shows UTF-8 text, hex and Base64 together, and flags output that is not valid UTF-8.",
+    ],
+    [
+      "The single-byte table applies all 256 keys to the first 4,096 bytes. Printable is the share of bytes in printable ASCII, tab, newline or carriage return. English is the average letter-frequency weight per byte, with space weighted as a letter. Rank averages the printable ratio with the English weight, so ordinary English reaches the top. A high rank is evidence for a key, not proof, so read the preview before trusting one.",
+    ],
+    [
+      "The crib tests each key length from 1 to the chosen maximum. The crib is placed at a byte offset, which fixes the key byte for every slot it covers. A length is kept only when every repeated slot implies the same byte. Complete keys are listed first, and ",
+      { code: "Use key" },
+      " copies a recovered key into the key field. A question mark marks a plaintext byte whose key byte is still unknown.",
+    ],
+    [
+      "Limits. Data and key are capped at 1,000,000 bytes, and the crib search reads the first 4,096 bytes. Key length cannot be guessed from ciphertext alone here. Index of coincidence and Hamming distance estimates are not included, so supply a crib or try lengths by hand.",
+    ],
+  ],
+  "zip-inspector": [
+    [
+      "The inspector reads the end-of-central-directory record, follows it to the central directory, and parses every entry header directly rather than trusting one extractor. For each entry it shows the name as stored, the compressed and uncompressed sizes, the method, the CRC-32, the DOS timestamp, the host system, any unix mode, the entry comment and the extra fields. Bytes before the archive and after the end record are reported separately, because self-extractors and appended payloads hide there.",
+    ],
+    [
+      "Findings are ranked by severity. A name containing a ",
+      { code: ".." },
+      " segment, an absolute path or a drive letter is flagged as zip slip. A local header whose name or method disagrees with the central directory is flagged, as are duplicate names, unknown extra fields, symbolic links and high compression ratios. Loading an entry inflates deflate or stored data in the browser and compares the recomputed CRC-32 with the stored one. Downloads use a sanitized basename, so a traversal name never becomes a file path.",
+    ],
+    [
+      "The layouts follow PKWARE APPNOTE.TXT for zip, RFC 1952 for gzip and RFC 1950 for zlib, including the Adler-32 trailer. gzip and zlib inputs are decoded as streams, with the header fields, the trailer checksum and the output shown together. Encrypted entries, bzip2, LZMA and other methods are identified but not decoded, and password recovery is not attempted.",
+    ],
+    [
+      "Input is capped at 25 MB, and entries whose declared sizes exceed that cap are not decoded. ZIP64 records are read, but split and multi-disk archives are not. Offsets are treated as absolute from the start of the input, so a self-extractor whose offsets were never adjusted reports a central directory error and no entries.",
+    ],
+  ],
 };
