@@ -326,7 +326,15 @@ function unzlibCapped(data: Uint8Array, cap: number): Uint8Array {
     if (total > cap) throw new RangeError("decompressed output exceeds the cap");
     parts.push(chunk);
   });
-  inflater.push(data, true);
+  // Feed the stream in small slices. Pushing the whole buffer at once makes
+  // Unzlib inflate it all and emit the full expansion in a single handler
+  // call, so the cap check would fire only after a bomb had already been
+  // allocated. A 4 KB slice expands by at most the DEFLATE maximum ratio
+  // before the handler can abort, which bounds peak memory to roughly the cap.
+  const step = 4096;
+  for (let start = 0; start < data.length; start += step) {
+    inflater.push(data.subarray(start, Math.min(start + step, data.length)), start + step >= data.length);
+  }
   const out = new Uint8Array(total);
   let offset = 0;
   for (const part of parts) {
