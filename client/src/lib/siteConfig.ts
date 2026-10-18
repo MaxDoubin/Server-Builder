@@ -177,6 +177,7 @@ export const siteConfig = {
         "Databricks Academy accreditations: Platform Administrator, AWS and GCP Platform Architect, and Databricks, Generative AI and AI Agent Fundamentals (2026)",
         "Cisco Networking Academy Ethical Hacker course (2026)",
         "Cisco Networking Academy and Splunk Cybersecurity Defense Analyst career path (2026)",
+        "Cisco Networking Academy Network Technician career path (2026)",
         "Palo Alto Networks Cybersecurity, Network Security, Cloud Security and Security Operations Fundamentals courses (2026)",
         "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (2026)",
         "CISA ICS Cybersecurity (300) and ICS Cybersecurity Evaluation (401) courses, about 22 contact hours (2026)",
