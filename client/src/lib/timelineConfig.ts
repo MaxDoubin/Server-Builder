@@ -46,7 +46,6 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
     entries: [
       {
         title: "1st place, CCSD capture the flag tournament at CyberWeek@UNLV",
-        when: "October 2026",
         description:
           "Won the Clark County School District capture the flag tournament at UNLV's CyberWeek, held for Cybersecurity Awareness Month, across cryptography, forensics, log analysis, OSINT and reverse engineering.",
         href: "https://www.unlv.edu/cybersecurity/community-outreach/cyberweek",
@@ -54,56 +53,48 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
       },
       {
         title: "Three Oracle certifications",
-        when: "October 2026",
         description:
           "Passed three Oracle exams: Cloud Infrastructure Architect Associate (1Z0-1072-26) on cloud identity, networking, compute and storage, Multicloud Foundations Associate (1Z0-1144-26), and Data Center Operations Foundations Associate (1Z0-3000) on data center power, cooling, safety and operating procedures.",
         href: "/certifications",
       },
       {
         title: "cPanel & WHM System Administrator I and II",
-        when: "October 2026",
         description:
           "Passed cPanel University's System Administrator I and II exams (CWSA-1 and CWSA-2) for servers running cPanel & WHM.",
         href: "/certifications",
       },
       {
         title: "All four Plesk Obsidian certifications",
-        when: "October 2026",
         description:
           "Associate, Professional, Linux Expert and Windows Expert from Plesk University, from installing and securing a Plesk server to expert troubleshooting on Linux and Windows.",
         href: "/certifications",
       },
       {
         title: "Perfect score, TOSA CyberCitizen",
-        when: "October 2026",
         description:
           "Scored 1000 out of 1000 on the adaptive TOSA CyberCitizen certification, the top of its Expert band.",
         href: "/certifications",
       },
       {
         title: "Cisco Networking Academy Ethical Hacker course",
-        when: "October 2026",
         description:
           "Completed the course with Cisco's verified badge: penetration testing methodology and planning, information gathering and vulnerability scanning, social engineering, exploiting network, application, cloud, mobile and IoT vulnerabilities, post-exploitation, and writing the penetration test report.",
         href: "/certifications",
       },
       {
         title: "Two Nutanix University courses",
-        when: "October 2026",
         description:
           "Completed Enterprise Cloud Administration (ECA) 6.10, the training for the Nutanix Certified Professional, Multicloud Infrastructure exam, and Advanced Administration and Performance Management (AAPM), the master-level course that follows it.",
         href: "/certifications",
       },
       {
         title: "Fortinet Training Institute credentials",
-        when: "October 2026",
         description:
           "NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals.",
         href: "/certifications",
       },
       {
         title: "Anthropic Claude Academy",
-        when: "October 2026",
         description:
           "23 badges and four completed courses, covering the Claude API, Model Context Protocol, Claude Code, agent skills and AI fluency.",
         href: "/certifications",

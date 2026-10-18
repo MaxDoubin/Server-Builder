@@ -42,16 +42,16 @@ export const siteConfig = {
     {
       category: "Cybersecurity & Competition",
       items: [
-        "1st place in the Clark County School District capture the flag tournament at CyberWeek@UNLV, October 2026",
+        "1st place in the Clark County School District capture the flag tournament at CyberWeek@UNLV, 2026",
         "1st place in the National Cyber League Fall 2026 Gymnasium (preseason), the first student to reach 100 percent completion with 100 percent accuracy",
         "Top 1 percent of competitors in the National Cyber League Fall 2025 Individual Game",
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "CompTIA Tech+ certified (April 2026), currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
-        "Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity and FortiGate 7.6 Operator (October 2026)",
-        "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (October 2026)",
-        "TOSA CyberCitizen, a perfect 1000 out of 1000 at the Expert level (October 2026)",
-        "cPanel & WHM System Administrator I and II (October 2026)",
-        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (October 2026)",
+        "Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity and FortiGate 7.6 Operator (2026)",
+        "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (2026)",
+        "TOSA CyberCitizen, a perfect 1000 out of 1000 at the Expert level (2026)",
+        "cPanel & WHM System Administrator I and II (2026)",
+        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (2026)",
       ],
     },
     {
@@ -163,21 +163,21 @@ export const siteConfig = {
     {
       name: "Academics & Certifications",
       skills: [
-        "Oracle Cloud Infrastructure Architect Associate (October 2026)",
-        "Oracle Multicloud Foundations Associate (October 2026)",
-        "Oracle Data Center Operations Foundations Associate (October 2026)",
-        "cPanel & WHM System Administrator I and II, CWSA-1 and CWSA-2 (October 2026)",
-        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (October 2026)",
-        "TOSA CyberCitizen, 1000/1000 Expert (October 2026)",
+        "Oracle Cloud Infrastructure Architect Associate (2026)",
+        "Oracle Multicloud Foundations Associate (2026)",
+        "Oracle Data Center Operations Foundations Associate (2026)",
+        "cPanel & WHM System Administrator I and II, CWSA-1 and CWSA-2 (2026)",
+        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (2026)",
+        "TOSA CyberCitizen, 1000/1000 Expert (2026)",
         "CompTIA Tech+ (April 2026)",
-        "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
-        "FortiGate 7.6 Operator (October 2026)",
-        "Databricks Academy Platform Administrator accreditation (October 2026)",
-        "Cisco Networking Academy Ethical Hacker course (October 2026)",
-        "Palo Alto Networks Cybersecurity Fundamentals course (October 2026)",
-        "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (October 2026)",
-        "Nutanix University ECA 6.10 and AAPM courses (October 2026)",
-        "Anthropic Claude Academy, 23 badges (October 2026)",
+        "Fortinet NSE 1, NSE 2, NSE 3 (2026)",
+        "FortiGate 7.6 Operator (2026)",
+        "Databricks Academy Platform Administrator accreditation (2026)",
+        "Cisco Networking Academy Ethical Hacker course (2026)",
+        "Palo Alto Networks Cybersecurity Fundamentals course (2026)",
+        "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (2026)",
+        "Nutanix University ECA 6.10 and AAPM courses (2026)",
+        "Anthropic Claude Academy, 23 badges (2026)",
         "CompTIA Security+ (in progress)",
         "CompTIA Network+ (in progress)",
         "Cisco CCNA (in progress)",
@@ -289,7 +289,7 @@ export const siteConfig = {
     {
       title: "1st Place, CCSD Capture the Flag at CyberWeek@UNLV",
       description:
-        "Won first place in the Clark County School District capture the flag tournament at CyberWeek@UNLV in October 2026, a competition covering cryptography, forensics, log analysis, OSINT and reverse engineering.",
+        "Won first place in the Clark County School District capture the flag tournament at CyberWeek@UNLV in 2026, a competition covering cryptography, forensics, log analysis, OSINT and reverse engineering.",
     },
     {
       title: "1st Place, NCL Fall 2026 Gymnasium",
@@ -319,17 +319,17 @@ export const siteConfig = {
     {
       title: "Oracle Certified, Cloud and Data Center",
       description:
-        "Earned the Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), Oracle Multicloud Foundations Associate (1Z0-1144-26) and Oracle Data Center Operations Foundations Associate (1Z0-3000) certifications in October 2026.",
+        "Earned the Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), Oracle Multicloud Foundations Associate (1Z0-1144-26) and Oracle Data Center Operations Foundations Associate (1Z0-3000) certifications in 2026.",
     },
     {
       title: "Plesk Obsidian, All Four Levels",
       description:
-        "Earned all four Plesk University certifications for Plesk Obsidian in October 2026: Associate, Professional, Linux Expert and Windows Expert.",
+        "Earned all four Plesk University certifications for Plesk Obsidian in 2026: Associate, Professional, Linux Expert and Windows Expert.",
     },
     {
       title: "Perfect Score, TOSA CyberCitizen",
       description:
-        "Scored 1000 out of 1000 on the TOSA CyberCitizen certification in October 2026, the top of its Expert band, across the cybersecurity ecosystem, securing data and devices, secure digital practice, and protection against threats.",
+        "Scored 1000 out of 1000 on the TOSA CyberCitizen certification in 2026, the top of its Expert band, across the cybersecurity ecosystem, securing data and devices, secure digital practice, and protection against threats.",
     },
     {
       title: "CompTIA Tech+ Certified",
@@ -339,12 +339,12 @@ export const siteConfig = {
     {
       title: "Fortinet Training Institute Credentials",
       description:
-        "Earned NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals in October 2026.",
+        "Earned NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals in 2026.",
     },
     {
       title: "Anthropic Claude Academy",
       description:
-        "Earned 23 Anthropic Claude Academy badges and completed four Claude Academy courses in October 2026, covering the Claude API, Model Context Protocol, Claude Code, agent skills and AI fluency.",
+        "Earned 23 Anthropic Claude Academy badges and completed four Claude Academy courses in 2026, covering the Claude API, Model Context Protocol, Claude Code, agent skills and AI fluency.",
     },
     {
       title: "#1 Percussionist in Nevada",
