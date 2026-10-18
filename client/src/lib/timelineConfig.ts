@@ -34,8 +34,8 @@ export interface TimelineGroup {
  * supplied the last two dates himself in October 2026: Big Future Ambassador
  * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
  * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score, the
- * Google Analytics Certification, the Cisco Ethical Hacker course and the two
- * Nutanix courses are October 2026. A
+ * Google Analytics Certification, the Neo4j Certified Professional exam, the
+ * Cisco Ethical Hacker course and the two Nutanix courses are October 2026. A
  * role that
  * spans years sits under the year it began. Ask before adding an entry whose
  * date is unknown rather than inferring one from the entries around it.
@@ -74,6 +74,12 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "Perfect score, TOSA CyberCitizen",
         description:
           "Scored 1000 out of 1000 on the adaptive TOSA CyberCitizen certification, the top of its Expert band.",
+        href: "/certifications",
+      },
+      {
+        title: "Neo4j Certified Professional",
+        description:
+          "Scored 93.8 out of 100 on Neo4j GraphAcademy's certification exam: 80 questions on Cypher, graph data modeling, importing data, schema and indexes and drivers, with hands-on Cypher challenges.",
         href: "/certifications",
       },
       {

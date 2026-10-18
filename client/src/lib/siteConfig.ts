@@ -171,6 +171,7 @@ export const siteConfig = {
         "TOSA CyberCitizen, 1000/1000 Expert (2026)",
         "CompTIA Tech+ (April 2026)",
         "Google Analytics Certification (2026)",
+        "Neo4j Certified Professional, 93.8/100 (2026)",
         "Fortinet NSE 1, NSE 2, NSE 3 (2026)",
         "FortiGate 7.6 Operator (2026)",
         "Databricks Academy accreditations: Platform Administrator, AWS and GCP Platform Architect, and Databricks, Generative AI and AI Agent Fundamentals (2026)",

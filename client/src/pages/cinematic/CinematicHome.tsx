@@ -128,6 +128,12 @@ export function CinematicHome() {
           credentialCategory: "certification",
           recognizedBy: { "@type": "Organization", name: "Google" },
         },
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "Neo4j Certified Professional",
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "Neo4j" },
+        },
         ...[
           "NSE 1 Certified in Cybersecurity",
           "NSE 2 Certified in Cybersecurity",
