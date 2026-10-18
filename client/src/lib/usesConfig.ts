@@ -196,42 +196,5 @@ export const usesConfig: { intro: string; groups: UsesGroup[] } = {
       ],
     },
 
-    {
-      id: "site",
-      label: "· Uses · This site",
-      heading: "This site's own stack",
-      summary:
-        "The short version. The long version, including the decisions that were wrong the first time, is on the colophon.",
-      items: [
-        {
-          name: "React 18 and TypeScript",
-          why: "The site is one application with a lot of shared structure. Types are what keep a shared config file from silently breaking a page nobody opened during review.",
-        },
-        {
-          name: "Vite",
-          why: "Fast builds, and manual control over chunk splitting, which this site needs more than most because the 3D scene must never load on a page that has no canvas.",
-        },
-        {
-          name: "Tailwind CSS",
-          why: "Design tokens in one config and no stylesheet drifting away from the markup that uses it.",
-        },
-        {
-          name: "wouter",
-          why: "Routing for a static site should be a few kilobytes, not a framework. It does exactly what this site needs and nothing else.",
-        },
-        {
-          name: "Framer Motion, GSAP, and Lenis",
-          why: "Framer for component transitions, GSAP for the pinned scroll scenes, Lenis for the scroll itself. Three libraries because each one is genuinely better at its own job.",
-        },
-        {
-          name: "React Three Fiber",
-          why: "The data center scene is real 3D, so it needs a real renderer. It is also the heaviest thing on the site, which is why it is quarantined in its own chunk.",
-        },
-        {
-          name: "Cloudflare Pages",
-          why: "Static files on a global edge, no server to patch, and nothing behind the site that can be compromised because there is nothing behind the site.",
-        },
-      ],
-    },
   ],
 };

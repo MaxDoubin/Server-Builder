@@ -7,7 +7,7 @@ export function CinematicUses() {
   useSEO({
     title: "Uses | Max Doubin",
     description:
-      "The software Max Doubin actually uses: terminal and analysis tools, languages, virtualization, monitoring, and this site's own stack, with why for each.",
+      "The software Max Doubin actually uses: terminal and analysis tools, languages, virtualization, monitoring and writing, with why for each.",
     canonical: "https://maxdoubin.com/uses",
   });
 

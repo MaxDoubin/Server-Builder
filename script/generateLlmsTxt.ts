@@ -29,7 +29,6 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/ncl", label: "National Cyber League study guides", note: "one guide per competition category, each built around a practice problem written for this site; no NCL question is reproduced" },
   { path: "/resume", label: "Resume", note: "" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },
-  { path: "/colophon", label: "Colophon", note: "how the site is built and why" },
 ];
 
 const MACHINE_READABLE: { path: string; note: string }[] = [
