@@ -48,6 +48,11 @@ For a single server you sit next to, the Prodisk guide says iLO Standard may be 
 
 Techzine says iLO 7 allows management "even when they are not currently connected to the standard network," with only an out-of-band management connection, which is the path you need when the standard network is unavailable. The concept matches [IPMI and Out-of-Band Management Explained](/blog/ipmi-remote-management), so plan the management network as its own path.
 
+<figure>
+<img src="/images/blog/ilo-6-vs-ilo-7/photo-1.jpg" alt="HP ProLiant servers with temporary network cables attached" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>HP ProLiant servers with temporary network cabling, photographed in April 2008. The photographer planned to use orange cables to mark the management network for the servers' iLO connections. Photo: Jemimus, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_ProLiant_servers_-_IMG_3356.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Hardware swaps are easier with the removable module. StorageReview says iLO 7 can "function as a removable module, making it easier to replace hardware components without losing system settings." The same change helps verify that parts are original HPE components, which StorageReview ties to counterfeit hardware risk in the supply chain.
 
 Key management is the other planned change. StorageReview reports that by 2026, HPE plans to introduce KMIP support across both iLO 6 and iLO 7, "allowing better integration with local and remote key management systems." Because KMIP is still a plan, check the release notes for your firmware before you build a key management workflow around it.
@@ -55,6 +60,11 @@ Key management is the other planned change. StorageReview reports that by 2026, 
 ## What breaks
 
 **The remote console stops working once the OS boots.** On iLO 6, the Standard remote console is pre-OS only, and the full console is an Advanced feature. Without an Advanced license, you cannot use the remote graphical console once the operating system is running. Fix: apply an iLO Advanced license to each server that needs the full console, virtual media, directory login or two-factor authentication.
+
+<figure>
+<img src="/images/blog/ilo-6-vs-ilo-7/photo-2.jpg" alt="HP TFT7210R 1U rack-mount flat panel monitor in use in a server rack" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>An HP TFT7210R 1U rack-mount console monitor in use, photographed in April 2008. Without an iLO Advanced license, the remote graphical console stops once the OS is running, so seeing the server's screen can mean standing at a local console like this one. Photo: Jemimus, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_TFT7210R_1U_console_in_use_-_IMG_3358.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 **A refurbished server arrives without the Advanced license.** Prodisk says some refurbished servers ship with an active iLO Advanced license and others are Standard-only, so you license Advanced separately if you need KVM or virtual media. A server that looks cheap can cost more once Advanced is added. Fix: ask the seller whether iLO Advanced is active, and add the cost of a separate Advanced license before you compare prices.
 

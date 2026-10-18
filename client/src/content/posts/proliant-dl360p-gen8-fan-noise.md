@@ -23,6 +23,11 @@ The QuickSpecs also say these levels "do not account for non-Hewlett-Packard ins
 
 In the iLO 4 web interface, open Information, then System Information, then the Fans tab. Each fan shows its location, health status and speed in percent. On servers with fan redundancy, empty bays are hidden until you click "show empty bays," which shows whether bays 1 and 2 are empty on a one-processor machine.
 
+<figure>
+<img src="/images/blog/proliant-dl360p-gen8-fan-noise/photo-1.jpg" alt="HP ProLiant BL460 Gen8 blade server with a tape blade attached" width="865" height="1400" loading="lazy" decoding="async">
+<figcaption>An HP ProLiant BL460 Gen8 blade server with a tape blade attached, photographed in January 2014. Gen8 blades and Gen8 rack servers such as the DL360p Gen8 use the same iLO 4 management processor. Photo: Redline, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_BL460_G8_with_tape_blade.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The Temperatures tab on the same screen is the next place to look. Each sensor lists its location, status, reading, and Caution and Critical thresholds. A sensor that is not installed reads N/A, and missing sensors stay hidden until you click "show missing sensors." If a sensor is above Caution, the heat is real and iLO sends the fans to maximum. If every reading sits well below its threshold, look at the drives and cards instead. HPE's Smart Array notes list fixes both for SATA drive temperatures not being reported after a hot insert and for system fans going to 100% when connected drives spun down.
 
 To query iLO from another machine, use [IPMI](/blog/ipmi-remote-management). The iLO 4 guide says IPMI/DCMI over LAN is disabled by default in iLO 4 2.60 and later, and that the port defaults to 623. Its ipmitool example uses the lanplus interface to pull the iLO event log:
@@ -36,6 +41,11 @@ Correct output is a numbered list of event entries, such as "Power Supply #0x03 
 ## What pushes the fans up
 
 Owners report the first three triggers on sibling Gen8 servers that run the same iLO 4. HPE documents the last two in its own notes, one of them as a firmware bug that includes the DL360p Gen8 SE.
+
+<figure>
+<img src="/images/blog/proliant-dl360p-gen8-fan-noise/photo-2.jpg" alt="Left side of the front panel of an HP ProLiant DL360 G7 server, with HP SAS hard drives in the drive bays" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>The left side of an HP ProLiant DL360 G7 front panel with HP SAS hard drives in the bays, photographed in July 2010. On the DL360p Gen8, every drive bay needs a drive or a blank, and drives that iLO 4 cannot read can push the fans up. Photo: Melee, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:DL360_Front_Left.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Trigger | Server | Reported fan speed | Source |
 |---|---|---|---|

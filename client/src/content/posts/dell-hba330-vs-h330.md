@@ -7,6 +7,11 @@ Someone running a Dell PowerEdge server who has to choose between a PERC H330 an
 
 Dell's [PERC 9 card specifications](https://www.dell.com/support/manuals/en-us/poweredge-rc-h330/perc9ugpublication/perc-card-specifications?guid=guid-ff4e55fb-921b-4445-9ee3-768d80807f2a&lang=en-us) list RAID levels 0, 1, 5, 10 and 50 for the H330 and describe it as a "Dell Adapter SAS RAID-on-Chip, 8-port with LSI 3008 chipset." Dell's [HBA card specifications](https://www.dell.com/support/manuals/en-us/dell-sas-hba-12gbps/dell_hba_ug_publication/dell-hba-card-specifications?guid=guid-06cb2c46-07fb-4f69-b558-fa0a275d1d51&lang=en-us) give the HBA330 the same LSI 3008 chipset, describe its processor as a "Dell Adapter SAS I/O controller," and mark "Non-RAID or pass through mode" as "Yes." A Dell community moderator put the difference in one line on August 12, 2020: "HBA330 Controller, 12Gbps Adapter does NOT do RAID. H330 can." ([Dell Community thread, August 2020](https://www.dell.com/community/en/conversations/poweredge-hddscsiraid/perc-h330-vs-hba330-controller-vs-no-raid-for-small-medical-office-server/647f8b37f4ccf8a8deb44710))
 
+<figure>
+<img src="/images/blog/dell-hba330-vs-h330/photo-1.jpg" alt="Close-up of a RAID controller cache board with a row of five memory chips and a battery manager chip" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>The battery-backed write cache board from a Dell PERC 4e/DC controller, photographed in 2024, with five DDR SDRAM chips and a Linear Technology battery manager chip. The H330 has neither a cache nor a battery backup unit. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07_-_Battery_Backed_Write_Cache-2170.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The table compares the attributes that matter for a storage build.
 
 | Attribute | PERC H330 | HBA330 |
@@ -36,6 +41,11 @@ Owner reports put a number on it, though, and they come from a single forum thre
 ## ZFS and TrueNAS: use the HBA330
 
 The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) sets the position plainly: "ZFS and TrueNAS provide a built-in RAID that protects your data better than any hardware RAID card." For a card with a pass-through mode, it says to "do not use their RAID facility if your hardware RAID card supports HBA mode, also known as passthrough or JBOD mode." It also lists risks: some cards can "Mask disk serial number and S.M.A.R.T. health information" and can "Perform slower than their HBA equivalents."
+
+<figure>
+<img src="/images/blog/dell-hba330-vs-h330/photo-2.jpg" alt="Screenshot of the TrueNAS 12.0-U2.1 web user interface" width="1400" height="913" loading="lazy" decoding="async">
+<figcaption>The TrueNAS 12.0-U2.1 web interface, in a screenshot taken in April 2021. TrueNAS manages its own ZFS pools, and its hardware guide advises against using a RAID card's RAID facility when the card supports HBA mode. Photo: Fil.musi, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:TrueNAS_Web_User_Interface.png">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Disk identity is the other half of the problem. In an [OpenZFS discussion](https://github.com/openzfs/zfs/discussions/14458), a contributor writes that "since some RAIDs do not pass through original disk identification, and TrueNAS requires unique disk serial numbers." The same contributor says an HBA "does not do anything other than delivering commands and data to the disks," and calls that setup "the preferred configuration for ZFS."
 

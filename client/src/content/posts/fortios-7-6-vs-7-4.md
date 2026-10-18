@@ -25,6 +25,11 @@ The two support dates mean different things. After End of Engineering Support, a
 
 Hardware decides the question before features do. The [FortiOS 7.4.11 release notes](https://docs.fortinet.com/document/fortigate/7.4.11/fortios-release-notes/) list the FG-60E, FG-61E, FG-80E, FG-81E, FG-90E and FG-91E. The [7.6.7 release notes](https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/) list the FG-30G, FG-40F, FG-50G, FG-60F, FG-61F, FG-70F, FG-70G, FG-80F, FG-90G and FG-100F, and do not list the 60E, 80E or 90E. If you own one of those three, 7.4 is the newest branch whose release notes name your model, and 7.4 reaches End of Support on November 11, 2028. Replacing a 60E is covered in [FortiGate 60E to 60F migration](/blog/fortigate-60e-to-60f-migration).
 
+<figure>
+<img src="/images/blog/fortios-7-6-vs-7-4/photo-1.jpg" alt="Partly assembled equipment rack holding networking and server hardware at a large computer party" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>A rack under construction at The Gathering 2019 computer party in Hamar, Norway, holding Fortinet and Supermicro hardware. Which FortiOS branch a FortiGate can run depends first on its model, and the 7.6.7 release notes do not list the 60E, 80E or 90E. Photo: DiFronzo, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:The_Gathering_2019_-_Rack_%28under_constructions%29_%2847730325011%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Fortinet's own pick per model comes from its [Recommended Release tip](https://community.fortinet.com/fortigate-3/technical-tip-recommended-release-for-fortios-116639), which says its table is "the latest as of June 2026" and is reviewed every quarter. It requires "40,000 or more FortiGates" running the build and no high-severity vulnerabilities without a mitigation or workaround.
 
 | Model | Recommended build | Branch |

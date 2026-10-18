@@ -7,6 +7,11 @@ You own a 2019 Mac Pro (the 7,1), or are about to buy one, and its GPU is too sl
 
 An MPX (Mac Pro Expansion) module is a card that fits one of the Mac Pro's two MPX bays. [Apple's technical specifications](https://support.apple.com/en-us/118461) say each bay provides x16 gen 3 bandwidth for graphics, x8 gen 3 bandwidth for Thunderbolt, DisplayPort video routing and "Up to 500W power for an MPX Module." Apple's [MPX installation guide](https://support.apple.com/guide/mac-pro/apd8e22bab6b/2022/mac/13) rates each PCIe slot at a maximum of 75 W, each 6-pin auxiliary connector at 75 W and each 8-pin auxiliary connector at 150 W.
 
+<figure>
+<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-1.jpg" alt="A 2019 Apple Mac Pro tower on display in an electronics store" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>A 2019 Mac Pro on display at a Bic Camera store in Nagoya, Japan, in March 2020. Each of its two MPX bays can supply up to 500W to a module, power that a standard PCIe card has to draw from its slot and auxiliary cables. Photo: KKPCW, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_%282019_model%29_-_4.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Those bays are why a module can draw power from the bay itself and send video into the Mac's own Thunderbolt ports. Apple's [June 3, 2019 announcement](https://www.apple.com/newsroom/2019/06/apple-unveils-powerful-all-new-mac-pro-and-groundbreaking-pro-display-xdr/) said the MPX Module "is cooled by the Mac Pro system thermals," and that three fans move air through the Mac Pro.
 
 A module takes up to two slots. [Apple's slot guide](https://support.apple.com/en-us/101640) places modules in slots 1 and 2 and in slots 3 and 4, and the installation guide says "MPX Modules must be installed in PCIe expansion slots 1 and 3." None of this makes MPX mandatory. Greg Gant's [Mac Pro 2019 upgrade guide](https://blog.greggant.com/posts/2021/12/19/definitive-mac-pro-2019-upgrade-guide.html) states that "MPX is not a requirement for GPUs," and because the Mac Pro 2019s use UEFI, all aftermarket GPUs output a boot screen.
@@ -54,6 +59,11 @@ Slots are the third. Apple's slot guide lists slots 1, 3, 4 and 5 at up to x16 l
 ## Which standard cards macOS will drive
 
 Apple's PCIe card list puts the rule in one sentence: "Mac Pro supports the same GPUs that are supported by external graphics processors (eGPUs)." In practice that means the AMD cards on Apple's eGPU list, none newer than the RX 6000 series.
+
+<figure>
+<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-2.jpg" alt="Front view of an AMD Radeon RX 6800 XT graphics card" width="1280" height="612" loading="lazy" decoding="async">
+<figcaption>An AMD Radeon RX 6800 XT graphics card, a model AMD released in 2020. It is on Apple's eGPU list for macOS Big Sur 11.4 or later, so a 2019 Mac Pro can use it in macOS without an MPX module. Photo: Vitaly Zdanevich, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Amd-radeon-rx6800xt-from2020year-front.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The [eGPU support list](https://support.apple.com/en-us/102363) names these cards:
 

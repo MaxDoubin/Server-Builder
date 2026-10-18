@@ -25,6 +25,11 @@ Both chassis support two power supplies. The R540 overview lists "Two AC and DC 
 
 The R540 is the storage-dense option of the pair. Dell's [supported configurations overview](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/supported-configurations) says it takes "14 drives or solid-state drives," and [GoToMojo](https://www.gotomojo.com/servers/dell-emc-poweredge/r540/) breaks that into up to 12 front 3.5-inch bays and two rear 3.5-inch bays.
 
+<figure>
+<img src="/images/blog/poweredge-r540-vs-r740/photo-1.jpg" alt="Top of a Seagate Exos X18 18TB enterprise hard drive with its label facing up" width="1400" height="1148" loading="lazy" decoding="async">
+<figcaption>A Seagate Exos X18 18TB enterprise hard drive, seen from above in a 2022 photo. It is a 3.5-inch drive, the size the R540 takes in all 14 of its bays and the R740 takes in up to eight front bays. Photo: PantheraLeo1359531, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Seagate_EXOS_X18_18_TB_20221006_oblique_top_view_HOF05349cens.png">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The R740 holds more drives in total, but its front bay mix is different. [itcreations](https://www.itcreations.com/dell/dell-poweredge-r740-server) lists up to 16 x 2.5-inch SAS/SATA bays or up to 8 x 3.5-inch bays. If your storage is 3.5-inch disks, the R740 tops out at eight in its front configurations.
 
 The bay count also sets the largest pool you can build without an external shelf. Twelve front bays and two rear bays give the R540 14 drive positions in one chassis. The R740's 2.5-inch option trades drive size for count, so it suits SSD pools where the number of drives matters more than the capacity of each bay. The R540 listings show only 3.5-inch bays, while Dell's [R540 technical specifications](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/technical-specifications) include sections on installing 2.5-inch drives into 3.5-inch drive adapters. For native 2.5-inch bays, the R740 is the option the listings show.
@@ -34,6 +39,11 @@ Both models list the same internal controller families: PERC H330, H730p, H740p,
 ## Memory and CPUs: the R740 holds 24 DIMMs
 
 The R540 has 16 DDR4 DIMM slots and processors with up to 20 cores each ([itcreations](https://www.itcreations.com/dell/dell-poweredge-r540-server)). GoToMojo lists 1TB as the maximum ([GoToMojo](https://www.gotomojo.com/servers/dell-emc-poweredge/r540/)), while itcreations lists 1TB RDIMM and 2TB LRDIMM for second generation processors, although its overview gives 512GB for RDIMM. Dell's [R540 technical specifications](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/technical-specifications) list 16 DIMM slots but no memory maximum, so ask Dell for the limit for your processor generation before ordering modules.
+
+<figure>
+<img src="/images/blog/poweredge-r540-vs-r740/photo-2.jpg" alt="Front of a Micron Crucial 32GB DDR4-2666 ECC LRDIMM server memory module" width="1400" height="1399" loading="lazy" decoding="async">
+<figcaption>A Micron Crucial 32GB DDR4-2666 LRDIMM with ECC, photographed in 2026. The R740 listings rate the server at 3.0TB with load-reduced modules like this one, against 1.5TB with RDIMMs. Photo: ITEagle Europe - Sebastiaan Broekhoven, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Micron_Crucial_32GB_DDR4-2666_LRDIMM_ECC_MTA36ASF4G72LZ-2G6D1SG_-_front_view.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The R740 has 24 DIMM slots ([Dell](https://www.dell.com/support/manuals/en-us/poweredge-r740/per740_ism_pub/expansion-card-installation-guidelines)). Its listed maximums are 1.5TB of RDIMM and 3.0TB of LRDIMM, and its processors go up to 28 cores each ([itcreations](https://www.itcreations.com/dell/dell-poweredge-r740-server)). Module type matters as much as slot count here. Above 1.5TB, the R740 listings point to load-reduced LRDIMMs, so a build that needs more memory than RDIMMs allow has to use LRDIMMs.
 

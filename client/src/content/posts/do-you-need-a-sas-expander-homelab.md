@@ -7,6 +7,11 @@ You have more drives than your HBA has connectors, or a backplane that came with
 
 An HBA (host bus adapter) sits in a PCIe slot and talks to drives through its own SAS ports. Broadcom's user guide for the 9300-8i describes eight lanes of 12 Gb/s SAS, delivered through two x4 internal mini-SAS HD (SFF-8643) connectors, with a PCIe 3.0 x8 host interface ([Broadcom](https://docs.broadcom.com/doc/12354877)).
 
+<figure>
+<img src="/images/blog/do-you-need-a-sas-expander-homelab/photo-1.jpg" alt="Internal SFF-8643 mini-SAS HD connector, the four-lane connector type used on SAS-3 HBAs such as the 9300-8i" width="1400" height="1109" loading="lazy" decoding="async">
+<figcaption>An internal mini-SAS HD (SFF-8643) connector for four SAS lanes, photographed in 2016. A 9300-8i uses two connectors of this type, and a fan-out cable splits each one into four drive connections. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:SFF-8643_SMC.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 A fan-out cable splits one x4 connector into four direct drive connections, so the two connectors on a 9300-8i reach eight drives with no expander at all ([Techtellectual](https://techtellectual.com/sas-expander-vs-hba/)). Each direct drive also has its own link. A SAS-3 port carries 1,200 MB/s ([Thomas-Krenn](https://www.thomas-krenn.com/en/wiki/Serial_Attached_SCSI_Standards_Overview)), and a 20TB Exos X20 is rated at a maximum sustained 285 MB/s at its outer diameter ([StorageReview](https://www.storagereview.com/review/seagate-exos-x20-20tb-enterprise-hdd-review)). For one drive, the link is never the limit.
 
 The limit of direct attach is the connector count. Once you have more drives than connectors, the choices are a second HBA, a card with more ports, or an expander.
@@ -58,6 +63,11 @@ The HBA side needs the same care. OpenZFS says "It is best to use a HBA instead 
 ## SATA drives behind an expander
 
 Wikipedia says SAS controllers can reach SATA devices "through SAS expanders using Serial ATA Tunneling Protocol (STP)" ([Wikipedia](https://en.wikipedia.org/wiki/Serial_Attached_SCSI)), while OpenZFS says "Never place SATA disks into a SAS expander without a SAS interposer" ([OpenZFS](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)). Direct attach avoids the question. Wikipedia also describes the other path, in which SATA devices are "directly connected using native SATA protocol" ([Wikipedia](https://en.wikipedia.org/wiki/Serial_Attached_SCSI)). Check the backplane vendor's manual for SATA support before you mix drive types, and keep an all-SATA pool on direct attach if the manual says nothing.
+
+<figure>
+<img src="/images/blog/do-you-need-a-sas-expander-homelab/photo-2.jpg" alt="Connectors of a SAS hard drive and a SATA hard drive, shown for comparison" width="1400" height="327" loading="lazy" decoding="async">
+<figcaption>A comparison of the SAS and SATA connectors on 3.5-inch hard drives. A SAS backplane slot accepts either kind of drive, which is how SATA drives end up behind an expander. Photo: Gmelander, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:SASvsSATA_Connector.JPG">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 ## What breaks
 

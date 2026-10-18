@@ -11,6 +11,11 @@ Someone with an 11th generation PowerEdge, such as an R610, R710 or T610, opens 
 
 [Wikipedia's Dell DRAC article](https://en.wikipedia.org/wiki/Dell_DRAC) says "Certain features are not available for the Express version," and it names "the remote console functionality and the vFlash SD card slot" among them. The same article says that taking advantage of "storage greater than 256 MB on the iDRAC6 enterprise" requires a vFlash SD card, which Express does not have. [Dell's virtual media support article](https://www.dell.com/support/kbdoc/en-us/000124001/using-the-virtual-media-function-on-idrac-6-7-8-and-9) adds that the "Enterprise module (iDRAC6) is required to access this function." [Velocity Tech Solutions' license guide](https://velocitytechsolutions.com/blog/idrac-license-level-guide-tech-help-blog/) says Express "includes the majority of iDrac features" but has none of the virtual console functionality.
 
+<figure>
+<img src="/images/blog/idrac-6-express-vs-enterprise/photo-1.jpg" alt="Two Crucial SD memory cards, a 1 GB card on the left and a 2 GB card on the right, on a white background" width="1400" height="933" loading="lazy" decoding="async">
+<figcaption>Crucial 1 GB and 2 GB SD cards bought in 2007, shown from the front. iDRAC6 Enterprise has a vFlash slot that takes SD cards, a feature Express does not have. Photo: Multicherry, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Crucial_SD_Cards_2007_1GB_and_2GB_%28front%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 | Feature | iDRAC6 Express | iDRAC6 Enterprise |
 |---|---|---|
 | Remote console (Virtual Console) | Not available | Available |
@@ -60,6 +65,11 @@ Listings are easy to misread. [A 2015 forum thread](https://www.dell.com/communi
 ## What this means
 
 Assume Express until the console test says otherwise. In practice the order is simple: run the console test, check Java only after the tier is confirmed, and buy a card only after its label or part number reads Enterprise. If you need a screen, the Enterprise tier is the only iDRAC6 option that provides one. If the work is limited to tasks that racadm, SSH or the web interface can do, the Enterprise card is not needed.
+
+<figure>
+<img src="/images/blog/idrac-6-express-vs-enterprise/photo-2.jpg" alt="Open 1U rack-mount console drawer with a raised LCD monitor and a built-in keyboard" width="1400" height="1240" loading="lazy" decoding="async">
+<figcaption>A Chassis Plans CPC1-C19 rack-mount KVM console, a 1U clamshell drawer with an LCD monitor and keyboard, in a 2013 product photo. Without iDRAC6 Enterprise there is no remote screen, so the server's video has to be viewed on a locally attached display such as this one. Photo: David Lippincott for Chassis Plans, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Rackmount-KVM.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Licensing changed on later servers. [Velocity Tech Solutions' license guide](https://velocitytechsolutions.com/blog/idrac-license-level-guide-tech-help-blog/) says that starting with 12th generation servers, Dell made iDRAC levels "a licensing cost rather than a piece of hardware you can install into your system." For the iDRAC 9 license side, see the [iDRAC 9 Enterprise license](/blog/idrac-9-enterprise-license) post. If you cannot log in after a reset, the [iDRAC default password](/blog/idrac-default-password) post covers default passwords by generation and how to reset them.
 

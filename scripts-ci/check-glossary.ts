@@ -190,6 +190,8 @@ const NOT_JARGON: Record<string, string> = {
   H330: "a Dell PERC controller model name, like the H730",
   LSI: "a company name, now part of Broadcom",
   HPE: "a company name (Hewlett Packard Enterprise), like NVIDIA and AMD",
+  HP: "a company name (Hewlett-Packard, before the 2015 split into HP Inc. and HPE), like HPE and AMD",
+  SR: "appears inside SR-IOV and in short-range optic names such as 10GBASE-SR, each spelled out by the article that uses it",
   RX: "part of AMD's Radeon RX GPU model names (RX 580, RX 6900 XT), not a term",
   R540: "a Dell PowerEdge server model name, like the R730 and R740",
   II: "part of the Radeon Pro Vega II product name, a Roman numeral, not an acronym",

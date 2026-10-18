@@ -57,6 +57,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Which card to buy for ZFS or TrueNAS: the H330 has RAID and no cache, the HBA330 is non-RAID. Dell's queue depths, PowerEdge fit and crossflash risks.",
     coverImage: "/images/blog/dell-hba330-vs-h330.jpg",
+    coverCredit: {
+      author: "© Raimond Spekking",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07-2168.jpg",
+    },
     content: `
 ## The problem
 
@@ -65,6 +71,11 @@ Someone running a Dell PowerEdge server who has to choose between a PERC H330 an
 ## The H330 is a RAID card, and the HBA330 is not
 
 Dell's [PERC 9 card specifications](https://www.dell.com/support/manuals/en-us/poweredge-rc-h330/perc9ugpublication/perc-card-specifications?guid=guid-ff4e55fb-921b-4445-9ee3-768d80807f2a&lang=en-us) list RAID levels 0, 1, 5, 10 and 50 for the H330 and describe it as a "Dell Adapter SAS RAID-on-Chip, 8-port with LSI 3008 chipset." Dell's [HBA card specifications](https://www.dell.com/support/manuals/en-us/dell-sas-hba-12gbps/dell_hba_ug_publication/dell-hba-card-specifications?guid=guid-06cb2c46-07fb-4f69-b558-fa0a275d1d51&lang=en-us) give the HBA330 the same LSI 3008 chipset, describe its processor as a "Dell Adapter SAS I/O controller," and mark "Non-RAID or pass through mode" as "Yes." A Dell community moderator put the difference in one line on August 12, 2020: "HBA330 Controller, 12Gbps Adapter does NOT do RAID. H330 can." ([Dell Community thread, August 2020](https://www.dell.com/community/en/conversations/poweredge-hddscsiraid/perc-h330-vs-hba330-controller-vs-no-raid-for-small-medical-office-server/647f8b37f4ccf8a8deb44710))
+
+<figure>
+<img src="/images/blog/dell-hba330-vs-h330/photo-1.jpg" alt="Close-up of a RAID controller cache board with a row of five memory chips and a battery manager chip" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>The battery-backed write cache board from a Dell PERC 4e/DC controller, photographed in 2024, with five DDR SDRAM chips and a Linear Technology battery manager chip. The H330 has neither a cache nor a battery backup unit. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07_-_Battery_Backed_Write_Cache-2170.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The table compares the attributes that matter for a storage build.
 
@@ -95,6 +106,11 @@ Owner reports put a number on it, though, and they come from a single forum thre
 ## ZFS and TrueNAS: use the HBA330
 
 The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) sets the position plainly: "ZFS and TrueNAS provide a built-in RAID that protects your data better than any hardware RAID card." For a card with a pass-through mode, it says to "do not use their RAID facility if your hardware RAID card supports HBA mode, also known as passthrough or JBOD mode." It also lists risks: some cards can "Mask disk serial number and S.M.A.R.T. health information" and can "Perform slower than their HBA equivalents."
+
+<figure>
+<img src="/images/blog/dell-hba330-vs-h330/photo-2.jpg" alt="Screenshot of the TrueNAS 12.0-U2.1 web user interface" width="1400" height="913" loading="lazy" decoding="async">
+<figcaption>The TrueNAS 12.0-U2.1 web interface, in a screenshot taken in April 2021. TrueNAS manages its own ZFS pools, and its hardware guide advises against using a RAID card's RAID facility when the card supports HBA mode. Photo: Fil.musi, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:TrueNAS_Web_User_Interface.png">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Disk identity is the other half of the problem. In an [OpenZFS discussion](https://github.com/openzfs/zfs/discussions/14458), a contributor writes that "since some RAIDs do not pass through original disk identification, and TrueNAS requires unique disk serial numbers." The same contributor says an HBA "does not do anything other than delivering commands and data to the disks," and calls that setup "the preferred configuration for ZFS."
 
@@ -157,6 +173,12 @@ For ZFS or TrueNAS on a PowerEdge, the HBA330 is the card the vendor tables and 
     excerpt:
       "An HBA connects drives directly, while an expander adds drive ports and shares one SAS link. Here is the bandwidth math and when a homelab needs one.",
     coverImage: "/images/blog/do-you-need-a-sas-expander-homelab.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:BPN-SAS2-216EL2_disk_backplane_with_SAS_expander_close_view.jpg",
+    },
     content: `
 ## The problem
 
@@ -165,6 +187,11 @@ You have more drives than your HBA has connectors, or a backplane that came with
 ## How an HBA connects drives
 
 An HBA (host bus adapter) sits in a PCIe slot and talks to drives through its own SAS ports. Broadcom's user guide for the 9300-8i describes eight lanes of 12 Gb/s SAS, delivered through two x4 internal mini-SAS HD (SFF-8643) connectors, with a PCIe 3.0 x8 host interface ([Broadcom](https://docs.broadcom.com/doc/12354877)).
+
+<figure>
+<img src="/images/blog/do-you-need-a-sas-expander-homelab/photo-1.jpg" alt="Internal SFF-8643 mini-SAS HD connector, the four-lane connector type used on SAS-3 HBAs such as the 9300-8i" width="1400" height="1109" loading="lazy" decoding="async">
+<figcaption>An internal mini-SAS HD (SFF-8643) connector for four SAS lanes, photographed in 2016. A 9300-8i uses two connectors of this type, and a fan-out cable splits each one into four drive connections. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:SFF-8643_SMC.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 A fan-out cable splits one x4 connector into four direct drive connections, so the two connectors on a 9300-8i reach eight drives with no expander at all ([Techtellectual](https://techtellectual.com/sas-expander-vs-hba/)). Each direct drive also has its own link. A SAS-3 port carries 1,200 MB/s ([Thomas-Krenn](https://www.thomas-krenn.com/en/wiki/Serial_Attached_SCSI_Standards_Overview)), and a 20TB Exos X20 is rated at a maximum sustained 285 MB/s at its outer diameter ([StorageReview](https://www.storagereview.com/review/seagate-exos-x20-20tb-enterprise-hdd-review)). For one drive, the link is never the limit.
 
@@ -218,6 +245,11 @@ The HBA side needs the same care. OpenZFS says "It is best to use a HBA instead 
 
 Wikipedia says SAS controllers can reach SATA devices "through SAS expanders using Serial ATA Tunneling Protocol (STP)" ([Wikipedia](https://en.wikipedia.org/wiki/Serial_Attached_SCSI)), while OpenZFS says "Never place SATA disks into a SAS expander without a SAS interposer" ([OpenZFS](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)). Direct attach avoids the question. Wikipedia also describes the other path, in which SATA devices are "directly connected using native SATA protocol" ([Wikipedia](https://en.wikipedia.org/wiki/Serial_Attached_SCSI)). Check the backplane vendor's manual for SATA support before you mix drive types, and keep an all-SATA pool on direct attach if the manual says nothing.
 
+<figure>
+<img src="/images/blog/do-you-need-a-sas-expander-homelab/photo-2.jpg" alt="Connectors of a SAS hard drive and a SATA hard drive, shown for comparison" width="1400" height="327" loading="lazy" decoding="async">
+<figcaption>A comparison of the SAS and SATA connectors on 3.5-inch hard drives. A SAS backplane slot accepts either kind of drive, which is how SATA drives end up behind an expander. Photo: Gmelander, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:SASvsSATA_Connector.JPG">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 ## What breaks
 
 - **One SAS-3 cable on a 24-bay expander.** The link carries 4,800 MB/s, while 24 drives at 285 MB/s can ask for 6,840 MB/s, about 1.4 times the link. Fix: cable every uplink the backplane offers that your HBA can drive, and check the backplane manual to see which connectors link to the HBA.
@@ -254,6 +286,12 @@ Use an HBA on its own while your drive count fits its connectors. For eight driv
     excerpt:
       "Which small FortiGates lose SSL VPN on 7.6, which stay on 7.4, how long each branch is supported, and the build Fortinet recommends for the 40F, 60F, 70G and 90G.",
     coverImage: "/images/blog/fortios-7-6-vs-7-4.jpg",
+    coverCredit: {
+      author: "Dev Jadiya",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_exhibition_stall.jpg",
+    },
     content: `
 ## The problem
 
@@ -280,6 +318,11 @@ The two support dates mean different things. After End of Engineering Support, a
 ## Which small FortiGates can run 7.6
 
 Hardware decides the question before features do. The [FortiOS 7.4.11 release notes](https://docs.fortinet.com/document/fortigate/7.4.11/fortios-release-notes/) list the FG-60E, FG-61E, FG-80E, FG-81E, FG-90E and FG-91E. The [7.6.7 release notes](https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/) list the FG-30G, FG-40F, FG-50G, FG-60F, FG-61F, FG-70F, FG-70G, FG-80F, FG-90G and FG-100F, and do not list the 60E, 80E or 90E. If you own one of those three, 7.4 is the newest branch whose release notes name your model, and 7.4 reaches End of Support on November 11, 2028. Replacing a 60E is covered in [FortiGate 60E to 60F migration](/blog/fortigate-60e-to-60f-migration).
+
+<figure>
+<img src="/images/blog/fortios-7-6-vs-7-4/photo-1.jpg" alt="Partly assembled equipment rack holding networking and server hardware at a large computer party" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>A rack under construction at The Gathering 2019 computer party in Hamar, Norway, holding Fortinet and Supermicro hardware. Which FortiOS branch a FortiGate can run depends first on its model, and the 7.6.7 release notes do not list the 60E, 80E or 90E. Photo: DiFronzo, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:The_Gathering_2019_-_Rack_%28under_constructions%29_%2847730325011%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Fortinet's own pick per model comes from its [Recommended Release tip](https://community.fortinet.com/fortigate-3/technical-tip-recommended-release-for-fortios-116639), which says its table is "the latest as of June 2026" and is reviewed every quarter. It requires "40,000 or more FortiGates" running the build and no high-severity vulnerabilities without a mitigation or workaround.
 
@@ -440,6 +483,12 @@ Do the SSL VPN work before the upgrade, not after. On a 40F or 60F the first 7.6
     excerpt:
       "The FortiWiFi 40F is the FortiGate 40F with one radio, a higher power draw and the same ports, processor and rated throughput. Here is what to check before you buy.",
     coverImage: "/images/blog/fortiwifi-40f-vs-fortigate-40f.jpg",
+    coverCredit: {
+      author: "Lucasbosch",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:RP-SMA_connectors_in_WiFi_antennas.jpg",
+    },
     content: `
 ## The problem
 
@@ -471,6 +520,11 @@ The QuickStart Guide lists "3x WiFi Antennas (WiFi models only)" in its package 
 ## Power and heat are the clearest hardware difference
 
 The power and heat rows are split by model, so they are the clearest difference after the radio. The FortiGate 40F draws 7.74 W on average and 9.46 W at maximum. The FortiWiFi 40F draws 14.6 W on average and 16.6 W at maximum, and it dissipates 56.64 BTU/hr against 52.55 BTU/hr for the wired unit. Both list an input rating of 12Vdc, 3A, and both measure 1.5 x 8.5 x 6.3 inches, so the difference is in the draw, not the adapter or the footprint.
+
+<figure>
+<img src="/images/blog/fortiwifi-40f-vs-fortigate-40f/photo-1.jpg" alt="Plug-in power monitor in a UK wall socket, its display showing a reading of 10 watts" width="1400" height="1299" loading="lazy" decoding="async">
+<figcaption>A Prodigit 2000MU plug-in power and energy monitor in a UK mains socket in 2009, reading 10 watts for the appliance plugged into it. A meter like this shows whether a unit sits near the FortiGate 40F's 7.74 W average or the FortiWiFi 40F's 14.6 W. Photo: Gareth.randall, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:Plug-in_Power_%26_Energy_Monitor_in_UK_Domestic_Mains_Socket.jpeg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The FortiWiFi power and heat figures come from the [AV Firewalls table](https://www.avfirewalls.com/fortigate-40f.asp) and the [FortiGate/FortiWiFi 40F Series data sheet](https://cdn.blueally.com/avfirewalls/datasheets/fortigate/fortigate-fortiwifi-40f-series-new.pdf), which carries the same values. Fortinet's own [FortiGate 40F data sheet](https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-40f-series.pdf) has a specification table with only FortiGate 40F and 40F-3G4G columns, so it does not list the FortiWiFi draw. For the cellular model it gives 15.8 W and 18.6 W, and that model has no wireless interface.
 
@@ -516,6 +570,11 @@ A firewall does not have to be a dedicated appliance: the Pentium III PC in the 
 
 Pick the FortiGate 40F if access points or a separate wireless system handle your Wi-Fi. The wired unit draws less power and has the same ports, processor and rated throughput. Pick the FortiWiFi 40F if one box must provide wireless for a small set of clients and you can budget for 16.6 W at maximum.
 
+<figure>
+<img src="/images/blog/fortiwifi-40f-vs-fortigate-40f/photo-2.jpg" alt="Ubiquiti UniFi AC Lite wireless access point installed at a childcare center in Brisbane" width="788" height="1400" loading="lazy" decoding="async">
+<figcaption>A Ubiquiti UniFi AC Lite access point installed at a childcare center in Brisbane, Australia, in 2018. A separate access point like this one is the setup where the wired FortiGate 40F makes more sense. Photo: ServerGuruBrisbane, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Unifi_AC_Lite_Access_Point.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Whichever you choose, check the FortiWiFi power row on the series data sheet before you buy, since Fortinet's FortiGate 40F data sheet does not carry it. The FortiGate 40F data sheet lists 16 FortiAPs total and 8 in tunnel mode. If you buy a used unit, check the RAM before you rely on SSL VPN, because a 2 GB unit loses web and tunnel mode on 7.6.0 and later, whichever Wi-Fi model you pick. If you are also weighing the 60F, the [60E to 60F migration guide](/blog/fortigate-60e-to-60f-migration) covers that move.
 
 ## References
@@ -541,6 +600,12 @@ Whichever you choose, check the FortiWiFi power row on the series data sheet bef
     excerpt:
       "iDRAC10 on 17th generation PowerEdge cuts four license tiers to three, removes WSMan and Group Manager, and defaults to TLS 1.3 with SNMP off. Here is what changes for licenses and tools.",
     coverImage: "/images/blog/idrac-10-vs-idrac-9.jpg",
+    coverCredit: {
+      author: "Dell Inc",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Experience_our_server_racks_%288531003630%29.jpg",
+    },
     content: `
 ## The problem
 
@@ -651,6 +716,11 @@ The login story matches iDRAC9, which also shipped with a random default passwor
 **OpenManage Enterprise 3.10 may fail to discover 17th generation servers.**
 One owner reported on the [Dell Community forum](https://www.dell.com/community/en/conversations/dell-openmanage-enterprise/http-status-404-operation-failed-eemi-code-cgen1013/69e8a63a5256992330b62206) that OME 3.10.2 failed to discover 20 new R770s with an HTTP 404 and EEMI code CGEN1013, and a reply in the thread said OME 3.10 does not support iDRAC10. The poster reported that moving to OME 4.6 fixed it. Fix: upgrade to OME 4.6 and run iDRAC10 firmware 1.20.50.50 or later, the minimum in Dell's 4.6 support matrix.
 
+<figure>
+<img src="/images/blog/idrac-10-vs-idrac-9/photo-1.jpg" alt="Jenkins web page showing the text output of an Ansible playbook run" width="960" height="608" loading="lazy" decoding="async">
+<figcaption>Output of an Ansible playbook run displayed in Jenkins, in a 2016 screenshot. Dell's dellemc.openmanage Ansible collection added its first iDRAC10 enhancement in release 9.8.0. Photo: Claudia Meindl, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Ansible-playbook-output-jenkins.png">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 **WS-Man scripts and older provisioning drivers fail.**
 WSMan is removed outright, not deprecated, and Ironic's -wsman interfaces are deprecated upstream. Fix: rewrite calls against Redfish, use Dell's Redfish scripts or the Ansible collection, and switch Ironic nodes to the redfish interfaces.
 
@@ -700,6 +770,12 @@ Treat iDRAC10 as iDRAC9 on new hardware with a cleanup pass. RACADM, Redfish, IP
     excerpt:
       "Express has no remote console. Enterprise adds the virtual console, virtual media and a dedicated port. Here is how to test which tier your iDRAC6 has, and what breaks.",
     coverImage: "/images/blog/idrac-6-express-vs-enterprise.jpg",
+    coverCredit: {
+      author: "Cyber-Complex Foundation",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:A_rackmount_Dell_R710_11th-generation_server_powering_the_iThena.Measurements_and_iThena.Computational_projects.jpg",
+    },
     content: `
 ## The problem
 
@@ -712,6 +788,11 @@ Someone with an 11th generation PowerEdge, such as an R610, R710 or T610, opens 
 ## Express and Enterprise split the features
 
 [Wikipedia's Dell DRAC article](https://en.wikipedia.org/wiki/Dell_DRAC) says "Certain features are not available for the Express version," and it names "the remote console functionality and the vFlash SD card slot" among them. The same article says that taking advantage of "storage greater than 256 MB on the iDRAC6 enterprise" requires a vFlash SD card, which Express does not have. [Dell's virtual media support article](https://www.dell.com/support/kbdoc/en-us/000124001/using-the-virtual-media-function-on-idrac-6-7-8-and-9) adds that the "Enterprise module (iDRAC6) is required to access this function." [Velocity Tech Solutions' license guide](https://velocitytechsolutions.com/blog/idrac-license-level-guide-tech-help-blog/) says Express "includes the majority of iDrac features" but has none of the virtual console functionality.
+
+<figure>
+<img src="/images/blog/idrac-6-express-vs-enterprise/photo-1.jpg" alt="Two Crucial SD memory cards, a 1 GB card on the left and a 2 GB card on the right, on a white background" width="1400" height="933" loading="lazy" decoding="async">
+<figcaption>Crucial 1 GB and 2 GB SD cards bought in 2007, shown from the front. iDRAC6 Enterprise has a vFlash slot that takes SD cards, a feature Express does not have. Photo: Multicherry, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Crucial_SD_Cards_2007_1GB_and_2GB_%28front%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Feature | iDRAC6 Express | iDRAC6 Enterprise |
 |---|---|---|
@@ -763,6 +844,11 @@ Listings are easy to misread. [A 2015 forum thread](https://www.dell.com/communi
 
 Assume Express until the console test says otherwise. In practice the order is simple: run the console test, check Java only after the tier is confirmed, and buy a card only after its label or part number reads Enterprise. If you need a screen, the Enterprise tier is the only iDRAC6 option that provides one. If the work is limited to tasks that racadm, SSH or the web interface can do, the Enterprise card is not needed.
 
+<figure>
+<img src="/images/blog/idrac-6-express-vs-enterprise/photo-2.jpg" alt="Open 1U rack-mount console drawer with a raised LCD monitor and a built-in keyboard" width="1400" height="1240" loading="lazy" decoding="async">
+<figcaption>A Chassis Plans CPC1-C19 rack-mount KVM console, a 1U clamshell drawer with an LCD monitor and keyboard, in a 2013 product photo. Without iDRAC6 Enterprise there is no remote screen, so the server's video has to be viewed on a locally attached display such as this one. Photo: David Lippincott for Chassis Plans, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Rackmount-KVM.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Licensing changed on later servers. [Velocity Tech Solutions' license guide](https://velocitytechsolutions.com/blog/idrac-license-level-guide-tech-help-blog/) says that starting with 12th generation servers, Dell made iDRAC levels "a licensing cost rather than a piece of hardware you can install into your system." For the iDRAC 9 license side, see the [iDRAC 9 Enterprise license](/blog/idrac-9-enterprise-license) post. If you cannot log in after a reset, the [iDRAC default password](/blog/idrac-default-password) post covers default passwords by generation and how to reset them.
 
 ## References
@@ -790,6 +876,12 @@ Licensing changed on later servers. [Velocity Tech Solutions' license guide](htt
     excerpt:
       "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
     coverImage: "/images/blog/ilo-6-vs-ilo-7.jpg",
+    coverCredit: {
+      author: "Btrs",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg",
+    },
     content: `
 ## The problem
 
@@ -840,6 +932,11 @@ For a single server you sit next to, the Prodisk guide says iLO Standard may be 
 
 Techzine says iLO 7 allows management "even when they are not currently connected to the standard network," with only an out-of-band management connection, which is the path you need when the standard network is unavailable. The concept matches [IPMI and Out-of-Band Management Explained](/blog/ipmi-remote-management), so plan the management network as its own path.
 
+<figure>
+<img src="/images/blog/ilo-6-vs-ilo-7/photo-1.jpg" alt="HP ProLiant servers with temporary network cables attached" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>HP ProLiant servers with temporary network cabling, photographed in April 2008. The photographer planned to use orange cables to mark the management network for the servers' iLO connections. Photo: Jemimus, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_ProLiant_servers_-_IMG_3356.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Hardware swaps are easier with the removable module. StorageReview says iLO 7 can "function as a removable module, making it easier to replace hardware components without losing system settings." The same change helps verify that parts are original HPE components, which StorageReview ties to counterfeit hardware risk in the supply chain.
 
 Key management is the other planned change. StorageReview reports that by 2026, HPE plans to introduce KMIP support across both iLO 6 and iLO 7, "allowing better integration with local and remote key management systems." Because KMIP is still a plan, check the release notes for your firmware before you build a key management workflow around it.
@@ -847,6 +944,11 @@ Key management is the other planned change. StorageReview reports that by 2026, 
 ## What breaks
 
 **The remote console stops working once the OS boots.** On iLO 6, the Standard remote console is pre-OS only, and the full console is an Advanced feature. Without an Advanced license, you cannot use the remote graphical console once the operating system is running. Fix: apply an iLO Advanced license to each server that needs the full console, virtual media, directory login or two-factor authentication.
+
+<figure>
+<img src="/images/blog/ilo-6-vs-ilo-7/photo-2.jpg" alt="HP TFT7210R 1U rack-mount flat panel monitor in use in a server rack" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>An HP TFT7210R 1U rack-mount console monitor in use, photographed in April 2008. Without an iLO Advanced license, the remote graphical console stops once the OS is running, so seeing the server's screen can mean standing at a local console like this one. Photo: Jemimus, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_TFT7210R_1U_console_in_use_-_IMG_3358.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 **A refurbished server arrives without the Advanced license.** Prodisk says some refurbished servers ship with an active iLO Advanced license and others are Standard-only, so you license Advanced separately if you need KVM or virtual media. A server that looks cheap can cost more once Advanced is added. Fix: ask the seller whether iLO Advanced is active, and add the cost of a separate Advanced license before you compare prices.
 
@@ -884,6 +986,12 @@ Before you order, PC Server and Parts says HPE's QuickSpecs name the controller 
     excerpt:
       "SAS2308 vs SAS2008, PCIe 3.0 vs 2.0 limits, what IT firmware changes, measured speeds, and which card to buy for a ZFS or TrueNAS pool.",
     coverImage: "/images/blog/lsi-9207-8i-vs-9211-8i.jpg",
+    coverCredit: {
+      author: "Phiarc",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_SAS_9207-8i.jpg",
+    },
     content: `
 ## The problem
 
@@ -892,6 +1000,11 @@ Buyers comparing a used LSI 9211-8i with a 9207-8i for a ZFS or TrueNAS server n
 ## Two chips with the same port count
 
 The 9211-8i is built on the SAS2008 controller, and the 9207-8i uses the SAS2308. [ServeTheHome](https://www.servethehome.com/buyers-guides/top-hardware-components-for-truenas-freenas-nas-servers/top-picks-truenas-freenas-hbas/) files the 9207-8i in the SAS 2308 generation and the 9211-8i in the SAS 2008 generation. Both cards expose eight internal 6 Gb/s SAS ports. The [SAS2008 controller carries those eight ports on a PCIe 2.0 x8 card](https://computingforgeeks.com/best-hba-card-truenas/), while the [9207-8i uses two internal SFF-8087 connectors and a PCIe 3.0 x8 host link](https://www.thessdreview.com/our-reviews/sata-3/lsi-sas-9207-8i-pcie-3-0-host-bus-adapter-quick-preview/). [StorageReview's review](https://www.storagereview.com/review/lsi-sas-9207-8i-e-host-bus-adapter-review) pairs the SAS2308 with a dual core 800MHz PowerPC processor, lists Fusion MPT 2.0 support, and says 256 non-RAID SAS and SATA devices can attach to the 9207-8i. The FreeBSD [mps(4) driver](https://man.freebsd.org/cgi/man.cgi?query=mps&sektion=4) lists both the SAS 2008 and SAS 2308 as supported, so driver support does not separate the two cards.
+
+<figure>
+<img src="/images/blog/lsi-9207-8i-vs-9211-8i/photo-1.jpg" alt="Front side of an LSI SAS9211-8i PCIe x8 SAS host bus adapter card" width="1400" height="964" loading="lazy" decoding="async">
+<figcaption>The front of an LSI SAS9211-8i host bus adapter, board H3-25250-02B, photographed in 2013. Its SAS2008 controller and PCIe 2.0 x8 link make it the older of the two cards. Photo: Solomon203, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9211-8i_H3-25250-02B_face.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | | LSI 9211-8i | LSI 9207-8i |
 |---|---|---|
@@ -935,6 +1048,11 @@ The (IT) suffix marks IT firmware, and the same thread shows 0x2713 (IR) for a c
 ## Which card to buy for ZFS or TrueNAS
 
 Start with the disks and the slot. For spinning disks on PCIe 2.0 hardware, an older HBA such as the 9211-8i is enough. A poster in the 2020 TrueNAS thread wrote that with only eight spinning disks, you can stay with an old HBA, because the disks only run at 6 Gbps. For SSDs, or any board with PCIe 3.0 slots, the 9207-8i is the better fit, because its x8 link has nearly twice the ceiling.
+
+<figure>
+<img src="/images/blog/lsi-9207-8i-vs-9211-8i/photo-2.jpg" alt="Close view of an SFF-8087 internal mini-SAS connector" width="1400" height="1189" loading="lazy" decoding="async">
+<figcaption>An SFF-8087 internal mini-SAS connector, which carries four SAS lanes, photographed in 2016. The 9207-8i has two of these connectors, which is why one card can attach only eight drives without an expander. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:SFF-8087_SMC.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 If the two cards cost about the same, a poster in the Unraid thread would pick the 9207-8i. In its update dated October 13, 2026, [ComputingForgeeks](https://computingforgeeks.com/best-hba-card-truenas/) puts a genuine card flashed to P20 IT firmware at about $60 to $80, in its 9211-8i section.
 
@@ -981,6 +1099,12 @@ Match the card to the disks and the slot. Spinning disks on PCIe 2.0 hardware ca
     excerpt:
       "Why the LSI 9300-8i runs hot, the airflow Broadcom specifies, how overheating shows up in a quiet case, and how to add a fan without blocking the heat sink.",
     coverImage: "/images/blog/lsi-9300-8i-cooling.jpg",
+    coverCredit: {
+      author: "Tobias Maier",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:1U_rack_mount_server_cooling_system_fan_heat-sink.jpg",
+    },
     content: `
 ## The problem
 
@@ -1004,6 +1128,11 @@ The same note sets a heat sink ceiling of 110 °C: "The measured heat sink tempe
 
 Broadcom's method measures two temperatures with the system running its intended maximum workload: the inlet air and the heat sink. The inlet air is "the temperature of the air outside of where the LSI SAS 9206-16e HBA is enclosed." For the heat sink, use an infrared thermometer to measure "the hottest point in the center of the heat sink," or a thermocouple at "the base of the heat sink (between the fins)." The note explains why the heat sink reading matters: "the heat-sink temperature is the best indicator of the temperature inside the chip, mounted to the heat sink." It also says "Most systems require the top cover be in place for proper airflow," so take the readings with the case closed.
 
+<figure>
+<img src="/images/blog/lsi-9300-8i-cooling/photo-1.jpg" alt="Handheld infrared thermometer aimed at a hot stovetop, its display reading about 232 degrees Celsius" width="1136" height="1400" loading="lazy" decoding="async">
+<figcaption>A handheld infrared thermometer reading a hot stovetop at about 232 °C, with the red dot from its positioning laser on the surface, photographed in 2020. Broadcom's method uses this kind of tool, aimed at the hottest point in the center of the heat sink. Photo: ECTran71, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:IR_thermometer_measuring_stove_temperature.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Do not count on a readout from the card itself. In an [Unraid forum thread about a 9300-16i](https://forums.unraid.net/topic/155951-parse-temperature-of-hba-9300-16i-lsi-sas3008-controller/), a moderator wrote, "AFAIK they don't have a readable temp sensor." A poster who tried storcli64 to read the controller temperature got "cannot execute binary file: Exec format error," and the thread does not show a confirmed fix.
 
 ## What overheating looks like in a desktop or quiet chassis
@@ -1019,6 +1148,11 @@ The inlet air definition matters in a tower. Broadcom's note treats a datacenter
 ## Where a fan goes and what owners used
 
 Owners have tried four placements, with these reports.
+
+<figure>
+<img src="/images/blog/lsi-9300-8i-cooling/photo-2.jpg" alt="Square Papst 512 F/2 computer cooling fan, 50 by 50 by 15 mm, with its product label visible on the hub" width="1400" height="1400" loading="lazy" decoding="async">
+<figcaption>A Papst 512 F/2, a 12 V computer cooling fan measuring 50 by 50 by 15 mm, photographed in 2016. A fan this size matches the roughly 50 mm square OEM LSI cooler that a Level1Techs poster measured. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Papst_computer_cooling_fan_512_F-2-2419.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Placement | Air source | If the fan stops | Owner report |
 |---|---|---|---|
@@ -1076,6 +1210,12 @@ The fan adds little load. The NF-A4x10's 0.6 W maximum is about 4 percent of the
     excerpt:
       "Every graphics MPX module Apple sold for the 2019 Mac Pro, the 300W and 305mm limits on standard cards, which GPUs macOS drives, and what to check before buying used.",
     coverImage: "/images/blog/mac-pro-2019-gpu-upgrade.jpg",
+    coverCredit: {
+      author: "Verte95",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:AMD_RX_6900XT_.jpg",
+    },
     content: `
 ## The problem
 
@@ -1084,6 +1224,11 @@ You own a 2019 Mac Pro (the 7,1), or are about to buy one, and its GPU is too sl
 ## What an MPX module adds over a standard PCIe card
 
 An MPX (Mac Pro Expansion) module is a card that fits one of the Mac Pro's two MPX bays. [Apple's technical specifications](https://support.apple.com/en-us/118461) say each bay provides x16 gen 3 bandwidth for graphics, x8 gen 3 bandwidth for Thunderbolt, DisplayPort video routing and "Up to 500W power for an MPX Module." Apple's [MPX installation guide](https://support.apple.com/guide/mac-pro/apd8e22bab6b/2022/mac/13) rates each PCIe slot at a maximum of 75 W, each 6-pin auxiliary connector at 75 W and each 8-pin auxiliary connector at 150 W.
+
+<figure>
+<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-1.jpg" alt="A 2019 Apple Mac Pro tower on display in an electronics store" width="1050" height="1400" loading="lazy" decoding="async">
+<figcaption>A 2019 Mac Pro on display at a Bic Camera store in Nagoya, Japan, in March 2020. Each of its two MPX bays can supply up to 500W to a module, power that a standard PCIe card has to draw from its slot and auxiliary cables. Photo: KKPCW, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_%282019_model%29_-_4.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Those bays are why a module can draw power from the bay itself and send video into the Mac's own Thunderbolt ports. Apple's [June 3, 2019 announcement](https://www.apple.com/newsroom/2019/06/apple-unveils-powerful-all-new-mac-pro-and-groundbreaking-pro-display-xdr/) said the MPX Module "is cooled by the Mac Pro system thermals," and that three fans move air through the Mac Pro.
 
@@ -1132,6 +1277,11 @@ Slots are the third. Apple's slot guide lists slots 1, 3, 4 and 5 at up to x16 l
 ## Which standard cards macOS will drive
 
 Apple's PCIe card list puts the rule in one sentence: "Mac Pro supports the same GPUs that are supported by external graphics processors (eGPUs)." In practice that means the AMD cards on Apple's eGPU list, none newer than the RX 6000 series.
+
+<figure>
+<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-2.jpg" alt="Front view of an AMD Radeon RX 6800 XT graphics card" width="1280" height="612" loading="lazy" decoding="async">
+<figcaption>An AMD Radeon RX 6800 XT graphics card, a model AMD released in 2020. It is on Apple's eGPU list for macOS Big Sur 11.4 or later, so a 2019 Mac Pro can use it in macOS without an MPX module. Photo: Vitaly Zdanevich, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Amd-radeon-rx6800xt-from2020year-front.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The [eGPU support list](https://support.apple.com/en-us/102363) names these cards:
 
@@ -1207,6 +1357,12 @@ If you need only macOS and can do without video on the Mac's built-in Thunderbol
     excerpt:
       "Apple's limit is 32GB on a single-processor tray and 64GB on a dual tray. Here is what owners run past it, with the module, speed and macOS rules.",
     coverImage: "/images/blog/mac-pro-5-1-max-ram.jpg",
+    coverCredit: {
+      author: "David Plotzki",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro%2C_profile.jpg",
+    },
     content: `
 ## The problem
 
@@ -1230,6 +1386,11 @@ For modules of equal size, Apple recommends filling the slots in the order liste
 ## Why the official figure changed after launch
 
 At the 2010 launch, Apple said the quad-core model was ["expandable up to 16GB"](https://www.apple.com/newsroom/2010/07/27Apple-Unveils-New-Mac-Pro-With-Up-to-12-Processing-Cores/) and the eight-core model was "expandable up to 32GB." OWC quotes Apple's listing from that period as "four memory slots supporting up to 16GB of main memory using 1GB, 2GB, or 4GB DIMMs" ([OWC](https://eshop.macsales.com/blog/6620-owc-confirms-2010-mac-pro-single-processor-models-can-use-32gb-ram)). OWC's blog then says that it is "allowing us to support 8GB DIMMs for up to 32GB of memory in your Quad-Core or 6-Core Mid 2010 Mac Pro." Apple's current spec adds 8GB to the module sizes it lists, and it gives 32GB for the single-processor tray. Four 4GB modules make 16GB and four 8GB modules make 32GB, so the official figure moved with the module sizes.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-max-ram/photo-1.jpg" alt="A square Intel Xeon X5690 processor package" width="806" height="605" loading="lazy" decoding="async">
+<figcaption>An Intel Xeon X5690, a six-core Westmere processor from the same generation as the Xeon W3680 in the six-core Mid 2010 Mac Pro. Intel publishes its own maximum memory figure for each Xeon, and it can differ from Apple's. Photo: © Atsushi Nunome (Computer System Laboratory at Kyoto Institute of Technology), <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Xeon_X5690_3_46GHz.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 [EveryMac's six-core listing](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2010-westmere-specs.html) still gives Apple's official figure as 16GB, while Apple's current spec says 32GB. Plan around the current spec.
 
@@ -1265,6 +1426,11 @@ That number is 128GiB in bytes, the total for eight 16GB modules. Repeat the che
 ## What breaks
 
 **Four 16GB modules in a single-processor Mac Pro exceed Apple's ceiling.** Four 16GB modules make 64GB, double the 32GB Apple lists for that tray, and Apple's spec does not list 16GB modules at all. Fix: for an Apple-listed build, use four 8GB modules for 32GB. If you go past that, treat OWC's certified 48GB as OWC's limit rather than Apple's, and confirm the result with \`sysctl -n hw.memsize\`.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-max-ram/photo-2.jpg" alt="A Mac Pro memory riser card with four DIMM slots, two of them holding FB-DIMM modules" width="1280" height="960" loading="lazy" decoding="async">
+<figcaption>A memory riser card from a 2006 Mac Pro, with FB-DIMMs in two of its four slots. Apple says DIMMs from older Macs cannot be used in the 2010 and 2012 models, which take DDR3 ECC modules. Photo: Blake Patterson, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:FB-DIMM_riser_A.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 **Filling all eight slots may drop the memory speed.** One owner reports 800MHz with eight modules and 1066MHz after removing slots 4 and 8. Why: Apple's eight-slot order fills slots 1 through 4 before slots 5 through 8, and a reply in the same thread says that populating slot 4 may increase bus loading. Fix: follow Apple's order, which for four modules on a dual-processor machine is slots 1, 2, 5 and 6, and check the layout with the Memory Slot Utility.
 
@@ -1310,6 +1476,12 @@ Going beyond those figures means accepting OWC's certification in place of Apple
     excerpt:
       "Which Xeon W chips a 2019 Mac Pro 7,1 accepts, what the socket and fans allow, and whether a 16-, 24- or 28-core swap is worth it.",
     coverImage: "/images/blog/mac-pro-7-1-cpu-upgrade.jpg",
+    coverCredit: {
+      author: "RuinDig/Yuki Uchida",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple-Store-Marunouchi---2023-04_29.jpg",
+    },
     content: `
 ## The problem
 
@@ -1318,6 +1490,11 @@ If you own a 2019 Mac Pro (model 7,1) and want more cores, or bought an 8-core a
 ## Apple lists eight to 28 cores and no post-purchase path
 
 Apple's [Mac Pro (2019) technical specifications](https://support.apple.com/en-us/118461) offer a choice of "Configure from an 8-core to 28-core Intel Xeon W processor" and name no models. Apple does not say whether the processor can be swapped after purchase. [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-28-core-2.5-xeon-w-silver-tower-workstation-2019-specs.html) names the 28-core chip directly as the W-3275M.
+
+<figure>
+<img src="/images/blog/mac-pro-7-1-cpu-upgrade/photo-1.jpg" alt="Mac Pro towers on a factory assembly line at the Flextronics plant in Austin, Texas" width="960" height="640" loading="lazy" decoding="async">
+<figcaption>2019 Mac Pro towers on the assembly line at the Flextronics plant in Austin, Texas, on November 20, 2019. Apple offered the processor as a configure-to-order choice from 8 to 28 cores and documents no swap after purchase. Photo: The White House from Washington, DC, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:President_Trump_Tours_the_Apple_Manufacturing_Plant_%2849100574702%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Apple option | Intel model | Base and max turbo | Memory speed | TDP |
 |---|---|---|---|---|
@@ -1334,6 +1511,11 @@ Memory speed follows the processor, too. Apple says the "8-core processor operat
 ## The socket is removable, and cooling sets the practical limit
 
 EveryMac's 28-core listing says "The Mac Pro (2019) model processor is mounted on an LGA 3647 (Socket P). It is removable." The chip is a socket part, not soldered to the board. The [iFixit teardown](https://www.ifixit.com/Teardown/Mac+Pro+2019+Teardown/128922) of the base model had no CPU replacement guide to turn to, so the team unscrewed the heat sink bracket from the backside of the logic board. That released both the bracket and the W-3223 from the socket together.
+
+<figure>
+<img src="/images/blog/mac-pro-7-1-cpu-upgrade/photo-2.jpg" alt="Intel Xeon Silver 4110 qualification sample, a large rectangular LGA 3647 server processor" width="1267" height="1400" loading="lazy" decoding="async">
+<figcaption>A qualification sample of the Intel Xeon Silver 4110, a Skylake-generation server chip for the LGA 3647 socket, not a Mac Pro part. The Xeon W chips in the 2019 Mac Pro use the same socket type, so the processor is removable rather than soldered to the board. Photo: PantheraLeo1359531, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Intel_Xeon_Silver_4110_%28QN09%29_20241229_HOF9668_RAW-Export.png">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Cooling is shared across the whole chassis. iFixit notes that "The Mac Pro just has front and rear fans," and describes three tower fans that pull air through the front grille, with a blower that vents hot air out the back. [OWC's teardown gallery](https://eshop.macsales.com/blog/57077-owc-teardown-of-the-2019-mac-pro/) has photos labeled "CPU retention clip" and "Metal cover for CPU Heat Sink."
 
@@ -1409,6 +1591,12 @@ Compare any quote with the threads you will actually use, and with a used Mac Pr
     excerpt:
       "Cable a NetApp DS4246 to TrueNAS with an LSI HBA, reformat its 520-byte drives to 512, and avoid the SMART and pool faults owners report on SCALE.",
     coverImage: "/images/blog/netapp-ds4246-truenas.jpg",
+    coverCredit: {
+      author: "Jemimus",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NetApp_FAS_-_IMG_1679.jpg",
+    },
     content: `
 ## The problem
 
@@ -1424,6 +1612,11 @@ Both shelves accept SAS and SATA drives, according to Digital Spaceport, and Par
 
 The IOM modules use QSFP ports, while the LSI SAS 9200-8e uses external mini-SAS ports, so the link needs an adapter cable. [Digital Spaceport](https://digitalspaceport.com/netapp-ds4246-ds4243-jbod-high-capacity-storage/) puts it directly: "QSFP to 8088 cables are required to connect the HBA to the JBOD." Broadcom's [user guide for the LSI SAS 9200-8e](https://docs.broadcom.com/doc/12353324) lists two x4 external mini-SAS connectors (SFF-8088) and eight external 6 Gb/s SATA and SAS ports. For the connector family as a whole, see [SFP, SFP+, and QSFP](/blog/sfp-transceivers-explained).
 
+<figure>
+<img src="/images/blog/netapp-ds4246-truenas/photo-1.jpg" alt="The plug end of a 40Gb QSFP+ copper twinax cable" width="1280" height="797" loading="lazy" decoding="async">
+<figcaption>A 40Gb QSFP+ copper twinax cable, photographed in 2016. The IOM modules on the DS4246 have QSFP ports, so the shelf end of a QSFP to SFF-8088 cable has a plug of this shape. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:40Gb_QSFP%2B_copper_twinax_cable.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Two shelves mean a layout decision. Chaining shelves through their IOM modules takes extra cable. Digital Spaceport says "additional QSFP to QSFP cables must be used" for the IOM3 and IOM6 controllers. A 2018 owner of two DS4246 shelves ran one cable from each shelf to a 9200-8e and reported 24 disks per cable, instead of 48 on one cable through an interconnect ([TrueNAS forum, 2018](https://www.truenas.com/community/threads/lsi-9200-8e-ds4246-ssd-speeds-and-ses-transfer-speeds.71234/)). A 2022 owner had only one QSFP-to-SFF-8088 cable and considered buying a second ([TrueNAS forum, 2022](https://www.truenas.com/community/threads/netapp-x2065a-r6-ds4246-and-truenas.104615/)). Count the cables your layout needs before you power anything on.
 
 ## Picking the HBA for TrueNAS
@@ -1434,6 +1627,11 @@ Two shelves mean a layout decision. Chaining shelves through their IOM modules t
 | LSI SAS 9207-8e | Two external SAS ports | PCIe 3.0 x8 | Called "a popular choice" by Digital Spaceport. A May 2024 owner ran it on SCALE, and a second poster saw the same problem with another card model |
 
 The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) names Broadcom (formerly Avago, formerly LSI) SAS host bus adapters (HBAs) and tells you to "Flash using the latest IT or Target Mode firmware to disable the optional [RAID](/blog/raid-levels-comparison) functionality." A RAID controller reflashed into HBA mode is a different case, covered in [PERC H730 HBA Mode](/blog/perc-h730-hba-mode).
+
+<figure>
+<img src="/images/blog/netapp-ds4246-truenas/photo-2.jpg" alt="Back side of an LSI SAS9212-4i4e PCIe SAS host bus adapter card" width="1400" height="945" loading="lazy" decoding="async">
+<figcaption>The back side of an LSI SAS9212-4i4e SAS HBA, a card with one external SFF-8088 connector and four internal connectors, photographed in 2022. The LSI SAS 9200-8e in the table uses the same external connector type, with two ports instead of one. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9212-4i4e_back.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 NetApp's own card is the cautionary case in these reports. A 2022 owner with two DS4246 shelves reported "Read SMART Self-Test Log Failed" errors on five or six drives across both shelves, seemingly at random. The owner later called the NetApp X2065A-R6 "a bust." On April 11, 2023, the same owner wrote that, after switching to an LSI SAS9200-8e, "the whole system was much more reliable afterwards."
 
@@ -1526,6 +1724,12 @@ Buy a shelf with IOM6 modules, populate every bay or fill the gaps with blanks, 
     excerpt:
       "Dell's documents show no HBA mode for the PERC H755. Here is what per-disk Non-RAID gives you, why some guides claim eHBA, and which card to buy instead.",
     coverImage: "/images/blog/perc-h755-hba-mode.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_Logic_MegaRAID_SATA_300-8X_SATA_RAID_controller.jpg",
+    },
     content: `
 ## The problem
 
@@ -1553,11 +1757,21 @@ A Dell Community post from June 4, 2026 asks Dell to confirm that H755 eHBA "is 
 
 Per-disk Non-RAID is the H755's stand-in for pass-through. In the PERC 11 configuration utility, open [Main Menu > Configuration Management > Convert to Non-RAID Disk](https://www.dell.com/support/manuals/en-us/perc-h755/perc11_ug/convert-to-nonraid-disk?guid=guid-d648190a-c942-4085-befe-824d44945403&lang=en-us), select the physical disk, and confirm. The guide says that "Virtual disks and non-RAID disks are presented to the operating system as SCSI devices" ([PERC 11 user guide, PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)). The card still sits between each disk and the host, which is why Dell's moderator says the setup will not perform like an HBA. The card also controls the order in which the OS sees disks. For the H755 front SAS and H755 MX cards, the guide says "Non-RAID disks are enumerated first based on slot ID," ahead of virtual disks ([PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)).
 
+<figure>
+<img src="/images/blog/perc-h755-hba-mode/photo-1.jpg" alt="PERC 4e/DC circuit board with heat sinks removed, exposing the Intel 80332 I/O processor and LSI53C1030 SCSI chip" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>A Dell PERC 4e/DC with its heat sinks removed, showing the Intel 80332 I/O processor and the LSI53C1030 Ultra320 SCSI controller chip. On a PERC, each disk connects through the card's own controller chips rather than directly to the host, which is why Non-RAID disks on the H755 still pass through the card. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07-2352.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The card's limits matter too. The H755 adapter supports RAID 0, 1, 5, 6, 10, 50 and 60, and it allows 16 SAS or SATA drives per controller without a SAS expander ([PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)). The guide says the H755 adapter "supports either SAS, SATA, or NVMe drives depending on the backplane/ server configuration." The guide also warns that 14G PowerEdge servers do not support Gen 4 speeds, and the H750 adapter SAS downtrains to Gen 3 there.
 
 ## Which card to use for pass-through instead
 
 Dell's [HBA355 user guide](https://www.dell.com/support/manuals/en-us/hba-355/hba355_ug/dell-hba355i-adapter-dell-hba355i-front-dell-hba355e-adapter-dell-hba350i-mx-dell-hba350i-adapter-~?guid=guid-4e5b127f-13ac-48cf-adfe-3964428b5f24&lang=en-us) describes the family as "solution cards that can be used as a boot controller and also as a data controller." Its contents list a "No RAID support" section, and the cards use "Gen 4 PCIe x eight host interfaces."
+
+<figure>
+<img src="/images/blog/perc-h755-hba-mode/photo-2.jpg" alt="Front of an LSI SAS9212-4i4e host bus adapter card with an external SFF-8088 port" width="1280" height="928" loading="lazy" decoding="async">
+<figcaption>An LSI SAS9212-4i4e host bus adapter, photographed in 2022, with one external SFF-8088 connector and four internal connectors. A host bus adapter passes each disk straight to the operating system with no RAID layer in between. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9212-4i4e_front.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The H355 is the simpler card in the same series, and its profile is different. Dell's [controller list](https://www.dell.com/support/kbdoc/en-us/000131648/list-of-poweredge-raid-controller-perc-types-for-dell-emc-systems) gives the H355 adapter "No Cache," with RAID levels "0,1,10 - Note 1" and PCIe Gen 4. The [PDF guide](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf) says that "RAID levels 5, 6, 50, and 60 are not supported" on the H355 adapter SAS and that the H355 does not support NVMe drives. It also converts a drive to Non-RAID only if "the drive has never been used before by that specific PERC."
 
@@ -1609,6 +1823,12 @@ For ZFS on Dell hardware more broadly, see [Running ZFS on Dell Enterprise Hardw
     excerpt:
       "The R540 fits 14 3.5-inch drives, while the R740 takes 24 DIMMs and up to three double-wide GPUs. Here are the bay, slot and memory limits for each.",
     coverImage: "/images/blog/poweredge-r540-vs-r740.jpg",
+    coverCredit: {
+      author: "Dsv",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_Servers.jpg",
+    },
     content: `
 ## The problem
 
@@ -1636,6 +1856,11 @@ Both chassis support two power supplies. The R540 overview lists "Two AC and DC 
 
 The R540 is the storage-dense option of the pair. Dell's [supported configurations overview](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/supported-configurations) says it takes "14 drives or solid-state drives," and [GoToMojo](https://www.gotomojo.com/servers/dell-emc-poweredge/r540/) breaks that into up to 12 front 3.5-inch bays and two rear 3.5-inch bays.
 
+<figure>
+<img src="/images/blog/poweredge-r540-vs-r740/photo-1.jpg" alt="Top of a Seagate Exos X18 18TB enterprise hard drive with its label facing up" width="1400" height="1148" loading="lazy" decoding="async">
+<figcaption>A Seagate Exos X18 18TB enterprise hard drive, seen from above in a 2022 photo. It is a 3.5-inch drive, the size the R540 takes in all 14 of its bays and the R740 takes in up to eight front bays. Photo: PantheraLeo1359531, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Seagate_EXOS_X18_18_TB_20221006_oblique_top_view_HOF05349cens.png">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The R740 holds more drives in total, but its front bay mix is different. [itcreations](https://www.itcreations.com/dell/dell-poweredge-r740-server) lists up to 16 x 2.5-inch SAS/SATA bays or up to 8 x 3.5-inch bays. If your storage is 3.5-inch disks, the R740 tops out at eight in its front configurations.
 
 The bay count also sets the largest pool you can build without an external shelf. Twelve front bays and two rear bays give the R540 14 drive positions in one chassis. The R740's 2.5-inch option trades drive size for count, so it suits SSD pools where the number of drives matters more than the capacity of each bay. The R540 listings show only 3.5-inch bays, while Dell's [R540 technical specifications](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/technical-specifications) include sections on installing 2.5-inch drives into 3.5-inch drive adapters. For native 2.5-inch bays, the R740 is the option the listings show.
@@ -1645,6 +1870,11 @@ Both models list the same internal controller families: PERC H330, H730p, H740p,
 ## Memory and CPUs: the R740 holds 24 DIMMs
 
 The R540 has 16 DDR4 DIMM slots and processors with up to 20 cores each ([itcreations](https://www.itcreations.com/dell/dell-poweredge-r540-server)). GoToMojo lists 1TB as the maximum ([GoToMojo](https://www.gotomojo.com/servers/dell-emc-poweredge/r540/)), while itcreations lists 1TB RDIMM and 2TB LRDIMM for second generation processors, although its overview gives 512GB for RDIMM. Dell's [R540 technical specifications](https://www.dell.com/support/manuals/en-us/poweredge-r540/per540_ism_pub/technical-specifications) list 16 DIMM slots but no memory maximum, so ask Dell for the limit for your processor generation before ordering modules.
+
+<figure>
+<img src="/images/blog/poweredge-r540-vs-r740/photo-2.jpg" alt="Front of a Micron Crucial 32GB DDR4-2666 ECC LRDIMM server memory module" width="1400" height="1399" loading="lazy" decoding="async">
+<figcaption>A Micron Crucial 32GB DDR4-2666 LRDIMM with ECC, photographed in 2026. The R740 listings rate the server at 3.0TB with load-reduced modules like this one, against 1.5TB with RDIMMs. Photo: ITEagle Europe - Sebastiaan Broekhoven, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Micron_Crucial_32GB_DDR4-2666_LRDIMM_ECC_MTA36ASF4G72LZ-2G6D1SG_-_front_view.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The R740 has 24 DIMM slots ([Dell](https://www.dell.com/support/manuals/en-us/poweredge-r740/per740_ism_pub/expansion-card-installation-guidelines)). Its listed maximums are 1.5TB of RDIMM and 3.0TB of LRDIMM, and its processors go up to 28 cores each ([itcreations](https://www.itcreations.com/dell/dell-poweredge-r740-server)). Module type matters as much as slot count here. Above 1.5TB, the R740 listings point to load-reduced LRDIMMs, so a build that needs more memory than RDIMMs allow has to use LRDIMMs.
 
@@ -1717,6 +1947,12 @@ Check lifecycle dates before buying either model used, starting with the [R740 e
     excerpt:
       "Why a DL360p Gen8 runs loud fans at idle: unreadable drives, PCIe cards, firmware bugs and missing fan blanks, plus how to read iLO 4 and which fixes to try.",
     coverImage: "/images/blog/proliant-dl360p-gen8-fan-noise.jpg",
+    coverCredit: {
+      author: "Melee",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DL360_Inside.jpg",
+    },
     content: `
 ## The problem
 
@@ -1742,6 +1978,11 @@ The QuickSpecs also say these levels "do not account for non-Hewlett-Packard ins
 
 In the iLO 4 web interface, open Information, then System Information, then the Fans tab. Each fan shows its location, health status and speed in percent. On servers with fan redundancy, empty bays are hidden until you click "show empty bays," which shows whether bays 1 and 2 are empty on a one-processor machine.
 
+<figure>
+<img src="/images/blog/proliant-dl360p-gen8-fan-noise/photo-1.jpg" alt="HP ProLiant BL460 Gen8 blade server with a tape blade attached" width="865" height="1400" loading="lazy" decoding="async">
+<figcaption>An HP ProLiant BL460 Gen8 blade server with a tape blade attached, photographed in January 2014. Gen8 blades and Gen8 rack servers such as the DL360p Gen8 use the same iLO 4 management processor. Photo: Redline, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_BL460_G8_with_tape_blade.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The Temperatures tab on the same screen is the next place to look. Each sensor lists its location, status, reading, and Caution and Critical thresholds. A sensor that is not installed reads N/A, and missing sensors stay hidden until you click "show missing sensors." If a sensor is above Caution, the heat is real and iLO sends the fans to maximum. If every reading sits well below its threshold, look at the drives and cards instead. HPE's Smart Array notes list fixes both for SATA drive temperatures not being reported after a hot insert and for system fans going to 100% when connected drives spun down.
 
 To query iLO from another machine, use [IPMI](/blog/ipmi-remote-management). The iLO 4 guide says IPMI/DCMI over LAN is disabled by default in iLO 4 2.60 and later, and that the port defaults to 623. Its ipmitool example uses the lanplus interface to pull the iLO event log:
@@ -1755,6 +1996,11 @@ Correct output is a numbered list of event entries, such as "Power Supply #0x03 
 ## What pushes the fans up
 
 Owners report the first three triggers on sibling Gen8 servers that run the same iLO 4. HPE documents the last two in its own notes, one of them as a firmware bug that includes the DL360p Gen8 SE.
+
+<figure>
+<img src="/images/blog/proliant-dl360p-gen8-fan-noise/photo-2.jpg" alt="Left side of the front panel of an HP ProLiant DL360 G7 server, with HP SAS hard drives in the drive bays" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>The left side of an HP ProLiant DL360 G7 front panel with HP SAS hard drives in the bays, photographed in July 2010. On the DL360p Gen8, every drive bay needs a drive or a blank, and drives that iLO 4 cannot read can push the fans up. Photo: Melee, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:DL360_Front_Left.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Trigger | Server | Reported fan speed | Source |
 |---|---|---|---|
@@ -1856,6 +2102,12 @@ The documented and reported causes of a loud DL360p Gen8 are mostly configuratio
     excerpt:
       "Generate a CSR with the iDRAC name in the CN and SAN, upload the key and certificate with racadm, and avoid the firmware changes that revert them.",
     coverImage: "/images/blog/replace-idrac-ssl-certificate.jpg",
+    coverCredit: {
+      author: "Victorgrigas",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wikimedia_Foundation_Servers-8055_08.jpg",
+    },
     content: `
 ## The problem
 
@@ -1875,6 +2127,11 @@ iDRAC7 follows different rules. [Broadcom's KB on SHA2 certificates](https://kno
 ## Generate the key and CSR with the FQDN in the CN and SAN
 
 Dell's guide says to register the iDRAC address in DNS, then to "Use the Fully Qualified Domain Name (FQDN) created at DNS to enter at Common Name (CN) fields." A certificate signing request (CSR) is "a message sent from an applicant to a certificate authority," and it "usually contains the public key for which the certificate should be issued," according to [Wikipedia](https://en.wikipedia.org/wiki/Certificate_signing_request).
+
+<figure>
+<img src="/images/blog/replace-idrac-ssl-certificate/photo-1.jpg" alt="Screenshot of the OpenSSL manual page displayed on Debian GNU/Linux" width="960" height="562" loading="lazy" decoding="async">
+<figcaption>The OpenSSL manual page on Debian GNU/Linux, in a 2017 screenshot. The openssl req command that creates the key and CSR is documented in OpenSSL's manual pages. Photo: Cybermaid, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Captura_de_pagina_de_manual_de_OpenSSL.png">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The Common Name alone is no longer enough. [RFC 2818](https://www.rfc-editor.org/rfc/rfc2818) calls Common Name matching "deprecated," and [RFC 9525](https://www.rfc-editor.org/rfc/rfc9525) says the server identity "can only be expressed in the subjectAltNames extension." Chrome 58 stopped using the Subject field for hostnames, as [a 2017 post on the change](https://textslashplain.com/2017/03/10/chrome-deprecates-subject-cn-matching/) explains. Put the same FQDN in the CN and in a DNS subjectAltName. OpenSSL can set both in one command:
 
@@ -1949,6 +2206,11 @@ The output should show the 2048-bit key from the CSR step. Then open the iDRAC b
 
 The working sequence is to put the iDRAC FQDN in both the CN and a DNS subjectAltName, generate an unencrypted 2048-bit key, convert the signed certificate to Base 64 for iDRAC7, upload the key and then the certificate, run racreset, and check the key size and name afterward. Dell's KBs name two firmware boundaries to watch: 6.10.80.00, where custom certificates can revert, and the range after 7.00.00.00 but before 7.10.30.00, where a certificate without a trailing line feed can take the web interface offline. Dell calls wildcard certificates "not best practice," so give each iDRAC its own name. If you manage several servers, the Redfish module above can script the same replacement on each of them.
 
+<figure>
+<img src="/images/blog/replace-idrac-ssl-certificate/photo-2.jpg" alt="Firefox warning page reporting an insecure connection to the CAcert website" width="960" height="587" loading="lazy" decoding="async">
+<figcaption>Firefox warning about an insecure connection to the CAcert website in 2016, shown because the browser does not trust the CAcert certificate authority. An iDRAC certificate signed by an internal CA draws the same kind of warning on any client that lacks that CA's root certificate. Photo: Zozo.ubermensch, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Firefox_-_Insecure_connection_on_CACert.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 ## References
 
 - https://www.dell.com/support/kbdoc/en-an/000216023/how-to-generate-the-self-signed-cert-n-upload-to-idrac
@@ -1974,6 +2236,12 @@ The working sequence is to put the iDRAC FQDN in both the CN and a DNS subjectAl
     excerpt:
       "Enable HBA mode on a Smart Array P420i with ssacli, the firmware owners report, why boot fails from those disks, and what ZFS needs.",
     coverImage: "/images/blog/smart-array-p420i-hba-mode.jpg",
+    coverCredit: {
+      author: "Redline",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_BL660_G8-1.jpg",
+    },
     content: `
 ## The problem
 
@@ -1982,6 +2250,11 @@ Someone with an HP ProLiant Gen8 server and an embedded Smart Array P420i wants 
 ## HPE documentation does not confirm HBA mode on the P420i
 
 The [HPE Smart Storage Administrator User Guide](https://usercontent.one/wp/ramsgaard.me/wp-content/uploads/2022/10/HPE_c03909334_HPE-Smart-Storage-Administrator-User-Guide.pdf?media=1661795354), dated October 2016, describes the mode in general terms: "In HBA mode, all physical drives are presented directly to the operating system and the hardware RAID engine is disabled." It lists "Enable HBA/RAID/Smart Array Mode operations" as a controller task with the footnote "This task is not available on all controller models," and it points readers to the controller user guide for model-specific support. The P420i is not named anywhere in that document.
+
+<figure>
+<img src="/images/blog/smart-array-p420i-hba-mode/photo-1.jpg" alt="HP ProLiant DL580 G7 rack server" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>An HP ProLiant DL580 G7 server photographed in 2023, which its owner describes as fitted with an HP Smart Array P410i RAID controller. The P410i is on the hpsahba README's tested list, and a December 2018 kernel mailing list reply said the P410 controllers do not fully support HBA mode. Photo: Btrs, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL580_G7_in_2023.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The [P420 QuickSpecs](https://bargainhardware.co.uk/media/quick-specs/storagectrl/HP_P420_CTL54_55.pdf), dated June 6, 2012, point the same way. They describe the P420 as "ideal for RAID 0/1, 1+0, 5, 50, 6 & 60" and list no HBA mode.
 
@@ -2056,6 +2329,11 @@ The workarounds keep the boot path off the array. The babaei post installs only 
 
 Vendor guidance on ZFS is consistent. The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) says "There are countless warnings against using hardware RAID cards with TrueNAS," and that ZFS and TrueNAS "provide a built-in RAID that protects your data better than any hardware RAID card." For Broadcom controllers, it says to "Flash using the latest IT or Target Mode firmware to disable the optional RAID functionality." The [Proxmox wiki](https://pve.proxmox.com/wiki/ZFS_on_Linux) says "ZFS needs to communicate directly with the disks," and that an HBA adapter or an LSI controller flashed in IT mode "is more appropriate."
 
+<figure>
+<img src="/images/blog/smart-array-p420i-hba-mode/photo-2.jpg" alt="Back side of an LSI SAS9211-8i PCIe x8 SAS host bus adapter circuit board" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>The back of an LSI SAS9211-8i SAS host bus adapter, board H3-25250-02B, photographed in 2013. The Proxmox wiki names an HBA or an LSI controller flashed to IT mode as the more appropriate choice for ZFS. Photo: Solomon203, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9211-8i_H3-25250-02B_rear.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Owner and forum reports are mixed. The 2016 FreeNAS poster could not get any drives beyond the first two to enumerate, and a TrueNAS forum member later wrote that the ciss driver "does not work that well under the heavy loads FreeNAS and ZFS can place on it." An iXsystems staff member in a [2021 TrueNAS thread](https://www.truenas.com/community/threads/best-with-raid-controllers-or-raid-z-software.94587/) wrote, "if you're on a ciss/aacraid/etc driver then buy an HBA." A [HardForum reply](https://hardforum.com/threads/hp-dl380p-gen8-p420i-controller-hbamode.1852528/) dated January 30, 2026 says the steps "worked perfectly" on a DL360p Gen8 for Proxmox with ZFS, using a PCIe adapter for the system drives. The outcome depends on the operating system, the driver and the boot path.
 
 ## What breaks
@@ -2096,6 +2374,12 @@ On a P420i, HBA mode is an owner-reported result, not a documented feature for t
     excerpt:
       "X10 and X11 each cover at least two sockets. Compare CPU socket, memory ceiling, NVMe boot and IPMI before you buy a used Supermicro server board.",
     coverImage: "/images/blog/supermicro-x10-vs-x11.jpg",
+    coverCredit: {
+      author: "Frank Schwichtenberg",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Supermicro_-_X11SAE_%E2%80%93_CeBIT_2016_01.jpg",
+    },
     content: `
 ## The problem
 
@@ -2118,6 +2402,11 @@ The socket is the first thing to read, because it decides which CPUs fit. The BM
 
 Each socket fixes the CPU family, and the CPU then sets most of the memory and PCIe budget. The X10SLH-F lists Xeon E3-1200 v3 and v4 chips on LGA 1150, along with Core i3, Pentium and Celeron parts. The X10SRL-F lists the Xeon E5-2600 v4 and v3 families and the E5-1600 v4 and v3 families for its LGA 2011 socket. The X11SSH-F takes Xeon E3-1200 v5 and v6 chips and 6th and 7th generation Core i3 parts on LGA 1151. The X11SPM-F takes Xeon Scalable processors, including second-generation parts, with up to 28 cores. The [X11SPM-F listing](https://www.supermicro.com/en/products/motherboard/X11SPM-F) requires BIOS 3.0a or above for second-generation Xeon Scalable processors, and BIOS 3.2 or above for the Cascade Lake-R variant of that generation.
 
+<figure>
+<img src="/images/blog/supermicro-x10-vs-x11/photo-1.jpg" alt="An Intel Xeon E5-1650 v3 processor sitting on the inner part of its retail box" width="960" height="720" loading="lazy" decoding="async">
+<figcaption>An Intel Xeon E5-1650 v3, a Haswell-EP chip, resting on the inner part of its retail box, photographed in 2014. The X10SRL-F lists the E5-1600 v3 family for its LGA 2011 socket. Photo: Dsimic, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Intel_Xeon_E5-1650_v3_CPU.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Intel's spec sheets show what one CPU in each socket can do:
 
 | Socket | Intel example | Codename | Memory channels | PCIe lanes | Max memory |
@@ -2133,6 +2422,11 @@ For how lanes are split across slots, see [PCIe Lanes, Bifurcation, and Why Your
 ## Memory: the board and the CPU both set the ceiling
 
 The X10SLH-F is the outlier. It has four DDR3 slots and a 32GB maximum for unbuffered ECC UDIMMs at DDR3-1600. The X10SRL-F has eight DDR4 slots for RDIMM or LRDIMM, and Supermicro lists [up to 1TB of 3DS LRDIMM](https://www.supermicro.com/en/products/motherboard/X10SRL-F). That figure carries a footnote requiring BIOS 2.0 or later. The X11SSH-F has four unbuffered ECC DDR4 slots capped at 64GB. The X11SPM-F has [6 DIMM slots and up to 1.5TB of 3DS ECC memory](https://www.supermicro.com/en/products/motherboard/X11SPM-F).
+
+<figure>
+<img src="/images/blog/supermicro-x10-vs-x11/photo-2.jpg" alt="Two Crucial 8GB DDR4 ECC registered memory modules, with part of a third module from the same kit visible" width="960" height="720" loading="lazy" decoding="async">
+<figcaption>Two 8GB DDR4-2133 ECC registered DIMMs from a Crucial four-module kit (CT8G4RFS4213), photographed in 2014 with part of a third module visible. The X10SRL-F's eight DDR4 slots take registered modules like these as well as LRDIMMs. Photo: Dsimic, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Two_8_GB_DDR4-2133_ECC_1.2_V_RDIMMs.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 So the X10 name covers DDR3 and DDR4 boards, and the X11 name covers both unbuffered and registered memory. For the X11SPM-F, the board and the CPU give different numbers: Supermicro lists 1.5TB for the board, while Intel lists 768GB as the maximum for the Xeon Gold 6148. The lower of the two is the ceiling for that chip. For how channels and DIMM slots interact, see [Server Memory Architecture: DIMM Slots, Channels, and ECC](/blog/server-memory-architecture).
 
@@ -2151,6 +2445,11 @@ Supermicro lists the X11SSH-F's M.2 slot as [PCIe 3.0 x2](https://www.supermicro
 ## IPMI: a dedicated port is the difference
 
 Both X10 boards in the table have a dedicated management port. The [X10SRL-F](https://www.supermicro.com/en/products/motherboard/X10SRL-F) lists "1 RJ45 Dedicated IPMI LAN port" with IPMI 2.0, virtual media over LAN and KVM-over-LAN, and the [X10SLH-F](https://www.supermicro.com/en/products/motherboard/X10SLH-F) lists the same "1 RJ45 Dedicated IPMI LAN port" in its specifications. The [X11SPM-F](https://www.supermicro.com/en/products/motherboard/X11SPM-F) lists "KVM with dedicated LAN" alongside IPMI 2.0. The [X11SSH-F](https://www.supermicro.com/en/products/motherboard/X11SSH-F) lists IPMI 2.0 but names no dedicated IPMI port.
+
+<figure>
+<img src="/images/blog/supermicro-x10-vs-x11/photo-3.jpg" alt="Rear I/O panel of a Supermicro X10SLM+-LN4F motherboard with serial, USB, five RJ45 network jacks and a VGA port" width="1400" height="897" loading="lazy" decoding="async">
+<figcaption>The rear panel of a Supermicro X10SLM+-LN4F, an LGA 1150 board from the X10 line, with a dedicated remote management LAN port paired with two USB 3.0 ports, plus four gigabit Ethernet ports. A separate management jack like this one is what to look for on a used board. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Supermicro_X10SLM%2B-LN4F_server_motherboard_IO_panel_detail_view.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The BMC chip is another spec to check on the listing. [Supermicro's BMC resources listing](https://www.supermicro.com/en/solutions/management-software/bmc-resources) says the X10 platform's BMC is built on the ASPEED AST 2400 and the X11/H11/H12 platform's BMC is built on ASPEED AST 2500, so for the X11SSH-F the platform figure (AST 2500) and the board's own listing (AST2400) disagree, and the board listing is the one to use for a purchase decision. For how the BMC fits into remote management, see [IPMI and Out-of-Band Management Explained](/blog/ipmi-remote-management).
 
@@ -2198,6 +2497,12 @@ Read the socket first, then the memory ceiling and the management port. For a ne
     excerpt:
       "Buying a used Cisco Catalyst 9300 for a lab? Check the license suffix, the Smart Account, the stack cables, the power supplies and the enable password first.",
     coverImage: "/images/blog/used-catalyst-9300-for-a-lab.jpg",
+    coverCredit: {
+      author: "Axel Dux",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Ccna_security_lab.JPG",
+    },
     content: `
 ## The problem
 
@@ -2235,6 +2540,11 @@ Measure the gap between the units before you order stack cables for the rack.
 ## Uplinks come from the modules you buy
 
 The datasheet says "The default switch configuration does not include the network module," but the ordering guide says C9300 SKUs come with a C9300-NM-8X module as default, and C9300X SKUs come with a C9300X-NM-2C. Confirm the module on each listing by part number against the ordering guide, and price any missing module with the switch. Modular C9300 uplinks run 10G, 25G, 40G and multigigabit, and the C9300X adds 100G. The C9300X-NM-4C fits only the 48HX, 48TX and 24Y models.
+
+<figure>
+<img src="/images/blog/used-catalyst-9300-for-a-lab/photo-1.jpg" alt="A group of Cisco SFP-10G-SR 10GBASE-SR SFP+ optical transceiver modules" width="1400" height="1400" loading="lazy" decoding="async">
+<figcaption>Several Cisco SFP-10G-SR 10GBASE-SR SFP+ optical transceivers from one lot, photographed in 2026. Optics like these go in the 10G SFP+ ports of a C9300-NM-8X uplink module, the default module the ordering guide lists for C9300 SKUs. Photo: ITEagle Europe - Sebastiaan Broekhoven, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Cisco_SFP-10G-SR_10GBASE-SR_SFP%2B_optical_transceiver_modules_%28lot%29_-_overview.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 On fixed-uplink models, the uplinks are already part of the SKU, so the module question does not arise. The C9300L offers 4x 1G, 4x 10G/1G or 2x 40G fixed uplinks, depending on the model.
 
@@ -2291,6 +2601,11 @@ Evaluation states depend on the software release. On 16.9.1 through 17.3.1, lice
 ## What this means
 
 A used 9300 is a good lab buy when the lab needs stacking, PoE or Advantage features. Start from the suffix: pick -A for BGP, VRF and SD-Access, and -E when switching and OSPF up to 1,000 routes are enough. Before you pay, get the Smart Account release in writing, count the power supplies, and confirm the uplink module.
+
+<figure>
+<img src="/images/blog/used-catalyst-9300-for-a-lab/photo-2.jpg" alt="Cisco rollover console cable with a serial port connector, bundled with cable ties" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>A Cisco console cable, a rollover cable with a serial connector, photographed in 2014. Recovering an unknown enable password on a used switch means interrupting its startup sequence over a console connection like this one. Photo: Pries, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:CiscoConsoleCable.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Cisco's [end-of-sale listing](https://www.cisco.com/c/en/us/products/switches/catalyst-9300-series-switches/eos-eol-notice-listing.html) for the 9300 has its most recent IOS XE notice dated November 5, 2025, for IOS XE 17.17.x. Check the notice for the release you plan to run. A used unit that arrives on someone else's account or without its uplink module can cost more to fix than it saves.
 

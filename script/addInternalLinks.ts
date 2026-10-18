@@ -62,7 +62,8 @@ const CANONICAL: Array<{ terms: string[]; slug: string }> = [
 
 /**
  * Regions of a markdown file where a link must never be inserted: fenced
- * code, inline code, headings, existing links, images, and front matter.
+ * code, inline code, headings, existing links, images, HTML figures and
+ * tags, and front matter.
  * Returns a boolean per character index.
  */
 function maskedRegions(md: string): boolean[] {
@@ -84,6 +85,8 @@ function maskedRegions(md: string): boolean[] {
     /\[[^\]]*\]\([^)]*\)/g, // existing links
     /^ {4}\S.*$/gm, // indented code
     /^> ?\*\*.*$/gm, // pull-quote attributions
+    /<figure>[\s\S]*?<\/figure>/g, // photo figures: markdown is not parsed inside HTML blocks
+    /<[^>\n]+>/g, // any other HTML tag, so attributes such as alt never take a link
   ]) {
     for (const m of md.matchAll(re)) mark(m.index, m.index + m[0].length);
   }

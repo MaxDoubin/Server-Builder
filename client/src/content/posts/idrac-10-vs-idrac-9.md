@@ -108,6 +108,11 @@ The login story matches iDRAC9, which also shipped with a random default passwor
 **OpenManage Enterprise 3.10 may fail to discover 17th generation servers.**
 One owner reported on the [Dell Community forum](https://www.dell.com/community/en/conversations/dell-openmanage-enterprise/http-status-404-operation-failed-eemi-code-cgen1013/69e8a63a5256992330b62206) that OME 3.10.2 failed to discover 20 new R770s with an HTTP 404 and EEMI code CGEN1013, and a reply in the thread said OME 3.10 does not support iDRAC10. The poster reported that moving to OME 4.6 fixed it. Fix: upgrade to OME 4.6 and run iDRAC10 firmware 1.20.50.50 or later, the minimum in Dell's 4.6 support matrix.
 
+<figure>
+<img src="/images/blog/idrac-10-vs-idrac-9/photo-1.jpg" alt="Jenkins web page showing the text output of an Ansible playbook run" width="960" height="608" loading="lazy" decoding="async">
+<figcaption>Output of an Ansible playbook run displayed in Jenkins, in a 2016 screenshot. Dell's dellemc.openmanage Ansible collection added its first iDRAC10 enhancement in release 9.8.0. Photo: Claudia Meindl, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Ansible-playbook-output-jenkins.png">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 **WS-Man scripts and older provisioning drivers fail.**
 WSMan is removed outright, not deprecated, and Ironic's -wsman interfaces are deprecated upstream. Fix: rewrite calls against Redfish, use Dell's Redfish scripts or the Ansible collection, and switch Ironic nodes to the redfish interfaces.
 

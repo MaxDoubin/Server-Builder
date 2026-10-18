@@ -36,6 +36,11 @@ Measure the gap between the units before you order stack cables for the rack.
 
 The datasheet says "The default switch configuration does not include the network module," but the ordering guide says C9300 SKUs come with a C9300-NM-8X module as default, and C9300X SKUs come with a C9300X-NM-2C. Confirm the module on each listing by part number against the ordering guide, and price any missing module with the switch. Modular C9300 uplinks run 10G, 25G, 40G and multigigabit, and the C9300X adds 100G. The C9300X-NM-4C fits only the 48HX, 48TX and 24Y models.
 
+<figure>
+<img src="/images/blog/used-catalyst-9300-for-a-lab/photo-1.jpg" alt="A group of Cisco SFP-10G-SR 10GBASE-SR SFP+ optical transceiver modules" width="1400" height="1400" loading="lazy" decoding="async">
+<figcaption>Several Cisco SFP-10G-SR 10GBASE-SR SFP+ optical transceivers from one lot, photographed in 2026. Optics like these go in the 10G SFP+ ports of a C9300-NM-8X uplink module, the default module the ordering guide lists for C9300 SKUs. Photo: ITEagle Europe - Sebastiaan Broekhoven, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Cisco_SFP-10G-SR_10GBASE-SR_SFP%2B_optical_transceiver_modules_%28lot%29_-_overview.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 On fixed-uplink models, the uplinks are already part of the SKU, so the module question does not arise. The C9300L offers 4x 1G, 4x 10G/1G or 2x 40G fixed uplinks, depending on the model.
 
 Copper ports vary by model too. The ordering guide describes the C9300-24T-E as a "Cisco Catalyst 9300 24-port 1G copper, data only, modular uplinks" model, while the datasheet lists the C9300-24UX's ports as "24 ports Multigigabit Cisco UPOE (10G/5G/2.5G/1G/100M)." Read the copper ports as carefully as the fiber options.
@@ -91,6 +96,11 @@ Evaluation states depend on the software release. On 16.9.1 through 17.3.1, lice
 ## What this means
 
 A used 9300 is a good lab buy when the lab needs stacking, PoE or Advantage features. Start from the suffix: pick -A for BGP, VRF and SD-Access, and -E when switching and OSPF up to 1,000 routes are enough. Before you pay, get the Smart Account release in writing, count the power supplies, and confirm the uplink module.
+
+<figure>
+<img src="/images/blog/used-catalyst-9300-for-a-lab/photo-2.jpg" alt="Cisco rollover console cable with a serial port connector, bundled with cable ties" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>A Cisco console cable, a rollover cable with a serial connector, photographed in 2014. Recovering an unknown enable password on a used switch means interrupting its startup sequence over a console connection like this one. Photo: Pries, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:CiscoConsoleCable.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Cisco's [end-of-sale listing](https://www.cisco.com/c/en/us/products/switches/catalyst-9300-series-switches/eos-eol-notice-listing.html) for the 9300 has its most recent IOS XE notice dated November 5, 2025, for IOS XE 17.17.x. Check the notice for the release you plan to run. A used unit that arrives on someone else's account or without its uplink module can cost more to fix than it saves.
 
