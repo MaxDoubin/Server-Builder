@@ -61,7 +61,7 @@ Slots are the third. Apple's slot guide lists slots 1, 3, 4 and 5 at up to x16 l
 Apple's PCIe card list puts the rule in one sentence: "Mac Pro supports the same GPUs that are supported by external graphics processors (eGPUs)." In practice that means the AMD cards on Apple's eGPU list, none newer than the RX 6000 series.
 
 <figure>
-<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-2.jpg" alt="Front view of an AMD Radeon RX 6800 XT graphics card" width="1400" height="669" loading="lazy" decoding="async">
+<img src="/images/blog/mac-pro-2019-gpu-upgrade/photo-2.jpg" alt="Front view of an AMD Radeon RX 6800 XT graphics card" width="1280" height="612" loading="lazy" decoding="async">
 <figcaption>An AMD Radeon RX 6800 XT graphics card, a model AMD released in 2020. It is on Apple's eGPU list for macOS Big Sur 11.4 or later, so a 2019 Mac Pro can use it in macOS without an MPX module. Photo: Vitaly Zdanevich, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Amd-radeon-rx6800xt-from2020year-front.jpg">Wikimedia Commons</a>.</figcaption>
 </figure>
 

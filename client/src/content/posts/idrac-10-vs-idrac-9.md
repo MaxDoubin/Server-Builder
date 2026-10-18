@@ -70,11 +70,6 @@ WSMan is the removal that matters most for existing automation. On iDRAC9 it sat
 
 Most access paths survive. The iDRAC10 user guide lists the [web interface, RACADM (local, remote and firmware), the RESTful API with Redfish, SSH and IPMITool](https://www.dell.com/support/manuals/en-us/poweredge-r6715/idrac10_1.30.xx_ug/interfaces-and-protocols-to-access-idrac?guid=guid-f053e3a8-cc8e-4e81-9aee-c3da006256ea&lang=en-us), plus direct access through a labeled Type-C USB port. The licensed features table shows IPMI 2.0, Redfish and Quick Sync 2 on every tier, Core included. SMB 2.0 to 3.11 is supported for file shares, and SMBv1 is not.
 
-<figure>
-<img src="/images/blog/idrac-10-vs-idrac-9/photo-1.jpg" alt="Members of the hackers.mu group working on TLS 1.3 support during the IETF 100 Hackathon" width="1400" height="1050" loading="lazy" decoding="async">
-<figcaption>Members of the Mauritian group hackers.mu adapting applications to TLS 1.3 during the IETF 100 Hackathon in November 2017. iDRAC10's web server defaults to TLS 1.3 and higher, so clients that only speak TLS 1.2 fail the handshake. Photo: Wedgeantilles0, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Hackers.mu_working_on_TLS_1.3_during_the_IETF_100_Hackathon.jpg">Wikimedia Commons</a>.</figcaption>
-</figure>
-
 The factory defaults are where iDRAC10 behaves differently. Comparing the security configuration guides for [iDRAC9 version 7.x](https://www.dell.com/support/manuals/en-us/idrac9-lifecycle-controller-v7.x-series/idrac9_scg_tta/default-configuration-values?guid=guid-bfcb8585-5927-4945-b35a-aaf04e597e3c&lang=en-us) and [iDRAC10 version 1.30](https://www.dell.com/support/manuals/en-us/poweredge-r6715/idrac10_1.30.xx_scg/default-configuration-values?guid=guid-76d1e8c0-0949-4304-b03e-8d66102174c3&lang=en-us):
 
 | Setting | iDRAC9 7.x default | iDRAC10 1.30 default |
@@ -114,7 +109,7 @@ The login story matches iDRAC9, which also shipped with a random default passwor
 One owner reported on the [Dell Community forum](https://www.dell.com/community/en/conversations/dell-openmanage-enterprise/http-status-404-operation-failed-eemi-code-cgen1013/69e8a63a5256992330b62206) that OME 3.10.2 failed to discover 20 new R770s with an HTTP 404 and EEMI code CGEN1013, and a reply in the thread said OME 3.10 does not support iDRAC10. The poster reported that moving to OME 4.6 fixed it. Fix: upgrade to OME 4.6 and run iDRAC10 firmware 1.20.50.50 or later, the minimum in Dell's 4.6 support matrix.
 
 <figure>
-<img src="/images/blog/idrac-10-vs-idrac-9/photo-2.jpg" alt="Jenkins web page showing the text output of an Ansible playbook run" width="1400" height="887" loading="lazy" decoding="async">
+<img src="/images/blog/idrac-10-vs-idrac-9/photo-1.jpg" alt="Jenkins web page showing the text output of an Ansible playbook run" width="960" height="608" loading="lazy" decoding="async">
 <figcaption>Output of an Ansible playbook run displayed in Jenkins, in a 2016 screenshot. Dell's dellemc.openmanage Ansible collection added its first iDRAC10 enhancement in release 9.8.0. Photo: Claudia Meindl, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Ansible-playbook-output-jenkins.png">Wikimedia Commons</a>.</figcaption>
 </figure>
 

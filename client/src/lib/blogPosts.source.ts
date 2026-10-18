@@ -1267,6 +1267,12 @@ If you need only macOS and can do without video on the Mac's built-in Thunderbol
     excerpt:
       "Apple's limit is 32GB on a single-processor tray and 64GB on a dual tray. Here is what owners run past it, with the module, speed and macOS rules.",
     coverImage: "/images/blog/mac-pro-5-1-max-ram.jpg",
+    coverCredit: {
+      author: "David Plotzki",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro%2C_profile.jpg",
+    },
     content: `
 ## The problem
 
