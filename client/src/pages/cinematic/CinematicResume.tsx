@@ -201,6 +201,7 @@ export function CinematicResume() {
                   Fortinet Introduction to the Next Generation Firewall and Cybersecurity and Cloud
                   Fundamentals, October 2026
                 </Bullet>
+                <Bullet>Databricks Academy: Platform Administrator accreditation, October 2026</Bullet>
                 <Bullet>Cisco Networking Academy: Ethical Hacker course, October 2026</Bullet>
                 <Bullet>Palo Alto Networks: Cybersecurity Fundamentals course, October 2026</Bullet>
                 <Bullet>

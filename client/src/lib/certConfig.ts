@@ -598,6 +598,20 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // Databricks Academy's unproctored accreditation exam that ends its
+    // platform administrator pathway, not a proctored Databricks certification.
+    id: "databricks",
+    heading: "Databricks Academy",
+    meta: "Accreditation earned October 2026",
+    items: ["Platform Administrator accreditation"],
+    badges: {
+      "Platform Administrator accreditation": {
+        src: "/images/certs/databricks-platform-administrator.webp",
+        alt: "Databricks Platform Administrator accreditation badge",
+      },
+    },
+  },
+  {
     // A course completion with Cisco's verified badge, issued October 18, 2026.
     id: "cisco-netacad",
     heading: "Cisco Networking Academy",
