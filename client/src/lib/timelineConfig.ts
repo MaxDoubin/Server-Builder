@@ -33,8 +33,9 @@ export interface TimelineGroup {
  * Tech+ certificate, and the season of the top 1 percent NCL result. Max
  * supplied the last two dates himself in October 2026: Big Future Ambassador
  * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
- * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score and
- * the two Nutanix courses are October 2026. A role that
+ * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score, the
+ * Cisco Ethical Hacker course and the two Nutanix courses are October 2026. A
+ * role that
  * spans years sits under the year it began. Ask before adding an entry whose
  * date is unknown rather than inferring one from the entries around it.
  */
@@ -77,6 +78,13 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         when: "October 2026",
         description:
           "Scored 1000 out of 1000 on the adaptive TOSA CyberCitizen certification, the top of its Expert band.",
+        href: "/certifications",
+      },
+      {
+        title: "Cisco Networking Academy Ethical Hacker course",
+        when: "October 2026",
+        description:
+          "Completed the course with Cisco's verified badge: penetration testing methodology and planning, information gathering and vulnerability scanning, social engineering, exploiting network, application, cloud, mobile and IoT vulnerabilities, post-exploitation, and writing the penetration test report.",
         href: "/certifications",
       },
       {

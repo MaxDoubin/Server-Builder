@@ -201,6 +201,7 @@ export function CinematicResume() {
                   Fortinet Introduction to the Next Generation Firewall and Cybersecurity and Cloud
                   Fundamentals, October 2026
                 </Bullet>
+                <Bullet>Cisco Networking Academy: Ethical Hacker course, October 2026</Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
                   Administration and Performance Management (AAPM) courses, October 2026

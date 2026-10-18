@@ -594,6 +594,16 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // A course completion with Cisco's verified badge, issued October 18, 2026.
+    id: "cisco-netacad",
+    heading: "Cisco Networking Academy",
+    meta: "Course completed October 2026",
+    items: ["Ethical Hacker"],
+    badges: {
+      "Ethical Hacker": { src: "/images/certs/cisco-ethical-hacker.webp", alt: "Cisco Networking Academy Verified Ethical Hacker badge" },
+    },
+  },
+  {
     // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
     id: "nutanix",
     heading: "Nutanix University",
