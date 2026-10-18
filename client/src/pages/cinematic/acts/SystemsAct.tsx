@@ -73,7 +73,7 @@ function HeroCopy() {
       <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[0.6875rem]">
         <span>Top 1% · National Cyber League</span>
         <span className={RULE_CLASS} />
-        <span>CompTIA Tech+ certified</span>
+        <span>Oracle · OCI Architect Associate</span>
         <span className={RULE_CLASS} />
         <span>#1 percussionist · Nevada 2024</span>
         <span className={RULE_CLASS} />
@@ -111,7 +111,7 @@ function CredentialsCopy({ alignRight = false }: { alignRight?: boolean }) {
       <p
         className={`mt-5 max-w-[42ch] ${BODY_CLASS}${alignRight ? " md:ml-auto" : ""}`}
       >
-        CompTIA Tech+ is complete (April 2026). Later in 2026 came Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate, Oracle Data Center Operations Foundations Associate, a perfect 1000 on TOSA CyberCitizen, and Fortinet NSE 1 through 3 and FortiGate 7.6 Operator. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
+        Oracle Cloud Infrastructure Architect Associate leads the certifications I earned in 2026, alongside Oracle Multicloud Foundations Associate, Oracle Data Center Operations Foundations Associate, Neo4j Certified Professional, a perfect 1000 on TOSA CyberCitizen, CompTIA Tech+, and Fortinet NSE 1 through 3 and FortiGate 7.6 Operator. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
       </p>
     </>
   );

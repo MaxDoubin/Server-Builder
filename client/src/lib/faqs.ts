@@ -70,7 +70,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What does Max Doubin want to do after high school?",
-    a: "Large-scale infrastructure management and enterprise networking, built on a cybersecurity foundation. Max Doubin is building toward it now rather than waiting for a degree to start: he holds three Oracle certifications and CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, works as a teaching assistant for its Cybersecurity I class, and has five years of hands on infrastructure experience behind him.",
+    a: "Large-scale infrastructure management and enterprise networking, built on a cybersecurity foundation. Max Doubin is building toward it now rather than waiting for a degree to start: he holds the Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional and CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, works as a teaching assistant for its Cybersecurity I class, and has five years of hands on infrastructure experience behind him.",
   },
   {
     q: "How do you contact Max Doubin?",

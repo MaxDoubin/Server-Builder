@@ -5,6 +5,7 @@ import {
   CERTS_EARNED,
   CERTS_IN_PROGRESS,
   CREDENTIAL_GROUPS,
+  isTiled,
   type Cert,
   type CredentialGroup,
   type CertResource,
@@ -16,17 +17,21 @@ const TILE_GRID = "mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
 const TILE =
   "flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm";
 const TILE_BADGE = "h-20 w-20 shrink-0 md:h-24 md:w-24";
+const FEATURED_BADGE = "h-24 w-24 shrink-0 md:h-32 md:w-32";
 // The six parts of a certification tile sit on the grid's own rows
 // (subgrid), so titles, summaries and footers line up across a row and
 // opening one tile's details grows only the footer row.
 const CERT_TILE =
   "grid row-span-6 grid-rows-subgrid gap-y-0 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm";
 
+const featured = CERTS_EARNED.filter((cert) => cert.featured);
+const others = CERTS_EARNED.filter((cert) => !cert.featured);
+
 export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: three Oracle certifications, cPanel & WHM System Administrator I and II, all four Plesk Obsidian levels, a perfect TOSA CyberCitizen score, CompTIA Tech+, Google Analytics, Neo4j Certified Professional and six Fortinet credentials.",
+      "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics and six Fortinet credentials.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -42,10 +47,11 @@ export function CinematicCerts() {
               Certifications.
             </h1>
             <p className="mt-6 font-mono-tight text-base leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              I hold three Oracle certifications, cPanel &amp; WHM System
-              Administrator I and II, all four Plesk Obsidian levels, a perfect
-              1000 on TOSA CyberCitizen, CompTIA Tech+, the Google Analytics
-              Certification, Neo4j Certified Professional, and six Fortinet
+              I hold the Oracle Cloud Infrastructure Architect Associate and two
+              more Oracle certifications, Neo4j Certified Professional, a
+              perfect 1000 on TOSA CyberCitizen, CompTIA Tech+, cPanel &amp;
+              WHM System Administrator I and II, all four Plesk Obsidian
+              levels, the Google Analytics Certification, and six Fortinet
               Training Institute credentials. I am certifying in Security+,
               Network+, and the CCNA.
             </p>
@@ -75,10 +81,18 @@ export function CinematicCerts() {
             >
               Earned
             </h2>
-            {/* Tiles, three to a row on desktop. An exam with published
-                objective domains keeps the full-width card those need. */}
+            {/* The most significant credentials lead, two to a row on
+                larger cards. */}
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {featured.map((cert) => (
+                <CertTile key={cert.id} cert={cert} featured />
+              ))}
+            </div>
+            {/* The rest as tiles, three to a row on desktop. An exam with
+                published objective domains keeps the full-width card those
+                need. */}
             <div className={TILE_GRID}>
-              {CERTS_EARNED.map((cert) =>
+              {others.map((cert) =>
                 cert.domains.length > 0 ? (
                   <div key={cert.id} className="sm:col-span-2 lg:col-span-3">
                     <CertCard cert={cert} />
@@ -122,7 +136,7 @@ export function CinematicCerts() {
 function CredentialSection({ group }: { group: CredentialGroup }) {
   // A group whose every item came with a badge gets tiles the size of the
   // certification tiles; the rest (courses, placements, scores) stay a list.
-  const tiled = group.items.every((item) => group.badges?.[item]);
+  const tiled = isTiled(group);
   return (
     <section className="mt-16" aria-labelledby={`${group.id}-heading`}>
       <h2
@@ -213,26 +227,26 @@ function StatusChip({ cert }: { cert: Cert }) {
   );
 }
 
-function CertTile({ cert }: { cert: Cert }) {
+function CertTile({ cert, featured = false }: { cert: Cert; featured?: boolean }) {
   return (
-    <article data-testid={`cert-${cert.id}`} className={CERT_TILE}>
+    <article data-testid={`cert-${cert.id}`} className={featured ? `${CERT_TILE} md:p-8` : CERT_TILE}>
       <div className="flex items-start justify-between gap-3">
         {cert.badge ? (
           <img
             src={cert.badge.src}
             alt={cert.badge.alt}
-            width={96}
-            height={96}
+            width={featured ? 128 : 96}
+            height={featured ? 128 : 96}
             loading="lazy"
             decoding="async"
-            className={TILE_BADGE}
+            className={featured ? FEATURED_BADGE : TILE_BADGE}
           />
         ) : (
           // Some issuers give a certificate but no badge image; a plain mark
           // keeps the tile's shape without imitating one.
           <span
             aria-hidden
-            className={`${TILE_BADGE} flex items-center justify-center rounded-2xl border border-[hsl(var(--brand-iron))] font-mono-tight text-3xl text-[hsl(var(--brand-signal))]`}
+            className={`${featured ? FEATURED_BADGE : TILE_BADGE} flex items-center justify-center rounded-2xl border border-[hsl(var(--brand-iron))] font-mono-tight text-3xl text-[hsl(var(--brand-signal))]`}
           >
             ✓
           </span>
@@ -248,13 +262,21 @@ function CertTile({ cert }: { cert: Cert }) {
           </>
         ) : null}
       </div>
-      <h3 className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))]">
+      <h3
+        className={`mt-2 font-display font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))] ${
+          featured ? "text-xl md:text-2xl" : "text-lg"
+        }`}
+      >
         {cert.name}
       </h3>
       <div className="mt-1 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
         {cert.level}
       </div>
-      <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+      <p
+        className={`mt-3 font-mono-tight leading-relaxed text-[hsl(var(--brand-bone-dim))] ${
+          featured ? "text-sm" : "text-[0.8125rem]"
+        }`}
+      >
         {cert.statusDetail}
       </p>
       <div className="pt-4">
