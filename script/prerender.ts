@@ -1202,7 +1202,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "certifications",
       title: "Certifications | Max Doubin",
       description:
-        "Max Doubin's certifications: CompTIA Tech+, six Fortinet Training Institute credentials, competition results, AP scores and Anthropic Claude Academy badges, with Security+, Network+ and CCNA in progress.",
+        "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
       canonical: `${SITE_URL}/certifications`,
     },
     {
@@ -1434,18 +1434,23 @@ ${JSON.stringify({
   <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam covers.</p>
   ${ALL_CERTS.map(
     (cert) => `<section>
-    <h2>${esc(cert.name)} (${esc(cert.code)})</h2>
+    <h2>${esc(cert.name)}${cert.code ? ` (${esc(cert.code)})` : ""}</h2>
+    ${cert.badge ? `<img src="${cert.badge.src}" alt="${esc(cert.badge.alt)}" width="80" height="80" loading="lazy" decoding="async">` : ""}
     <p>${esc(cert.vendor)}, ${esc(cert.level)}. Status: ${esc(cert.statusLabel)}. ${esc(cert.statusDetail)}</p>
     <p>${esc(cert.covers)}</p>
     <p>${esc(cert.worth)}</p>
-    <h3>Exam domains</h3>
+    ${
+      cert.domains.length > 0
+        ? `<h3>Exam domains</h3>
     <dl>${dl(
       cert.domains.map((d: { name: string; weight: string; summary: string }) => ({
         title: `${d.name} (${d.weight})`,
         detail: d.summary,
       })),
-    )}</dl>
-    <p><a href="${cert.officialUrl}">Official ${esc(cert.code)} objectives</a></p>
+    )}</dl>`
+        : ""
+    }
+    <p><a href="${cert.officialUrl}">Official ${esc(cert.code ?? cert.name)} ${cert.domains.length > 0 ? "objectives" : "page"}</a></p>
   </section>`,
   ).join("\n  ")}
   ${CREDENTIAL_GROUPS.map(

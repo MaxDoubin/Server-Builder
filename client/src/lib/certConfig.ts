@@ -3,14 +3,16 @@
  *
  * This is a status board. Misrepresenting a credential on a portfolio is a
  * serious problem, so an exam that has not been sat carries status
- * "in-progress" and the page renders that unambiguously. CompTIA Tech+ is
- * held today and is listed under "earned". Keep the distinction exact: the
- * copy should read as confident and current, never as an apology.
+ * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
+ * three Oracle exams, cPanel & WHM System Administrator II and TOSA
+ * CyberCitizen are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
+ * current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they
  * are reproduced here with the version code that defines them. Weightings can
  * change between versions, so each card also points at the vendor's current
- * objectives. No pass rates, salary figures, or exam dates are stated,
+ * objectives or, where the vendor publishes none, its official learning path
+ * or subject page. No pass rates, salary figures, or exam dates are stated,
  * because those cannot be verified here.
  *
  * Keep this file as the single place to update status as exams are passed.
@@ -36,8 +38,9 @@ export interface CertDomain {
 export interface Cert {
   id: string;
   name: string;
-  /** Exam code that fixes the objectives referenced here. */
-  code: string;
+  /** Exam code that fixes the objectives referenced here. Omitted for an exam
+   * the vendor does not number, such as TOSA. */
+  code?: string;
   vendor: string;
   level: string;
   status: CertStatus;
@@ -49,6 +52,8 @@ export interface Cert {
   worth: string;
   officialUrl: string;
   domains: CertDomain[];
+  /** The badge the vendor issued for this credential, shown on its card only. */
+  badge?: { src: string; alt: string };
 }
 
 const onSite = {
@@ -260,7 +265,7 @@ const ccna: Cert = {
   ],
 };
 
-/** Already earned. Included for an honest contrast with the three in progress. */
+/** Earned in April 2026, the first certification. */
 const techPlus: Cert = {
   id: "tech-plus",
   name: "CompTIA Tech+",
@@ -278,9 +283,125 @@ const techPlus: Cert = {
   domains: [],
 };
 
-/** The three targets are the focus of the page. Tech+ is the earned baseline. */
+/**
+ * Max passed these four in October 2026. Oracle publishes no exam objectives
+ * with weightings for them, and TOSA publishes skill areas without weightings,
+ * so the cards describe the coverage in prose and list no domains. The
+ * coverage comes from Oracle's learning paths and from TOSA's subject page.
+ * The three badges are the ones Oracle issued for these exams, with only the
+ * black background removed. Oracle's general "Certified Professional" logo is
+ * not used: Max holds no Professional-level Oracle certification.
+ */
+const oracleDataCenter: Cert = {
+  id: "oracle-data-center-operations",
+  name: "Oracle Data Center Operations Foundations Associate",
+  code: "1Z0-3000",
+  vendor: "Oracle",
+  level: "Foundational data center operations",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. Oracle's foundations credential for entry-level data center operations.",
+  covers:
+    "How a data center facility runs: redundancy models from N to 2N+1, safety practice such as lockout/tagout and arc flash awareness, electrical systems including UPS and generators, cooling plant such as CRAH units and chillers, building management system monitoring, and operating procedures, change management and shift handovers.",
+  worth:
+    "Covers the physical layer under every server: power, cooling and the procedures that keep a facility running during maintenance and failures.",
+  officialUrl: "https://learn.oracle.com/ols/learning-path/oracle-data-center-operations-foundations-associate/146553/165222",
+  domains: [],
+  badge: {
+    src: "/images/certs/oracle-data-center-operations.webp",
+    alt: "Oracle Certified Foundations Associate badge, Data Center Operations",
+  },
+};
+
+const ociArchitect: Cert = {
+  id: "oci-architect-associate",
+  name: "Oracle Cloud Infrastructure Architect Associate",
+  code: "1Z0-1072-26",
+  vendor: "Oracle",
+  level: "Associate cloud architecture",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. Oracle's associate-level credential for designing and building on Oracle Cloud Infrastructure.",
+  covers:
+    "Oracle Cloud Infrastructure design: Identity and Access Management, networking, compute instances, and block, object and file storage.",
+  worth:
+    "An associate-level cloud credential: building the identity, network, compute and storage layers of a cloud deployment.",
+  officialUrl: "https://learn.oracle.com/ols/learning-path/become-an-oci-architect-associate-2026/146553/162234",
+  domains: [],
+  badge: {
+    src: "/images/certs/oci-architect-associate.webp",
+    alt: "Oracle Certified Associate badge, Oracle Cloud Infrastructure Architect, 2026",
+  },
+};
+
+/** Oracle publishes no topic list for this one beyond its learning path, so the card stays general. */
+const oracleMulticloud: Cert = {
+  id: "oracle-multicloud-foundations",
+  name: "Oracle Multicloud Foundations Associate",
+  code: "1Z0-1144-26",
+  vendor: "Oracle",
+  level: "Foundational multicloud",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. Oracle's entry-level credential for multicloud deployments.",
+  covers:
+    "The fundamentals of running Oracle Cloud Infrastructure and Oracle services alongside other public cloud providers.",
+  worth:
+    "Extends the cloud architecture work of the Architect Associate to deployments that span more than one cloud provider.",
+  officialUrl: "https://mylearn.oracle.com/ou/learning-path/become-an-oracle-multicloud-foundations-associate/166469",
+  domains: [],
+  badge: {
+    src: "/images/certs/oracle-multicloud-foundations.webp",
+    alt: "Oracle Certified Foundations Associate badge, Oracle Multicloud, 2026",
+  },
+};
+
+/**
+ * cPanel University publishes no public objectives for this exam, so the card
+ * says only what the name and the badge establish. The badge is the one cPanel
+ * University issues for it, with only the white background removed.
+ */
+const cpanelSysAdmin2: Cert = {
+  id: "cpanel-cwsa-2",
+  name: "cPanel & WHM System Administrator II",
+  code: "CWSA-2",
+  vendor: "cPanel University",
+  level: "Hosting server administration",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. The second exam in cPanel University's system administrator track.",
+  covers:
+    "Administering servers that run cPanel & WHM, the control panel and server manager used on web hosting servers.",
+  worth:
+    "Applies the server administration side of the work to hosting platforms, where one server carries many customer accounts.",
+  officialUrl: "https://university.cpanel.net/",
+  domains: [],
+  badge: {
+    src: "/images/certs/cpanel-cwsa-2.webp",
+    alt: "cPanel University Certified Admin badge",
+  },
+};
+
+const tosaCyberCitizen: Cert = {
+  id: "tosa-cybercitizen",
+  name: "TOSA CyberCitizen",
+  vendor: "Isograd",
+  level: "Cybersecurity practice, scored 1 to 1000",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail:
+    "Earned in October 2026 with a score of 1000 out of 1000, the top of the Expert band (876 to 1000). The exam is adaptive: 35 questions in 60 minutes.",
+  covers:
+    "Four areas: the cybersecurity ecosystem, from attack types to incident response and authentication; securing data, accounts and devices; secure practice on wireless networks, VPNs and remote work; and protection against phishing and other threats to personal data.",
+  worth:
+    "A scored certification: the pass mark is 351, and the result also shows the level reached on the 1 to 1000 scale, not just a pass.",
+  officialUrl: "https://www.tosa.org/EN/subjectdetails?sbj_id=298",
+  domains: [],
+};
+
+/** Earned cards render first, newest first. The three targets follow. */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
-export const CERTS_EARNED: Cert[] = [techPlus];
+export const CERTS_EARNED: Cert[] = [ociArchitect, oracleMulticloud, oracleDataCenter, cpanelSysAdmin2, tosaCyberCitizen, techPlus];
 export const ALL_CERTS: Cert[] = [...CERTS_EARNED, ...CERTS_IN_PROGRESS];
 
 /**
@@ -344,6 +465,16 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     heading: "Fortinet Training Institute",
     meta: "Earned October 2026",
     items: FORTINET,
+  },
+  {
+    // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
+    id: "nutanix",
+    heading: "Nutanix University",
+    meta: "Completed October 2026",
+    items: [
+      "Enterprise Cloud Administration (ECA) 6.10, online course",
+      "Advanced Administration and Performance Management (AAPM), online course",
+    ],
   },
   {
     id: "competition",

@@ -78,6 +78,28 @@ export function CinematicHome() {
         "Student of the Month · South CTA, October 2025",
       ],
       hasCredential: [
+        ...[
+          "Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26)",
+          "Oracle Multicloud Foundations Associate (1Z0-1144-26)",
+          "Oracle Data Center Operations Foundations Associate (1Z0-3000)",
+        ].map((name) => ({
+          "@type": "EducationalOccupationalCredential",
+          name,
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "Oracle" },
+        })),
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "cPanel & WHM System Administrator II (CWSA-2)",
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "cPanel" },
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "TOSA CyberCitizen",
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "Isograd" },
+        },
         {
           "@type": "EducationalOccupationalCredential",
           name: "CompTIA Tech+ (FC0-U71)",

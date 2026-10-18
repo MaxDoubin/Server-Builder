@@ -38,7 +38,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What certifications does Max Doubin hold?",
-    a: "Max Doubin holds the CompTIA Tech+ certification (FC0-U71), earned in April 2026. In October 2026 he earned six Fortinet Training Institute credentials: NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals. He also holds 23 Anthropic Claude Academy badges and has completed four Claude Academy courses. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA.",
+    a: "Max Doubin holds the Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), Oracle Multicloud Foundations Associate (1Z0-1144-26) and Oracle Data Center Operations Foundations Associate (1Z0-3000) certifications, all earned in October 2026, passed the cPanel & WHM System Administrator II exam (CWSA-2), and scored a perfect 1000 out of 1000 on the TOSA CyberCitizen certification that month. He holds the CompTIA Tech+ certification (FC0-U71), earned in April 2026. In October 2026 he also earned six Fortinet Training Institute credentials: NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, FortiGate 7.6 Operator, Introduction to the Next Generation Firewall, and Fortinet Cybersecurity and Cloud Fundamentals. He also holds 23 Anthropic Claude Academy badges, has completed four Claude Academy courses, and completed two Nutanix University courses in October 2026, Enterprise Cloud Administration (ECA) 6.10 and Advanced Administration and Performance Management (AAPM). He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA.",
   },
   {
     q: "What does Max Doubin build?",
@@ -70,7 +70,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What does Max Doubin want to do after high school?",
-    a: "Large-scale infrastructure management and enterprise networking, built on a cybersecurity foundation. Max Doubin is building toward it now rather than waiting for a degree to start: he holds CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, works as a teaching assistant for its Cybersecurity I class, and has five years of hands on infrastructure experience behind him.",
+    a: "Large-scale infrastructure management and enterprise networking, built on a cybersecurity foundation. Max Doubin is building toward it now rather than waiting for a degree to start: he holds three Oracle certifications and CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, works as a teaching assistant for its Cybersecurity I class, and has five years of hands on infrastructure experience behind him.",
   },
   {
     q: "How do you contact Max Doubin?",

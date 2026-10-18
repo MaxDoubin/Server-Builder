@@ -48,6 +48,9 @@ export const siteConfig = {
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "CompTIA Tech+ certified (April 2026), currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
         "Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity and FortiGate 7.6 Operator (October 2026)",
+        "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (October 2026)",
+        "TOSA CyberCitizen, a perfect 1000 out of 1000 at the Expert level (October 2026)",
+        "cPanel & WHM System Administrator II (October 2026)",
       ],
     },
     {
@@ -159,9 +162,15 @@ export const siteConfig = {
     {
       name: "Academics & Certifications",
       skills: [
+        "Oracle Cloud Infrastructure Architect Associate (October 2026)",
+        "Oracle Multicloud Foundations Associate (October 2026)",
+        "Oracle Data Center Operations Foundations Associate (October 2026)",
+        "cPanel & WHM System Administrator II, CWSA-2 (October 2026)",
+        "TOSA CyberCitizen, 1000/1000 Expert (October 2026)",
         "CompTIA Tech+ (April 2026)",
         "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
         "FortiGate 7.6 Operator (October 2026)",
+        "Nutanix University ECA 6.10 and AAPM courses (October 2026)",
         "Anthropic Claude Academy, 23 badges (October 2026)",
         "CompTIA Security+ (in progress)",
         "CompTIA Network+ (in progress)",
@@ -300,6 +309,16 @@ export const siteConfig = {
       title: "7th Among U.S. High Schools",
       description:
         "South Career and Technical Academy placed 7th nationally among high schools in the Fall 2025 Cyber Power Rankings with an all-freshman team. Cyber Skyline compiles the rankings from each school's top team, its top individual, and the participation of its students. The school ranked 6th on the individual component.",
+    },
+    {
+      title: "Oracle Certified, Cloud and Data Center",
+      description:
+        "Earned the Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), Oracle Multicloud Foundations Associate (1Z0-1144-26) and Oracle Data Center Operations Foundations Associate (1Z0-3000) certifications in October 2026.",
+    },
+    {
+      title: "Perfect Score, TOSA CyberCitizen",
+      description:
+        "Scored 1000 out of 1000 on the TOSA CyberCitizen certification in October 2026, the top of its Expert band, across the cybersecurity ecosystem, securing data and devices, secure digital practice, and protection against threats.",
     },
     {
       title: "CompTIA Tech+ Certified",
