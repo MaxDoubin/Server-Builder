@@ -126,6 +126,8 @@ export function CinematicFooter() {
               { href: "/topics", label: "Topics", testId: "link-footer-topics" },
               { href: "/archive", label: "Archive", testId: "link-footer-archive" },
               { href: "/tools", label: "Tools", testId: "link-footer-tools" },
+              { href: "/racks", label: "Racks", testId: "link-footer-racks" },
+              { href: "/gear", label: "Gear", testId: "link-footer-gear" },
               { href: "/ncl", label: "NCL guides", testId: "link-footer-ncl" },
               { href: "/today", label: "Today", testId: "link-footer-today" },
               { href: "/glossary", label: "Glossary", testId: "link-footer-glossary" },
