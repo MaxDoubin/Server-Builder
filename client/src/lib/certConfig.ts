@@ -604,6 +604,14 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // Certificates of completion from Palo Alto Networks' Beacon courses, not
+    // the proctored certification exams.
+    id: "palo-alto",
+    heading: "Palo Alto Networks",
+    meta: "Course completed October 2026",
+    items: ["Cybersecurity Fundamentals"],
+  },
+  {
     // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
     id: "nutanix",
     heading: "Nutanix University",

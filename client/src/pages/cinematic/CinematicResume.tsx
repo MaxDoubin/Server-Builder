@@ -202,6 +202,7 @@ export function CinematicResume() {
                   Fundamentals, October 2026
                 </Bullet>
                 <Bullet>Cisco Networking Academy: Ethical Hacker course, October 2026</Bullet>
+                <Bullet>Palo Alto Networks: Cybersecurity Fundamentals course, October 2026</Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
                   Administration and Performance Management (AAPM) courses, October 2026

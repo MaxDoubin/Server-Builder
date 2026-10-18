@@ -173,6 +173,7 @@ export const siteConfig = {
         "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
         "FortiGate 7.6 Operator (October 2026)",
         "Cisco Networking Academy Ethical Hacker course (October 2026)",
+        "Palo Alto Networks Cybersecurity Fundamentals course (October 2026)",
         "Nutanix University ECA 6.10 and AAPM courses (October 2026)",
         "Anthropic Claude Academy, 23 badges (October 2026)",
         "CompTIA Security+ (in progress)",
