@@ -56,6 +56,8 @@ export interface Cert {
   domains: CertDomain[];
   /** The badge the vendor issued for this credential, shown on its card only. */
   badge?: { src: string; alt: string };
+  /** One of the most significant credentials, shown first on a larger card. */
+  featured?: boolean;
 }
 
 const onSite = {
@@ -275,6 +277,7 @@ const techPlus: Cert = {
   vendor: "CompTIA",
   level: "Foundational IT",
   status: "earned",
+  featured: true,
   statusLabel: "Earned",
   statusDetail: "Earned in April 2026. A foundational IT credential covering core hardware, software, and security literacy.",
   covers:
@@ -311,6 +314,7 @@ const neo4jProfessional: Cert = {
   vendor: "Neo4j GraphAcademy",
   level: "Graph databases and Cypher",
   status: "earned",
+  featured: true,
   statusLabel: "Earned",
   statusDetail:
     "Earned in 2026 with a score of 93.8 out of 100, where 80 passes. The exam is 80 questions in 60 minutes, including hands-on Cypher challenges.",
@@ -363,6 +367,7 @@ const ociArchitect: Cert = {
   vendor: "Oracle",
   level: "Associate cloud architecture",
   status: "earned",
+  featured: true,
   statusLabel: "Earned",
   statusDetail: "Earned in 2026. Oracle's associate-level credential for designing and building on Oracle Cloud Infrastructure.",
   covers:
@@ -524,6 +529,7 @@ const tosaCyberCitizen: Cert = {
   vendor: "Isograd",
   level: "Cybersecurity practice, scored 1 to 1000",
   status: "earned",
+  featured: true,
   statusLabel: "Earned",
   statusDetail:
     "Earned in 2026 with a score of 1000 out of 1000, the top of the Expert band (876 to 1000). The exam is adaptive: 35 questions in 60 minutes.",
@@ -539,22 +545,26 @@ const tosaCyberCitizen: Cert = {
   },
 };
 
-/** Earned cards render first, newest first. The three targets follow. */
+/**
+ * Earned cards render first, most significant first: the four featured
+ * credentials, then the rest from the Oracle foundations down to Google
+ * Analytics. The three targets follow.
+ */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
 export const CERTS_EARNED: Cert[] = [
-  neo4jProfessional,
-  googleAnalytics,
   ociArchitect,
+  techPlus,
+  neo4jProfessional,
+  tosaCyberCitizen,
   oracleMulticloud,
   oracleDataCenter,
-  cpanelSysAdmin1,
   cpanelSysAdmin2,
-  pleskAssociate,
-  pleskProfessional,
-  pleskLinuxExpert,
+  cpanelSysAdmin1,
   pleskWindowsExpert,
-  tosaCyberCitizen,
-  techPlus,
+  pleskLinuxExpert,
+  pleskProfessional,
+  pleskAssociate,
+  googleAnalytics,
 ];
 export const ALL_CERTS: Cert[] = [...CERTS_EARNED, ...CERTS_IN_PROGRESS];
 
@@ -615,7 +625,12 @@ const CLAUDE_COURSES = [
   "Introduction to Subagents",
 ];
 
-export const CREDENTIAL_GROUPS: CredentialGroup[] = [
+/** A group whose every item came with a badge shows as tiles, not a list. */
+export function isTiled(group: CredentialGroup): boolean {
+  return group.items.every((item) => group.badges?.[item]);
+}
+
+const GROUPS: CredentialGroup[] = [
   {
     id: "fortinet",
     heading: "Fortinet Training Institute",
@@ -637,6 +652,31 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
       "Fortinet Cybersecurity and Cloud Fundamentals 1.0": {
         src: "/images/certs/fortinet-cybersecurity-cloud-fundamentals-1-0.webp",
         alt: "Fortinet NSE 1 exam badge, Cybersecurity and Cloud Fundamentals v1.0",
+      },
+    },
+  },
+  {
+    // Credentials with Cisco's verified badges, all issued October 18, 2026:
+    // the Ethical Hacker course, the Cybersecurity Defense Analyst career path
+    // built with Splunk (30 hours of SOC and Splunk SIEM training), and the
+    // Network Technician career path. Each career path ends in an exam.
+    id: "cisco-netacad",
+    heading: "Cisco Networking Academy",
+    meta: "Completed in 2026",
+    items: [
+      "Ethical Hacker",
+      "Cybersecurity Defense Analyst Career Path",
+      "Network Technician Career Path",
+    ],
+    badges: {
+      "Ethical Hacker": { src: "/images/certs/cisco-ethical-hacker.webp", alt: "Cisco Networking Academy Verified Ethical Hacker badge" },
+      "Cybersecurity Defense Analyst Career Path": {
+        src: "/images/certs/cisco-cybersecurity-defense-analyst.webp",
+        alt: "Cisco Networking Academy Verified Cybersecurity Defense Analyst Career Path badge",
+      },
+      "Network Technician Career Path": {
+        src: "/images/certs/cisco-network-technician.webp",
+        alt: "Cisco Networking Academy Verified Network Technician Career Path badge",
       },
     },
   },
@@ -684,44 +724,6 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // Credentials with Cisco's verified badges, all issued October 18, 2026:
-    // the Ethical Hacker course, the Cybersecurity Defense Analyst career path
-    // built with Splunk (30 hours of SOC and Splunk SIEM training), and the
-    // Network Technician career path. Each career path ends in an exam.
-    id: "cisco-netacad",
-    heading: "Cisco Networking Academy",
-    meta: "Completed in 2026",
-    items: [
-      "Ethical Hacker",
-      "Cybersecurity Defense Analyst Career Path",
-      "Network Technician Career Path",
-    ],
-    badges: {
-      "Ethical Hacker": { src: "/images/certs/cisco-ethical-hacker.webp", alt: "Cisco Networking Academy Verified Ethical Hacker badge" },
-      "Cybersecurity Defense Analyst Career Path": {
-        src: "/images/certs/cisco-cybersecurity-defense-analyst.webp",
-        alt: "Cisco Networking Academy Verified Cybersecurity Defense Analyst Career Path badge",
-      },
-      "Network Technician Career Path": {
-        src: "/images/certs/cisco-network-technician.webp",
-        alt: "Cisco Networking Academy Verified Network Technician Career Path badge",
-      },
-    },
-  },
-  {
-    // Certificates of completion from Palo Alto Networks' Beacon courses, not
-    // the proctored certification exams.
-    id: "palo-alto",
-    heading: "Palo Alto Networks",
-    meta: "Courses completed in 2026",
-    items: [
-      "Cybersecurity Fundamentals",
-      "Network Security Fundamentals",
-      "Cloud Security Fundamentals",
-      "Security Operations Fundamentals",
-    ],
-  },
-  {
     // OPSWAT's introductory certificate: the Academy's mission, CIP
     // fundamentals and an overview of its courses.
     id: "opswat",
@@ -736,19 +738,6 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // Certificates of training completion from CISA, built with Idaho
-    // National Laboratory: the online 300 course on protecting industrial
-    // control systems from cyber attacks (1.0 CEU) and the 401 course on
-    // evaluating an ICS network's cybersecurity (1.2 CEUs).
-    id: "cisa",
-    heading: "CISA",
-    meta: "Courses completed in 2026",
-    items: [
-      "ICS Cybersecurity (300), 10.4 contact hours",
-      "ICS Cybersecurity Evaluation (401), 12 contact hours",
-    ],
-  },
-  {
     // The certificate for passing the end-of-course exam of arcX's Cyber
     // Threat Intelligence 101, an introductory threat intelligence course.
     id: "arcx",
@@ -761,16 +750,6 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
         alt: "arcX Certified Foundation Threat Intelligence Analyst badge",
       },
     },
-  },
-  {
-    // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
-    id: "nutanix",
-    heading: "Nutanix University",
-    meta: "Completed in 2026",
-    items: [
-      "Enterprise Cloud Administration (ECA) 6.10, online course",
-      "Advanced Administration and Performance Management (AAPM), online course",
-    ],
   },
   {
     id: "competition",
@@ -789,6 +768,42 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     items: ["AP Computer Science Principles: 5", "AP Human Geography: 5"],
   },
   {
+    // Certificates of completion from Palo Alto Networks' Beacon courses, not
+    // the proctored certification exams.
+    id: "palo-alto",
+    heading: "Palo Alto Networks",
+    meta: "Courses completed in 2026",
+    items: [
+      "Cybersecurity Fundamentals",
+      "Network Security Fundamentals",
+      "Cloud Security Fundamentals",
+      "Security Operations Fundamentals",
+    ],
+  },
+  {
+    // Certificates of training completion from CISA, built with Idaho
+    // National Laboratory: the online 300 course on protecting industrial
+    // control systems from cyber attacks (1.0 CEU) and the 401 course on
+    // evaluating an ICS network's cybersecurity (1.2 CEUs).
+    id: "cisa",
+    heading: "CISA",
+    meta: "Courses completed in 2026",
+    items: [
+      "ICS Cybersecurity (300), 10.4 contact hours",
+      "ICS Cybersecurity Evaluation (401), 12 contact hours",
+    ],
+  },
+  {
+    // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
+    id: "nutanix",
+    heading: "Nutanix University",
+    meta: "Completed in 2026",
+    items: [
+      "Enterprise Cloud Administration (ECA) 6.10, online course",
+      "Advanced Administration and Performance Management (AAPM), online course",
+    ],
+  },
+  {
     id: "claude-academy-badges",
     heading: "Anthropic Claude Academy badges",
     meta: `${CLAUDE_BADGES.length} badges, 2026`,
@@ -800,4 +815,14 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     meta: "Completed in 2026",
     items: CLAUDE_COURSES,
   },
+];
+
+/**
+ * The page shows the badge-tile groups first and the text-only lists after
+ * them, each kind in the order above, so a group moves up on its own once
+ * every item in it has a badge.
+ */
+export const CREDENTIAL_GROUPS: CredentialGroup[] = [
+  ...GROUPS.filter(isTiled),
+  ...GROUPS.filter((group) => !isTiled(group)),
 ];
