@@ -684,19 +684,27 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // Credentials with Cisco's verified badges, both issued October 18, 2026:
-    // the Ethical Hacker course, and the Cybersecurity Defense Analyst career
-    // path built with Splunk (30 hours of SOC and Splunk SIEM training),
-    // earned by passing its pathway exam.
+    // Credentials with Cisco's verified badges, all issued October 18, 2026:
+    // the Ethical Hacker course, the Cybersecurity Defense Analyst career path
+    // built with Splunk (30 hours of SOC and Splunk SIEM training), and the
+    // Network Technician career path. Each career path ends in an exam.
     id: "cisco-netacad",
     heading: "Cisco Networking Academy",
     meta: "Completed in 2026",
-    items: ["Ethical Hacker", "Cybersecurity Defense Analyst Career Path"],
+    items: [
+      "Ethical Hacker",
+      "Cybersecurity Defense Analyst Career Path",
+      "Network Technician Career Path",
+    ],
     badges: {
       "Ethical Hacker": { src: "/images/certs/cisco-ethical-hacker.webp", alt: "Cisco Networking Academy Verified Ethical Hacker badge" },
       "Cybersecurity Defense Analyst Career Path": {
         src: "/images/certs/cisco-cybersecurity-defense-analyst.webp",
         alt: "Cisco Networking Academy Verified Cybersecurity Defense Analyst Career Path badge",
+      },
+      "Network Technician Career Path": {
+        src: "/images/certs/cisco-network-technician.webp",
+        alt: "Cisco Networking Academy Verified Network Technician Career Path badge",
       },
     },
   },

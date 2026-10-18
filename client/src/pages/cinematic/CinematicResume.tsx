@@ -208,8 +208,8 @@ export function CinematicResume() {
                   Architect, and Databricks, Generative AI and AI Agent Fundamentals, 2026
                 </Bullet>
                 <Bullet>
-                  Cisco Networking Academy: Ethical Hacker course and Cybersecurity Defense Analyst
-                  career path (with Splunk), 2026
+                  Cisco Networking Academy: Ethical Hacker course, and Cybersecurity Defense Analyst
+                  (with Splunk) and Network Technician career paths, 2026
                 </Bullet>
                 <Bullet>
                   Palo Alto Networks: Cybersecurity, Network Security, Cloud Security and Security
