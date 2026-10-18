@@ -17,18 +17,21 @@ import { DisplayMenu } from "@/components/ui/display-menu";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+/*
+  Four destinations, the ones a visitor to a portfolio comes for. The
+  wordmark goes home, the button beside these goes to contact, and the
+  practice, tools, racks, gear and simulator pages sit in the footer and the
+  command palette rather than across the top of every page.
+*/
 const NAV_LINKS = [
-  { label: "Index", href: "/" },
-  { label: "Dossier", href: "/#dossier" },
   { label: "Projects", href: "/projects" },
+  { label: "Certifications", href: "/certifications" },
   { label: "Field Notes", href: "/blog" },
-  { label: "Practice", href: "/practice" },
-  { label: "Tools", href: "/tools" },
-  { label: "Racks", href: "/racks" },
-  { label: "Gear", href: "/gear" },
-  { label: "Build", href: "/game" },
-  { label: "Contact", href: "/contact" },
+  { label: "Resume", href: "/resume" },
 ];
+
+/** The "Get in touch" button is hidden on phones, so the menu carries it. */
+const DRAWER_LINKS = [...NAV_LINKS, { label: "Contact", href: "/contact" }];
 
 const navItemVariants = {
   hidden: { opacity: 0, y: -12, filter: "blur(4px)" },
@@ -80,7 +83,7 @@ const mobileItemVariants = {
     opacity: 0,
     x: -20,
     transition: {
-      delay: (NAV_LINKS.length - i) * 0.03,
+      delay: (DRAWER_LINKS.length - i) * 0.03,
       duration: 0.2,
     },
   }),
@@ -274,30 +277,21 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                 className="group flex min-h-[24px] items-center gap-3 py-1 text-[hsl(var(--brand-bone))]"
                 data-testid="link-home-wordmark"
               >
-                <motion.span
-                  className="relative block h-5 w-5 rounded-sm border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite))]"
+                {/* Max's logo, the same mark as the favicon. Decorative here,
+                    since the name beside it is the link text. */}
+                <motion.img
+                  src="/favicon-192.png"
+                  alt=""
                   aria-hidden
+                  width={32}
+                  height={32}
+                  decoding="async"
+                  className="block h-8 w-8 rounded-md"
                   whileHover={{
-                    scale: 1.2,
-                    rotate: 90,
-                    borderColor: "hsl(72 100% 50%)",
+                    scale: 1.1,
                     transition: { type: "spring", stiffness: 400, damping: 15 },
                   }}
-                >
-                  <motion.span
-                    className="absolute left-1/2 top-1/2 h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[hsl(var(--brand-signal))]"
-                    style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      boxShadow: [
-                        "0 0 6px hsl(72 100% 50%)",
-                        "0 0 16px hsl(72 100% 50%)",
-                        "0 0 6px hsl(72 100% 50%)",
-                      ],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                </motion.span>
+                />
                 <span className="font-techno text-[0.6875rem] uppercase tracking-[0.32em]">
                   <GlitchText text="Max Doubin" intensity={0.6} />
                 </span>
@@ -305,7 +299,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             </Magnetic>
           </motion.div>
 
-          <nav aria-label="Primary" className="hidden items-center gap-1 xl:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
             {NAV_LINKS.map((link, i) => {
               const active = isActive(link.href);
               return (
@@ -459,7 +453,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               aria-controls="cinematic-mobile-nav"
               aria-label={open ? "Close menu" : "Open menu"}
               data-testid="button-nav-toggle"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] xl:hidden"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] lg:hidden"
               whileHover={{ scale: 1.1, borderColor: "hsl(72 100% 50% / 0.6)" }}
               whileTap={{ scale: 0.9 }}
               initial={{ opacity: 0, rotate: -90 }}
@@ -497,7 +491,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             <motion.div
               aria-hidden
               data-print-hide
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm xl:hidden"
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -509,7 +503,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               id="cinematic-mobile-nav"
               data-testid="mobile-nav-drawer"
               data-print-hide
-              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md xl:hidden"
+              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md lg:hidden"
               initial={{ opacity: 0, y: -20, clipPath: "inset(0 0 100% 0)" }}
               animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" }}
               exit={{ opacity: 0, y: -10, clipPath: "inset(0 0 100% 0)" }}
@@ -519,7 +513,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                 aria-label="Site menu"
                 className="mx-auto flex max-w-[1400px] flex-col gap-1 px-6 py-4"
               >
-                {NAV_LINKS.map((link, i) => {
+                {DRAWER_LINKS.map((link, i) => {
                   const active = isActive(link.href);
                   return (
                     <motion.div
