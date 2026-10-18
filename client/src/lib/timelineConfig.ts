@@ -59,10 +59,10 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         href: "/certifications",
       },
       {
-        title: "cPanel & WHM System Administrator II",
+        title: "cPanel & WHM System Administrator I and II",
         when: "October 2026",
         description:
-          "Passed cPanel University's System Administrator II exam (CWSA-2) for servers running cPanel & WHM.",
+          "Passed cPanel University's System Administrator I and II exams (CWSA-1 and CWSA-2) for servers running cPanel & WHM.",
         href: "/certifications",
       },
       {

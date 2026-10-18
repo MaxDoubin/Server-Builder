@@ -16,7 +16,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
+      "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator I and II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -35,7 +35,7 @@ export function CinematicCerts() {
               I hold three Oracle certifications, Cloud Infrastructure
               Architect Associate, Multicloud Foundations Associate and Data
               Center Operations Foundations Associate, cPanel &amp; WHM System
-              Administrator II, a perfect 1000 on TOSA CyberCitizen, CompTIA
+              Administrator I and II, a perfect 1000 on TOSA CyberCitizen, CompTIA
               Tech+, and six Fortinet Training Institute credentials. I am certifying in Security+, Network+, and the
               CCNA.
             </p>

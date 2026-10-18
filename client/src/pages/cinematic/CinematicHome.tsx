@@ -90,6 +90,12 @@ export function CinematicHome() {
         })),
         {
           "@type": "EducationalOccupationalCredential",
+          name: "cPanel & WHM System Administrator I (CWSA-1)",
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "cPanel" },
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
           name: "cPanel & WHM System Administrator II (CWSA-2)",
           credentialCategory: "certification",
           recognizedBy: { "@type": "Organization", name: "cPanel" },
