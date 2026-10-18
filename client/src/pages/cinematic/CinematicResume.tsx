@@ -194,6 +194,7 @@ export function CinematicResume() {
                 <Bullet>TOSA CyberCitizen, 1000/1000 (Expert), 2026</Bullet>
                 <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
                 <Bullet>Google Analytics Certification (Google Skillshop), 2026</Bullet>
+                <Bullet>Neo4j Certified Professional (Neo4j GraphAcademy), 93.8/100, 2026</Bullet>
                 <Bullet>
                   Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, 2026
                 </Bullet>

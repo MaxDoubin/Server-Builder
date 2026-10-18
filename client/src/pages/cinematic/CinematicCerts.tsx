@@ -26,7 +26,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: three Oracle certifications, cPanel & WHM System Administrator I and II, all four Plesk Obsidian levels, a perfect TOSA CyberCitizen score, CompTIA Tech+, the Google Analytics Certification and six Fortinet credentials.",
+      "Max Doubin's certifications: three Oracle certifications, cPanel & WHM System Administrator I and II, all four Plesk Obsidian levels, a perfect TOSA CyberCitizen score, CompTIA Tech+, Google Analytics, Neo4j Certified Professional and six Fortinet credentials.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -45,7 +45,8 @@ export function CinematicCerts() {
               I hold three Oracle certifications, cPanel &amp; WHM System
               Administrator I and II, all four Plesk Obsidian levels, a perfect
               1000 on TOSA CyberCitizen, CompTIA Tech+, the Google Analytics
-              Certification, and six Fortinet Training Institute credentials. I am certifying in Security+,
+              Certification, Neo4j Certified Professional, and six Fortinet
+              Training Institute credentials. I am certifying in Security+,
               Network+, and the CCNA.
             </p>
           </header>
@@ -227,7 +228,14 @@ function CertTile({ cert }: { cert: Cert }) {
             className={TILE_BADGE}
           />
         ) : (
-          <span />
+          // Some issuers give a certificate but no badge image; a plain mark
+          // keeps the tile's shape without imitating one.
+          <span
+            aria-hidden
+            className={`${TILE_BADGE} flex items-center justify-center rounded-2xl border border-[hsl(var(--brand-iron))] font-mono-tight text-3xl text-[hsl(var(--brand-signal))]`}
+          >
+            ✓
+          </span>
         )}
         <StatusChip cert={cert} />
       </div>

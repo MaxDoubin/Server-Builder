@@ -5,8 +5,9 @@
  * serious problem, so an exam that has not been sat carries status
  * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
  * three Oracle exams, cPanel & WHM System Administrator I and II, the four
- * Plesk Obsidian levels, TOSA CyberCitizen and the Google Analytics
- * Certification are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
+ * Plesk Obsidian levels, TOSA CyberCitizen, the Google Analytics
+ * Certification and Neo4j Certified Professional are held today and are
+ * listed under "earned". Keep the distinction exact: the copy should read as confident and
  * current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they
@@ -302,6 +303,29 @@ const googleAnalytics: Cert = {
   badge: { src: "/images/certs/google-analytics.webp", alt: "Google Analytics Certified badge" },
 };
 
+// The badge is Neo4j's Certified Professional seal, as neo4j.com's GraphAcademy
+// page and the Neo4j community forum show it; the certificate page carries none.
+const neo4jProfessional: Cert = {
+  id: "neo4j-certified-professional",
+  name: "Neo4j Certified Professional",
+  vendor: "Neo4j GraphAcademy",
+  level: "Graph databases and Cypher",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail:
+    "Earned in 2026 with a score of 93.8 out of 100, where 80 passes. The exam is 80 questions in 60 minutes, including hands-on Cypher challenges.",
+  covers:
+    "Cypher, which is 32 of the 80 questions, plus Neo4j fundamentals, schema and indexes, drivers, graph data modeling and importing data, and six hands-on challenges.",
+  worth:
+    "Neo4j's own credential for working knowledge of its platform, from querying and modeling graphs to building applications on its drivers, with a certificate anyone can verify on GraphAcademy.",
+  officialUrl: "https://graphacademy.neo4j.com/certifications/neo4j-certification/",
+  domains: [],
+  badge: {
+    src: "/images/certs/neo4j-certified-professional.webp",
+    alt: "Neo4j Certified Professional badge, Graph Database Certified",
+  },
+};
+
 /**
  * Max passed these four in October 2026. Oracle publishes no exam objectives
  * with weightings for them, and TOSA publishes skill areas without weightings,
@@ -518,6 +542,7 @@ const tosaCyberCitizen: Cert = {
 /** Earned cards render first, newest first. The three targets follow. */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
 export const CERTS_EARNED: Cert[] = [
+  neo4jProfessional,
   googleAnalytics,
   ociArchitect,
   oracleMulticloud,
