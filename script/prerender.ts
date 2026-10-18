@@ -1435,7 +1435,7 @@ ${JSON.stringify({
   ${ALL_CERTS.map(
     (cert) => `<section>
     <h2>${esc(cert.name)}${cert.code ? ` (${esc(cert.code)})` : ""}</h2>
-    ${cert.badge ? `<img src="${cert.badge.src}" alt="${esc(cert.badge.alt)}" width="80" height="80" loading="lazy" decoding="async">` : ""}
+    ${cert.badge ? `<img src="${cert.badge.src}" alt="${esc(cert.badge.alt)}" width="96" height="96" loading="lazy" decoding="async">` : ""}
     <p>${esc(cert.vendor)}, ${esc(cert.level)}. Status: ${esc(cert.statusLabel)}. ${esc(cert.statusDetail)}</p>
     <p>${esc(cert.covers)}</p>
     <p>${esc(cert.worth)}</p>
@@ -1461,7 +1461,7 @@ ${JSON.stringify({
       group.items.map((item: string) => {
         const badge = group.badges?.[item];
         return badge
-          ? `<img src="${badge.src}" alt="${esc(badge.alt)}" width="48" height="48" loading="lazy" decoding="async"> ${esc(item)}`
+          ? `<img src="${badge.src}" alt="${esc(badge.alt)}" width="96" height="96" loading="lazy" decoding="async"> ${esc(item)}`
           : esc(item);
       }),
     )}</ul>
