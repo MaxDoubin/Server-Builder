@@ -4,8 +4,9 @@
  * This is a status board. Misrepresenting a credential on a portfolio is a
  * serious problem, so an exam that has not been sat carries status
  * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
- * three Oracle exams, cPanel & WHM System Administrator I and II and TOSA
- * CyberCitizen are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
+ * three Oracle exams, cPanel & WHM System Administrator I and II, the four
+ * Plesk Obsidian levels and TOSA CyberCitizen are held today and are listed
+ * under "earned". Keep the distinction exact: the copy should read as confident and
  * current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they
@@ -403,6 +404,78 @@ const cpanelSysAdmin2: Cert = {
   },
 };
 
+/**
+ * Plesk University's four Plesk Obsidian certifications, all issued to Max on
+ * October 18, 2026. Coverage comes from Plesk's Credly badge pages (Associate,
+ * Professional) and its course catalog (the two Expert levels); each
+ * certificate is valid for two years. The badges are cropped from the issued
+ * certificates, square around the hexagon, with the white page removed.
+ */
+const pleskAssociate: Cert = {
+  id: "plesk-obsidian-associate",
+  name: "Plesk Obsidian Associate",
+  code: "OBS-1-ASSOCIATE-EXAM",
+  vendor: "Plesk University",
+  level: "Foundational hosting platform",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. The first of Plesk University's four Plesk Obsidian certifications, each valid for two years.",
+  covers: "Basic knowledge of Plesk Obsidian, its extensions and licensing, and building hosting offerings on it.",
+  worth: "The entry level of the Plesk track, which continues through Professional to the Linux and Windows Expert levels.",
+  officialUrl: "https://www.credly.com/org/plesk/badge/plesk-obsidian-associate",
+  domains: [],
+  badge: { src: "/images/certs/plesk-obsidian-associate.webp", alt: "Plesk Obsidian Associate badge" },
+};
+
+const pleskProfessional: Cert = {
+  id: "plesk-obsidian-professional",
+  name: "Plesk Obsidian Professional",
+  code: "OBS-2-PRO-EXAM",
+  vendor: "Plesk University",
+  level: "Hosting platform administration",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. Plesk University's administrator level, passed as an online exam with identity verification.",
+  covers:
+    "Administrator tasks in Plesk Obsidian: installation and initial setup, security configuration, provisioning hosting services, and backing up and restoring customer data.",
+  worth: "Covers the day-to-day running of a Plesk server, from the first install to restoring a customer's data.",
+  officialUrl: "https://www.credly.com/org/plesk/badge/plesk-obsidian-professional",
+  domains: [],
+  badge: { src: "/images/certs/plesk-obsidian-professional.webp", alt: "Plesk Obsidian Professional badge" },
+};
+
+const pleskLinuxExpert: Cert = {
+  id: "plesk-obsidian-linux-expert",
+  name: "Plesk Obsidian for Linux Expert",
+  code: "OBS-3-LINEXP-EXAM",
+  vendor: "Plesk University",
+  level: "Expert hosting platform administration",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. One of Plesk University's two expert levels, for Plesk on Linux.",
+  covers: "Maintaining and updating Plesk on Linux servers, and troubleshooting Plesk and the hosting services it runs.",
+  worth: "Expert-level maintenance and troubleshooting on the Linux side of a Plesk platform.",
+  officialUrl: "https://university.plesk.com/catalog/info/id:345",
+  domains: [],
+  badge: { src: "/images/certs/plesk-obsidian-linux-expert.webp", alt: "Plesk Obsidian Linux Expert badge" },
+};
+
+const pleskWindowsExpert: Cert = {
+  id: "plesk-obsidian-windows-expert",
+  name: "Plesk Obsidian for Windows Expert",
+  code: "OBS-3-WINEXP-EXAM",
+  vendor: "Plesk University",
+  level: "Expert hosting platform administration",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. Plesk University's other expert level, for Plesk on Windows.",
+  covers: "Updating and maintaining Plesk on Windows servers, and solving technical issues with Plesk and its hosting services.",
+  worth: "Expert-level maintenance and troubleshooting on the Windows side of a Plesk platform.",
+  officialUrl: "https://university.plesk.com/catalog/info/id:347",
+  domains: [],
+  badge: { src: "/images/certs/plesk-obsidian-windows-expert.webp", alt: "Plesk Obsidian Windows Expert badge" },
+};
+
 const tosaCyberCitizen: Cert = {
   id: "tosa-cybercitizen",
   name: "TOSA CyberCitizen",
@@ -422,7 +495,19 @@ const tosaCyberCitizen: Cert = {
 
 /** Earned cards render first, newest first. The three targets follow. */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
-export const CERTS_EARNED: Cert[] = [ociArchitect, oracleMulticloud, oracleDataCenter, cpanelSysAdmin1, cpanelSysAdmin2, tosaCyberCitizen, techPlus];
+export const CERTS_EARNED: Cert[] = [
+  ociArchitect,
+  oracleMulticloud,
+  oracleDataCenter,
+  cpanelSysAdmin1,
+  cpanelSysAdmin2,
+  pleskAssociate,
+  pleskProfessional,
+  pleskLinuxExpert,
+  pleskWindowsExpert,
+  tosaCyberCitizen,
+  techPlus,
+];
 export const ALL_CERTS: Cert[] = [...CERTS_EARNED, ...CERTS_IN_PROGRESS];
 
 /**

@@ -33,8 +33,8 @@ export interface TimelineGroup {
  * Tech+ certificate, and the season of the top 1 percent NCL result. Max
  * supplied the last two dates himself in October 2026: Big Future Ambassador
  * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
- * exams, the TOSA CyberCitizen score and the two Nutanix courses are October
- * 2026. A role that
+ * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score and
+ * the two Nutanix courses are October 2026. A role that
  * spans years sits under the year it began. Ask before adding an entry whose
  * date is unknown rather than inferring one from the entries around it.
  */
@@ -63,6 +63,13 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         when: "October 2026",
         description:
           "Passed cPanel University's System Administrator I and II exams (CWSA-1 and CWSA-2) for servers running cPanel & WHM.",
+        href: "/certifications",
+      },
+      {
+        title: "All four Plesk Obsidian certifications",
+        when: "October 2026",
+        description:
+          "Associate, Professional, Linux Expert and Windows Expert from Plesk University, from installing and securing a Plesk server to expert troubleshooting on Linux and Windows.",
         href: "/certifications",
       },
       {

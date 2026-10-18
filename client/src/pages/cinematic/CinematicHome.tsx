@@ -100,6 +100,17 @@ export function CinematicHome() {
           credentialCategory: "certification",
           recognizedBy: { "@type": "Organization", name: "cPanel" },
         },
+        ...[
+          "Plesk Obsidian Associate",
+          "Plesk Obsidian Professional",
+          "Plesk Obsidian for Linux Expert",
+          "Plesk Obsidian for Windows Expert",
+        ].map((name) => ({
+          "@type": "EducationalOccupationalCredential",
+          name,
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "Plesk" },
+        })),
         {
           "@type": "EducationalOccupationalCredential",
           name: "TOSA CyberCitizen",
