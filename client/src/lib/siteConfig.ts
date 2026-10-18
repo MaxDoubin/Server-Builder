@@ -172,6 +172,7 @@ export const siteConfig = {
         "CompTIA Tech+ (April 2026)",
         "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
         "FortiGate 7.6 Operator (October 2026)",
+        "Databricks Academy Platform Administrator accreditation (October 2026)",
         "Cisco Networking Academy Ethical Hacker course (October 2026)",
         "Palo Alto Networks Cybersecurity Fundamentals course (October 2026)",
         "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (October 2026)",
