@@ -30,6 +30,8 @@ const PILLARS: Pillar[] = [
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
       "CompTIA Tech+ certified (April 2026); Security+, Network+, and CCNA in progress",
       "Fortinet NSE 1, NSE 2 and NSE 3 and FortiGate 7.6 Operator (October 2026)",
+      "Oracle Cloud Infrastructure Architect Associate, Multicloud Foundations Associate and Data Center Operations Foundations Associate (October 2026)",
+      "TOSA CyberCitizen, a perfect 1000 out of 1000 (October 2026)",
     ],
   },
   {

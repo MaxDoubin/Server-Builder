@@ -16,7 +16,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: CompTIA Tech+, six Fortinet Training Institute credentials, competition results, AP scores and Anthropic Claude Academy badges, with Security+, Network+ and CCNA in progress.",
+      "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -32,8 +32,11 @@ export function CinematicCerts() {
               Certifications.
             </h1>
             <p className="mt-6 font-mono-tight text-base leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              I hold CompTIA Tech+ and six Fortinet Training Institute
-              credentials, and I am certifying in Security+, Network+, and the
+              I hold three Oracle certifications, Cloud Infrastructure
+              Architect Associate, Multicloud Foundations Associate and Data
+              Center Operations Foundations Associate, cPanel &amp; WHM System
+              Administrator II, a perfect 1000 on TOSA CyberCitizen, CompTIA
+              Tech+, and six Fortinet Training Institute credentials. I am certifying in Security+, Network+, and the
               CCNA.
             </p>
           </header>
@@ -153,15 +156,28 @@ function CertCard({ cert }: { cert: Cert }) {
       className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm md:p-8"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-            {cert.vendor} · {cert.code}
-          </div>
-          <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-2xl">
-            {cert.name}
-          </h3>
-          <div className="mt-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-ash))]">
-            {cert.level}
+        <div className="flex items-start gap-4">
+          {cert.badge ? (
+            <img
+              src={cert.badge.src}
+              alt={cert.badge.alt}
+              width={80}
+              height={80}
+              loading="lazy"
+              decoding="async"
+              className="h-16 w-16 shrink-0 md:h-20 md:w-20"
+            />
+          ) : null}
+          <div>
+            <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              {cert.code ? `${cert.vendor} · ${cert.code}` : cert.vendor}
+            </div>
+            <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-2xl">
+              {cert.name}
+            </h3>
+            <div className="mt-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-ash))]">
+              {cert.level}
+            </div>
           </div>
         </div>
         <StatusChip cert={cert} />
@@ -196,7 +212,7 @@ function CertCard({ cert }: { cert: Cert }) {
         rel="noopener noreferrer"
         className="mt-4 inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
       >
-        Official objectives ↗
+        {cert.domains.length > 0 ? "Official objectives" : "Official page"} ↗
       </a>
 
       {cert.domains.length > 0 ? (

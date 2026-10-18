@@ -32,7 +32,9 @@ export interface TimelineGroup {
  * 2025 Ruckus deployment, the 2025 NJHS scholarship, the April 2026 CompTIA
  * Tech+ certificate, and the season of the top 1 percent NCL result. Max
  * supplied the last two dates himself in October 2026: Big Future Ambassador
- * for 2025 to 2026, and Student of the Month in October 2025. A role that
+ * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
+ * exams, the TOSA CyberCitizen score and the two Nutanix courses are October
+ * 2026. A role that
  * spans years sits under the year it began. Ask before adding an entry whose
  * date is unknown rather than inferring one from the entries around it.
  */
@@ -48,6 +50,34 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Won the Clark County School District capture the flag tournament at UNLV's CyberWeek, held for Cybersecurity Awareness Month, across cryptography, forensics, log analysis, OSINT and reverse engineering.",
         href: "https://www.unlv.edu/cybersecurity/community-outreach/cyberweek",
         external: true,
+      },
+      {
+        title: "Three Oracle certifications",
+        when: "October 2026",
+        description:
+          "Passed three Oracle exams: Cloud Infrastructure Architect Associate (1Z0-1072-26) on cloud identity, networking, compute and storage, Multicloud Foundations Associate (1Z0-1144-26), and Data Center Operations Foundations Associate (1Z0-3000) on data center power, cooling, safety and operating procedures.",
+        href: "/certifications",
+      },
+      {
+        title: "cPanel & WHM System Administrator II",
+        when: "October 2026",
+        description:
+          "Passed cPanel University's System Administrator II exam (CWSA-2) for servers running cPanel & WHM.",
+        href: "/certifications",
+      },
+      {
+        title: "Perfect score, TOSA CyberCitizen",
+        when: "October 2026",
+        description:
+          "Scored 1000 out of 1000 on the adaptive TOSA CyberCitizen certification, the top of its Expert band.",
+        href: "/certifications",
+      },
+      {
+        title: "Two Nutanix University courses",
+        when: "October 2026",
+        description:
+          "Completed Enterprise Cloud Administration (ECA) 6.10, the training for the Nutanix Certified Professional, Multicloud Infrastructure exam, and Advanced Administration and Performance Management (AAPM), the master-level course that follows it.",
+        href: "/certifications",
       },
       {
         title: "Fortinet Training Institute credentials",
@@ -101,7 +131,7 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "CompTIA Tech+ certified",
         when: "April 2026",
         description:
-          "The one certification currently held. Security+, Network+, and Cisco CCNA are in progress.",
+          "His first certification, a foundational IT credential. Security+, Network+, and Cisco CCNA are in progress.",
       },
       {
         title: "PBS Varsity Quiz state finalist",

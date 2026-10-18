@@ -178,6 +178,15 @@ export function CinematicResume() {
                 Earned
               </h3>
               <ul className="mt-2 space-y-1">
+                <Bullet>
+                  Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), October 2026
+                </Bullet>
+                <Bullet>Oracle Multicloud Foundations Associate (1Z0-1144-26), October 2026</Bullet>
+                <Bullet>
+                  Oracle Data Center Operations Foundations Associate (1Z0-3000), October 2026
+                </Bullet>
+                <Bullet>cPanel &amp; WHM System Administrator II (CWSA-2), October 2026</Bullet>
+                <Bullet>TOSA CyberCitizen, 1000/1000 (Expert), October 2026</Bullet>
                 <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
                 <Bullet>
                   Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, October 2026
@@ -186,6 +195,10 @@ export function CinematicResume() {
                 <Bullet>
                   Fortinet Introduction to the Next Generation Firewall and Cybersecurity and Cloud
                   Fundamentals, October 2026
+                </Bullet>
+                <Bullet>
+                  Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
+                  Administration and Performance Management (AAPM) courses, October 2026
                 </Bullet>
                 <Bullet>
                   Anthropic Claude Academy: 23 badges and four completed courses, October 2026
