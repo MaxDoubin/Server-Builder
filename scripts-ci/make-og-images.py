@@ -111,12 +111,8 @@ PAGE_EYEBROWS = {
     "capture": "PACKET CAPTURES",
     "practice": "PRACTICE",
     "contact": "CONTACT",
-    "colophon": "COLOPHON",
-    "changelog": "CHANGELOG",
-    "roadmap": "ROADMAP",
     "racks": "RACK LIBRARY",
     "ask": "ASK",
-    "subscribe": "SUBSCRIBE",
     # The simulator's five dashboards. Noindex, so these cards are never for
     # a search result; they are for the link somebody pastes into a chat.
     "noc": "NOC",

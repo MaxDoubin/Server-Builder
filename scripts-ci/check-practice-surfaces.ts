@@ -1,6 +1,11 @@
 /**
- * Every practice surface has to be findable from the front page, from the
- * hub, and from the palette.
+ * Every practice surface has to be findable from the hub and from the
+ * palette.
+ *
+ * The home page used to carry every exercise as well. In October 2026 Max
+ * asked for that section to come off the front page, which links the hub
+ * instead, so the act and its checks are gone and the hub and palette are
+ * the places this gate holds every surface to.
  *
  * WHY THIS EXISTS. Before the act that added them, the home page linked to
  * exactly two places: the blog and the projects. Ten interactive surfaces
@@ -30,7 +35,6 @@ import { postIndex } from "../client/src/lib/postIndex";
 
 const problems: string[] = [];
 
-const ACT = "client/src/pages/cinematic/acts/PracticeAct.tsx";
 const HUB = "client/src/pages/cinematic/CinematicPractice.tsx";
 const PALETTE = "client/src/components/cinematic/CommandPalette.tsx";
 const FOOTER = "client/src/components/cinematic/CinematicFooter.tsx";
@@ -47,19 +51,6 @@ if (PRACTICE_SURFACES.length < 10) {
 /* ------------------------------------- every surface, everywhere it belongs */
 
 /**
- * The home page carries the doing surfaces, and not the reference ones.
- *
- * This is a decision rather than an oversight, so it is written down. The
- * act is one section of a front page and every surface in the registry
- * would make it twenty cards, which stops being a front door and becomes a
- * second hub. The glossary, the flashcards, the exam sheets and the tools
- * are things you reach for while doing something else; they are one click
- * away in the nav, the footer, the palette and the hub, and the act links
- * the hub. Everything you actually sit down and do is on the front page.
- */
-const actRequires = PRACTICE_SURFACES.filter((surface) => surface.group !== "ground");
-
-/**
  * The footer carries the reference surfaces, and not the exercises.
  *
  * It used to carry all of them, because this gate said so, and that rule
@@ -73,13 +64,11 @@ const actRequires = PRACTICE_SURFACES.filter((surface) => surface.group !== "gro
  * the hub, and the reference surfaces you reach for while doing something
  * else, and the count of surfaces it links may not grow: FOOTER_SURFACE_CAP
  * below is the rule that replaces this one. Every surface is still required
- * in the act, the hub and the palette, which are three places and were
- * always the three that mattered.
+ * in the hub and the palette.
  */
 const footerRequires = PRACTICE_SURFACES.filter((surface) => surface.group === "ground");
 
 const places: [string, string, typeof PRACTICE_SURFACES][] = [
-  [ACT, "the home page's practice act", actRequires],
   [HUB, "the practice hub", PRACTICE_SURFACES],
   [PALETTE, "the command palette", PRACTICE_SURFACES],
   [FOOTER, "the footer", footerRequires],
@@ -95,31 +84,13 @@ for (const [path, label, required] of places) {
 }
 
 /*
-  The prerendered body, for a crawler and a reader with no JavaScript. It
-  carries the same set as the act, because it is the act's content rendered
-  without the bundle: a crawler that sees fewer surfaces than a reader is
-  the original bug in a quieter form.
-*/
-const home = read("dist/public/index.html");
-for (const surface of actRequires) {
-  if (!home.includes(`href="https://maxdoubin.com${surface.href}"`)) {
-    problems.push(`the prerendered home page does not link to ${surface.href}`);
-  }
-}
-for (const button of ["/today", "/practice"]) {
-  if (!read(ACT).includes(`href="${button}"`)) {
-    problems.push(`the practice act is missing its ${button} button`);
-  }
-}
-
-/*
-  And the other direction. A link in the act or the hub to a route the
+  And the other direction. A link in the hub to a route the
   registry does not know about is either a surface somebody forgot to
   register or a page that no longer exists, and both are worth failing over.
 */
 const known = new Set(PRACTICE_SURFACES.map((surface) => surface.href));
 const ALLOWED_EXTRAS = new Set(["/today", "/practice", "/blog", "/racks", "/game", "/ncl", "/paths", "/verify", "/"]);
-for (const [path, label] of [[ACT, "the act"], [HUB, "the hub"]] as [string, string][]) {
+for (const [path, label] of [[HUB, "the hub"]] as [string, string][]) {
   const text = read(path);
   for (const match of text.matchAll(/href[:=]\s*"(\/[a-z0-9-]*)"/g)) {
     const href = match[1];
@@ -330,7 +301,6 @@ if (problems.length) {
 console.log(
   `OK  all ${PRACTICE_SURFACES.length} practice surfaces are linked from the hub and the palette, ` +
     `the footer carries ${footerSurfaces.length} of them and the hub, under a cap of ${FOOTER_SURFACE_CAP}, ` +
-    `the ${actRequires.length} you sit down and do are on the front page and in its prerendered body, ` +
     `the ${GROUPS.length} groups hold ${GROUPS.map((g) => surfacesIn(g).length).join(", ")}, ` +
     `and ${curated} curated article links resolve in both directions.`,
 );

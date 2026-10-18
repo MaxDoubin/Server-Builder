@@ -95,11 +95,8 @@ const { usesConfig } = await import("../client/src/lib/usesConfig.ts");
 const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
 const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
 const { ALL_CERTS, CREDENTIAL_GROUPS } = await import("../client/src/lib/certConfig.ts");
-const { ROADMAP, ROADMAP_UPDATED, roadmapCounts } = await import("../client/src/lib/roadmap.ts");
 const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
 const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
-const { STACK, DECISIONS } = await import("../client/src/lib/colophonConfig.ts");
-const { READERS } = await import("../client/src/lib/subscribeConfig.ts");
 const { ANSWERED } = await import("../client/src/lib/askConfig.ts");
 const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
 const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
@@ -227,9 +224,8 @@ function injectBeforeHead(html: string, injection: string): string {
  *
  * The real footer is a React component, so it exists only after hydration.
  * A crawler on its first pass sees the prerendered body and nothing else,
- * which meant nine pages were linked from nowhere at all: /now, /uses,
- * /projects, /paths, /timeline, /links, /subscribe, /roadmap and
- * /study-timer were each reachable only from themselves. They were in the
+ * which meant pages like /now, /uses, /projects, /paths, /timeline, /links
+ * and /study-timer were each reachable only from themselves. They were in the
  * sitemap, so Google knew the URLs existed, but a URL with no inbound link
  * is a URL nothing vouches for, and it is crawled last if at all.
  *
@@ -252,16 +248,13 @@ const SITE_NAV = `
   <a href="${SITE_URL}/coding-camps">Coding camps</a>
   <a href="${SITE_URL}/certifications">Certifications</a>
   <a href="${SITE_URL}/paths">Paths</a>
-  <a href="${SITE_URL}/roadmap">Roadmap</a>
   <a href="${SITE_URL}/resume">Resume</a>
   <a href="${SITE_URL}/timeline">Timeline</a>
   <a href="${SITE_URL}/now">Now</a>
   <a href="${SITE_URL}/uses">Uses</a>
   <a href="${SITE_URL}/faq">FAQ</a>
   <a href="${SITE_URL}/links">Links</a>
-  <a href="${SITE_URL}/subscribe">Subscribe</a>
   <a href="${SITE_URL}/study-timer">Study timer</a>
-  <a href="${SITE_URL}/colophon">Colophon</a>
   <a href="${SITE_URL}/contact">Contact</a>
 </nav>`;
 
@@ -869,83 +862,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/data">Open rack hardware dataset</a>, power, heat, rack units and port counts as JSON and CSV under CC BY 4.0.</li>
     <li><a href="${SITE_URL}/game">Hyperscale</a>, a datacenter simulator running on real power and cooling maths.</li>
     <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
-  </ul>
-  <h2>Practice, in the browser</h2>
-  <p>
-    ${PRACTICE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
-    practice, none of which need anything installed, none of which reach a
-    real machine, and none of which send anything anywhere.
-   
-  </p>
-  <ul>
-    <li><a href="${SITE_URL}/today">Today</a>, one thing from each of these, chosen by the date.</li>
-    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, the first fifteen minutes of an incident with many endings.</li>
-    <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a Linux host simulated in the browser with something wrong with it.</li>
-    <li><a href="${SITE_URL}/capture">Packet captures</a>, a real trace and a Wireshark display filter bar.</li>
-    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artifact and a question with one exact answer.</li>
-    <li><a href="${SITE_URL}/triage">Phishing triage</a>, a morning of mail with every header intact.</li>
-    <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, broken iptables chains with a rule-by-rule match trace.</li>
-    <li><a href="${SITE_URL}/resolve">DNS resolution</a>, telling a lame delegation from a missing glue record.</li>
-    <li><a href="${SITE_URL}/chain">Certificate chains</a>, and which party can fix a given TLS error.</li>
-    <li><a href="${SITE_URL}/allocate">Address plans</a>, dividing a block with the map drawn to scale.</li>
-    <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
-    <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the one line that proves it.</li>
-    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
-    <li><a href="${SITE_URL}/permissions">The first class that matches</a>, Unix mode bits and the two thirds of them the kernel never looks at.</li>
-    <li><a href="${SITE_URL}/patch">The queue is sorted wrong</a>, why a base score is not a risk score and what to sort by instead.</li>
-    <li><a href="${SITE_URL}/retry">Three retries, four layers</a>, how one button press becomes eighty-one queries.</li>
-    <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
-    <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
-    <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
-    <li><a href="${SITE_URL}/oom">Something has to die</a>, ten machines out of memory and one expression that decides which process the kernel kills.</li>
-    <li><a href="${SITE_URL}/units">It started before the thing it needs</a>, ten sets of systemd unit files where After= and Requires= mean different things.</li>
-    <li><a href="${SITE_URL}/nat">It works from outside</a>, ten port forwards and the paths their replies take.</li>
-    <li><a href="${SITE_URL}/alerts">The graph crossed the line</a>, ten runs of one alerting rule and what each one actually does.</li>
-    <li><a href="${SITE_URL}/load">Forty, and idle</a>, ten readings of the load average and what the number is actually counting.</li>
-    <li><a href="${SITE_URL}/throttle">Thirty percent, and stalling</a>, ten containers under a CPU limit and when the quota runs out.</li>
-    <li><a href="${SITE_URL}/ports">Out of ports</a>, ten hosts against one ephemeral range and which connection fails first.</li>
-    <li><a href="${SITE_URL}/limits">Too many open files</a>, five mechanisms that set a descriptor limit and which one was in scope.</li>
-    <li><a href="${SITE_URL}/free">Two hundred megabytes free</a>, what MemAvailable computes and what the free column is not.</li>
-    <li><a href="${SITE_URL}/ndots">Ten queries for one name</a>, how many DNS queries one hostname costs and why.</li>
-    <li><a href="${SITE_URL}/leases">Forty minutes dark</a>, how many clients a DHCP outage costs and how large a pool has to be.</li>
-    <li><a href="${SITE_URL}/backlog">Idle, and the connections time out</a>, what listen() installed as the accept queue and what a full one does.</li>
-    <li><a href="${SITE_URL}/keepalive">Six minutes of silence</a>, which timer forgets an idle connection first and what the next write gets.</li>
-    <li><a href="${SITE_URL}/startlimit">The service gave up</a>, why systemd stopped restarting a unit and why the slower crash never stops.</li>
-    <li><a href="${SITE_URL}/neigh">Neighbor table overflow</a>, how many entries a flat segment needs and why IPv6 needs twice as many.</li>
-    <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
-    <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
-    <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
-    <li><a href="${SITE_URL}/inotify">No space left</a>, why a file watcher says the disk is full when it is not.</li>
-    <li><a href="${SITE_URL}/atime">The read that wrote</a>, when reading a file writes an inode and when it does not.</li>
-    <li><a href="${SITE_URL}/nagle">Eight bytes, forty four milliseconds</a>, why two small writes cost a local round trip forty four milliseconds.</li>
-    <li><a href="${SITE_URL}/argmax">Argument list too long</a>, why a command line under ARG_MAX is refused anyway.</li>
-    <li><a href="${SITE_URL}/eloop">There is no loop</a>, why a path with no cycle in it reports too many levels of symbolic links.</li>
-    <li><a href="${SITE_URL}/pipebuf">Two writers, one line</a>, why a log line comes out with another log line inside it.</li>
-    <li><a href="${SITE_URL}/locks">Three locks, one file</a>, why two programs can both hold the lock on one file.</li>
-    <li><a href="${SITE_URL}/signals">A thousand sent, one arrived</a>, why a standard signal sent a thousand times runs the handler once.</li>
-    <li><a href="${SITE_URL}/exit">One byte, two kinds of news</a>, why an exit of 137 and a kill by SIGKILL are the same number.</li>
-    <li><a href="${SITE_URL}/umask">A ceiling, not a request</a>, why the mode your program passes to open is a maximum.</li>
-    <li><a href="${SITE_URL}/pss">Four processes, one copy</a>, why adding up a column of RSS gives memory that does not exist.</li>
-    <li><a href="${SITE_URL}/sparse">A gigabyte in one block</a>, why ls and du disagree about a file and which copy makes it real.</li>
-    <li><a href="${SITE_URL}/append">Two writers, one offset</a>, why four processes can hand a log more bytes than it ends up holding.</li>
-    <li><a href="${SITE_URL}/mapped">Three boundaries, three outcomes</a>, where a mapping ends, where the file behind it ends, and which signal you get past each.</li>
-    <li><a href="${SITE_URL}/fdset">One descriptor too many</a>, why FD_SET past 1023 writes into the next member of your own struct.</li>
-    <li><a href="${SITE_URL}/pagecache">The cache you cannot drop</a>, why a gibibyte of tmpfs and a gibibyte of page cache read the same in free.</li>
-    <li><a href="${SITE_URL}/odirect">Three alignments, one errno</a>, why an O_DIRECT write returns EINVAL and nothing says which requirement it was.</li>
-    <li><a href="${SITE_URL}/reuseport">Even is not stable</a>, why SO_REUSEPORT spreads connections evenly and still moves them when the worker count changes.</li>
-    <li><a href="${SITE_URL}/malloctrim">The memory you freed and still hold</a>, why resident memory does not fall after free and what decides whether it will.</li>
-    <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
-    <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
-    <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
-    <li><a href="${SITE_URL}/fds">Too many open files</a>, which of the four descriptor limits is the smallest.</li>
-    <li><a href="${SITE_URL}/writeback">Not written down</a>, which dirty page threshold runs and what it is a percentage of.</li>
-    <li><a href="${SITE_URL}/conntrack">Table full</a>, why the kernel says so when it could not evict anything.</li>
-    <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
-    <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
-    <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
-    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
-    <li><a href="${SITE_URL}/restore">You have backups, not restores</a>, which copies survive the incident.</li>
-    <li><a href="${SITE_URL}/practice">The practice hub</a>, all of it with what each one is for.</li>
+    <li><a href="${SITE_URL}/practice">Practice</a>, incident scenarios, labs, packet captures and capture the flag challenges in the browser.</li>
   </ul>
   <h2>About</h2>
   <ul>
@@ -1123,13 +1040,6 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/teardown`,
     },
     {
-      dir: "colophon",
-      title: "Colophon | Max Doubin",
-      description:
-        "How maxdoubin.com is built: React and TypeScript, Vite with manual chunk splitting, static prerendering so crawlers read full articles, no backend.",
-      canonical: `${SITE_URL}/colophon`,
-    },
-    {
       dir: "faq",
       title: "Frequently Asked Questions | Max Doubin",
       description:
@@ -1142,13 +1052,6 @@ ${JSON.stringify({
       description:
         "Free and freemium resources Max Doubin recommends for learning networking and security: fundamentals, capture the flag practice, and certification prep.",
       canonical: `${SITE_URL}/links`,
-    },
-    {
-      dir: "subscribe",
-      title: "Subscribe | Max Doubin",
-      description:
-        "Follow the field notes by RSS. What a feed actually is, why it beats an algorithm, five readers worth trying, and the feed URL for maxdoubin.com.",
-      canonical: `${SITE_URL}/subscribe`,
     },
     {
       dir: "study-timer",
@@ -1484,7 +1387,7 @@ ${JSON.stringify({
   </section>`,
     )
     .join("\n  ")}
-  ${backLinks([["/uses", "Uses"], ["/roadmap", "Roadmap"], ["/blog", "Field Notes"]])}
+  ${backLinks([["/uses", "Uses"], ["/timeline", "Timeline"], ["/blog", "Field Notes"]])}
 </main>`;
 
   const usesContent = `
@@ -1512,7 +1415,7 @@ ${JSON.stringify({
     })
     .filter(Boolean)
     .join("\n  ")}
-  ${backLinks([["/now", "Now"], ["/colophon", "How this site is built"], ["/tools", "Browser tools"]])}
+  ${backLinks([["/now", "Now"], ["/projects", "Projects"], ["/tools", "Browser tools"]])}
 </main>`;
 
   const pathsContent = `
@@ -1550,27 +1453,6 @@ ${JSON.stringify({
   ${backLinks([["/blog", "Field Notes"], ["/topics", "Topics"], ["/paths", "Reading paths"]])}
 </main>`;
 
-  const roadmapContent = (() => {
-    const counts = roadmapCounts();
-    return `
-<main>
-  <h1>Roadmap</h1>
-  <p>What is planned, in progress, done and blocked on this site, tracked in public. Last updated ${esc(ROADMAP_UPDATED)}. Done: ${counts.done}. In progress: ${counts["in-progress"]}. Planned: ${counts.planned}. Blocked: ${counts.blocked}.</p>
-  ${ROADMAP.map(
-    (group) => `<section>
-    <h2>${esc(group.title)}</h2>
-    <p>${esc(group.blurb)}</p>
-    <ul>${group.items
-      .map(
-        (item: { id: number; title: string; status: string; note?: string }) =>
-          `<li>${esc(item.title)} (${esc(item.status)})${item.note ? `: ${esc(item.note)}` : ""}</li>`,
-      )
-      .join("")}</ul>
-  </section>`,
-  ).join("\n  ")}
-  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/now", "Now"]])}
-</main>`;
-  })();
 
 
   const flashcardsContent = `
@@ -1605,41 +1487,7 @@ ${JSON.stringify({
   ${backLinks([["/study", "Study guides"], ["/ncl", "National Cyber League notes"], ["/tools", "Browser tools"]])}
 </main>`;
 
-  const colophonContent = `
-<main>
-  <h1>Colophon</h1>
-  <p>How ${esc(siteConfig.siteUrl.replace("https://", ""))} is built, and why each piece was chosen over the alternative.</p>
-  <section>
-    <h2>Stack</h2>
-    <dl>${STACK.map(
-      (item: { name: string; role: string; detail: string }) =>
-        `<dt>${esc(item.name)} (${esc(item.role)})</dt><dd>${esc(item.detail)}</dd>`,
-    ).join("\n    ")}</dl>
-  </section>
-  <section>
-    <h2>Decisions</h2>
-    ${DECISIONS.map(
-      (d: { title: string; body: string[] }) => `<h3>${esc(d.title)}</h3>
-    ${d.body.map((para) => `<p>${esc(para)}</p>`).join("\n    ")}`,
-    ).join("\n    ")}
-  </section>
-  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/uses", "Uses"]])}
-</main>`;
 
-  const subscribeContent = `
-<main>
-  <h1>Subscribe</h1>
-  <p>The field notes publish to a feed at <a href="${SITE_URL}/feed.xml">${SITE_URL}/feed.xml</a>. A feed is a plain file this site updates when something new goes out; your reader checks it and shows you the new posts. No account, no algorithm deciding what you see, and no way for anyone here to know you are reading.</p>
-  <section>
-    <h2>Readers worth trying</h2>
-    <p>One per situation rather than a ranked list. Which one is right depends far more on which devices you own than on features.</p>
-    <dl>${READERS.map(
-      (r: { name: string; url: string; platforms: string; note: string }) =>
-        `<dt><a href="${r.url}">${esc(r.name)}</a> (${esc(r.platforms)})</dt><dd>${esc(r.note)}</dd>`,
-    ).join("\n    ")}</dl>
-  </section>
-  ${backLinks([["/blog", "Field Notes"], ["/archive", "Archive"], ["/paths", "Reading paths"]])}
-</main>`;
 
   const askContent = `
 <main>
@@ -1933,9 +1781,7 @@ const teardownContent = `
     resume: resumeContent,
     timeline: timelineContent,
     "coding-camps": campsContent,
-    colophon: colophonContent,
     links: linksContent,
-    subscribe: subscribeContent,
     "study-timer": studyTimerContent,
     ask: askContent,
     certifications: certificationsContent,
@@ -10233,15 +10079,6 @@ ${matched
     }
   }
 
-  // ── roadmap ──
-  await writePage("roadmap", base, {
-    title: "Roadmap | Max Doubin",
-    description:
-      "What is planned, in progress, done and blocked on maxdoubin.com, tracked in public across 100 improvements.",
-    canonical: `${SITE_URL}/roadmap`,
-    rootContent: roadmapContent,
-  });
-
   // ── rack library ──
   /*
     Both the gallery and every rack page are prerendered from RACKS, so a
@@ -10561,11 +10398,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },
-    { loc: `${SITE_URL}/colophon`, lastmod: today, changefreq: "monthly", priority: "0.5" },
-    { loc: `${SITE_URL}/subscribe`, lastmod: today, changefreq: "monthly", priority: "0.5" },
       { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
-    { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];
 
   urls.push({ loc: `${SITE_URL}/racks`, lastmod: today, changefreq: "monthly", priority: "0.8" });

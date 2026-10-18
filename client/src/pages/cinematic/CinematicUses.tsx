@@ -93,14 +93,7 @@ export function CinematicUses() {
               Related
             </h2>
             <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              How this site is built, and why each of those decisions was made, is written up on the{" "}
-              <Link
-                href="/colophon"
-                className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
-              >
-                colophon
-              </Link>
-              . What I am working on this month is on the{" "}
+              What I am working on this month is on the{" "}
               <Link
                 href="/now"
                 className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"

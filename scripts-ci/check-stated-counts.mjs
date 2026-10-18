@@ -103,8 +103,6 @@ const problems = [];
  * the word posts" would fire on the archive page listing dates.
  */
 const DERIVED = [
-  "client/src/lib/colophonConfig.ts",
-  "client/src/lib/roadmap.ts",
   "client/src/pages/cinematic/CinematicAsk.tsx",
 ];
 
@@ -154,8 +152,6 @@ for (const file of DERIVED) {
   the built pages are read back, when they exist.
 */
 const RENDERED = [
-  { file: "dist/public/colophon.html", what: "the colophon" },
-  { file: "dist/public/roadmap.html", what: "the roadmap" },
   { file: "dist/public/ask.html", what: "the ask page" },
 ];
 
