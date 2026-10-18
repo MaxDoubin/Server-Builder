@@ -30,6 +30,11 @@ The QuickStart Guide lists "3x WiFi Antennas (WiFi models only)" in its package 
 
 The power and heat rows are split by model, so they are the clearest difference after the radio. The FortiGate 40F draws 7.74 W on average and 9.46 W at maximum. The FortiWiFi 40F draws 14.6 W on average and 16.6 W at maximum, and it dissipates 56.64 BTU/hr against 52.55 BTU/hr for the wired unit. Both list an input rating of 12Vdc, 3A, and both measure 1.5 x 8.5 x 6.3 inches, so the difference is in the draw, not the adapter or the footprint.
 
+<figure>
+<img src="/images/blog/fortiwifi-40f-vs-fortigate-40f/photo-1.jpg" alt="Plug-in power monitor in a UK wall socket, its display showing a reading of 10 watts" width="1400" height="1299" loading="lazy" decoding="async">
+<figcaption>A Prodigit 2000MU plug-in power and energy monitor in a UK mains socket in 2009, reading 10 watts for the appliance plugged into it. A meter like this shows whether a unit sits near the FortiGate 40F's 7.74 W average or the FortiWiFi 40F's 14.6 W. Photo: Gareth.randall, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:Plug-in_Power_%26_Energy_Monitor_in_UK_Domestic_Mains_Socket.jpeg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The FortiWiFi power and heat figures come from the [AV Firewalls table](https://www.avfirewalls.com/fortigate-40f.asp) and the [FortiGate/FortiWiFi 40F Series data sheet](https://cdn.blueally.com/avfirewalls/datasheets/fortigate/fortigate-fortiwifi-40f-series-new.pdf), which carries the same values. Fortinet's own [FortiGate 40F data sheet](https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-40f-series.pdf) has a specification table with only FortiGate 40F and 40F-3G4G columns, so it does not list the FortiWiFi draw. For the cellular model it gives 15.8 W and 18.6 W, and that model has no wireless interface.
 
 ## Throughput is shared, and three limits disagree
@@ -73,6 +78,11 @@ A firewall does not have to be a dedicated appliance: the Pentium III PC in the 
 ## What this means
 
 Pick the FortiGate 40F if access points or a separate wireless system handle your Wi-Fi. The wired unit draws less power and has the same ports, processor and rated throughput. Pick the FortiWiFi 40F if one box must provide wireless for a small set of clients and you can budget for 16.6 W at maximum.
+
+<figure>
+<img src="/images/blog/fortiwifi-40f-vs-fortigate-40f/photo-2.jpg" alt="Ubiquiti UniFi AC Lite wireless access point installed at a childcare center in Brisbane" width="788" height="1400" loading="lazy" decoding="async">
+<figcaption>A Ubiquiti UniFi AC Lite access point installed at a childcare center in Brisbane, Australia, in 2018. A separate access point like this one is the setup where the wired FortiGate 40F makes more sense. Photo: ServerGuruBrisbane, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Unifi_AC_Lite_Access_Point.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Whichever you choose, check the FortiWiFi power row on the series data sheet before you buy, since Fortinet's FortiGate 40F data sheet does not carry it. The FortiGate 40F data sheet lists 16 FortiAPs total and 8 in tunnel mode. If you buy a used unit, check the RAM before you rely on SSL VPN, because a 2 GB unit loses web and tunnel mode on 7.6.0 and later, whichever Wi-Fi model you pick. If you are also weighing the 60F, the [60E to 60F migration guide](/blog/fortigate-60e-to-60f-migration) covers that move.
 

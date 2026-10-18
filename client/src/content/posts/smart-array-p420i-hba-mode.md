@@ -7,6 +7,11 @@ Someone with an HP ProLiant Gen8 server and an embedded Smart Array P420i wants 
 
 The [HPE Smart Storage Administrator User Guide](https://usercontent.one/wp/ramsgaard.me/wp-content/uploads/2022/10/HPE_c03909334_HPE-Smart-Storage-Administrator-User-Guide.pdf?media=1661795354), dated October 2016, describes the mode in general terms: "In HBA mode, all physical drives are presented directly to the operating system and the hardware RAID engine is disabled." It lists "Enable HBA/RAID/Smart Array Mode operations" as a controller task with the footnote "This task is not available on all controller models," and it points readers to the controller user guide for model-specific support. The P420i is not named anywhere in that document.
 
+<figure>
+<img src="/images/blog/smart-array-p420i-hba-mode/photo-1.jpg" alt="HP ProLiant DL580 G7 rack server" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>An HP ProLiant DL580 G7 server photographed in 2023, which its owner describes as fitted with an HP Smart Array P410i RAID controller. The P410i is on the hpsahba README's tested list, and a December 2018 kernel mailing list reply said the P410 controllers do not fully support HBA mode. Photo: Btrs, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL580_G7_in_2023.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The [P420 QuickSpecs](https://bargainhardware.co.uk/media/quick-specs/storagectrl/HP_P420_CTL54_55.pdf), dated June 6, 2012, point the same way. They describe the P420 as "ideal for RAID 0/1, 1+0, 5, 50, 6 & 60" and list no HBA mode.
 
 What exists is owner evidence. Owners of ProLiant ML350p Gen8 and DL360p Gen8 servers report that the `ssacli` tool accepted the mode on a P420i. The [babaei post](https://www.babaei.net/blog/disable-hp-proliant-ml350p-gen8-p420i-raid-controller-enable-hba-mode-pass-through-perform-freebsd-root-zfs-installation/) shows `Firmware Version: 8.32-0` in its controller output. The [hpsahba tool](https://github.com/im-0/hpsahba) says it "is able to enable or disable HBA mode on some HP Smart Array controllers." Its README lists the Smart Array P410i, P812, G6 P410 and G6 P212 as tested, all at firmware 6.64, and it does not mention the P420i.
@@ -79,6 +84,11 @@ The workarounds keep the boot path off the array. The babaei post installs only 
 ## Using the disks with ZFS
 
 Vendor guidance on ZFS is consistent. The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) says "There are countless warnings against using hardware RAID cards with TrueNAS," and that ZFS and TrueNAS "provide a built-in RAID that protects your data better than any hardware RAID card." For Broadcom controllers, it says to "Flash using the latest IT or Target Mode firmware to disable the optional RAID functionality." The [Proxmox wiki](https://pve.proxmox.com/wiki/ZFS_on_Linux) says "ZFS needs to communicate directly with the disks," and that an HBA adapter or an LSI controller flashed in IT mode "is more appropriate."
+
+<figure>
+<img src="/images/blog/smart-array-p420i-hba-mode/photo-2.jpg" alt="Back side of an LSI SAS9211-8i PCIe x8 SAS host bus adapter circuit board" width="1400" height="1050" loading="lazy" decoding="async">
+<figcaption>The back of an LSI SAS9211-8i SAS host bus adapter, board H3-25250-02B, photographed in 2013. The Proxmox wiki names an HBA or an LSI controller flashed to IT mode as the more appropriate choice for ZFS. Photo: Solomon203, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9211-8i_H3-25250-02B_rear.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Owner and forum reports are mixed. The 2016 FreeNAS poster could not get any drives beyond the first two to enumerate, and a TrueNAS forum member later wrote that the ciss driver "does not work that well under the heavy loads FreeNAS and ZFS can place on it." An iXsystems staff member in a [2021 TrueNAS thread](https://www.truenas.com/community/threads/best-with-raid-controllers-or-raid-z-software.94587/) wrote, "if you're on a ciss/aacraid/etc driver then buy an HBA." A [HardForum reply](https://hardforum.com/threads/hp-dl380p-gen8-p420i-controller-hbamode.1852528/) dated January 30, 2026 says the steps "worked perfectly" on a DL360p Gen8 for Proxmox with ZFS, using a PCIe adapter for the system drives. The outcome depends on the operating system, the driver and the boot path.
 

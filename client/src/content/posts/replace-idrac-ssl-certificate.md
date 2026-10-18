@@ -18,6 +18,11 @@ iDRAC7 follows different rules. [Broadcom's KB on SHA2 certificates](https://kno
 
 Dell's guide says to register the iDRAC address in DNS, then to "Use the Fully Qualified Domain Name (FQDN) created at DNS to enter at Common Name (CN) fields." A certificate signing request (CSR) is "a message sent from an applicant to a certificate authority," and it "usually contains the public key for which the certificate should be issued," according to [Wikipedia](https://en.wikipedia.org/wiki/Certificate_signing_request).
 
+<figure>
+<img src="/images/blog/replace-idrac-ssl-certificate/photo-1.jpg" alt="Screenshot of the OpenSSL manual page displayed on Debian GNU/Linux" width="1400" height="820" loading="lazy" decoding="async">
+<figcaption>The OpenSSL manual page on Debian GNU/Linux, in a 2017 screenshot. The openssl req command that creates the key and CSR is documented in OpenSSL's manual pages. Photo: Cybermaid, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Captura_de_pagina_de_manual_de_OpenSSL.png">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The Common Name alone is no longer enough. [RFC 2818](https://www.rfc-editor.org/rfc/rfc2818) calls Common Name matching "deprecated," and [RFC 9525](https://www.rfc-editor.org/rfc/rfc9525) says the server identity "can only be expressed in the subjectAltNames extension." Chrome 58 stopped using the Subject field for hostnames, as [a 2017 post on the change](https://textslashplain.com/2017/03/10/chrome-deprecates-subject-cn-matching/) explains. Put the same FQDN in the CN and in a DNS subjectAltName. OpenSSL can set both in one command:
 
 ```
@@ -90,6 +95,11 @@ The output should show the 2048-bit key from the CSR step. Then open the iDRAC b
 ## What this means
 
 The working sequence is to put the iDRAC FQDN in both the CN and a DNS subjectAltName, generate an unencrypted 2048-bit key, convert the signed certificate to Base 64 for iDRAC7, upload the key and then the certificate, run racreset, and check the key size and name afterward. Dell's KBs name two firmware boundaries to watch: 6.10.80.00, where custom certificates can revert, and the range after 7.00.00.00 but before 7.10.30.00, where a certificate without a trailing line feed can take the web interface offline. Dell calls wildcard certificates "not best practice," so give each iDRAC its own name. If you manage several servers, the Redfish module above can script the same replacement on each of them.
+
+<figure>
+<img src="/images/blog/replace-idrac-ssl-certificate/photo-2.jpg" alt="Firefox warning page reporting an insecure connection to the CAcert website" width="1400" height="857" loading="lazy" decoding="async">
+<figcaption>Firefox warning about an insecure connection to the CAcert website in 2016, shown because the browser does not trust the CAcert certificate authority. An iDRAC certificate signed by an internal CA draws the same kind of warning on any client that lacks that CA's root certificate. Photo: Zozo.ubermensch, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Firefox_-_Insecure_connection_on_CACert.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 ## References
 

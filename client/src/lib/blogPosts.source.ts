@@ -57,6 +57,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Which card to buy for ZFS or TrueNAS: the H330 has RAID and no cache, the HBA330 is non-RAID. Dell's queue depths, PowerEdge fit and crossflash risks.",
     coverImage: "/images/blog/dell-hba330-vs-h330.jpg",
+    coverCredit: {
+      author: "Unknown",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07-2168.jpg",
+    },
     content: `
 ## The problem
 
@@ -157,6 +163,12 @@ For ZFS or TrueNAS on a PowerEdge, the HBA330 is the card the vendor tables and 
     excerpt:
       "An HBA connects drives directly, while an expander adds drive ports and shares one SAS link. Here is the bandwidth math and when a homelab needs one.",
     coverImage: "/images/blog/do-you-need-a-sas-expander-homelab.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:BPN-SAS2-216EL2_disk_backplane_with_SAS_expander_close_view.jpg",
+    },
     content: `
 ## The problem
 
@@ -254,6 +266,12 @@ Use an HBA on its own while your drive count fits its connectors. For eight driv
     excerpt:
       "Which small FortiGates lose SSL VPN on 7.6, which stay on 7.4, how long each branch is supported, and the build Fortinet recommends for the 40F, 60F, 70G and 90G.",
     coverImage: "/images/blog/fortios-7-6-vs-7-4.jpg",
+    coverCredit: {
+      author: "Dev Jadiya",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_exhibition_stall.jpg",
+    },
     content: `
 ## The problem
 
@@ -440,6 +458,12 @@ Do the SSL VPN work before the upgrade, not after. On a 40F or 60F the first 7.6
     excerpt:
       "The FortiWiFi 40F is the FortiGate 40F with one radio, a higher power draw and the same ports, processor and rated throughput. Here is what to check before you buy.",
     coverImage: "/images/blog/fortiwifi-40f-vs-fortigate-40f.jpg",
+    coverCredit: {
+      author: "Lucasbosch",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:RP-SMA_connectors_in_WiFi_antennas.jpg",
+    },
     content: `
 ## The problem
 
@@ -541,6 +565,12 @@ Whichever you choose, check the FortiWiFi power row on the series data sheet bef
     excerpt:
       "iDRAC10 on 17th generation PowerEdge cuts four license tiers to three, removes WSMan and Group Manager, and defaults to TLS 1.3 with SNMP off. Here is what changes for licenses and tools.",
     coverImage: "/images/blog/idrac-10-vs-idrac-9.jpg",
+    coverCredit: {
+      author: "Dell Inc",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Experience_our_server_racks_%288531003630%29.jpg",
+    },
     content: `
 ## The problem
 
@@ -700,6 +730,12 @@ Treat iDRAC10 as iDRAC9 on new hardware with a cleanup pass. RACADM, Redfish, IP
     excerpt:
       "Express has no remote console. Enterprise adds the virtual console, virtual media and a dedicated port. Here is how to test which tier your iDRAC6 has, and what breaks.",
     coverImage: "/images/blog/idrac-6-express-vs-enterprise.jpg",
+    coverCredit: {
+      author: "Cyber-Complex Foundation",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:A_rackmount_Dell_R710_11th-generation_server_powering_the_iThena.Measurements_and_iThena.Computational_projects.jpg",
+    },
     content: `
 ## The problem
 
@@ -790,6 +826,12 @@ Licensing changed on later servers. [Velocity Tech Solutions' license guide](htt
     excerpt:
       "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
     coverImage: "/images/blog/ilo-6-vs-ilo-7.jpg",
+    coverCredit: {
+      author: "Btrs",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg",
+    },
     content: `
 ## The problem
 
@@ -884,6 +926,12 @@ Before you order, PC Server and Parts says HPE's QuickSpecs name the controller 
     excerpt:
       "SAS2308 vs SAS2008, PCIe 3.0 vs 2.0 limits, what IT firmware changes, measured speeds, and which card to buy for a ZFS or TrueNAS pool.",
     coverImage: "/images/blog/lsi-9207-8i-vs-9211-8i.jpg",
+    coverCredit: {
+      author: "Phiarc",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_SAS_9207-8i.jpg",
+    },
     content: `
 ## The problem
 
@@ -981,6 +1029,12 @@ Match the card to the disks and the slot. Spinning disks on PCIe 2.0 hardware ca
     excerpt:
       "Why the LSI 9300-8i runs hot, the airflow Broadcom specifies, how overheating shows up in a quiet case, and how to add a fan without blocking the heat sink.",
     coverImage: "/images/blog/lsi-9300-8i-cooling.jpg",
+    coverCredit: {
+      author: "Tobias Maier",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:1U_rack_mount_server_cooling_system_fan_heat-sink.jpg",
+    },
     content: `
 ## The problem
 
@@ -1076,6 +1130,12 @@ The fan adds little load. The NF-A4x10's 0.6 W maximum is about 4 percent of the
     excerpt:
       "Every graphics MPX module Apple sold for the 2019 Mac Pro, the 300W and 305mm limits on standard cards, which GPUs macOS drives, and what to check before buying used.",
     coverImage: "/images/blog/mac-pro-2019-gpu-upgrade.jpg",
+    coverCredit: {
+      author: "Verte95",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:AMD_RX_6900XT_.jpg",
+    },
     content: `
 ## The problem
 
@@ -1717,6 +1777,12 @@ Check lifecycle dates before buying either model used, starting with the [R740 e
     excerpt:
       "Why a DL360p Gen8 runs loud fans at idle: unreadable drives, PCIe cards, firmware bugs and missing fan blanks, plus how to read iLO 4 and which fixes to try.",
     coverImage: "/images/blog/proliant-dl360p-gen8-fan-noise.jpg",
+    coverCredit: {
+      author: "Melee",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DL360_Inside.jpg",
+    },
     content: `
 ## The problem
 
@@ -1856,6 +1922,12 @@ The documented and reported causes of a loud DL360p Gen8 are mostly configuratio
     excerpt:
       "Generate a CSR with the iDRAC name in the CN and SAN, upload the key and certificate with racadm, and avoid the firmware changes that revert them.",
     coverImage: "/images/blog/replace-idrac-ssl-certificate.jpg",
+    coverCredit: {
+      author: "Victorgrigas",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wikimedia_Foundation_Servers-8055_08.jpg",
+    },
     content: `
 ## The problem
 
@@ -1974,6 +2046,12 @@ The working sequence is to put the iDRAC FQDN in both the CN and a DNS subjectAl
     excerpt:
       "Enable HBA mode on a Smart Array P420i with ssacli, the firmware owners report, why boot fails from those disks, and what ZFS needs.",
     coverImage: "/images/blog/smart-array-p420i-hba-mode.jpg",
+    coverCredit: {
+      author: "Redline",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_BL660_G8-1.jpg",
+    },
     content: `
 ## The problem
 
@@ -2096,6 +2174,12 @@ On a P420i, HBA mode is an owner-reported result, not a documented feature for t
     excerpt:
       "X10 and X11 each cover at least two sockets. Compare CPU socket, memory ceiling, NVMe boot and IPMI before you buy a used Supermicro server board.",
     coverImage: "/images/blog/supermicro-x10-vs-x11.jpg",
+    coverCredit: {
+      author: "Frank Schwichtenberg",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Supermicro_-_X11SAE_%E2%80%93_CeBIT_2016_01.jpg",
+    },
     content: `
 ## The problem
 
@@ -2198,6 +2282,12 @@ Read the socket first, then the memory ceiling and the management port. For a ne
     excerpt:
       "Buying a used Cisco Catalyst 9300 for a lab? Check the license suffix, the Smart Account, the stack cables, the power supplies and the enable password first.",
     coverImage: "/images/blog/used-catalyst-9300-for-a-lab.jpg",
+    coverCredit: {
+      author: "Axel Dux",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Ccna_security_lab.JPG",
+    },
     content: `
 ## The problem
 

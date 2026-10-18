@@ -21,6 +21,11 @@ The same note sets a heat sink ceiling of 110 °C: "The measured heat sink tempe
 
 Broadcom's method measures two temperatures with the system running its intended maximum workload: the inlet air and the heat sink. The inlet air is "the temperature of the air outside of where the LSI SAS 9206-16e HBA is enclosed." For the heat sink, use an infrared thermometer to measure "the hottest point in the center of the heat sink," or a thermocouple at "the base of the heat sink (between the fins)." The note explains why the heat sink reading matters: "the heat-sink temperature is the best indicator of the temperature inside the chip, mounted to the heat sink." It also says "Most systems require the top cover be in place for proper airflow," so take the readings with the case closed.
 
+<figure>
+<img src="/images/blog/lsi-9300-8i-cooling/photo-1.jpg" alt="Handheld infrared thermometer aimed at a hot stovetop, its display reading about 232 degrees Celsius" width="1136" height="1400" loading="lazy" decoding="async">
+<figcaption>A handheld infrared thermometer reading a hot stovetop at about 232 °C, with the red dot from its positioning laser on the surface, photographed in 2020. Broadcom's method uses this kind of tool, aimed at the hottest point in the center of the heat sink. Photo: ECTran71, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:IR_thermometer_measuring_stove_temperature.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Do not count on a readout from the card itself. In an [Unraid forum thread about a 9300-16i](https://forums.unraid.net/topic/155951-parse-temperature-of-hba-9300-16i-lsi-sas3008-controller/), a moderator wrote, "AFAIK they don't have a readable temp sensor." A poster who tried storcli64 to read the controller temperature got "cannot execute binary file: Exec format error," and the thread does not show a confirmed fix.
 
 ## What overheating looks like in a desktop or quiet chassis
@@ -36,6 +41,11 @@ The inlet air definition matters in a tower. Broadcom's note treats a datacenter
 ## Where a fan goes and what owners used
 
 Owners have tried four placements, with these reports.
+
+<figure>
+<img src="/images/blog/lsi-9300-8i-cooling/photo-2.jpg" alt="Square Papst 512 F/2 computer cooling fan, 50 by 50 by 15 mm, with its product label visible on the hub" width="1400" height="1400" loading="lazy" decoding="async">
+<figcaption>A Papst 512 F/2, a 12 V computer cooling fan measuring 50 by 50 by 15 mm, photographed in 2016. A fan this size matches the roughly 50 mm square OEM LSI cooler that a Level1Techs poster measured. Photo: Unknown, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Papst_computer_cooling_fan_512_F-2-2419.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 | Placement | Air source | If the fan stops | Owner report |
 |---|---|---|---|
