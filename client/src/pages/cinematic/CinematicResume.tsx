@@ -216,6 +216,10 @@ export function CinematicResume() {
                   OPSWAT Academy: Introduction to Critical Infrastructure Protection (ICIP) certificate,
                   2026
                 </Bullet>
+                <Bullet>
+                  CISA (U.S. Department of Homeland Security): ICS Cybersecurity Evaluation (401)
+                  course, 12 contact hours, 2026
+                </Bullet>
                 <Bullet>arcX: Foundation Level Threat Intelligence Analyst certificate, 2026</Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
