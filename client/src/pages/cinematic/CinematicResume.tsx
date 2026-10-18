@@ -207,7 +207,10 @@ export function CinematicResume() {
                   Databricks Academy accreditations: Platform Administrator, AWS and GCP Platform
                   Architect, and Databricks, Generative AI and AI Agent Fundamentals, 2026
                 </Bullet>
-                <Bullet>Cisco Networking Academy: Ethical Hacker course, 2026</Bullet>
+                <Bullet>
+                  Cisco Networking Academy: Ethical Hacker course and Cybersecurity Defense Analyst
+                  career path (with Splunk), 2026
+                </Bullet>
                 <Bullet>
                   Palo Alto Networks: Cybersecurity, Network Security, Cloud Security and Security
                   Operations Fundamentals courses, 2026

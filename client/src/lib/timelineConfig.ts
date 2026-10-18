@@ -35,10 +35,10 @@ export interface TimelineGroup {
  * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
  * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score, the
  * Google Analytics Certification, the Neo4j Certified Professional exam, the
- * Cisco Ethical Hacker course and the two Nutanix courses are October 2026. A
- * role that
- * spans years sits under the year it began. Ask before adding an entry whose
- * date is unknown rather than inferring one from the entries around it.
+ * two Cisco Networking Academy credentials and the two Nutanix courses are
+ * October 2026. A role that spans years sits under the year it began. Ask
+ * before adding an entry whose date is unknown rather than inferring one from
+ * the entries around it.
  */
 export const TIMELINE_GROUPS: TimelineGroup[] = [
   {
@@ -89,9 +89,9 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         href: "/certifications",
       },
       {
-        title: "Cisco Networking Academy Ethical Hacker course",
+        title: "Two Cisco Networking Academy credentials",
         description:
-          "Completed the course with Cisco's verified badge: penetration testing methodology and planning, information gathering and vulnerability scanning, social engineering, exploiting network, application, cloud, mobile and IoT vulnerabilities, post-exploitation, and writing the penetration test report.",
+          "Completed the Ethical Hacker course with Cisco's verified badge: penetration testing methodology and planning, information gathering and vulnerability scanning, social engineering, exploiting network, application, cloud, mobile and IoT vulnerabilities, post-exploitation, and writing the penetration test report. Then passed the exam for the Cybersecurity Defense Analyst career path, built with Splunk: 30 hours on the threat landscape and work in a security operations center, using Splunk to monitor, investigate, hunt for and respond to security incidents.",
         href: "/certifications",
       },
       {
