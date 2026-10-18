@@ -1457,7 +1457,14 @@ ${JSON.stringify({
     (group) => `<section>
     <h2>${esc(group.heading)}</h2>
     <p>${esc(group.meta)}</p>
-    <ul>${li(group.items.map(esc))}</ul>
+    <ul>${li(
+      group.items.map((item: string) => {
+        const badge = group.badges?.[item];
+        return badge
+          ? `<img src="${badge.src}" alt="${esc(badge.alt)}" width="48" height="48" loading="lazy" decoding="async"> ${esc(item)}`
+          : esc(item);
+      }),
+    )}</ul>
   </section>`,
   ).join("\n  ")}
   ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"]])}
