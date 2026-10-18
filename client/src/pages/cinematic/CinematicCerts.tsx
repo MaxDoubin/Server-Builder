@@ -12,6 +12,11 @@ import {
 
 const SITE_URL = "https://maxdoubin.com";
 
+const TILE_GRID = "mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
+const TILE =
+  "flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm";
+const TILE_BADGE = "h-20 w-20 shrink-0 md:h-24 md:w-24";
+
 export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
@@ -64,10 +69,18 @@ export function CinematicCerts() {
             >
               Earned
             </h2>
-            <div className="mt-6 space-y-6">
-              {CERTS_EARNED.map((cert) => (
-                <CertCard key={cert.id} cert={cert} />
-              ))}
+            {/* Tiles, three to a row on desktop. An exam with published
+                objective domains keeps the full-width card those need. */}
+            <div className={TILE_GRID}>
+              {CERTS_EARNED.map((cert) =>
+                cert.domains.length > 0 ? (
+                  <div key={cert.id} className="sm:col-span-2 lg:col-span-3">
+                    <CertCard cert={cert} />
+                  </div>
+                ) : (
+                  <CertTile key={cert.id} cert={cert} />
+                ),
+              )}
             </div>
           </section>
 
@@ -101,6 +114,9 @@ export function CinematicCerts() {
 }
 
 function CredentialSection({ group }: { group: CredentialGroup }) {
+  // A group whose every item came with a badge gets tiles the size of the
+  // certification tiles; the rest (courses, placements, scores) stay a list.
+  const tiled = group.items.every((item) => group.badges?.[item]);
   return (
     <section className="mt-16" aria-labelledby={`${group.id}-heading`}>
       <h2
@@ -112,39 +128,65 @@ function CredentialSection({ group }: { group: CredentialGroup }) {
       <p className="mt-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
         {group.meta}
       </p>
-      <ul
-        data-testid={`credentials-${group.id}`}
-        className="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm sm:grid-cols-2 md:p-8"
-      >
-        {group.items.map((item) => {
-          const badge = group.badges?.[item];
-          return (
-            <li
-              key={item}
-              className={`flex font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] ${
-                badge ? "items-center gap-3" : "items-start gap-2"
-              }`}
-            >
-              {badge ? (
-                <img
-                  src={badge.src}
-                  alt={badge.alt}
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-12 w-12 shrink-0"
-                />
-              ) : (
-                <span aria-hidden className="text-[hsl(var(--brand-signal))]">
-                  ✓
-                </span>
-              )}
-              <span>{item}</span>
-            </li>
-          );
-        })}
-      </ul>
+      {tiled ? (
+        <ul data-testid={`credentials-${group.id}`} className={TILE_GRID}>
+          {group.items.map((item) => {
+            const badge = group.badges?.[item];
+            return (
+              <li key={item} className={TILE}>
+                {badge ? (
+                  <img
+                    src={badge.src}
+                    alt={badge.alt}
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
+                    className={TILE_BADGE}
+                  />
+                ) : null}
+                <div className="mt-4 font-display text-lg font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))]">
+                  {item}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <ul
+          data-testid={`credentials-${group.id}`}
+          className="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm sm:grid-cols-2 md:p-8"
+        >
+          {group.items.map((item) => {
+            const badge = group.badges?.[item];
+            return (
+              <li
+                key={item}
+                className={`flex font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] ${
+                  badge ? "items-center gap-3" : "items-start gap-2"
+                }`}
+              >
+                {badge ? (
+                  <img
+                    src={badge.src}
+                    alt={badge.alt}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-12 w-12 shrink-0"
+                  />
+                ) : (
+                  <span aria-hidden className="text-[hsl(var(--brand-signal))]">
+                    ✓
+                  </span>
+                )}
+                <span>{item}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }
@@ -162,6 +204,68 @@ function StatusChip({ cert }: { cert: Cert }) {
       <span aria-hidden>{earned ? "✓" : "◔"}</span>
       {cert.statusLabel}
     </span>
+  );
+}
+
+function CertTile({ cert }: { cert: Cert }) {
+  return (
+    <article data-testid={`cert-${cert.id}`} className={TILE}>
+      <div className="flex items-start justify-between gap-3">
+        {cert.badge ? (
+          <img
+            src={cert.badge.src}
+            alt={cert.badge.alt}
+            width={96}
+            height={96}
+            loading="lazy"
+            decoding="async"
+            className={TILE_BADGE}
+          />
+        ) : (
+          <span />
+        )}
+        <StatusChip cert={cert} />
+      </div>
+      <div className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        {cert.code ? `${cert.vendor} · ${cert.code}` : cert.vendor}
+      </div>
+      <h3 className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))]">
+        {cert.name}
+      </h3>
+      <div className="mt-1 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
+        {cert.level}
+      </div>
+      <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+        {cert.statusDetail}
+      </p>
+      <div className="mt-auto pt-4">
+        <details className="group border-t border-[hsl(var(--brand-iron))] pt-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
+            <span>What it covers</span>
+            <span aria-hidden className="text-[hsl(var(--brand-ash))] transition-transform group-open:rotate-90">
+              →
+            </span>
+          </summary>
+          <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            {cert.covers}
+          </p>
+          <div className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+            What it is worth
+          </div>
+          <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            {cert.worth}
+          </p>
+        </details>
+        <a
+          href={cert.officialUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+        >
+          Official page ↗
+        </a>
+      </div>
+    </article>
   );
 }
 
