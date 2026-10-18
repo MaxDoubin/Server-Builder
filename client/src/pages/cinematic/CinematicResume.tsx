@@ -188,6 +188,9 @@ export function CinematicResume() {
                 <Bullet>
                   cPanel &amp; WHM System Administrator I and II (CWSA-1, CWSA-2), October 2026
                 </Bullet>
+                <Bullet>
+                  Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert, October 2026
+                </Bullet>
                 <Bullet>TOSA CyberCitizen, 1000/1000 (Expert), October 2026</Bullet>
                 <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
                 <Bullet>

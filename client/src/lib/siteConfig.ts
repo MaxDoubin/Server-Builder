@@ -51,6 +51,7 @@ export const siteConfig = {
         "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (October 2026)",
         "TOSA CyberCitizen, a perfect 1000 out of 1000 at the Expert level (October 2026)",
         "cPanel & WHM System Administrator I and II (October 2026)",
+        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (October 2026)",
       ],
     },
     {
@@ -166,6 +167,7 @@ export const siteConfig = {
         "Oracle Multicloud Foundations Associate (October 2026)",
         "Oracle Data Center Operations Foundations Associate (October 2026)",
         "cPanel & WHM System Administrator I and II, CWSA-1 and CWSA-2 (October 2026)",
+        "Plesk Obsidian Associate, Professional, Linux Expert and Windows Expert (October 2026)",
         "TOSA CyberCitizen, 1000/1000 Expert (October 2026)",
         "CompTIA Tech+ (April 2026)",
         "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
@@ -314,6 +316,11 @@ export const siteConfig = {
       title: "Oracle Certified, Cloud and Data Center",
       description:
         "Earned the Oracle Cloud Infrastructure Architect Associate (1Z0-1072-26), Oracle Multicloud Foundations Associate (1Z0-1144-26) and Oracle Data Center Operations Foundations Associate (1Z0-3000) certifications in October 2026.",
+    },
+    {
+      title: "Plesk Obsidian, All Four Levels",
+      description:
+        "Earned all four Plesk University certifications for Plesk Obsidian in October 2026: Associate, Professional, Linux Expert and Windows Expert.",
     },
     {
       title: "Perfect Score, TOSA CyberCitizen",
