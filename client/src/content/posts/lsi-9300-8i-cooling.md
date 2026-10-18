@@ -44,7 +44,7 @@ Owners have tried four placements, with these reports.
 
 <figure>
 <img src="/images/blog/lsi-9300-8i-cooling/photo-2.jpg" alt="Square Papst 512 F/2 computer cooling fan, 50 by 50 by 15 mm, with its product label visible on the hub" width="1400" height="1400" loading="lazy" decoding="async">
-<figcaption>A Papst 512 F/2, a 12 V computer cooling fan measuring 50 by 50 by 15 mm, photographed in 2016. A fan this size matches the roughly 50 mm square OEM LSI cooler that a Level1Techs poster measured. Photo: Unknown, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Papst_computer_cooling_fan_512_F-2-2419.jpg">Wikimedia Commons</a>.</figcaption>
+<figcaption>A Papst 512 F/2, a 12 V computer cooling fan measuring 50 by 50 by 15 mm, photographed in 2016. A fan this size matches the roughly 50 mm square OEM LSI cooler that a Level1Techs poster measured. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Papst_computer_cooling_fan_512_F-2-2419.jpg">Wikimedia Commons</a>.</figcaption>
 </figure>
 
 | Placement | Air source | If the fan stops | Owner report |

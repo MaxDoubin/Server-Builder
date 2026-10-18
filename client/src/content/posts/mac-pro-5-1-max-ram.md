@@ -24,7 +24,7 @@ At the 2010 launch, Apple said the quad-core model was ["expandable up to 16GB"]
 
 <figure>
 <img src="/images/blog/mac-pro-5-1-max-ram/photo-1.jpg" alt="A square Intel Xeon X5690 processor package" width="806" height="605" loading="lazy" decoding="async">
-<figcaption>An Intel Xeon X5690, a six-core Westmere processor from the same generation as the Xeon W3680 in the six-core Mid 2010 Mac Pro. Intel publishes its own maximum memory figure for each Xeon, and it can differ from Apple's. Photo: Copyright: Atsushi Nunome (Computer System Laboratory at Kyoto Institute of Technology), <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Xeon_X5690_3_46GHz.jpg">Wikimedia Commons</a>.</figcaption>
+<figcaption>An Intel Xeon X5690, a six-core Westmere processor from the same generation as the Xeon W3680 in the six-core Mid 2010 Mac Pro. Intel publishes its own maximum memory figure for each Xeon, and it can differ from Apple's. Photo: © Atsushi Nunome (Computer System Laboratory at Kyoto Institute of Technology), <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Xeon_X5690_3_46GHz.jpg">Wikimedia Commons</a>.</figcaption>
 </figure>
 
 [EveryMac's six-core listing](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2010-westmere-specs.html) still gives Apple's official figure as 16GB, while Apple's current spec says 32GB. Plan around the current spec.

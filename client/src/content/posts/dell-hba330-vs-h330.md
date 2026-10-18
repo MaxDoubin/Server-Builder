@@ -9,7 +9,7 @@ Dell's [PERC 9 card specifications](https://www.dell.com/support/manuals/en-us/p
 
 <figure>
 <img src="/images/blog/dell-hba330-vs-h330/photo-1.jpg" alt="Close-up of a RAID controller cache board with a row of five memory chips and a battery manager chip" width="1400" height="788" loading="lazy" decoding="async">
-<figcaption>The battery-backed write cache board from a Dell PERC 4e/DC controller, photographed in 2024, with five DDR SDRAM chips and a Linear Technology battery manager chip. The H330 has neither a cache nor a battery backup unit. Photo: Unknown, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07_-_Battery_Backed_Write_Cache-2170.jpg">Wikimedia Commons</a>.</figcaption>
+<figcaption>The battery-backed write cache board from a Dell PERC 4e/DC controller, photographed in 2024, with five DDR SDRAM chips and a Linear Technology battery manager chip. The H330 has neither a cache nor a battery backup unit. Photo: © Raimond Spekking, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07_-_Battery_Backed_Write_Cache-2170.jpg">Wikimedia Commons</a>.</figcaption>
 </figure>
 
 The table compares the attributes that matter for a storage build.
