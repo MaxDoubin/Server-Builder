@@ -116,17 +116,34 @@ function CredentialSection({ group }: { group: CredentialGroup }) {
         data-testid={`credentials-${group.id}`}
         className="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm sm:grid-cols-2 md:p-8"
       >
-        {group.items.map((item) => (
-          <li
-            key={item}
-            className="flex items-start gap-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
-          >
-            <span aria-hidden className="text-[hsl(var(--brand-signal))]">
-              ✓
-            </span>
-            <span>{item}</span>
-          </li>
-        ))}
+        {group.items.map((item) => {
+          const badge = group.badges?.[item];
+          return (
+            <li
+              key={item}
+              className={`flex font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] ${
+                badge ? "items-center gap-3" : "items-start gap-2"
+              }`}
+            >
+              {badge ? (
+                <img
+                  src={badge.src}
+                  alt={badge.alt}
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-12 w-12 shrink-0"
+                />
+              ) : (
+                <span aria-hidden className="text-[hsl(var(--brand-signal))]">
+                  ✓
+                </span>
+              )}
+              <span>{item}</span>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

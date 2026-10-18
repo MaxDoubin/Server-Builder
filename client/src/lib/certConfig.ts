@@ -282,6 +282,7 @@ const techPlus: Cert = {
     "An entry point that establishes core IT vocabulary and concepts before the more specialized networking and security certifications.",
   officialUrl: "https://www.comptia.org/certifications/tech",
   domains: [],
+  badge: { src: "/images/certs/tech-plus.webp", alt: "CompTIA Tech+ Certified badge" },
 };
 
 /**
@@ -521,6 +522,8 @@ export interface CredentialGroup {
   /** Issuer and date, as one line under the heading. */
   meta: string;
   items: string[];
+  /** The badge the issuer gave for an item, keyed by the item's text. */
+  badges?: Record<string, { src: string; alt: string }>;
 }
 
 const FORTINET = [
@@ -571,6 +574,24 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     heading: "Fortinet Training Institute",
     meta: "Earned October 2026",
     items: FORTINET,
+    // The badges Fortinet issued for each credential, as Max received them.
+    badges: {
+      "NSE 1 Certified in Cybersecurity": { src: "/images/certs/fortinet-nse-1.webp", alt: "Fortinet NSE 1 Certified Cybersecurity badge" },
+      "NSE 2 Certified in Cybersecurity": { src: "/images/certs/fortinet-nse-2.webp", alt: "Fortinet NSE 2 Certified Cybersecurity badge" },
+      "NSE 3 Certified in Cybersecurity": { src: "/images/certs/fortinet-nse-3.webp", alt: "Fortinet NSE 3 Certified Cybersecurity badge" },
+      "FortiGate 7.6 Operator": {
+        src: "/images/certs/fortinet-fortigate-operator-7-6.webp",
+        alt: "Fortinet NSE 3 exam badge, FortiGate Operator v7.6",
+      },
+      "Introduction to the Next Generation Firewall 1.0": {
+        src: "/images/certs/fortinet-ngfw-intro-1-0.webp",
+        alt: "Fortinet NSE 2 exam badge, Introduction to the NextGen Firewall v1.0",
+      },
+      "Fortinet Cybersecurity and Cloud Fundamentals 1.0": {
+        src: "/images/certs/fortinet-cybersecurity-cloud-fundamentals-1-0.webp",
+        alt: "Fortinet NSE 1 exam badge, Cybersecurity and Cloud Fundamentals v1.0",
+      },
+    },
   },
   {
     // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
