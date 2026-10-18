@@ -4,7 +4,7 @@
  * This is a status board. Misrepresenting a credential on a portfolio is a
  * serious problem, so an exam that has not been sat carries status
  * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
- * three Oracle exams, cPanel & WHM System Administrator II and TOSA
+ * three Oracle exams, cPanel & WHM System Administrator I and II and TOSA
  * CyberCitizen are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
  * current, never as an apology.
  *
@@ -357,10 +357,31 @@ const oracleMulticloud: Cert = {
 };
 
 /**
- * cPanel University publishes no public objectives for this exam, so the card
- * says only what the name and the badge establish. The badge is the one cPanel
- * University issues for it, with only the white background removed.
+ * cPanel University publishes no public objectives for these two exams, so the
+ * cards say only what the names and the badges establish. The badges are the
+ * ones cPanel University issues for them. CWSA-1's came as an SVG whose font,
+ * Avenir Next, is not installed here, so it was rendered with Liberation Sans
+ * and the white inner disc shown on cPanel University's exam listing.
  */
+const cpanelSysAdmin1: Cert = {
+  id: "cpanel-cwsa-1",
+  name: "cPanel & WHM System Administrator I",
+  code: "CWSA-1",
+  vendor: "cPanel University",
+  level: "Hosting server administration",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in October 2026. The first exam in cPanel University's system administrator track.",
+  covers: "Administering a server that runs cPanel & WHM, at the first level of the system administrator track.",
+  worth: "The first step of the track that System Administrator II continues.",
+  officialUrl: "https://university.cpanel.net/",
+  domains: [],
+  badge: {
+    src: "/images/certs/cpanel-cwsa-1.webp",
+    alt: "cPanel University Certified Admin badge with a command prompt",
+  },
+};
+
 const cpanelSysAdmin2: Cert = {
   id: "cpanel-cwsa-2",
   name: "cPanel & WHM System Administrator II",
@@ -401,7 +422,7 @@ const tosaCyberCitizen: Cert = {
 
 /** Earned cards render first, newest first. The three targets follow. */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
-export const CERTS_EARNED: Cert[] = [ociArchitect, oracleMulticloud, oracleDataCenter, cpanelSysAdmin2, tosaCyberCitizen, techPlus];
+export const CERTS_EARNED: Cert[] = [ociArchitect, oracleMulticloud, oracleDataCenter, cpanelSysAdmin1, cpanelSysAdmin2, tosaCyberCitizen, techPlus];
 export const ALL_CERTS: Cert[] = [...CERTS_EARNED, ...CERTS_IN_PROGRESS];
 
 /**

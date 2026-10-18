@@ -1202,7 +1202,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "certifications",
       title: "Certifications | Max Doubin",
       description:
-        "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
+        "Max Doubin's certifications: three Oracle certifications including Cloud Infrastructure Architect Associate, cPanel & WHM System Administrator I and II, a perfect TOSA CyberCitizen score, CompTIA Tech+ and six Fortinet credentials.",
       canonical: `${SITE_URL}/certifications`,
     },
     {

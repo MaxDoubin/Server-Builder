@@ -185,7 +185,9 @@ export function CinematicResume() {
                 <Bullet>
                   Oracle Data Center Operations Foundations Associate (1Z0-3000), October 2026
                 </Bullet>
-                <Bullet>cPanel &amp; WHM System Administrator II (CWSA-2), October 2026</Bullet>
+                <Bullet>
+                  cPanel &amp; WHM System Administrator I and II (CWSA-1, CWSA-2), October 2026
+                </Bullet>
                 <Bullet>TOSA CyberCitizen, 1000/1000 (Expert), October 2026</Bullet>
                 <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
                 <Bullet>

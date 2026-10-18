@@ -50,7 +50,7 @@ export const siteConfig = {
         "Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity and FortiGate 7.6 Operator (October 2026)",
         "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (October 2026)",
         "TOSA CyberCitizen, a perfect 1000 out of 1000 at the Expert level (October 2026)",
-        "cPanel & WHM System Administrator II (October 2026)",
+        "cPanel & WHM System Administrator I and II (October 2026)",
       ],
     },
     {
@@ -165,7 +165,7 @@ export const siteConfig = {
         "Oracle Cloud Infrastructure Architect Associate (October 2026)",
         "Oracle Multicloud Foundations Associate (October 2026)",
         "Oracle Data Center Operations Foundations Associate (October 2026)",
-        "cPanel & WHM System Administrator II, CWSA-2 (October 2026)",
+        "cPanel & WHM System Administrator I and II, CWSA-1 and CWSA-2 (October 2026)",
         "TOSA CyberCitizen, 1000/1000 Expert (October 2026)",
         "CompTIA Tech+ (April 2026)",
         "Fortinet NSE 1, NSE 2, NSE 3 (October 2026)",
