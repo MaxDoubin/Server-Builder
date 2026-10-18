@@ -178,7 +178,7 @@ export const siteConfig = {
         "Cisco Networking Academy Ethical Hacker course (2026)",
         "Palo Alto Networks Cybersecurity, Network Security, Cloud Security and Security Operations Fundamentals courses (2026)",
         "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (2026)",
-        "CISA ICS Cybersecurity Evaluation (401) course, 12 contact hours (2026)",
+        "CISA ICS Cybersecurity (300) and ICS Cybersecurity Evaluation (401) courses, about 22 contact hours (2026)",
         "arcX Foundation Level Threat Intelligence Analyst certificate (2026)",
         "Nutanix University ECA 6.10 and AAPM courses (2026)",
         "Anthropic Claude Academy, 23 badges (2026)",

@@ -721,13 +721,17 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // A certificate of training completion from CISA, built with Idaho
-    // National Laboratory: the online 401 course on evaluating an industrial
-    // control system network's cybersecurity, 12 contact hours (1.2 CEUs).
+    // Certificates of training completion from CISA, built with Idaho
+    // National Laboratory: the online 300 course on protecting industrial
+    // control systems from cyber attacks (1.0 CEU) and the 401 course on
+    // evaluating an ICS network's cybersecurity (1.2 CEUs).
     id: "cisa",
     heading: "CISA",
-    meta: "Course completed in 2026",
-    items: ["ICS Cybersecurity Evaluation (401), 12 contact hours"],
+    meta: "Courses completed in 2026",
+    items: [
+      "ICS Cybersecurity (300), 10.4 contact hours",
+      "ICS Cybersecurity Evaluation (401), 12 contact hours",
+    ],
   },
   {
     // The certificate for passing the end-of-course exam of arcX's Cyber

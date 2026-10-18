@@ -217,8 +217,8 @@ export function CinematicResume() {
                   2026
                 </Bullet>
                 <Bullet>
-                  CISA (U.S. Department of Homeland Security): ICS Cybersecurity Evaluation (401)
-                  course, 12 contact hours, 2026
+                  CISA (U.S. Department of Homeland Security): ICS Cybersecurity (300) and ICS
+                  Cybersecurity Evaluation (401) courses, about 22 contact hours, 2026
                 </Bullet>
                 <Bullet>arcX: Foundation Level Threat Intelligence Analyst certificate, 2026</Bullet>
                 <Bullet>
