@@ -136,6 +136,22 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
     setOpen(false);
   }, [location]);
 
+  /*
+    The drawer, its scrim and its toggle are hidden from xl up. Widening the
+    window past it with the drawer open (a tablet turned sideways) would hide
+    all three while open stayed true, so the scroll lock and focus loop below
+    would hold a page with no visible way to close them.
+  */
+  useEffect(() => {
+    if (!open) return;
+    const desktop = window.matchMedia("(min-width: 1280px)");
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setOpen(false);
+    };
+    desktop.addEventListener("change", onChange);
+    return () => desktop.removeEventListener("change", onChange);
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -299,7 +315,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             </Magnetic>
           </motion.div>
 
-          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 xl:flex">
             {NAV_LINKS.map((link, i) => {
               const active = isActive(link.href);
               return (
@@ -453,7 +469,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               aria-controls="cinematic-mobile-nav"
               aria-label={open ? "Close menu" : "Open menu"}
               data-testid="button-nav-toggle"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] lg:hidden"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] xl:hidden"
               whileHover={{ scale: 1.1, borderColor: "hsl(72 100% 50% / 0.6)" }}
               whileTap={{ scale: 0.9 }}
               initial={{ opacity: 0, rotate: -90 }}
@@ -491,7 +507,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             <motion.div
               aria-hidden
               data-print-hide
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm xl:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -503,7 +519,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               id="cinematic-mobile-nav"
               data-testid="mobile-nav-drawer"
               data-print-hide
-              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md lg:hidden"
+              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md xl:hidden"
               initial={{ opacity: 0, y: -20, clipPath: "inset(0 0 100% 0)" }}
               animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" }}
               exit={{ opacity: 0, y: -10, clipPath: "inset(0 0 100% 0)" }}
