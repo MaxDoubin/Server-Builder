@@ -303,7 +303,8 @@ const googleAnalytics: Cert = {
   badge: { src: "/images/certs/google-analytics.webp", alt: "Google Analytics Certified badge" },
 };
 
-// GraphAcademy issues a verifiable certificate page but no badge image.
+// The badge is Neo4j's Certified Professional seal, as neo4j.com's GraphAcademy
+// page and the Neo4j community forum show it; the certificate page carries none.
 const neo4jProfessional: Cert = {
   id: "neo4j-certified-professional",
   name: "Neo4j Certified Professional",
@@ -319,6 +320,10 @@ const neo4jProfessional: Cert = {
     "Neo4j's own credential for working knowledge of its platform, from querying and modeling graphs to building applications on its drivers, with a certificate anyone can verify on GraphAcademy.",
   officialUrl: "https://graphacademy.neo4j.com/certifications/neo4j-certification/",
   domains: [],
+  badge: {
+    src: "/images/certs/neo4j-certified-professional.webp",
+    alt: "Neo4j Certified Professional badge, Graph Database Certified",
+  },
 };
 
 /**
