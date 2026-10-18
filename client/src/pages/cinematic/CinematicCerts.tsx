@@ -16,6 +16,11 @@ const TILE_GRID = "mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
 const TILE =
   "flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm";
 const TILE_BADGE = "h-20 w-20 shrink-0 md:h-24 md:w-24";
+// The six parts of a certification tile sit on the grid's own rows
+// (subgrid), so titles, summaries and footers line up across a row and
+// opening one tile's details grows only the footer row.
+const CERT_TILE =
+  "grid row-span-6 grid-rows-subgrid gap-y-0 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm";
 
 export function CinematicCerts() {
   useSEO({
@@ -209,7 +214,7 @@ function StatusChip({ cert }: { cert: Cert }) {
 
 function CertTile({ cert }: { cert: Cert }) {
   return (
-    <article data-testid={`cert-${cert.id}`} className={TILE}>
+    <article data-testid={`cert-${cert.id}`} className={CERT_TILE}>
       <div className="flex items-start justify-between gap-3">
         {cert.badge ? (
           <img
@@ -227,7 +232,13 @@ function CertTile({ cert }: { cert: Cert }) {
         <StatusChip cert={cert} />
       </div>
       <div className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-        {cert.code ? `${cert.vendor} · ${cert.code}` : cert.vendor}
+        <span className="whitespace-nowrap">{cert.vendor}</span>
+        {cert.code ? (
+          <>
+            {" "}
+            <span className="whitespace-nowrap">· {cert.code}</span>
+          </>
+        ) : null}
       </div>
       <h3 className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))]">
         {cert.name}
@@ -238,15 +249,18 @@ function CertTile({ cert }: { cert: Cert }) {
       <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
         {cert.statusDetail}
       </p>
-      <div className="mt-auto pt-4">
+      <div className="pt-4">
         <details className="group border-t border-[hsl(var(--brand-iron))] pt-3">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
-            <span>What it covers</span>
+            <span>Details</span>
             <span aria-hidden className="text-[hsl(var(--brand-ash))] transition-transform group-open:rotate-90">
               →
             </span>
           </summary>
-          <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+          <div className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+            What it covers
+          </div>
+          <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             {cert.covers}
           </p>
           <div className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
