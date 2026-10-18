@@ -11,8 +11,6 @@ import {
   fadeRight,
   DrawLine,
   Magnetic,
-  AnimatedGradientText,
-  Breathing,
   FloatingParticles,
   useClampedInView,
 } from "@/lib/framer-animations";
@@ -171,9 +169,6 @@ export function CinematicFooter() {
               { href: "/coding-camps", label: "Coding camps", testId: "link-footer-camps" },
               { href: "/faq", label: "FAQ", testId: "link-footer-faq" },
               { href: "/uses", label: "Uses", testId: "link-footer-uses" },
-              { href: "/subscribe", label: "Subscribe", testId: "link-footer-subscribe" },
-              { href: "/colophon", label: "Colophon", testId: "link-footer-colophon" },
-              { href: "/roadmap", label: "Roadmap", testId: "link-footer-roadmap" },
             ].map((item) => (
               <StaggerItem key={item.href} variants={footerLinkVariants}>
                 <Magnetic strength={0.1} radius={60}>
@@ -246,20 +241,6 @@ export function CinematicFooter() {
             transition={{ delay: 0.7, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
             © {year} Max Doubin
-          </motion.span>
-          <motion.span
-            className="flex items-center gap-2"
-            initial={{ opacity: 0, x: 20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Breathing intensity={2}>
-              <span
-                className="h-[5px] w-[5px] rounded-full bg-[hsl(var(--brand-signal))]"
-                style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
-              />
-            </Breathing>
-            <AnimatedGradientText>All systems operational</AnimatedGradientText>
           </motion.span>
         </div>
       </motion.div>

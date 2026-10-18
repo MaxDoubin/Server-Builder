@@ -412,7 +412,7 @@ const BuildDashboard = lazyWithRetry(() =>
 );
 
 /**
- * Topic hubs and the roadmap.
+ * Topic hubs.
  *
  * /topics/:tag rather than /blog/tag/:tag, so a topic can never be
  * mistaken for a post slug by the router.
@@ -425,11 +425,6 @@ const CinematicTopics = lazyWithRetry(() =>
 const CinematicTag = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTag").then((m) => ({
     default: m.CinematicTag,
-  })),
-);
-const CinematicRoadmap = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicRoadmap").then((m) => ({
-    default: m.CinematicRoadmap,
   })),
 );
 
@@ -460,9 +455,6 @@ const CinematicTimeline = lazyWithRetry(() =>
 const CinematicCamps = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCamps").then((m) => ({ default: m.CinematicCamps })),
 );
-const CinematicColophon = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicColophon").then((m) => ({ default: m.CinematicColophon })),
-);
 const CinematicTeardown = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTeardown").then((m) => ({ default: m.CinematicTeardown })),
 );
@@ -479,9 +471,6 @@ const CinematicFaq = lazyWithRetry(() =>
 );
 const CinematicLinks = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLinks").then((m) => ({ default: m.CinematicLinks })),
-);
-const CinematicSubscribe = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicSubscribe").then((m) => ({ default: m.CinematicSubscribe })),
 );
 const CinematicStudyTimer = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicStudyTimer").then((m) => ({ default: m.CinematicStudyTimer })),
@@ -1424,11 +1413,6 @@ function AnimatedRoutes() {
               <CinematicCamps />
             </Suspense>
           </Route>
-          <Route path="/colophon">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicColophon />
-            </Suspense>
-          </Route>
           <Route path="/teardown">
             <Suspense fallback={<RouteLoading />}>
               <CinematicTeardown />
@@ -1442,11 +1426,6 @@ function AnimatedRoutes() {
           <Route path="/links">
             <Suspense fallback={<RouteLoading />}>
               <CinematicLinks />
-            </Suspense>
-          </Route>
-          <Route path="/subscribe">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicSubscribe />
             </Suspense>
           </Route>
           <Route path="/study-timer">
@@ -1683,11 +1662,6 @@ function AnimatedRoutes() {
           <Route path="/topics/:tag">
             <Suspense fallback={<RouteLoading />}>
               <CinematicTag />
-            </Suspense>
-          </Route>
-          <Route path="/roadmap">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicRoadmap />
             </Suspense>
           </Route>
           <Route path="/projects">

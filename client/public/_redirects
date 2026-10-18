@@ -197,14 +197,12 @@
 #   /blog/ai-in-network-operations
 #   /blog/ai-in-security-operations
 
-# Retired pages.
+# Retired pages, deliberately not redirected.
 #
-# The changelog was a list of site edits, which is a thing the person who
-# runs the site cares about and nobody arriving from a search does. Google
-# had picked it up as a sitelink under the name search, so it was spending
-# one of six slots on a maintenance log. Removed, and 301'd to the roadmap,
-# which is the page that still answers "what is happening with this site".
-/changelog  /roadmap  301
+# /changelog, /roadmap, /colophon and /subscribe were pages about the site
+# itself rather than about Max or his work, and were taken down in October
+# 2026 at his request. As with the Cyber Club pages above, they return 404 so
+# search engines drop them. Do not add a redirect for any of the four.
 
 # Spelling: /practise was the British verb spelling, on a site whose own prose
 # says "practice" 159 times against 4. It shipped, was indexed, and was linked

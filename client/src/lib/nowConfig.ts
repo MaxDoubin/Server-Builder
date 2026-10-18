@@ -103,12 +103,6 @@ export const nowConfig: NowConfig = {
           href: "/blog",
         },
         {
-          title: "This site",
-          detail:
-            "React and TypeScript, no backend, prerendered to static HTML so a crawler reads the writing without running JavaScript. The build decisions are written up in full.",
-          href: "/colophon",
-        },
-        {
           title: "Hyperscale",
           detail:
             "An interactive 3D data center build, in the browser. Rack layout, infrastructure design, and the constraints that make those decisions interesting.",
