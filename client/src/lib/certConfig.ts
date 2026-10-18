@@ -553,9 +553,9 @@ const tosaCyberCitizen: Cert = {
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
 export const CERTS_EARNED: Cert[] = [
   ociArchitect,
-  techPlus,
   neo4jProfessional,
   tosaCyberCitizen,
+  techPlus,
   oracleMulticloud,
   oracleDataCenter,
   cpanelSysAdmin2,

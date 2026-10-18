@@ -31,7 +31,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: three Oracle certifications, cPanel & WHM System Administrator I and II, all four Plesk Obsidian levels, a perfect TOSA CyberCitizen score, CompTIA Tech+, Google Analytics, Neo4j Certified Professional and six Fortinet credentials.",
+      "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics and six Fortinet credentials.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -47,10 +47,11 @@ export function CinematicCerts() {
               Certifications.
             </h1>
             <p className="mt-6 font-mono-tight text-base leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              I hold three Oracle certifications, cPanel &amp; WHM System
-              Administrator I and II, all four Plesk Obsidian levels, a perfect
-              1000 on TOSA CyberCitizen, CompTIA Tech+, the Google Analytics
-              Certification, Neo4j Certified Professional, and six Fortinet
+              I hold the Oracle Cloud Infrastructure Architect Associate and two
+              more Oracle certifications, Neo4j Certified Professional, a
+              perfect 1000 on TOSA CyberCitizen, CompTIA Tech+, cPanel &amp;
+              WHM System Administrator I and II, all four Plesk Obsidian
+              levels, the Google Analytics Certification, and six Fortinet
               Training Institute credentials. I am certifying in Security+,
               Network+, and the CCNA.
             </p>
