@@ -237,8 +237,7 @@ export function CinematicResume() {
                 </h3>
                 <ul className="mt-2 space-y-1">
                   <Bullet>
-                    1st place in the Clark County School District capture the flag tournament, October
-                    2026
+                    1st place in the Clark County School District capture the flag tournament, 2026
                   </Bullet>
                 </ul>
               </div>
