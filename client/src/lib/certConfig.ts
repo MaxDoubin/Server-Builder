@@ -5,8 +5,8 @@
  * serious problem, so an exam that has not been sat carries status
  * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
  * three Oracle exams, cPanel & WHM System Administrator I and II, the four
- * Plesk Obsidian levels and TOSA CyberCitizen are held today and are listed
- * under "earned". Keep the distinction exact: the copy should read as confident and
+ * Plesk Obsidian levels, TOSA CyberCitizen and the Google Analytics
+ * Certification are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
  * current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they
@@ -285,6 +285,23 @@ const techPlus: Cert = {
   badge: { src: "/images/certs/tech-plus.webp", alt: "CompTIA Tech+ Certified badge" },
 };
 
+const googleAnalytics: Cert = {
+  id: "google-analytics",
+  name: "Google Analytics Certification",
+  vendor: "Google Skillshop",
+  level: "Web analytics and measurement",
+  status: "earned",
+  statusLabel: "Earned",
+  statusDetail: "Earned in 2026. Google's certification for Google Analytics, renewed by passing the current exam each year.",
+  covers:
+    "Configuring and managing a Google Analytics property, including its event-based data model, user hierarchy and privacy controls; the Reports, Explore and Advertising workspaces; and turning business objectives into key events, conversions and audiences.",
+  worth:
+    "Google's own credential for Google Analytics, verifiable online through Skillshop. It is valid for one year, so it stays tied to the current version of the product.",
+  officialUrl: "https://skillshop.docebosaas.com/learn/course/18609/google-analytics-certification-2026",
+  domains: [],
+  badge: { src: "/images/certs/google-analytics.webp", alt: "Google Analytics Certified badge" },
+};
+
 /**
  * Max passed these four in October 2026. Oracle publishes no exam objectives
  * with weightings for them, and TOSA publishes skill areas without weightings,
@@ -501,6 +518,7 @@ const tosaCyberCitizen: Cert = {
 /** Earned cards render first, newest first. The three targets follow. */
 export const CERTS_IN_PROGRESS: Cert[] = [securityPlus, networkPlus, ccna];
 export const CERTS_EARNED: Cert[] = [
+  googleAnalytics,
   ociArchitect,
   oracleMulticloud,
   oracleDataCenter,
@@ -598,16 +616,45 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // Databricks Academy's unproctored accreditation exam that ends its
-    // platform administrator pathway, not a proctored Databricks certification.
+    // Databricks Academy accreditations: unproctored online assessments, not
+    // the proctored Databricks certifications. Platform Administrator and the
+    // AWS and GCP Platform Architect ones end Databricks' platform pathways;
+    // the three Fundamentals are short quizzes after an introductory course.
     id: "databricks",
     heading: "Databricks Academy",
-    meta: "Accreditation earned in 2026",
-    items: ["Platform Administrator accreditation"],
+    meta: "Accreditations earned in 2026",
+    items: [
+      "Platform Administrator",
+      "AWS Platform Architect",
+      "GCP Platform Architect",
+      "Databricks Fundamentals",
+      "Generative AI Fundamentals",
+      "AI Agent Fundamentals",
+    ],
     badges: {
-      "Platform Administrator accreditation": {
+      "Platform Administrator": {
         src: "/images/certs/databricks-platform-administrator.webp",
         alt: "Databricks Platform Administrator accreditation badge",
+      },
+      "AWS Platform Architect": {
+        src: "/images/certs/databricks-aws-platform-architect.webp",
+        alt: "Databricks Platform Architect accreditation badge, AWS",
+      },
+      "GCP Platform Architect": {
+        src: "/images/certs/databricks-gcp-platform-architect.webp",
+        alt: "Databricks Platform Architect accreditation badge, Google Cloud",
+      },
+      "Databricks Fundamentals": {
+        src: "/images/certs/databricks-fundamentals.webp",
+        alt: "Databricks Fundamentals accreditation badge",
+      },
+      "Generative AI Fundamentals": {
+        src: "/images/certs/databricks-generative-ai-fundamentals.webp",
+        alt: "Databricks Generative AI Fundamentals accreditation badge",
+      },
+      "AI Agent Fundamentals": {
+        src: "/images/certs/databricks-ai-agent-fundamentals.webp",
+        alt: "Databricks AI Agent Fundamentals accreditation badge",
       },
     },
   },
@@ -626,8 +673,13 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // the proctored certification exams.
     id: "palo-alto",
     heading: "Palo Alto Networks",
-    meta: "Course completed in 2026",
-    items: ["Cybersecurity Fundamentals"],
+    meta: "Courses completed in 2026",
+    items: [
+      "Cybersecurity Fundamentals",
+      "Network Security Fundamentals",
+      "Cloud Security Fundamentals",
+      "Security Operations Fundamentals",
+    ],
   },
   {
     // OPSWAT's introductory certificate: the Academy's mission, CIP
@@ -640,6 +692,20 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
       "Introduction to Critical Infrastructure Protection (ICIP)": {
         src: "/images/certs/opswat-icip.webp",
         alt: "OPSWAT Introduction to Critical Infrastructure Protection (ICIP) badge",
+      },
+    },
+  },
+  {
+    // The certificate for passing the end-of-course exam of arcX's Cyber
+    // Threat Intelligence 101, an introductory threat intelligence course.
+    id: "arcx",
+    heading: "arcX",
+    meta: "Certificate earned in 2026",
+    items: ["Foundation Level Threat Intelligence Analyst"],
+    badges: {
+      "Foundation Level Threat Intelligence Analyst": {
+        src: "/images/certs/arcx-threat-intelligence-analyst.webp",
+        alt: "arcX Certified Foundation Threat Intelligence Analyst badge",
       },
     },
   },
