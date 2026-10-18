@@ -5,8 +5,8 @@
  * serious problem, so an exam that has not been sat carries status
  * "in-progress" and the page renders that unambiguously. CompTIA Tech+, the
  * three Oracle exams, cPanel & WHM System Administrator I and II, the four
- * Plesk Obsidian levels and TOSA CyberCitizen are held today and are listed
- * under "earned". Keep the distinction exact: the copy should read as confident and
+ * Plesk Obsidian levels, TOSA CyberCitizen and the Google Analytics
+ * Certification are held today and are listed under "earned". Keep the distinction exact: the copy should read as confident and
  * current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they

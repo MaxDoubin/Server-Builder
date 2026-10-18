@@ -122,6 +122,12 @@ export function CinematicHome() {
           name: "CompTIA Tech+ (FC0-U71)",
           credentialCategory: "certification",
         },
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "Google Analytics Certification",
+          credentialCategory: "certification",
+          recognizedBy: { "@type": "Organization", name: "Google" },
+        },
         ...[
           "NSE 1 Certified in Cybersecurity",
           "NSE 2 Certified in Cybersecurity",
