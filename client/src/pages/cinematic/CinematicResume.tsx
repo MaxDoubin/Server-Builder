@@ -193,6 +193,7 @@ export function CinematicResume() {
                 </Bullet>
                 <Bullet>TOSA CyberCitizen, 1000/1000 (Expert), 2026</Bullet>
                 <Bullet>CompTIA Tech+ (FC0-U71), April 2026</Bullet>
+                <Bullet>Google Analytics Certification (Google Skillshop), 2026</Bullet>
                 <Bullet>
                   Fortinet NSE 1, NSE 2 and NSE 3 Certified in Cybersecurity, 2026
                 </Bullet>
@@ -201,13 +202,20 @@ export function CinematicResume() {
                   Fortinet Introduction to the Next Generation Firewall and Cybersecurity and Cloud
                   Fundamentals, 2026
                 </Bullet>
-                <Bullet>Databricks Academy: Platform Administrator accreditation, 2026</Bullet>
+                <Bullet>
+                  Databricks Academy accreditations: Platform Administrator, AWS and GCP Platform
+                  Architect, and Databricks, Generative AI and AI Agent Fundamentals, 2026
+                </Bullet>
                 <Bullet>Cisco Networking Academy: Ethical Hacker course, 2026</Bullet>
-                <Bullet>Palo Alto Networks: Cybersecurity Fundamentals course, 2026</Bullet>
+                <Bullet>
+                  Palo Alto Networks: Cybersecurity, Network Security, Cloud Security and Security
+                  Operations Fundamentals courses, 2026
+                </Bullet>
                 <Bullet>
                   OPSWAT Academy: Introduction to Critical Infrastructure Protection (ICIP) certificate,
                   2026
                 </Bullet>
+                <Bullet>arcX: Foundation Level Threat Intelligence Analyst certificate, 2026</Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
                   Administration and Performance Management (AAPM) courses, 2026
