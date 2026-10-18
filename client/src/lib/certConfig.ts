@@ -492,6 +492,10 @@ const tosaCyberCitizen: Cert = {
     "A scored certification: the pass mark is 351, and the result also shows the level reached on the 1 to 1000 scale, not just a pass.",
   officialUrl: "https://www.tosa.org/EN/subjectdetails?sbj_id=298",
   domains: [],
+  badge: {
+    src: "/images/certs/tosa-cybercitizen-expert.webp",
+    alt: "TOSA Certified Expert CyberCitizen badge",
+  },
 };
 
 /** Earned cards render first, newest first. The three targets follow. */
