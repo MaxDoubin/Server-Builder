@@ -302,7 +302,7 @@ const oracleDataCenter: Cert = {
   level: "Foundational data center operations",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. Oracle's foundations credential for entry-level data center operations.",
+  statusDetail: "Earned in 2026. Oracle's foundations credential for entry-level data center operations.",
   covers:
     "How a data center facility runs: redundancy models from N to 2N+1, safety practice such as lockout/tagout and arc flash awareness, electrical systems including UPS and generators, cooling plant such as CRAH units and chillers, building management system monitoring, and operating procedures, change management and shift handovers.",
   worth:
@@ -323,7 +323,7 @@ const ociArchitect: Cert = {
   level: "Associate cloud architecture",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. Oracle's associate-level credential for designing and building on Oracle Cloud Infrastructure.",
+  statusDetail: "Earned in 2026. Oracle's associate-level credential for designing and building on Oracle Cloud Infrastructure.",
   covers:
     "Oracle Cloud Infrastructure design: Identity and Access Management, networking, compute instances, and block, object and file storage.",
   worth:
@@ -345,7 +345,7 @@ const oracleMulticloud: Cert = {
   level: "Foundational multicloud",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. Oracle's entry-level credential for multicloud deployments.",
+  statusDetail: "Earned in 2026. Oracle's entry-level credential for multicloud deployments.",
   covers:
     "The fundamentals of running Oracle Cloud Infrastructure and Oracle services alongside other public cloud providers.",
   worth:
@@ -373,7 +373,7 @@ const cpanelSysAdmin1: Cert = {
   level: "Hosting server administration",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. The first exam in cPanel University's system administrator track.",
+  statusDetail: "Earned in 2026. The first exam in cPanel University's system administrator track.",
   covers: "Administering a server that runs cPanel & WHM, at the first level of the system administrator track.",
   worth: "The first step of the track that System Administrator II continues.",
   officialUrl: "https://university.cpanel.net/",
@@ -392,7 +392,7 @@ const cpanelSysAdmin2: Cert = {
   level: "Hosting server administration",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. The second exam in cPanel University's system administrator track.",
+  statusDetail: "Earned in 2026. The second exam in cPanel University's system administrator track.",
   covers:
     "Administering servers that run cPanel & WHM, the control panel and server manager used on web hosting servers.",
   worth:
@@ -420,7 +420,7 @@ const pleskAssociate: Cert = {
   level: "Foundational hosting platform",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. The first of Plesk University's four Plesk Obsidian certifications, each valid for two years.",
+  statusDetail: "Earned in 2026. The first of Plesk University's four Plesk Obsidian certifications, each valid for two years.",
   covers: "Basic knowledge of Plesk Obsidian, its extensions and licensing, and building hosting offerings on it.",
   worth: "The entry level of the Plesk track, which continues through Professional to the Linux and Windows Expert levels.",
   officialUrl: "https://www.credly.com/org/plesk/badge/plesk-obsidian-associate",
@@ -436,7 +436,7 @@ const pleskProfessional: Cert = {
   level: "Hosting platform administration",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. Plesk University's administrator level, passed as an online exam with identity verification.",
+  statusDetail: "Earned in 2026. Plesk University's administrator level, passed as an online exam with identity verification.",
   covers:
     "Administrator tasks in Plesk Obsidian: installation and initial setup, security configuration, provisioning hosting services, and backing up and restoring customer data.",
   worth: "Covers the day-to-day running of a Plesk server, from the first install to restoring a customer's data.",
@@ -453,7 +453,7 @@ const pleskLinuxExpert: Cert = {
   level: "Expert hosting platform administration",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. One of Plesk University's two expert levels, for Plesk on Linux.",
+  statusDetail: "Earned in 2026. One of Plesk University's two expert levels, for Plesk on Linux.",
   covers: "Maintaining and updating Plesk on Linux servers, and troubleshooting Plesk and the hosting services it runs.",
   worth: "Expert-level maintenance and troubleshooting on the Linux side of a Plesk platform.",
   officialUrl: "https://university.plesk.com/catalog/info/id:345",
@@ -469,7 +469,7 @@ const pleskWindowsExpert: Cert = {
   level: "Expert hosting platform administration",
   status: "earned",
   statusLabel: "Earned",
-  statusDetail: "Earned in October 2026. Plesk University's other expert level, for Plesk on Windows.",
+  statusDetail: "Earned in 2026. Plesk University's other expert level, for Plesk on Windows.",
   covers: "Updating and maintaining Plesk on Windows servers, and solving technical issues with Plesk and its hosting services.",
   worth: "Expert-level maintenance and troubleshooting on the Windows side of a Plesk platform.",
   officialUrl: "https://university.plesk.com/catalog/info/id:347",
@@ -485,7 +485,7 @@ const tosaCyberCitizen: Cert = {
   status: "earned",
   statusLabel: "Earned",
   statusDetail:
-    "Earned in October 2026 with a score of 1000 out of 1000, the top of the Expert band (876 to 1000). The exam is adaptive: 35 questions in 60 minutes.",
+    "Earned in 2026 with a score of 1000 out of 1000, the top of the Expert band (876 to 1000). The exam is adaptive: 35 questions in 60 minutes.",
   covers:
     "Four areas: the cybersecurity ecosystem, from attack types to incident response and authentication; securing data, accounts and devices; secure practice on wireless networks, VPNs and remote work; and protection against phishing and other threats to personal data.",
   worth:
@@ -576,7 +576,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
   {
     id: "fortinet",
     heading: "Fortinet Training Institute",
-    meta: "Earned October 2026",
+    meta: "Earned in 2026",
     items: FORTINET,
     // The badges Fortinet issued for each credential, as Max received them.
     badges: {
@@ -602,7 +602,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // platform administrator pathway, not a proctored Databricks certification.
     id: "databricks",
     heading: "Databricks Academy",
-    meta: "Accreditation earned October 2026",
+    meta: "Accreditation earned in 2026",
     items: ["Platform Administrator accreditation"],
     badges: {
       "Platform Administrator accreditation": {
@@ -615,7 +615,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // A course completion with Cisco's verified badge, issued October 18, 2026.
     id: "cisco-netacad",
     heading: "Cisco Networking Academy",
-    meta: "Course completed October 2026",
+    meta: "Course completed in 2026",
     items: ["Ethical Hacker"],
     badges: {
       "Ethical Hacker": { src: "/images/certs/cisco-ethical-hacker.webp", alt: "Cisco Networking Academy Verified Ethical Hacker badge" },
@@ -626,7 +626,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // the proctored certification exams.
     id: "palo-alto",
     heading: "Palo Alto Networks",
-    meta: "Course completed October 2026",
+    meta: "Course completed in 2026",
     items: ["Cybersecurity Fundamentals"],
   },
   {
@@ -634,7 +634,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // fundamentals and an overview of its courses.
     id: "opswat",
     heading: "OPSWAT Academy",
-    meta: "Certificate earned October 2026",
+    meta: "Certificate earned in 2026",
     items: ["Introduction to Critical Infrastructure Protection (ICIP)"],
     badges: {
       "Introduction to Critical Infrastructure Protection (ICIP)": {
@@ -647,7 +647,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
     id: "nutanix",
     heading: "Nutanix University",
-    meta: "Completed October 2026",
+    meta: "Completed in 2026",
     items: [
       "Enterprise Cloud Administration (ECA) 6.10, online course",
       "Advanced Administration and Performance Management (AAPM), online course",
@@ -660,7 +660,7 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     items: [
       "Top 1% individually, NCL Fall 2025 Individual Game",
       "1st place, NCL Fall 2026 Gymnasium (preseason)",
-      "1st place, CCSD Capture the Flag at CyberWeek@UNLV, October 2026",
+      "1st place, CCSD Capture the Flag at CyberWeek@UNLV, 2026",
     ],
   },
   {
@@ -672,13 +672,13 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
   {
     id: "claude-academy-badges",
     heading: "Anthropic Claude Academy badges",
-    meta: `${CLAUDE_BADGES.length} badges, October 2026`,
+    meta: `${CLAUDE_BADGES.length} badges, 2026`,
     items: CLAUDE_BADGES,
   },
   {
     id: "claude-academy-courses",
     heading: "Anthropic Claude Academy courses",
-    meta: "Completed October 2026",
+    meta: "Completed in 2026",
     items: CLAUDE_COURSES,
   },
 ];

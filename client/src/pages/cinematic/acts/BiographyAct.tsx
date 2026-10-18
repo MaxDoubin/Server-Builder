@@ -24,14 +24,14 @@ const PILLARS: Pillar[] = [
     title: "Competition, credentials, and applied practice.",
     accent: "signal",
     lines: [
-      "1st place, CCSD capture the flag tournament at CyberWeek@UNLV, October 2026",
+      "1st place, CCSD capture the flag tournament at CyberWeek@UNLV, 2026",
       "Top 1% in the National Cyber League Fall 2025 Individual Game",
       "Helped lead South CTA to 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
       "CompTIA Tech+ certified (April 2026); Security+, Network+, and CCNA in progress",
-      "Fortinet NSE 1, NSE 2 and NSE 3 and FortiGate 7.6 Operator (October 2026)",
-      "Oracle Cloud Infrastructure Architect Associate, Multicloud Foundations Associate and Data Center Operations Foundations Associate (October 2026)",
-      "TOSA CyberCitizen, a perfect 1000 out of 1000 (October 2026)",
+      "Fortinet NSE 1, NSE 2 and NSE 3 and FortiGate 7.6 Operator (2026)",
+      "Oracle Cloud Infrastructure Architect Associate, Multicloud Foundations Associate and Data Center Operations Foundations Associate (2026)",
+      "TOSA CyberCitizen, a perfect 1000 out of 1000 (2026)",
     ],
   },
   {

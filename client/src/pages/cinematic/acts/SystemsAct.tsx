@@ -111,7 +111,7 @@ function CredentialsCopy({ alignRight = false }: { alignRight?: boolean }) {
       <p
         className={`mt-5 max-w-[42ch] ${BODY_CLASS}${alignRight ? " md:ml-auto" : ""}`}
       >
-        CompTIA Tech+ is complete (April 2026). October 2026 added Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate, Oracle Data Center Operations Foundations Associate, a perfect 1000 on TOSA CyberCitizen, and Fortinet NSE 1 through 3 and FortiGate 7.6 Operator. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
+        CompTIA Tech+ is complete (April 2026). Later in 2026 came Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate, Oracle Data Center Operations Foundations Associate, a perfect 1000 on TOSA CyberCitizen, and Fortinet NSE 1 through 3 and FortiGate 7.6 Operator. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
       </p>
     </>
   );
