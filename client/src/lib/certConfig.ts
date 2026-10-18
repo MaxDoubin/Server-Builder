@@ -612,6 +612,20 @@ export const CREDENTIAL_GROUPS: CredentialGroup[] = [
     items: ["Cybersecurity Fundamentals"],
   },
   {
+    // OPSWAT's introductory certificate: the Academy's mission, CIP
+    // fundamentals and an overview of its courses.
+    id: "opswat",
+    heading: "OPSWAT Academy",
+    meta: "Certificate earned October 2026",
+    items: ["Introduction to Critical Infrastructure Protection (ICIP)"],
+    badges: {
+      "Introduction to Critical Infrastructure Protection (ICIP)": {
+        src: "/images/certs/opswat-icip.webp",
+        alt: "OPSWAT Introduction to Critical Infrastructure Protection (ICIP) badge",
+      },
+    },
+  },
+  {
     // Completed courses, not the NCP-MCI and NCM-MCI exams they prepare for.
     id: "nutanix",
     heading: "Nutanix University",
