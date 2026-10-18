@@ -13,6 +13,11 @@ Both shelves accept SAS and SATA drives, according to Digital Spaceport, and Par
 
 The IOM modules use QSFP ports, while the LSI SAS 9200-8e uses external mini-SAS ports, so the link needs an adapter cable. [Digital Spaceport](https://digitalspaceport.com/netapp-ds4246-ds4243-jbod-high-capacity-storage/) puts it directly: "QSFP to 8088 cables are required to connect the HBA to the JBOD." Broadcom's [user guide for the LSI SAS 9200-8e](https://docs.broadcom.com/doc/12353324) lists two x4 external mini-SAS connectors (SFF-8088) and eight external 6 Gb/s SATA and SAS ports. For the connector family as a whole, see [SFP, SFP+, and QSFP](/blog/sfp-transceivers-explained).
 
+<figure>
+<img src="/images/blog/netapp-ds4246-truenas/photo-1.jpg" alt="The plug end of a 40Gb QSFP+ copper twinax cable" width="1280" height="797" loading="lazy" decoding="async">
+<figcaption>A 40Gb QSFP+ copper twinax cable, photographed in 2016. The IOM modules on the DS4246 have QSFP ports, so the shelf end of a QSFP to SFF-8088 cable has a plug of this shape. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:40Gb_QSFP%2B_copper_twinax_cable.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 Two shelves mean a layout decision. Chaining shelves through their IOM modules takes extra cable. Digital Spaceport says "additional QSFP to QSFP cables must be used" for the IOM3 and IOM6 controllers. A 2018 owner of two DS4246 shelves ran one cable from each shelf to a 9200-8e and reported 24 disks per cable, instead of 48 on one cable through an interconnect ([TrueNAS forum, 2018](https://www.truenas.com/community/threads/lsi-9200-8e-ds4246-ssd-speeds-and-ses-transfer-speeds.71234/)). A 2022 owner had only one QSFP-to-SFF-8088 cable and considered buying a second ([TrueNAS forum, 2022](https://www.truenas.com/community/threads/netapp-x2065a-r6-ds4246-and-truenas.104615/)). Count the cables your layout needs before you power anything on.
 
 ## Picking the HBA for TrueNAS
@@ -23,6 +28,11 @@ Two shelves mean a layout decision. Chaining shelves through their IOM modules t
 | LSI SAS 9207-8e | Two external SAS ports | PCIe 3.0 x8 | Called "a popular choice" by Digital Spaceport. A May 2024 owner ran it on SCALE, and a second poster saw the same problem with another card model |
 
 The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) names Broadcom (formerly Avago, formerly LSI) SAS host bus adapters (HBAs) and tells you to "Flash using the latest IT or Target Mode firmware to disable the optional [RAID](/blog/raid-levels-comparison) functionality." A RAID controller reflashed into HBA mode is a different case, covered in [PERC H730 HBA Mode](/blog/perc-h730-hba-mode).
+
+<figure>
+<img src="/images/blog/netapp-ds4246-truenas/photo-2.jpg" alt="Back side of an LSI SAS9212-4i4e PCIe SAS host bus adapter card" width="1400" height="945" loading="lazy" decoding="async">
+<figcaption>The back side of an LSI SAS9212-4i4e SAS HBA, a card with one external SFF-8088 connector and four internal connectors, photographed in 2022. The LSI SAS 9200-8e in the table uses the same external connector type, with two ports instead of one. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9212-4i4e_back.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 NetApp's own card is the cautionary case in these reports. A 2022 owner with two DS4246 shelves reported "Read SMART Self-Test Log Failed" errors on five or six drives across both shelves, seemingly at random. The owner later called the NetApp X2065A-R6 "a bust." On April 11, 2023, the same owner wrote that, after switching to an LSI SAS9200-8e, "the whole system was much more reliable afterwards."
 

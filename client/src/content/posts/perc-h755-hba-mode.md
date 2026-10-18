@@ -25,11 +25,21 @@ A Dell Community post from June 4, 2026 asks Dell to confirm that H755 eHBA "is 
 
 Per-disk Non-RAID is the H755's stand-in for pass-through. In the PERC 11 configuration utility, open [Main Menu > Configuration Management > Convert to Non-RAID Disk](https://www.dell.com/support/manuals/en-us/perc-h755/perc11_ug/convert-to-nonraid-disk?guid=guid-d648190a-c942-4085-befe-824d44945403&lang=en-us), select the physical disk, and confirm. The guide says that "Virtual disks and non-RAID disks are presented to the operating system as SCSI devices" ([PERC 11 user guide, PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)). The card still sits between each disk and the host, which is why Dell's moderator says the setup will not perform like an HBA. The card also controls the order in which the OS sees disks. For the H755 front SAS and H755 MX cards, the guide says "Non-RAID disks are enumerated first based on slot ID," ahead of virtual disks ([PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)).
 
+<figure>
+<img src="/images/blog/perc-h755-hba-mode/photo-1.jpg" alt="PERC 4e/DC circuit board with heat sinks removed, exposing the Intel 80332 I/O processor and LSI53C1030 SCSI chip" width="1400" height="788" loading="lazy" decoding="async">
+<figcaption>A Dell PERC 4e/DC with its heat sinks removed, showing the Intel 80332 I/O processor and the LSI53C1030 Ultra320 SCSI controller chip. On a PERC, each disk connects through the card's own controller chips rather than directly to the host, which is why Non-RAID disks on the H755 still pass through the card. Photo: Unknown, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_Logic_01-01037-07-2352.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 The card's limits matter too. The H755 adapter supports RAID 0, 1, 5, 6, 10, 50 and 60, and it allows 16 SAS or SATA drives per controller without a SAS expander ([PDF](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf)). The guide says the H755 adapter "supports either SAS, SATA, or NVMe drives depending on the backplane/ server configuration." The guide also warns that 14G PowerEdge servers do not support Gen 4 speeds, and the H750 adapter SAS downtrains to Gen 3 there.
 
 ## Which card to use for pass-through instead
 
 Dell's [HBA355 user guide](https://www.dell.com/support/manuals/en-us/hba-355/hba355_ug/dell-hba355i-adapter-dell-hba355i-front-dell-hba355e-adapter-dell-hba350i-mx-dell-hba350i-adapter-~?guid=guid-4e5b127f-13ac-48cf-adfe-3964428b5f24&lang=en-us) describes the family as "solution cards that can be used as a boot controller and also as a data controller." Its contents list a "No RAID support" section, and the cards use "Gen 4 PCIe x eight host interfaces."
+
+<figure>
+<img src="/images/blog/perc-h755-hba-mode/photo-2.jpg" alt="Front of an LSI SAS9212-4i4e host bus adapter card with an external SFF-8088 port" width="1280" height="928" loading="lazy" decoding="async">
+<figcaption>An LSI SAS9212-4i4e host bus adapter, photographed in 2022, with one external SFF-8088 connector and four internal connectors. A host bus adapter passes each disk straight to the operating system with no RAID layer in between. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_SAS9212-4i4e_front.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 The H355 is the simpler card in the same series, and its profile is different. Dell's [controller list](https://www.dell.com/support/kbdoc/en-us/000131648/list-of-poweredge-raid-controller-perc-types-for-dell-emc-systems) gives the H355 adapter "No Cache," with RAID levels "0,1,10 - Note 1" and PCIe Gen 4. The [PDF guide](https://cdn.accentuate.io/8041890939192/8155358527573/dell-perc11-spec-sheet-v1695928871953.pdf) says that "RAID levels 5, 6, 50, and 60 are not supported" on the H355 adapter SAS and that the H355 does not support NVMe drives. It also converts a drive to Non-RAID only if "the drive has never been used before by that specific PERC."
 

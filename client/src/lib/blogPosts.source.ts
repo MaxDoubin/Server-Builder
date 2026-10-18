@@ -1376,6 +1376,12 @@ Going beyond those figures means accepting OWC's certification in place of Apple
     excerpt:
       "Which Xeon W chips a 2019 Mac Pro 7,1 accepts, what the socket and fans allow, and whether a 16-, 24- or 28-core swap is worth it.",
     coverImage: "/images/blog/mac-pro-7-1-cpu-upgrade.jpg",
+    coverCredit: {
+      author: "RuinDig/Yuki Uchida",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple-Store-Marunouchi---2023-04_29.jpg",
+    },
     content: `
 ## The problem
 
@@ -1475,6 +1481,12 @@ Compare any quote with the threads you will actually use, and with a used Mac Pr
     excerpt:
       "Cable a NetApp DS4246 to TrueNAS with an LSI HBA, reformat its 520-byte drives to 512, and avoid the SMART and pool faults owners report on SCALE.",
     coverImage: "/images/blog/netapp-ds4246-truenas.jpg",
+    coverCredit: {
+      author: "Jemimus",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NetApp_FAS_-_IMG_1679.jpg",
+    },
     content: `
 ## The problem
 
@@ -1592,6 +1604,12 @@ Buy a shelf with IOM6 modules, populate every bay or fill the gaps with blanks, 
     excerpt:
       "Dell's documents show no HBA mode for the PERC H755. Here is what per-disk Non-RAID gives you, why some guides claim eHBA, and which card to buy instead.",
     coverImage: "/images/blog/perc-h755-hba-mode.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:LSI_Logic_MegaRAID_SATA_300-8X_SATA_RAID_controller.jpg",
+    },
     content: `
 ## The problem
 
@@ -1675,6 +1693,12 @@ For ZFS on Dell hardware more broadly, see [Running ZFS on Dell Enterprise Hardw
     excerpt:
       "The R540 fits 14 3.5-inch drives, while the R740 takes 24 DIMMs and up to three double-wide GPUs. Here are the bay, slot and memory limits for each.",
     coverImage: "/images/blog/poweredge-r540-vs-r740.jpg",
+    coverCredit: {
+      author: "Dsv",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_Servers.jpg",
+    },
     content: `
 ## The problem
 

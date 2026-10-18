@@ -7,6 +7,11 @@ If you own a 2019 Mac Pro (model 7,1) and want more cores, or bought an 8-core a
 
 Apple's [Mac Pro (2019) technical specifications](https://support.apple.com/en-us/118461) offer a choice of "Configure from an 8-core to 28-core Intel Xeon W processor" and name no models. Apple does not say whether the processor can be swapped after purchase. [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-28-core-2.5-xeon-w-silver-tower-workstation-2019-specs.html) names the 28-core chip directly as the W-3275M.
 
+<figure>
+<img src="/images/blog/mac-pro-7-1-cpu-upgrade/photo-1.jpg" alt="Mac Pro towers on a factory assembly line at the Flextronics plant in Austin, Texas" width="960" height="640" loading="lazy" decoding="async">
+<figcaption>2019 Mac Pro towers on the assembly line at the Flextronics plant in Austin, Texas, on November 20, 2019. Apple offered the processor as a configure-to-order choice from 8 to 28 cores and documents no swap after purchase. Photo: The White House from Washington, DC, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:President_Trump_Tours_the_Apple_Manufacturing_Plant_%2849100574702%29.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
 | Apple option | Intel model | Base and max turbo | Memory speed | TDP |
 |---|---|---|---|---|
 | 8-core | W-3223 | 3.5 and 4.0 GHz | 2666 MHz | 160 W |
@@ -22,6 +27,11 @@ Memory speed follows the processor, too. Apple says the "8-core processor operat
 ## The socket is removable, and cooling sets the practical limit
 
 EveryMac's 28-core listing says "The Mac Pro (2019) model processor is mounted on an LGA 3647 (Socket P). It is removable." The chip is a socket part, not soldered to the board. The [iFixit teardown](https://www.ifixit.com/Teardown/Mac+Pro+2019+Teardown/128922) of the base model had no CPU replacement guide to turn to, so the team unscrewed the heat sink bracket from the backside of the logic board. That released both the bracket and the W-3223 from the socket together.
+
+<figure>
+<img src="/images/blog/mac-pro-7-1-cpu-upgrade/photo-2.jpg" alt="Intel Xeon Silver 4110 qualification sample, a large rectangular LGA 3647 server processor" width="1267" height="1400" loading="lazy" decoding="async">
+<figcaption>A qualification sample of the Intel Xeon Silver 4110, a Skylake-generation server chip for the LGA 3647 socket, not a Mac Pro part. The Xeon W chips in the 2019 Mac Pro use the same socket type, so the processor is removable rather than soldered to the board. Photo: PantheraLeo1359531, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Intel_Xeon_Silver_4110_%28QN09%29_20241229_HOF9668_RAW-Export.png">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Cooling is shared across the whole chassis. iFixit notes that "The Mac Pro just has front and rear fans," and describes three tower fans that pull air through the front grille, with a blower that vents hot air out the back. [OWC's teardown gallery](https://eshop.macsales.com/blog/57077-owc-teardown-of-the-2019-mac-pro/) has photos labeled "CPU retention clip" and "Metal cover for CPU Heat Sink."
 

@@ -20,11 +20,6 @@ The socket is the first thing to read, because it decides which CPUs fit. The BM
 
 Each socket fixes the CPU family, and the CPU then sets most of the memory and PCIe budget. The X10SLH-F lists Xeon E3-1200 v3 and v4 chips on LGA 1150, along with Core i3, Pentium and Celeron parts. The X10SRL-F lists the Xeon E5-2600 v4 and v3 families and the E5-1600 v4 and v3 families for its LGA 2011 socket. The X11SSH-F takes Xeon E3-1200 v5 and v6 chips and 6th and 7th generation Core i3 parts on LGA 1151. The X11SPM-F takes Xeon Scalable processors, including second-generation parts, with up to 28 cores. The [X11SPM-F listing](https://www.supermicro.com/en/products/motherboard/X11SPM-F) requires BIOS 3.0a or above for second-generation Xeon Scalable processors, and BIOS 3.2 or above for the Cascade Lake-R variant of that generation.
 
-<figure>
-<img src="/images/blog/supermicro-x10-vs-x11/photo-1.jpg" alt="An Intel Xeon E5-1650 v3 processor sitting on the inner part of its retail box" width="1400" height="1050" loading="lazy" decoding="async">
-<figcaption>An Intel Xeon E5-1650 v3, a Haswell-EP chip, resting on the inner part of its retail box, photographed in 2014. The X10SRL-F lists the E5-1600 v3 family for its LGA 2011 socket. Photo: Dsimic, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Intel_Xeon_E5-1650_v3_CPU.jpg">Wikimedia Commons</a>.</figcaption>
-</figure>
-
 Intel's spec sheets show what one CPU in each socket can do:
 
 | Socket | Intel example | Codename | Memory channels | PCIe lanes | Max memory |
@@ -40,11 +35,6 @@ For how lanes are split across slots, see [PCIe Lanes, Bifurcation, and Why Your
 ## Memory: the board and the CPU both set the ceiling
 
 The X10SLH-F is the outlier. It has four DDR3 slots and a 32GB maximum for unbuffered ECC UDIMMs at DDR3-1600. The X10SRL-F has eight DDR4 slots for RDIMM or LRDIMM, and Supermicro lists [up to 1TB of 3DS LRDIMM](https://www.supermicro.com/en/products/motherboard/X10SRL-F). That figure carries a footnote requiring BIOS 2.0 or later. The X11SSH-F has four unbuffered ECC DDR4 slots capped at 64GB. The X11SPM-F has [6 DIMM slots and up to 1.5TB of 3DS ECC memory](https://www.supermicro.com/en/products/motherboard/X11SPM-F).
-
-<figure>
-<img src="/images/blog/supermicro-x10-vs-x11/photo-2.jpg" alt="Two Crucial 8GB DDR4 ECC registered memory modules, with part of a third module from the same kit visible" width="1400" height="1050" loading="lazy" decoding="async">
-<figcaption>Two 8GB DDR4-2133 ECC registered DIMMs from a Crucial four-module kit (CT8G4RFS4213), photographed in 2014 with part of a third module visible. The X10SRL-F's eight DDR4 slots take registered modules like these as well as LRDIMMs. Photo: Dsimic, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Two_8_GB_DDR4-2133_ECC_1.2_V_RDIMMs.jpg">Wikimedia Commons</a>.</figcaption>
-</figure>
 
 So the X10 name covers DDR3 and DDR4 boards, and the X11 name covers both unbuffered and registered memory. For the X11SPM-F, the board and the CPU give different numbers: Supermicro lists 1.5TB for the board, while Intel lists 768GB as the maximum for the Xeon Gold 6148. The lower of the two is the ceiling for that chip. For how channels and DIMM slots interact, see [Server Memory Architecture: DIMM Slots, Channels, and ECC](/blog/server-memory-architecture).
 
