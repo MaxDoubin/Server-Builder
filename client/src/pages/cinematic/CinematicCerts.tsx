@@ -251,7 +251,7 @@ function CertTile({ cert }: { cert: Cert }) {
       </p>
       <div className="pt-4">
         <details className="group border-t border-[hsl(var(--brand-iron))] pt-3">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
+          <summary className="flex min-h-[24px] cursor-pointer list-none items-center justify-between gap-2 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
             <span>Details</span>
             <span aria-hidden className="text-[hsl(var(--brand-ash))] transition-transform group-open:rotate-90">
               →
