@@ -18,13 +18,18 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /*
-  Four destinations, the ones a visitor to a portfolio comes for. The
+  Five destinations, the ones a visitor to a portfolio comes for. The
   wordmark goes home, the button beside these goes to contact, and the
-  practice, tools, racks, gear and simulator pages sit in the footer and the
+  practice, racks, gear and simulator pages sit in the footer and the
   command palette rather than across the top of every page.
+
+  Five fit one row at 1280px even at the 130% text size, but only with the
+  links' tighter padding and tracking and with the wordmark and the contact
+  button kept from wrapping. A sixth link needs that measured again.
 */
 const NAV_LINKS = [
   { label: "Projects", href: "/projects" },
+  { label: "Tools", href: "/tools" },
   { label: "Certifications", href: "/certifications" },
   { label: "Field Notes", href: "/blog" },
   { label: "Resume", href: "/resume" },
@@ -290,7 +295,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             <Magnetic strength={0.2} radius={100}>
               <Link
                 href="/"
-                className="group flex min-h-[24px] items-center gap-3 py-1 text-[hsl(var(--brand-bone))]"
+                className="group flex min-h-[24px] items-center gap-3 whitespace-nowrap py-1 text-[hsl(var(--brand-bone))]"
                 data-testid="link-home-wordmark"
               >
                 {/* Max's logo, the same mark as the favicon. Decorative here,
@@ -332,7 +337,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                     {...prefetchHandlers(link.href)}
                       aria-current={active ? "page" : undefined}
                       data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
-                      className={`relative inline-flex items-center whitespace-nowrap px-3 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] transition-colors ${
+                      className={`relative inline-flex items-center whitespace-nowrap px-2 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.16em] transition-colors ${
                         active
                           ? "text-[hsl(var(--brand-bone))]"
                           : overHero && !scrolled
@@ -432,7 +437,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                   <Link
                     href="/contact"
                     data-testid="button-nav-cta"
-                    className="group relative hidden h-9 items-center gap-2 overflow-hidden rounded-full border border-[hsl(var(--brand-signal)/.4)] bg-[hsl(var(--brand-signal)/.06)] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/.12)] sm:inline-flex"
+                    className="group relative hidden h-9 items-center gap-2 overflow-hidden whitespace-nowrap rounded-full border border-[hsl(var(--brand-signal)/.4)] bg-[hsl(var(--brand-signal)/.06)] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/.12)] sm:inline-flex"
                   >
                     <motion.span
                       className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
