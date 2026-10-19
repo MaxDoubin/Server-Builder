@@ -35,10 +35,10 @@ export interface TimelineGroup {
  * for 2025 to 2026, and Student of the Month in October 2025. The three Oracle
  * exams, the cPanel and Plesk certifications, the TOSA CyberCitizen score, the
  * Google Analytics Certification, the Neo4j Certified Professional exam, the
- * three Cisco Networking Academy credentials and the two Nutanix courses are
- * October 2026. A role that spans years sits under the year it began. Ask
- * before adding an entry whose date is unknown rather than inferring one from
- * the entries around it.
+ * three Cisco Networking Academy credentials, the 18 Qualys certifications
+ * and the two Nutanix courses are October 2026. A role that spans years sits
+ * under the year it began. Ask before adding an entry whose date is unknown
+ * rather than inferring one from the entries around it.
  */
 export const TIMELINE_GROUPS: TimelineGroup[] = [
   {
@@ -86,6 +86,12 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "Google Analytics Certification",
         description:
           "Passed Google's certification exam on Skillshop: setting up a Google Analytics property and its event-based data model, the Reports, Explore and Advertising workspaces, and turning business goals into key events, conversions and audiences.",
+        href: "/certifications",
+      },
+      {
+        title: "18 Qualys certifications",
+        description:
+          "Passed the exams for 18 of Qualys's certified courses in one evening, with scores from 80 to 100: Vulnerability Management, Detection and Response (VMDR) at 96.66, along with asset management, policy audit, PCI compliance, cloud and container security, file integrity monitoring, scanning and reporting strategy, and the Qualys query language, API and Flow automation.",
         href: "/certifications",
       },
       {

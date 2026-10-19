@@ -208,6 +208,10 @@ export function CinematicResume() {
                   Architect, and Databricks, Generative AI and AI Agent Fundamentals, 2026
                 </Bullet>
                 <Bullet>
+                  Qualys: 18 certifications, including Vulnerability Management, Detection and
+                  Response (VMDR) at 96.66, 2026
+                </Bullet>
+                <Bullet>
                   Cisco Networking Academy: Ethical Hacker course, and Cybersecurity Defense Analyst
                   (with Splunk) and Network Technician career paths, 2026
                 </Bullet>

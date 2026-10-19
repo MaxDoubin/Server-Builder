@@ -1105,7 +1105,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "certifications",
       title: "Certifications | Max Doubin",
       description:
-        "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics and six Fortinet credentials.",
+        "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics, six Fortinet credentials and 18 Qualys certifications.",
       canonical: `${SITE_URL}/certifications`,
     },
     {
