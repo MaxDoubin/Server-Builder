@@ -762,6 +762,35 @@ const GROUPS: CredentialGroup[] = [
     ],
   },
   {
+    // The exams for Qualys's free certified courses, all passed on October
+    // 18, 2026 and each valid for two years. Scores ran from 80 to 100;
+    // VMDR, the core vulnerability management certification, was 96.66.
+    // Qualys issues certificates but no badge images, so this stays a list.
+    id: "qualys",
+    heading: "Qualys",
+    meta: "18 certifications earned in 2026, scores from 80 to 100",
+    items: [
+      "Vulnerability Management, Detection and Response (VMDR)",
+      "CyberSecurity Asset Management (CSAM)",
+      "Policy Audit (PA)",
+      "PCI Compliance (PCI)",
+      "Cloud Agent (CA)",
+      "Scanning Strategies and Best Practices (SSBP)",
+      "Reporting Strategies and Best Practices (RSBP)",
+      "TotalCloud (TC)",
+      "Kubernetes and Container Security (KCS)",
+      "TotalAppSec (TAS)",
+      "File Integrity Monitoring (FIM)",
+      "Custom Assessment and Remediation (CAR)",
+      "Enterprise TruRisk Management (ETM)",
+      "TruRisk Eliminate",
+      "Qualys Query Language (QQL)",
+      "Qualys API",
+      "Qualys Flow (QFlow)",
+      "Administration Module",
+    ],
+  },
+  {
     id: "academic",
     heading: "Academic",
     meta: "College Board Advanced Placement",

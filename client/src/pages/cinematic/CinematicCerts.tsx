@@ -31,7 +31,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics and six Fortinet credentials.",
+      "Max Doubin's certifications: Oracle Cloud Infrastructure Architect Associate and two more Oracle certifications, Neo4j Certified Professional, a perfect TOSA CyberCitizen score, CompTIA Tech+, cPanel, all four Plesk Obsidian levels, Google Analytics, six Fortinet credentials and 18 Qualys certifications.",
     canonical: `${SITE_URL}/certifications`,
   });
 
@@ -51,9 +51,9 @@ export function CinematicCerts() {
               more Oracle certifications, Neo4j Certified Professional, a
               perfect 1000 on TOSA CyberCitizen, CompTIA Tech+, cPanel &amp;
               WHM System Administrator I and II, all four Plesk Obsidian
-              levels, the Google Analytics Certification, and six Fortinet
-              Training Institute credentials. I am certifying in Security+,
-              Network+, and the CCNA.
+              levels, the Google Analytics Certification, six Fortinet
+              Training Institute credentials and 18 Qualys certifications. I am
+              certifying in Security+, Network+, and the CCNA.
             </p>
           </header>
 

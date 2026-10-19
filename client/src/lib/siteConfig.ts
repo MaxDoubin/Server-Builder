@@ -175,6 +175,7 @@ export const siteConfig = {
         "Fortinet NSE 1, NSE 2, NSE 3 (2026)",
         "FortiGate 7.6 Operator (2026)",
         "Databricks Academy accreditations: Platform Administrator, AWS and GCP Platform Architect, and Databricks, Generative AI and AI Agent Fundamentals (2026)",
+        "Qualys certifications: Vulnerability Management, Detection and Response (VMDR) and 17 more (2026)",
         "Cisco Networking Academy Ethical Hacker course (2026)",
         "Cisco Networking Academy and Splunk Cybersecurity Defense Analyst career path (2026)",
         "Cisco Networking Academy Network Technician career path (2026)",
