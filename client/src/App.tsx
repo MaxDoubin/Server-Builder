@@ -38,24 +38,61 @@ import { SiteLoader } from "@/components/ui/site-loader";
  * five still produced one request and an error page, when a real retry would
  * have succeeded on the second.
  *
- * So a retry has to ask for a different specifier. The browser puts the URL
- * it could not fetch in the error message, and re-importing that URL with a
- * query appended is a new key in the module map and a real request.
+ * A FRESH SPECIFIER DOES NOT FIX THAT. This used to re-import the failed URL
+ * with `?retry=N` appended, which is a new key in the module map and a real
+ * request, and the request worked. The module it returned did not: every
+ * loader below picks a named export (`m.CinematicCerts`) and hands React
+ * `{ default: ... }`, and the raw chunk has no default export. React got
+ * `undefined` for a component, threw error #306, and the reader got the
+ * error screen for a chunk that had just downloaded fine. One dropped request
+ * on a phone was enough to take the whole site down.
  *
- * AND IF THAT STILL FAILS, the problem is not the network, it is the
- * document: this page is a list of files that no longer exist, and no amount
- * of asking for them again will help. One reload fetches a current document,
- * which is the actual cure, and it is what the error screen was asking the
- * reader to do by hand. It happens once per session, guarded, because an
- * automatic reload that can loop is worse than any error page.
+ * So retries call the loader itself. In a browser that does not cache the
+ * failure that is a real second request; in one that does, it fails fast and
+ * we move on to the cure.
+ *
+ * THE CURE IS A RELOAD. Either the network blipped, and a reload gets the
+ * chunk, or this page is a list of files a deploy has since replaced, and a
+ * reload fetches a current document. It is guarded, because an automatic
+ * reload that can loop is worse than any error page, but the guard is a
+ * window, not a once-per-session flag. The flag was set on the first reload
+ * and never cleared, so a tab that recovered from one deploy went straight
+ * to the error screen on the next, and this site deploys several times a day.
  */
 const RELOADED_KEY = "chunk-reload-attempted";
 
-/** The URL out of "Failed to fetch dynamically imported module: <url>". */
-function failedChunkUrl(error: unknown): string | null {
+/*
+  A document that is still broken after a reload fails again within seconds.
+  A second failure inside this window means the reload did not help and the
+  error screen should show; outside it, it is a new failure and a reload is
+  the cure again.
+*/
+const RELOAD_WINDOW_MS = 30_000;
+
+/** "Failed to fetch dynamically imported module" and its cousins. */
+const CHUNK_ERROR =
+  /dynamically imported module|Importing a module script failed|Unable to preload CSS|is not a valid JavaScript MIME type/i;
+
+function isChunkLoadError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  const match = message.match(/https?:\/\/[^\s)'"]+\.m?js(\?[^\s)'"]*)?/);
-  return match ? match[0] : null;
+  return CHUNK_ERROR.test(message);
+}
+
+/**
+ * Reload to get a current document, unless a reload already happened inside
+ * RELOAD_WINDOW_MS. Returns whether it reloaded.
+ */
+function reloadForFreshDocument(): boolean {
+  try {
+    const last = Number(sessionStorage.getItem(RELOADED_KEY)) || 0;
+    if (Date.now() - last < RELOAD_WINDOW_MS) return false;
+    sessionStorage.setItem(RELOADED_KEY, String(Date.now()));
+  } catch {
+    /* No storage means no guard, and no guard means no automatic reload. */
+    return false;
+  }
+  location.reload();
+  return true;
 }
 
 function lazyWithRetry<T extends ComponentType<any>>(
@@ -67,15 +104,7 @@ function lazyWithRetry<T extends ComponentType<any>>(
     let lastError: unknown;
     for (let attempt = 0; attempt <= retries; attempt += 1) {
       try {
-        if (attempt === 0) return await loader();
-        /*
-          A fresh specifier, or the module map just hands back the same
-          rejection. Nothing else about the request changes.
-        */
-        const url = failedChunkUrl(lastError);
-        if (!url) return await loader();
-        const bust = `${url}${url.includes("?") ? "&" : "?"}retry=${attempt}`;
-        return (await import(/* @vite-ignore */ bust)) as { default: T };
+        return await loader();
       } catch (error) {
         lastError = error;
         if (attempt === retries) break;
@@ -86,19 +115,10 @@ function lazyWithRetry<T extends ComponentType<any>>(
     }
 
     /*
-      Out of retries. If this document is stale, one reload replaces it with
-      a current one; if it is not, the reload changes nothing and the error
-      screen appears on the far side, which is where it belongs.
+      Out of retries. If the reload is refused, the error screen appears,
+      which is where a failure that survives a reload belongs.
     */
-    let alreadyReloaded = true;
-    try {
-      alreadyReloaded = sessionStorage.getItem(RELOADED_KEY) === "1";
-      if (!alreadyReloaded) sessionStorage.setItem(RELOADED_KEY, "1");
-    } catch {
-      /* No storage means no guard, and no guard means no automatic reload. */
-    }
-    if (!alreadyReloaded && typeof location !== "undefined") {
-      location.reload();
+    if (reloadForFreshDocument()) {
       /* Never settles; the reload takes the page out from under it. */
       await new Promise(() => {});
     }
@@ -668,6 +688,7 @@ type RouteChunkBoundaryProps = {
 
 type RouteChunkBoundaryState = {
   hasError: boolean;
+  reloading: boolean;
   retryKey: number;
   autoRetriesLeft: number;
 };
@@ -686,6 +707,7 @@ class RouteChunkBoundary extends Component<
 > {
   state: RouteChunkBoundaryState = {
     hasError: false,
+    reloading: false,
     retryKey: 0,
     autoRetriesLeft: 1,
   };
@@ -696,6 +718,13 @@ class RouteChunkBoundary extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Route chunk failed to load", error, errorInfo);
+    // Chunks behind a plain lazy() (the home page acts, the 3D scenes) have
+    // no retry of their own, and remounting replays the same rejection, so
+    // they get the reload lazyWithRetry would have done.
+    if (isChunkLoadError(error) && reloadForFreshDocument()) {
+      this.setState({ reloading: true });
+      return;
+    }
     // Try once to recover silently by remounting the subtree.
     if (this.state.autoRetriesLeft > 0) {
       setTimeout(() => {
@@ -713,6 +742,7 @@ class RouteChunkBoundary extends Component<
   };
 
   render() {
+    if (this.state.reloading) return <RouteLoading />;
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-6">
