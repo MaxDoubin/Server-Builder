@@ -69,6 +69,39 @@ const recoveredAt: string | null = (() => {
 })();
 
 let reloadStarted = false;
+const abandonListeners = new Set<() => void>();
+
+/**
+ * Run `listener` if a reload this document started is abandoned. Pressing
+ * Back while a slow reload is still loading cancels it, and this document
+ * carries on at the previous entry instead of being replaced. Returns an
+ * unsubscribe function.
+ */
+export function onReloadAbandoned(listener: () => void): () => void {
+  abandonListeners.add(listener);
+  return () => {
+    abandonListeners.delete(listener);
+  };
+}
+
+function watchForAbandonedReload() {
+  const abandon = (event: Event) => {
+    if (event.type === "pageshow" && !(event as PageTransitionEvent).persisted) {
+      return;
+    }
+    window.removeEventListener("popstate", abandon);
+    window.removeEventListener("pageshow", abandon);
+    reloadStarted = false;
+    try {
+      sessionStorage.removeItem(RECOVERY_KEY);
+    } catch {
+      /* Nothing stored, nothing to clear. */
+    }
+    for (const listener of Array.from(abandonListeners)) listener();
+  };
+  window.addEventListener("popstate", abandon);
+  window.addEventListener("pageshow", abandon);
+}
 
 /** "Failed to fetch dynamically imported module" and its cousins. */
 const CHUNK_ERROR =
@@ -95,6 +128,7 @@ export function reloadForFreshDocument(): boolean {
     return false;
   }
   reloadStarted = true;
+  watchForAbandonedReload();
   location.reload();
   return true;
 }
@@ -123,8 +157,17 @@ export function lazyWithRetry<T extends ComponentType<any>>(
       which is where a failure that survives a reload belongs.
     */
     if (reloadForFreshDocument()) {
-      /* Never settles; the reload takes the page out from under it. */
-      await new Promise(() => {});
+      /*
+        Normally never settles; the reload takes the page out from under it.
+        If the reload is abandoned, fail so the route is not left waiting on
+        a loader that will never answer.
+      */
+      await new Promise<void>((resolve) => {
+        const stop = onReloadAbandoned(() => {
+          stop();
+          resolve();
+        });
+      });
     }
 
     throw lastError;

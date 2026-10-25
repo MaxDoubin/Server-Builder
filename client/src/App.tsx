@@ -21,6 +21,7 @@ import { SiteLoader } from "@/components/ui/site-loader";
 import {
   isChunkLoadError,
   lazyWithRetry,
+  onReloadAbandoned,
   reloadForFreshDocument,
 } from "@/lib/chunkRecovery";
 
@@ -609,8 +610,14 @@ class RouteChunkBoundary extends Component<
     autoRetriesLeft: 1,
   };
 
+  private stopWatchingReload?: () => void;
+
   static getDerivedStateFromError(): Partial<RouteChunkBoundaryState> {
     return { hasError: true };
+  }
+
+  componentWillUnmount() {
+    this.stopWatchingReload?.();
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -620,6 +627,18 @@ class RouteChunkBoundary extends Component<
     // they get the reload lazyWithRetry would have done.
     if (isChunkLoadError(error) && reloadForFreshDocument()) {
       this.setState({ reloading: true });
+      // Back during a slow reload cancels it and leaves this document
+      // running. Put the reader's page back instead of a spinner that never
+      // ends.
+      this.stopWatchingReload ??= onReloadAbandoned(() => {
+        this.stopWatchingReload?.();
+        this.stopWatchingReload = undefined;
+        this.setState((prev) => ({
+          hasError: false,
+          reloading: false,
+          retryKey: prev.retryKey + 1,
+        }));
+      });
       return;
     }
     // Try once to recover silently by remounting the subtree.
