@@ -1,11 +1,8 @@
 import {
   Component,
   Suspense,
-  lazy,
   useEffect,
-  type ComponentType,
   type ErrorInfo,
-  type LazyExoticComponent,
   type ReactNode,
 } from "react";
 import { queryClient } from "./lib/queryClient";
@@ -21,111 +18,11 @@ import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
 import { SiteLoader } from "@/components/ui/site-loader";
-
-/**
- * Retry a route chunk, and then, if it is hopeless, get a fresh document.
- *
- * Chunk loading is fragile right after a deploy: the browser can be holding
- * an HTML document that names hashed chunk paths the bundler has already
- * replaced, and the first dynamic import fails.
- *
- * THE RETRY LOOP DID NOT RETRY. It was written correctly, four attempts with
- * backoff, and it made exactly one network request, because a native dynamic
- * import is not an ordinary fetch. The browser keeps a module map keyed by
- * specifier, a failure is recorded in it, and every later `import()` of the
- * same specifier is handed the same rejected promise without going near the
- * network. Measured rather than assumed: failing only the first request of
- * five still produced one request and an error page, when a real retry would
- * have succeeded on the second.
- *
- * A FRESH SPECIFIER DOES NOT FIX THAT. This used to re-import the failed URL
- * with `?retry=N` appended, which is a new key in the module map and a real
- * request, and the request worked. The module it returned did not: every
- * loader below picks a named export (`m.CinematicCerts`) and hands React
- * `{ default: ... }`, and the raw chunk has no default export. React got
- * `undefined` for a component, threw error #306, and the reader got the
- * error screen for a chunk that had just downloaded fine. One dropped request
- * on a phone was enough to take the whole site down.
- *
- * So retries call the loader itself. In a browser that does not cache the
- * failure that is a real second request; in one that does, it fails fast and
- * we move on to the cure.
- *
- * THE CURE IS A RELOAD. Either the network blipped, and a reload gets the
- * chunk, or this page is a list of files a deploy has since replaced, and a
- * reload fetches a current document. It is guarded, because an automatic
- * reload that can loop is worse than any error page, but the guard is a
- * window, not a once-per-session flag. The flag was set on the first reload
- * and never cleared, so a tab that recovered from one deploy went straight
- * to the error screen on the next, and this site deploys several times a day.
- */
-const RELOADED_KEY = "chunk-reload-attempted";
-
-/*
-  A document that is still broken after a reload fails again within seconds.
-  A second failure inside this window means the reload did not help and the
-  error screen should show; outside it, it is a new failure and a reload is
-  the cure again.
-*/
-const RELOAD_WINDOW_MS = 30_000;
-
-/** "Failed to fetch dynamically imported module" and its cousins. */
-const CHUNK_ERROR =
-  /dynamically imported module|Importing a module script failed|Unable to preload CSS|is not a valid JavaScript MIME type/i;
-
-function isChunkLoadError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return CHUNK_ERROR.test(message);
-}
-
-/**
- * Reload to get a current document, unless a reload already happened inside
- * RELOAD_WINDOW_MS. Returns whether it reloaded.
- */
-function reloadForFreshDocument(): boolean {
-  try {
-    const last = Number(sessionStorage.getItem(RELOADED_KEY)) || 0;
-    if (Date.now() - last < RELOAD_WINDOW_MS) return false;
-    sessionStorage.setItem(RELOADED_KEY, String(Date.now()));
-  } catch {
-    /* No storage means no guard, and no guard means no automatic reload. */
-    return false;
-  }
-  location.reload();
-  return true;
-}
-
-function lazyWithRetry<T extends ComponentType<any>>(
-  loader: () => Promise<{ default: T }>,
-  retries = 3,
-  delayMs = 250,
-): LazyExoticComponent<T> {
-  return lazy(async () => {
-    let lastError: unknown;
-    for (let attempt = 0; attempt <= retries; attempt += 1) {
-      try {
-        return await loader();
-      } catch (error) {
-        lastError = error;
-        if (attempt === retries) break;
-        await new Promise((resolve) =>
-          setTimeout(resolve, delayMs * Math.pow(2, attempt)),
-        );
-      }
-    }
-
-    /*
-      Out of retries. If the reload is refused, the error screen appears,
-      which is where a failure that survives a reload belongs.
-    */
-    if (reloadForFreshDocument()) {
-      /* Never settles; the reload takes the page out from under it. */
-      await new Promise(() => {});
-    }
-
-    throw lastError;
-  });
-}
+import {
+  isChunkLoadError,
+  lazyWithRetry,
+  reloadForFreshDocument,
+} from "@/lib/chunkRecovery";
 
 const CinematicProjects = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicProjects").then((module) => ({
