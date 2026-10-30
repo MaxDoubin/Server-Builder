@@ -213,8 +213,9 @@ export async function subtleHex(
   algorithm: "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512",
   data: Uint8Array,
 ): Promise<string> {
-  const copy = data.slice();
-  const buffer = await crypto.subtle.digest(algorithm, copy);
+  // digest reads the view's own range, so a subarray hashes only its bytes
+  // and no copy of a large buffer is made here.
+  const buffer = await crypto.subtle.digest(algorithm, data);
   return bytesToHex(new Uint8Array(buffer));
 }
 
