@@ -333,6 +333,22 @@ export const TOOLS: ToolEntry[] = [
     category: "security",
     keywords: ["zip", "zip slip", "unzip", "zipinfo", "gzip", "zlib", "archive", "central directory", "ctf", "comment"],
   },
+  {
+    slug: "eui64-generator",
+    name: "EUI-64 generator",
+    blurb:
+      "Builds the modified EUI-64 interface ID, link-local and SLAAC address from a MAC step by step, and recovers the MAC from an address. Runs in your browser.",
+    category: "networking",
+    keywords: ["eui-64", "slaac", "mac address", "interface identifier", "link-local", "ipv6", "privacy address", "rfc 4291", "ff:fe"],
+  },
+  {
+    slug: "ipv6-calculator",
+    name: "IPv6 calculator",
+    blurb:
+      "Expands, compresses and classifies an IPv6 address, and gives the network, first and last address, and /64 count for its prefix. Runs in your browser.",
+    category: "networking",
+    keywords: ["ipv6", "prefix", "rfc 5952", "compress", "expand", "subnet", "link-local", "ula", "multicast", "reverse dns"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

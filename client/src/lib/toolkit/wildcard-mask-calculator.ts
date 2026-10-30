@@ -272,6 +272,8 @@ export interface MatchBlocks {
   total: number;
   /** Addresses in each block. */
   blockSize: number;
+  /** Prefix length of each block. */
+  blockPrefix: number;
 }
 
 /**
@@ -302,7 +304,7 @@ export function matchingBlocks(reference: number, wildcard: number, limit: numbe
     }
     blocks.push({ base: (base + offset) >>> 0, prefix });
   }
-  return { blocks, total, blockSize: 2 ** low };
+  return { blocks, total, blockSize: 2 ** low, blockPrefix: prefix };
 }
 
 /* ----------------------------------------------------- IOS configuration */

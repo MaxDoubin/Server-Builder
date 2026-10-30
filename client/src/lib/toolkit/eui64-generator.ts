@@ -13,7 +13,7 @@
  * An IEEE EUI-64 that is already 64 bits only needs step 3.
  */
 
-import { compress, interfaceIdString, maskOf, parsePrefixed, ALL_ONES } from "./ipv6-calculator";
+import { ALL_ONES, clip, compress, describeChar, interfaceIdString, maskOf, parsePrefixed } from "./ipv6-calculator";
 
 /** Mask of the universal/local bit in the first octet. */
 export const UL_BIT = 0x02;
@@ -45,16 +45,22 @@ function hexBytes(hex: string): number[] {
  * is accepted too. Returns 6 or 8 bytes.
  */
 export function parseMac(raw: string): MacParse {
-  const text = raw.trim().toLowerCase();
+  const original = raw.trim();
+  const text = original.toLowerCase();
   if (text === "") return { kind: "empty" };
   if (text.length > MAX_INPUT_LENGTH) {
-    return { kind: "error", message: `That is ${text.length} characters. A MAC address is at most 23, so the limit here is ${MAX_INPUT_LENGTH}.` };
+    return {
+      kind: "error",
+      message: `That is ${text.length} characters. A MAC address with separators is 17 and an EUI-64 is 23, so the limit here is ${MAX_INPUT_LENGTH}.`,
+    };
   }
-  const bad = text.match(/[^0-9a-f:.\- ]/);
+  // Searched in the original text so the message quotes the character the
+  // reader typed, not its lowercase form.
+  const bad = original.match(/[^0-9A-Fa-f:.\- ]/u);
   if (bad) {
     return {
       kind: "error",
-      message: `"${bad[0]}" is not a hex digit or a separator. A MAC uses 0 to 9 and a to f, separated by colons, hyphens, dots or nothing.`,
+      message: `${describeChar(bad[0])} is not a hex digit or a separator. A MAC uses 0 to 9 and a to f, separated by colons, hyphens, dots or nothing.`,
     };
   }
 
@@ -79,20 +85,43 @@ export function parseMac(raw: string): MacParse {
   if (parts.slice(0, -1).some((p) => p === "")) {
     return { kind: "error", message: "There is an empty octet: two separators in a row, or one at the start." };
   }
-  if (parts[parts.length - 1] === "") {
-    const done = parts.length - 1;
-    if (done < 6) return { kind: "hint", message: `${done} of 6 octets so far.` };
-    return { kind: "error", message: "Remove the separator at the end." };
-  }
-
   if (sep === ".") {
-    if (parts.every((p) => p.length === 4) && (parts.length === 3 || parts.length === 4)) {
-      return { kind: "ok", bytes: hexBytes(parts.join("")) };
+    // Cisco style: groups of four hex digits, so progress is counted in
+    // groups rather than octets.
+    const trailing = parts[parts.length - 1] === "";
+    const groups = trailing ? parts.slice(0, -1) : parts;
+    const longGroup = groups.find((p) => p.length > 4);
+    if (longGroup) {
+      return { kind: "error", message: `"${clip(longGroup, 12)}" has ${longGroup.length} hex digits. Each dotted group is four.` };
+    }
+    if (groups.every((p) => p.length === 4) && (groups.length === 3 || groups.length === 4)) {
+      if (trailing) {
+        return {
+          kind: "error",
+          message: groups.length === 3 ? "Remove the dot at the end, or add a fourth group for a 64-bit EUI-64." : "Remove the dot at the end.",
+        };
+      }
+      return { kind: "ok", bytes: hexBytes(groups.join("")) };
+    }
+    // Still typing: every group but the last is complete, and fewer than 3 are done.
+    const complete = trailing ? groups : groups.slice(0, -1);
+    if (groups.length <= 3 && complete.every((p) => p.length === 4) && !(trailing && groups.length === 3)) {
+      const done = groups.filter((p) => p.length === 4).length;
+      return { kind: "hint", message: `${done} of 3 dotted groups so far.` };
     }
     return {
       kind: "error",
       message: "The dotted form is three groups of four hex digits, as Cisco prints it: 001a.2b3c.4d5e.",
     };
+  }
+
+  if (parts[parts.length - 1] === "") {
+    const done = parts.length - 1;
+    if (done < 6) return { kind: "hint", message: `${done} of 6 octets so far.` };
+    if (done === 6) {
+      return { kind: "error", message: "Remove the separator at the end, or add two more octets for a 64-bit EUI-64." };
+    }
+    return { kind: "error", message: "Remove the separator at the end." };
   }
 
   // Three groups of four with colons or hyphens is uncommon but unambiguous.
@@ -102,7 +131,7 @@ export function parseMac(raw: string): MacParse {
 
   const long = parts.find((p) => p.length > 2);
   if (long) {
-    return { kind: "error", message: `"${long}" has ${long.length} hex digits. Each octet is at most two.` };
+    return { kind: "error", message: `"${clip(long, 12)}" has ${long.length} hex digits. Each octet is at most two.` };
   }
   if (parts.length === 6 || parts.length === 8) {
     return { kind: "ok", bytes: parts.map((p) => parseInt(p, 16)) };
@@ -198,6 +227,7 @@ export function parseSlaacPrefix(raw: string): PrefixParse {
   }
   const notes: string[] = [];
   if (!parsed.prefixGiven) notes.push("No prefix length given, so /64 was assumed.");
+  if (parsed.zone !== null) notes.push(`The zone %${parsed.zone} was ignored. Zones only apply to link-local and other scoped addresses.`);
   const network = v & maskOf(64);
   if (network !== v) notes.push("The prefix had bits set in its last 64 bits. Those were dropped, since the interface ID replaces them.");
   return { kind: "ok", network, notes };

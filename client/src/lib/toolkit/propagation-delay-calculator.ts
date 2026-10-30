@@ -32,6 +32,8 @@ export const MAX_PACKET_BYTES = 1_000_000_000;
 export const MAX_RATE_BPS = 10e12;
 export const MAX_HOPS = 64;
 export const MAX_STRETCH = 10;
+/** Real media sit between about 0.5 and 1; this floor keeps the output finite. */
+export const MIN_VELOCITY_FACTOR = 0.01;
 
 /** Ethernet II header 14, FCS 4 (IEEE 802.3 clause 3). */
 export const ETHERNET_HEADER_FCS_BYTES = 18;
@@ -129,6 +131,7 @@ function cleanNumber(text: string): string {
 export function parseNonNegative(text: string, what: string): Parsed<number> {
   const cleaned = cleanNumber(text);
   if (cleaned === "") return { ok: false, error: `Enter ${what}.` };
+  if (/^-\d|^-\.\d/.test(cleaned)) return { ok: false, error: `Enter a positive number; ${what} cannot be negative.` };
   if (cleaned.length > 32 || !/^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(cleaned)) {
     return { ok: false, error: `"${text.trim().slice(0, 24)}" is not a number. Use digits and at most one decimal point.` };
   }
@@ -163,10 +166,10 @@ export function parseDistanceKm(text: string, unit: DistanceUnit): Parsed<number
 export function parseVelocityFactor(text: string): Parsed<number> {
   const parsed = parseNonNegative(text, "a velocity factor");
   if (!parsed.ok) return parsed;
-  if (parsed.value <= 0 || parsed.value > 1) {
+  if (parsed.value < MIN_VELOCITY_FACTOR || parsed.value > 1) {
     return {
       ok: false,
-      error: "A velocity factor is a fraction of c, greater than 0 and at most 1. Nothing physical goes faster than light.",
+      error: `A velocity factor is a fraction of c, from ${MIN_VELOCITY_FACTOR} to 1. Nothing physical goes faster than light, and real cable is above 0.5.`,
     };
   }
   return { ok: true, value: parsed.value };
@@ -303,8 +306,8 @@ export interface BentPipe {
 
 /**
  * One hop through one satellite: ground to satellite, satellite to ground.
- * Placed above the great-circle midpoint of the two ends, which for a
- * spherical shell is the position that minimizes the total path. Antipodal
+ * Placed above the great-circle midpoint of the two ends, which is the
+ * shortest total path among the positions both ends can see. Antipodal
  * ends have no midpoint and no satellite can see both, so the result is
  * marked not visible.
  */
@@ -333,6 +336,11 @@ export function bentPipeMidpoint(a: LatLon, b: LatLon, altitudeKm: number): Bent
     pathKm: up.slantKm + down.slantKm,
     satellite: { lat: satLat, lon: satLon },
   };
+}
+
+/** Longitude folded into [-180, 180). */
+export function normalizeLon(lonDeg: number): number {
+  return ((((lonDeg + 180) % 360) + 360) % 360) - 180;
 }
 
 function geoAt(ga: Vec, gb: Vec, lonDeg: number): BentPipe {
@@ -373,7 +381,7 @@ export function bentPipeGeo(a: LatLon, b: LatLon): BentPipe {
       if ((candidate.visible || !wantVisible) && candidate.pathKm < current.pathKm) current = candidate;
     }
   }
-  return current;
+  return { ...current, satellite: { lat: 0, lon: normalizeLon(current.satellite.lon) } };
 }
 
 /**
@@ -416,9 +424,12 @@ function trimFixed(value: number, digits: number): string {
   return fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
 }
 
+/** Five significant digits, trailing zeros dropped, never exponent notation. */
 function sig(value: number): string {
-  const abs = Math.abs(value);
-  return trimFixed(value, abs >= 100 ? 1 : abs >= 10 ? 2 : 3);
+  if (Math.abs(value) >= 1e5) return Math.round(value).toLocaleString("en-US");
+  let text = value.toPrecision(5);
+  if (text.includes("e")) text = String(Number(text));
+  return text.includes(".") ? text.replace(/\.?0+$/, "") : text;
 }
 
 /** A duration in the unit that keeps the number between 1 and 1000 where possible. */
@@ -426,6 +437,7 @@ export function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds)) return "n/a";
   if (seconds === 0) return "0 s";
   const abs = Math.abs(seconds);
+  if (abs < 1e-13) return "under 0.0001 ns";
   if (abs < 1e-6) return `${sig(seconds * 1e9)} ns`;
   if (abs < 1e-3) return `${sig(seconds * 1e6)} µs`;
   if (abs < 1) return `${sig(seconds * 1e3)} ms`;

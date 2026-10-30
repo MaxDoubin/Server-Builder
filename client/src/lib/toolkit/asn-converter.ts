@@ -230,7 +230,7 @@ export function parseAsn(raw: string): ParsedAsn {
   const input = raw.trim();
   if (input === "") return fail(input, "Empty entry.");
   if (input.length > MAX_TOKEN_CHARS) {
-    return fail(input, `That is ${input.length} characters long. No AS number notation needs more than 11.`);
+    return fail(input, `That is ${input.length} characters long. No AS number notation needs more than 12, prefix included.`);
   }
 
   if (/^as-[a-z]/i.test(input)) {

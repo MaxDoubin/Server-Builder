@@ -33,24 +33,37 @@ function fail(message: string): { ok: false; message: string } {
   return { ok: false, message };
 }
 
+/** Shorten a piece of the reader's input before quoting it back in a message. */
+export function clip(text: string, max = 24): string {
+  const chars = Array.from(text);
+  return chars.length <= max ? text : `${chars.slice(0, max).join("")}...`;
+}
+
+/** A character as it should appear in a message: quoted if visible, as U+XXXX if not. */
+export function describeChar(ch: string): string {
+  const cp = ch.codePointAt(0) ?? 0;
+  if (/^[\p{L}\p{N}\p{P}\p{S}]$/u.test(ch)) return `"${ch}"`;
+  return `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
 /** A dotted quad in the last 32 bits (RFC 4291 section 2.2, form 3). */
 function parseDottedQuad(text: string): { ok: true; value: number } | { ok: false; message: string } {
   const parts = text.split(".");
   if (parts.length !== 4) {
-    return fail(`"${text}" is not a dotted IPv4 address. The embedded form needs exactly four decimal parts.`);
+    return fail(`"${clip(text)}" is not a dotted IPv4 address. The embedded form needs exactly four decimal parts.`);
   }
   let value = 0;
   for (const part of parts) {
     if (!/^\d{1,3}$/.test(part)) {
-      return fail(`"${part}" in "${text}" is not a decimal number from 0 to 255.`);
+      return fail(`"${clip(part)}" in "${clip(text)}" is not a decimal number from 0 to 255.`);
     }
     if (part.length > 1 && part.startsWith("0")) {
       // Some parsers read a leading zero as octal, so 010 is 8 to one tool
       // and 10 to another. Refusing it is the only answer that is never wrong.
-      return fail(`"${part}" in "${text}" has a leading zero, which some software reads as octal. Write it without the zero.`);
+      return fail(`"${part}" in "${clip(text)}" has a leading zero, which some software reads as octal. Write it without the zero.`);
     }
     const n = Number(part);
-    if (n > 255) return fail(`"${part}" in "${text}" is over 255, the largest value one octet can hold.`);
+    if (n > 255) return fail(`"${part}" in "${clip(text)}" is over 255, the largest value one octet can hold.`);
     value = value * 256 + n;
   }
   return { ok: true, value };
@@ -70,6 +83,13 @@ export function parseIpv6(raw: string): ParseResult {
   }
 
   if (text.startsWith("[") || text.endsWith("]")) {
+    const close = text.indexOf("]");
+    if (text.startsWith("[") && close !== -1 && close !== text.length - 1) {
+      // "[2001:db8::1]:443" (a URL with a port) or "[fe80::1]%eth0".
+      return fail(
+        `"${clip(text.slice(close + 1), 12)}" after the closing bracket is not part of the address. Remove it; a zone, if needed, goes inside the brackets.`,
+      );
+    }
     if (!(text.startsWith("[") && text.endsWith("]"))) {
       return fail("Unbalanced square brackets. Brackets go around the whole address, as in [2001:db8::1].");
     }
@@ -83,22 +103,24 @@ export function parseIpv6(raw: string): ParseResult {
     text = text.slice(0, pct);
     if (zone === "") return fail("A \"%\" must be followed by a zone, such as %eth0 or %12.");
     if (!/^[A-Za-z0-9._~-]{1,64}$/.test(zone)) {
-      return fail(`"%${zone}" is not a usable zone index. Use an interface name or number such as %eth0 or %12.`);
+      return fail(`"%${clip(zone)}" is not a usable zone index. Use an interface name or number such as %eth0 or %12.`);
     }
   }
 
   if (text === "") return fail("Enter an IPv6 address.");
 
-  if (/\s/.test(text)) return fail("Remove the spaces. An IPv6 address is written without any.");
+  if (/\s/.test(text)) return fail("Remove the spaces or line breaks. An IPv6 address is written without any.");
 
-  const bad = text.match(/[^0-9A-Fa-f:.]/);
+  const bad = text.match(/[^0-9A-Fa-f:.]/u);
   if (bad) {
     if (bad[0] === "/") return fail("Only one \"/\" is allowed, between the address and the prefix length.");
-    return fail(`"${bad[0]}" is not allowed. An IPv6 address uses hex digits (0 to 9, a to f), colons, and optionally a dotted IPv4 tail.`);
+    return fail(`${describeChar(bad[0])} is not allowed. An IPv6 address uses hex digits (0 to 9, a to f), colons, and optionally a dotted IPv4 tail.`);
   }
 
   if (!text.includes(":")) {
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(text)) {
+      const quad = parseDottedQuad(text);
+      if (!quad.ok) return fail(`That looks like an IPv4 address, but ${quad.message.charAt(0).toLowerCase()}${quad.message.slice(1)}`);
       return fail(`That is an IPv4 address. Its IPv4-mapped IPv6 form is ::ffff:${text}.`);
     }
     return fail("An IPv6 address needs colons between its groups, as in 2001:db8::1.");
@@ -144,6 +166,9 @@ export function parseIpv6(raw: string): ParseResult {
   }
 
   // Only the very last group may be a dotted quad, and it counts as two.
+  // RFC 4291 section 2.2, form 3: the IPv4 part is the low-order 32 bits,
+  // so it must end the text. "1.2.3.4::" puts it before the zero run and is
+  // rejected, as inet_pton and Python's ipaddress also reject it.
   const words: number[] = [];
   const headWords: number[] = [];
   const tailWords: number[] = [];
@@ -152,7 +177,10 @@ export function parseIpv6(raw: string): ParseResult {
     const target = i < head.length ? headWords : tailWords;
     if (g.includes(".")) {
       if (i !== all.length - 1) {
-        return fail(`"${g}": dotted IPv4 notation is only allowed in the last 32 bits of the address.`);
+        return fail(`"${clip(g)}": dotted IPv4 notation is only allowed in the last 32 bits of the address.`);
+      }
+      if (hasGap && tail.length === 0) {
+        return fail(`"${clip(g)}" is followed by "::". Dotted IPv4 notation is only allowed in the last 32 bits, so it must come at the very end.`);
       }
       const quad = parseDottedQuad(g);
       if (!quad.ok) return quad;
@@ -160,7 +188,7 @@ export function parseIpv6(raw: string): ParseResult {
       continue;
     }
     if (g.length > 4) {
-      return fail(`Group "${g}" has ${g.length} hex digits. Each group is 16 bits, so it holds at most 4.`);
+      return fail(`Group "${clip(g, 12)}" has ${g.length} hex digits. Each group is 16 bits, so it holds at most 4.`);
     }
     target.push(parseInt(g, 16));
   }
@@ -205,19 +233,21 @@ export function parsePrefixed(raw: string, defaultPrefix = 128): PrefixedResult 
     return fail("Only one \"/\" is allowed, between the address and the prefix length.");
   }
   const addrPart = slash === -1 ? text : text.slice(0, slash);
+  // The address is checked first: when both halves are wrong, the address
+  // is the more fundamental problem and the one worth reporting.
+  const parsed = parseIpv6(addrPart);
+  if (!parsed.ok) return parsed;
   let prefix = defaultPrefix;
   let prefixGiven = false;
   if (slash !== -1) {
     const p = text.slice(slash + 1).trim();
     if (p === "") return fail("Add a prefix length after the \"/\", a whole number from 0 to 128.");
     if (!/^\d{1,3}$/.test(p) || Number(p) > 128) {
-      return fail(`"/${p}" is not a prefix length. It must be a whole number from 0 to 128.`);
+      return fail(`"/${clip(p, 12)}" is not a prefix length. It must be a whole number from 0 to 128.`);
     }
     prefix = Number(p);
     prefixGiven = true;
   }
-  const parsed = parseIpv6(addrPart);
-  if (!parsed.ok) return parsed;
   return { ok: true, value: parsed.value, prefix, prefixGiven, zone: parsed.zone };
 }
 
@@ -422,13 +452,13 @@ const BLOCKS: Block[] = [
     cidr: "::ffff:0:0/96",
     label: "IPv4-mapped",
     rfc: "RFC 4291 section 2.5.5.2",
-    detail: "An IPv4 address carried in the IPv6 socket API. Dual-stack servers log IPv4 clients this way. These never appear as the address of a real IPv6 packet on the wire.",
+    detail: "An IPv4 address carried in the IPv6 socket API. Dual-stack servers log IPv4 clients this way. The IANA registry marks these as valid neither as the source nor as the destination of a packet on the wire.",
   },
   {
     cidr: "::/96",
     label: "IPv4-compatible (deprecated)",
     rfc: "RFC 4291 section 2.5.5.1",
-    detail: "An early transition format with an IPv4 address in the low 32 bits. It is deprecated and current implementations are not required to support it.",
+    detail: "An early transition format with an IPv4 address in the low 32 bits. It is deprecated, and new or updated implementations are not required to support it.",
   },
   {
     cidr: "64:ff9b::/96",
@@ -447,6 +477,12 @@ const BLOCKS: Block[] = [
     label: "Discard-only",
     rfc: "RFC 6666",
     detail: "A prefix to send unwanted traffic into, for example for remotely triggered black hole filtering. It is not globally reachable.",
+  },
+  {
+    cidr: "100:0:0:1::/64",
+    label: "Dummy IPv6 prefix",
+    rfc: "RFC 9780",
+    detail: "Used as the IP destination of MPLS echo requests (LSP ping) and similar maintenance packets. No router forwards it, so the router at the end of the path handles the packet itself and replies. Not globally reachable.",
   },
   {
     cidr: "2001::/23",
@@ -471,6 +507,12 @@ const BLOCKS: Block[] = [
     label: "TURN anycast",
     rfc: "RFC 8155",
     detail: "The anycast address for discovering a TURN relay server.",
+  },
+  {
+    cidr: "2001:1::3/128",
+    label: "DNS-SD Service Registration Protocol anycast",
+    rfc: "RFC 9665",
+    detail: "A fixed anycast address a device can send Service Registration Protocol updates to when no registrar has been configured.",
   },
   {
     cidr: "2001:2::/48",
@@ -685,6 +727,13 @@ function classifyMulticast(value: bigint, base: CompiledBlock): AddressClass {
   if (scope === 0 || scope === 0xf) {
     notes.push("Scope values 0 and F are reserved. Packets with these scopes should not be sent.");
   }
+  // RFC 3306 section 4: P = 1 requires T = 1. RFC 3956 section 3: R = 1
+  // requires P = 1 (and so T = 1).
+  if (flags & 0x4 && (flags & 0x3) !== 0x3) {
+    notes.push("The R flag is set without both P and T. RFC 3956 requires P = 1 and T = 1 whenever R = 1, so this flag combination is invalid.");
+  } else if (flags & 0x2 && !(flags & 0x1)) {
+    notes.push("The P flag is set without T. RFC 3306 requires T = 1 whenever P = 1, so this flag combination is invalid.");
+  }
   return { label, block: base.cidr, rfc: base.rfc, detail: base.detail, fields, notes };
 }
 
@@ -736,7 +785,7 @@ export function classify(value: bigint): AddressClass {
       fields.push({ label: "Client UDP port", value: String(port) });
       fields.push({
         label: "Flags",
-        value: `0x${flags.toString(16).padStart(4, "0")}${flags & 0x8000 ? " · cone NAT bit set" : ""}`,
+        value: `0x${flags.toString(16).padStart(4, "0")}${flags & 0x8000 ? " · high bit set (the cone flag in RFC 4380)" : ""}`,
       });
       break;
     }
@@ -766,7 +815,7 @@ export function classify(value: bigint): AddressClass {
       break;
     }
     case "2000::/3":
-      fields.push({ label: "Routing prefix /64", value: `${compress(v & maskOf(64))}/64` });
+      fields.push({ label: "Containing /64", value: `${compress(v & maskOf(64))}/64` });
       fields.push({ label: "Interface ID", value: interfaceIdString(v) });
       break;
     default:

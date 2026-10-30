@@ -80,6 +80,7 @@ function cleanNumber(text: string): string {
 export function parseBandwidthKbps(text: string, unit: BandwidthUnit): Parsed<bigint> {
   const cleaned = cleanNumber(text);
   if (cleaned === "") return { ok: false, error: "Enter a link speed." };
+  if (/^-\d|^-\.\d/.test(cleaned)) return { ok: false, error: "A link speed cannot be negative." };
   const match = /^(\d*)(?:\.(\d*))?$/.exec(cleaned);
   if (!match || (match[1] === "" && (match[2] ?? "") === "")) {
     return { ok: false, error: `"${text.trim().slice(0, 24)}" is not a number. Use digits and at most one decimal point.` };
@@ -115,7 +116,7 @@ export function parseBandwidthKbps(text: string, unit: BandwidthUnit): Parsed<bi
 
 /** The reference is a whole number of Mbps from 1 to 4294967 on IOS and FRR. */
 export function parseReferenceMbps(text: string): Parsed<number> {
-  const cleaned = cleanNumber(text);
+  const cleaned = cleanNumber(text).replace(/^0+(?=\d)/, "");
   if (cleaned === "") return { ok: false, error: "Enter a reference bandwidth in Mbps." };
   if (!/^\d+$/.test(cleaned)) {
     return {
@@ -226,9 +227,10 @@ export function compareTotals(a: number | null, b: number | null): Winner {
 }
 
 /**
- * The smallest power of ten, in Mbps, that is at least the fastest link, so
- * that link costs exactly 1. Never below the 100 Mbps default and never above
- * what the command accepts.
+ * The smallest power of ten, in Mbps, at or above the fastest link. No link
+ * is then faster than the reference, so none is floored to 1, and the
+ * fastest costs between 1 and 10. Never below the 100 Mbps default and never
+ * above what the command accepts.
  */
 export function suggestReferenceMbps(fastestKbps: bigint): number {
   let ref = 100n;

@@ -503,6 +503,12 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const Eui64Generator = lazyWithRetry(() =>
+  import("@/pages/tools/Eui64Generator").then((m) => ({ default: m.Eui64Generator })),
+);
+const Ipv6Calculator = lazyWithRetry(() =>
+  import("@/pages/tools/Ipv6Calculator").then((m) => ({ default: m.Ipv6Calculator })),
+);
 const CinematicTools = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTools").then((m) => ({ default: m.CinematicTools })),
 );
@@ -1569,6 +1575,16 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/eui64-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <Eui64Generator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ipv6-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <Ipv6Calculator />
             </Suspense>
           </Route>
           <Route path="/data">
