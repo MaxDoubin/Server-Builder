@@ -1,7 +1,6 @@
 import {
   Component,
   Suspense,
-  lazy,
   useEffect,
   useMemo,
   useRef,
@@ -17,6 +16,7 @@ import { SiteLoader } from "@/components/ui/site-loader";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
 import { logError } from "@/lib/error-log";
+import { lazyWithRetry } from "@/lib/chunkRecovery";
 import {
   detectWebGLSupport,
   getDowngradedRenderProfile,
@@ -27,7 +27,12 @@ import {
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
-const DataCenter3D = lazy(() =>
+/*
+  Through the retry helper rather than a plain lazy(): GameRuntimeBoundary is
+  the nearest boundary, so a chunk failure here never reaches the app-level
+  reload, and its "Retry scene" cannot clear the rejection React.lazy caches.
+*/
+const DataCenter3D = lazyWithRetry(() =>
   import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
 );
 
