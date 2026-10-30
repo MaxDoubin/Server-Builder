@@ -531,6 +531,17 @@ export function EntropyAnalyzer() {
   const columns = useMemo(() => (sliding ? downsample(sliding, PLOT_COLUMNS) : []), [sliding]);
   const regions = useMemo(() => (sliding ? highRegions(sliding, deferredThreshold) : []), [sliding, deferredThreshold]);
   const covered = useMemo(() => regions.reduce((sum, r) => sum + (r.end - r.start), 0), [regions]);
+  const spread = useMemo(() => {
+    if (!sliding || sliding.count < 2) return null;
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (let k = 0; k < sliding.count; k++) {
+      const h = sliding.entropy[k];
+      if (h < lo) lo = h;
+      if (h > hi) hi = h;
+    }
+    return { lo, hi };
+  }, [sliding]);
 
   async function loadFile(f: File) {
     const run = ++runRef.current;
@@ -808,6 +819,13 @@ export function EntropyAnalyzer() {
                     <li className="text-[hsl(var(--brand-amber))]">
                       Every byte falls in the Base64 alphabet. A Base64 character carries 6 bits, so if this is Base64 the
                       reading is held near 6 by the encoding. Read the paste as Base64 to measure the decoded bytes.
+                    </li>
+                  ) : null}
+                  {spread && spread.hi - spread.lo >= 2 ? (
+                    <li>
+                      The windows range from {spread.lo.toFixed(2)} to {spread.hi.toFixed(2)}, so this input mixes regions of
+                      different kinds and the whole-input figure is an average of them. The sliding window plot shows where each
+                      one sits.
                     </li>
                   ) : null}
                   {chiReading ? <li>{chiReading}</li> : null}

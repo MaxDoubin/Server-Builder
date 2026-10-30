@@ -925,10 +925,18 @@ export function permissionRules(entries: Map<string, SfMember>): { rules: Featur
       problems.push(`${feature} holds a ${bad[0].type}, which is not an allowlist member`);
       continue;
     }
-    const members = items.map((it) => (it.type === "string" ? `"${it.value}"` : it.value));
+    // Permissions Policy "parse policy directive": tokens other than *,
+    // self and src are skipped, which can leave an empty allowlist.
+    const odd = items.filter((it) => it.type === "token" && !["*", "self", "src"].includes(it.value));
+    if (odd.length) {
+      problems.push(`${feature} lists ${odd.map((it) => it.value).join(" ")}, which is not an allowlist keyword (use (), self, src, * or a quoted origin)`);
+    }
+    const members = items
+      .filter((it) => !odd.includes(it))
+      .map((it) => (it.type === "string" ? `"${it.value}"` : it.value));
     rules.push({
       feature,
-      allow: items.length === 0 ? "none" : items.some((it) => it.type === "token" && it.value === "*") ? "all" : members,
+      allow: members.length === 0 ? "none" : items.some((it) => it.type === "token" && it.value === "*") ? "all" : members,
       known: KNOWN_FEATURES.has(feature),
     });
   }
@@ -973,7 +981,7 @@ function checkPermissions(r: ParsedResponse, add: Adder): FeatureRule[] | null {
   }
   const { rules, problems } = permissionRules(parsed.entries);
   if (problems.length) {
-    add("permissions-problems", "low", H, "Some entries are not allowlists", `${list(problems)}. Browsers skip those entries. Write feature=() to disable a feature or feature=(self) to keep it for this origin.`);
+    add("permissions-problems", "low", H, "Some entries are not valid allowlists", `${list(problems, 4)}. Browsers skip what they cannot read. Write feature=() to disable a feature or feature=(self) to keep it for this origin.`);
   }
   const unknown = rules.filter((rule) => !rule.known).map((rule) => rule.feature);
   if (unknown.includes("interest-cohort")) {
@@ -1399,7 +1407,7 @@ function suggest(
   if (!ctx.csp?.frameAncestors) {
     const ok = has("xfo-ok");
     lines.push({
-      text: ok ? `X-Frame-Options: ${ctx.xfo!.trim()}` : "X-Frame-Options: SAMEORIGIN",
+      text: ok ? `X-Frame-Options: ${(splitHeaderValues(ctx.xfo ?? "")[0] ?? "").trim().toUpperCase()}` : "X-Frame-Options: SAMEORIGIN",
       status: ok ? "keep" : ctx.xfo ? "change" : "add",
       why: ok ? "Valid. frame-ancestors in the CSP above supersedes it in current browsers." : "Stops other sites framing the page in browsers without frame-ancestors.",
     });
@@ -1573,6 +1581,12 @@ export function auditHeaders(input: string): AuditResult {
       `${r.earlierResponses} earlier ${r.earlierResponses === 1 ? "response was" : "responses were"} skipped`,
       `The paste holds more than one response, as curl -L prints for a redirect chain. Only the last one${r.status ? `, ${r.status},` : ""} is analyzed, since that is the page the browser ends up on. HSTS on the redirect itself matters too: paste that response on its own to check it.`,
     );
+  }
+  if (r.skipped > 0) {
+    add("skipped-lines", "info", "Input", `${r.skipped} ${r.skipped === 1 ? "line was" : "lines were"} not headers`, "Lines that are not of the form Name: value, a status line or blank were skipped. If a header wrapped onto a new line without leading whitespace, rejoin it.");
+  }
+  if (r.truncated > 0) {
+    add("truncated", "info", "Input", "Only the first headers were read", `The response has more than ${MAX_HEADERS} header lines; the last ${r.truncated} were not analyzed.`);
   }
   if (r.statusCode !== null && r.statusCode >= 300 && r.statusCode < 400) {
     add("redirect", "info", "Input", "This is a redirect", "A redirect is rarely rendered, so page-level headers like CSP matter less here than on the destination. HSTS on the redirect still counts. Run curl -IL to see the whole chain.");
