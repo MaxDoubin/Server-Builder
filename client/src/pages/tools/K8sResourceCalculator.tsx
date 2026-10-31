@@ -250,13 +250,13 @@ function cpuAtLimit(limitNano: bigint | null): string {
   const quota = cfsQuotaUs(milli);
   const ms = Number(quota) / 1000;
   const floor = milli * 100n < 1000n ? " (raised to the 1 ms minimum quota)" : "";
-  return `Throttled after ${ms} ms of CPU time in each 100 ms period${floor}. cpu.max is "${quota} 100000".`;
+  return `Throttled after ${ms} ms of CPU time in each 100 ms period${floor}. On cgroup v2, cpu.max is "${quota} 100000".`;
 }
 
 function memoryAtLimit(limitNano: bigint | null): string {
   if (limitNano === null || limitNano === 0n) return "No cap. Only node memory pressure stops it.";
   const bytes = toBytes(limitNano);
-  return `OOM-killed above ${formatIec(bytes)} (memory.max ${groupDigits(bytes)}), exit code 137.`;
+  return `OOM-killed above ${formatIec(bytes)} (cgroup v2 memory.max ${groupDigits(bytes)}), exit code 137.`;
 }
 
 function PodSummary({ pod, nodeMemory }: { pod: PodResult; nodeMemory: bigint | null }) {

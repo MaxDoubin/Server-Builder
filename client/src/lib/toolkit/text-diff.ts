@@ -38,6 +38,10 @@ export const EDIT_BUDGET = 10_000_000;
 export const WORD_MAX_LINE = 2_000;
 /** And for more changed line pairs than this. */
 export const WORD_MAX_PAIRS = 2_000;
+/** Search steps all word comparisons together may take, so many long edited lines stay responsive. */
+export const WORD_TOTAL_STEPS = 1_500_000;
+/** Search steps one word comparison may take. */
+export const WORD_PAIR_STEPS = 300_000;
 /** Rows drawn in either view. The copied unified diff is always complete. */
 export const RENDER_ROW_LIMIT = 2_000;
 
@@ -268,6 +272,8 @@ export interface MatchResult {
   pairs: number[];
   /** False when the budget ran out and part of the result is a block replacement. */
   minimal: boolean;
+  /** Search steps spent, for callers that share one budget between several searches. */
+  steps: number;
 }
 
 /**
@@ -303,7 +309,7 @@ export function matchSequences(a: ArrayLike<number>, b: ArrayLike<number>, budge
     pairs[n] = aMap[reduced[n]];
     pairs[n + 1] = bMap[reduced[n + 1]];
   }
-  return { pairs, minimal: !budget.exhausted };
+  return { pairs, minimal: !budget.exhausted, steps: budgetSteps - Math.max(0, budget.left) };
 }
 
 /* ------------------------------------------------------------- line diff */
@@ -521,6 +527,8 @@ export function wordDiff(
   oldLine: string,
   newLine: string,
   options: DiffOptions = DEFAULT_OPTIONS,
+  /** A search budget shared with other calls: this call spends from `left`, and stops looking sooner when little remains. */
+  meter?: { left: number },
 ): { old: Segment[]; new: Segment[] } | null {
   if (oldLine.length > WORD_MAX_LINE || newLine.length > WORD_MAX_LINE) return null;
   const ta = tokenize(oldLine);
@@ -552,7 +560,8 @@ export function wordDiff(
   };
   const ka = keyed(ta);
   const kb = keyed(tb);
-  const { pairs } = matchSequences(ka.seq, kb.seq, 500_000);
+  const { pairs, steps } = matchSequences(ka.seq, kb.seq, meter ? Math.min(WORD_PAIR_STEPS, meter.left) : WORD_PAIR_STEPS);
+  if (meter) meter.left -= steps;
 
   const changedA = ta.map(() => false);
   const changedB = tb.map(() => false);
@@ -601,7 +610,7 @@ export interface PairInfo {
    * side-by-side view as [delete op, insert op], either of which may be -1.
    */
   layout: Map<number, [number, number][]>;
-  /** True when word highlighting stopped early at the pair cap. */
+  /** True when word highlighting stopped early, at the pair cap or the step budget. */
   capped: boolean;
 }
 
@@ -692,6 +701,7 @@ export function pairChanges(diff: LineDiff, options: DiffOptions, words: boolean
   const partner = new Map<number, number>();
   const layout = new Map<number, [number, number][]>();
   let budget = WORD_MAX_PAIRS;
+  const meter = { left: WORD_TOTAL_STEPS };
   let capped = false;
   const ops = diff.ops;
   let p = 0;
@@ -730,12 +740,12 @@ export function pairChanges(diff: LineDiff, options: DiffOptions, words: boolean
       partner.set(dels[pd], ins[pi]);
       partner.set(ins[pi], dels[pd]);
       if (!words) continue;
-      if (budget <= 0) {
+      if (budget <= 0 || meter.left <= 0) {
         capped = true;
         continue;
       }
       budget -= 1;
-      const w = wordDiff(diff.old.lines[ops[dels[pd]].a], diff.new.lines[ops[ins[pi]].b], options);
+      const w = wordDiff(diff.old.lines[ops[dels[pd]].a], diff.new.lines[ops[ins[pi]].b], options, meter);
       if (w) {
         seg.set(dels[pd], w.old);
         seg.set(ins[pi], w.new);

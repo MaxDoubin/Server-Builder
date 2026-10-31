@@ -101,11 +101,13 @@ export const SIZE_UNITS: { id: SizeUnit; bytes: number; note: string }[] = [
 export const MAX_DISK_BYTES = 1e15;
 export const MAX_SURVIVORS = 1000;
 export const MAX_SPEED_MBPS = 100_000;
+/** Slower than this (1 kB/s) is not a rebuild, and it keeps the duration finite. */
+export const MIN_SPEED_MBPS = 0.001;
 
 /** The three specification classes the tool compares. */
 export const URE_CLASSES: { exp: number; label: string; note: string }[] = [
   { exp: 14, label: "1 in 10^14", note: "Desktop and many NAS drives" },
-  { exp: 15, label: "1 in 10^15", note: "Enterprise nearline and pro NAS drives" },
+  { exp: 15, label: "1 in 10^15", note: "Enterprise nearline and some pro NAS drives" },
   { exp: 16, label: "1 in 10^16", note: "Enterprise 10K and 15K SAS drives" },
 ];
 
@@ -134,8 +136,7 @@ export function parseSurvivors(raw: string): Parsed {
 export function parseSpeed(raw: string): Parsed {
   return parseNumber(raw, {
     label: "Rebuild speed",
-    min: 0,
-    minInclusive: false,
+    min: MIN_SPEED_MBPS,
     max: MAX_SPEED_MBPS,
     unit: " MB/s",
     example: "150",
@@ -322,14 +323,22 @@ export function formatPercent(fail: number, survive: number): string {
   if (!(fail > 0)) return "0%";
   if (fail < 1e-8) return "< 0.000001%";
   if (fail < 0.999) {
-    const pct = fail * 100;
+    // Round to three significant digits first, so 9.999 reads "10.0" and not "10.00".
+    const pct = Number((fail * 100).toPrecision(3));
     const decimals = Math.min(8, Math.max(0, 2 - Math.floor(Math.log10(pct))));
     return `${pct.toFixed(decimals)}%`;
   }
-  const rest = survive * 100;
-  if (!(rest >= 1e-6)) return "> 99.999999%";
+  const rawRest = survive * 100;
+  if (!(rawRest >= 1e-6)) return "> 99.999999%";
+  const rest = Number(rawRest.toPrecision(2));
   const decimals = Math.min(7, Math.max(1, 1 - Math.floor(Math.log10(rest))));
   return `${(100 - rest).toFixed(decimals)}%`;
+}
+
+/** "3.10 × 10^18" from toExponential, which never produces a mantissa of 10.00. */
+function sci(x: number): string {
+  const [mant, exp] = x.toExponential(2).split("e");
+  return `${mant} × 10^${Number(exp)}`;
 }
 
 const SCALES: [number, string][] = [
@@ -342,16 +351,13 @@ const SCALES: [number, string][] = [
 export function formatCount(x: number): string {
   if (!Number.isFinite(x)) return "more than 10^308";
   if (x < 10) return String(Number(x.toPrecision(2)));
-  if (x < 1e6) return Number(x.toPrecision(3)).toLocaleString("en-US");
-  if (x >= 1e15) {
-    const exp = Math.floor(Math.log10(x));
-    const mant = x / 10 ** exp;
-    return `${mant.toFixed(2)} × 10^${exp}`;
-  }
+  if (x < 999_500) return Number(x.toPrecision(3)).toLocaleString("en-US");
+  const r = Number(x.toPrecision(3));
+  if (r >= 1e15) return sci(x);
   for (const [scale, word] of SCALES) {
-    if (x >= scale) return `${Number((x / scale).toPrecision(3))} ${word}`;
+    if (r >= scale) return `${Number((r / scale).toPrecision(3))} ${word}`;
   }
-  return String(x);
+  return String(r);
 }
 
 /** "about 1 in 1,140" for rare events, or the odds of a clean rebuild when failure is nearly certain. */
@@ -390,9 +396,13 @@ export function formatDuration(seconds: number): string {
   return h ? `${days} ${h} h` : days;
 }
 
-/** Bytes in decimal units, three significant digits: "84.0 TB". */
+/** Bytes in decimal units, three significant digits: "84 TB", "1.2 PB". */
 export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "--";
+  // Round first, so 999.9 TB reads "1 PB" and not "1000 TB".
+  const r = Number(bytes.toPrecision(3));
   const units: [number, string][] = [
+    [1e18, "EB"],
     [1e15, "PB"],
     [1e12, "TB"],
     [1e9, "GB"],
@@ -400,7 +410,7 @@ export function formatBytes(bytes: number): string {
     [1e3, "kB"],
   ];
   for (const [scale, name] of units) {
-    if (bytes >= scale) return `${Number((bytes / scale).toPrecision(3))} ${name}`;
+    if (r >= scale) return `${Number((r / scale).toPrecision(3))} ${name}`;
   }
   return `${Math.round(bytes)} B`;
 }
@@ -410,9 +420,6 @@ export function formatSig(x: number): string {
   if (x === 0) return "0";
   if (!Number.isFinite(x)) return "--";
   const abs = Math.abs(x);
-  if (abs < 1e-3 || abs >= 1e9) {
-    const exp = Math.floor(Math.log10(abs));
-    return `${(x / 10 ** exp).toFixed(2)} × 10^${exp}`;
-  }
+  if (abs < 1e-3 || abs >= 999_500_000) return sci(x);
   return Number(x.toPrecision(3)).toLocaleString("en-US", { maximumFractionDigits: 6 });
 }

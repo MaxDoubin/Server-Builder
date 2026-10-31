@@ -286,7 +286,7 @@ export function RaidRebuildRisk() {
             <FieldMessage
               id="rrr-speed"
               error={speedError}
-              hint="The rate the replacement disk is written, in decimal megabytes per second. Large hard drives sustain roughly 200 to 300 MB/s at best; a rebuild sharing the array with live traffic often runs far slower."
+              hint="The rate the replacement disk is written, in decimal megabytes per second. Large hard drives sustain roughly 200 to 300 MB/s at best; a rebuild sharing the array with live traffic often runs far slower. The minimum here is 0.001 MB/s."
             />
           </div>
 
@@ -310,7 +310,7 @@ export function RaidRebuildRisk() {
             <FieldMessage
               id="rrr-afr"
               error={afrError}
-              hint="Used for the chance that another disk fails outright during the rebuild. Large published fleet statistics put hard drives at roughly 1 to 2 percent a year. Leave it empty to skip."
+              hint="Used for the chance that another disk fails outright during the rebuild. Large published fleet statistics put hard drives at roughly 1 to 2 percent a year. The figure assumes disks fail independently at a constant rate; field studies have found failures cluster in time, so it is likely optimistic. Leave it empty to skip."
             />
           </div>
         </ToolPanel>
@@ -450,7 +450,8 @@ export function RaidRebuildRisk() {
             <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The RAID 6 single failure figure assumes the controller reconstructs each 4 KiB sector row on its own, as
               Linux md does, so a second URE only matters if it lands on the same row. A controller that drops a whole
-              disk from the set on its first read error turns that case back into the RAID 6 two-failure row.
+              disk from the set on its first read error loses that per-row protection: from that point on the rebuild
+              has no redundancy left, like the two-failure row.
               {result.secondFailure !== null ? (
                 <>
                   {" "}

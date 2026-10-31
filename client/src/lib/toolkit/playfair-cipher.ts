@@ -359,8 +359,10 @@ export function runPlayfair(options: {
 }): Run {
   const { keyword, text, variant, direction } = options;
   const square = buildKeySquare(keyword, variant);
+  // Tested before upper-casing, for the same reason as fold(): "ı" would
+  // otherwise pass as I and "ſ" as S.
   const filler = options.filler.toUpperCase();
-  if (!/^[A-Z]$/.test(filler)) {
+  if (!/^[A-Za-z]$/.test(options.filler)) {
     return { ok: false, square, field: "filler", error: "The filler must be a single letter, A to Z." };
   }
   if (!(filler in square.pos)) {

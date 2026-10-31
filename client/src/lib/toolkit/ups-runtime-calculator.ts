@@ -97,6 +97,9 @@ export function parseNumber(raw: string, rule: NumberRule): Parsed {
 
 /** 10 MWh: well past the largest single UPS battery plant. */
 export const MAX_WH = 10_000_000;
+/** Below 0.01 Wh or 0.01 W the arithmetic stops meaning anything, and tiny products can underflow. */
+export const MIN_WH = 0.01;
+export const MIN_LOAD = 0.01;
 /** 10 MW of load. */
 export const MAX_LOAD = 10_000_000;
 /** The replacement point IEEE 1188 (VRLA) and IEEE 450 (vented) recommend: 80 percent of rated capacity. */
@@ -114,7 +117,7 @@ export const PEUKERT_PRESETS: { value: string; label: string; note: string }[] =
 
 export const parse = {
   wh: (raw: string) =>
-    parseNumber(raw, { label: "Battery capacity", min: 0, minInclusive: false, max: MAX_WH, unit: " Wh", example: "216" }),
+    parseNumber(raw, { label: "Battery capacity", min: MIN_WH, max: MAX_WH, unit: " Wh", example: "216" }),
   volts: (raw: string) =>
     parseNumber(raw, { label: "Battery voltage", min: 0, minInclusive: false, max: 1000, unit: " V", example: "12" }),
   ah: (raw: string) =>
@@ -122,9 +125,9 @@ export const parse = {
   count: (raw: string) =>
     parseNumber(raw, { label: "Battery count", min: 1, max: 1000, integer: true, example: "2" }),
   percent: (raw: string, label: string, example: string) =>
-    parseNumber(raw, { label, min: 0, minInclusive: false, max: 100, unit: " percent", example }),
+    parseNumber(raw, { label, min: 0.1, max: 100, unit: " percent", example }),
   load: (raw: string, unit: "W" | "VA") =>
-    parseNumber(raw, { label: "Load", min: 0, minInclusive: false, max: MAX_LOAD, unit: ` ${unit}`, example: "500" }),
+    parseNumber(raw, { label: "Load", min: MIN_LOAD, max: MAX_LOAD, unit: ` ${unit}`, example: "500" }),
   rating: (raw: string, unit: "W" | "VA") =>
     parseNumber(raw, {
       label: unit === "W" ? "Watt rating" : "VA rating",
@@ -137,8 +140,7 @@ export const parse = {
   powerFactor: (raw: string) =>
     parseNumber(raw, {
       label: "Power factor",
-      min: 0,
-      minInclusive: false,
+      min: 0.1,
       max: 1,
       example: "0.9",
       overMax: "A power factor cannot exceed 1: real power is at most the apparent power.",
@@ -159,6 +161,15 @@ export const parse = {
 /** Total nameplate energy of identical batteries, however they are wired. */
 export function batteryWh(volts: number, ah: number, count: number): number {
   return volts * ah * count;
+}
+
+/** The volts x Ah x count product, held to the same limits as a typed Wh figure. */
+export function checkBankWh(wh: number): Parsed {
+  if (!Number.isFinite(wh) || wh > MAX_WH) {
+    return { kind: "error", message: "That battery bank is over 10 MWh, past the limit here." };
+  }
+  if (!(wh >= MIN_WH)) return { kind: "error", message: "That battery bank is under 0.01 Wh, too small to estimate." };
+  return { kind: "ok", value: wh };
 }
 
 /* ---------------------------------------------------------------- runtime */

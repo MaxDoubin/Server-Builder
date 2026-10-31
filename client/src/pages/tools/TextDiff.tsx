@@ -501,8 +501,9 @@ export function TextDiff() {
             Limits: {MAX_LINES.toLocaleString("en-US")} lines and {MAX_CHARS.toLocaleString("en-US")} characters per
             side. If two inputs differ so much that the search passes {(EDIT_BUDGET / 1e6).toLocaleString("en-US")} million
             steps, the rest is shown as a block replacement: still correct, but not always the shortest. Word
-            highlighting covers the first {WORD_MAX_PAIRS.toLocaleString("en-US")} changed pairs, lines up to{" "}
-            {WORD_MAX_LINE.toLocaleString("en-US")} characters.
+            highlighting covers up to {WORD_MAX_PAIRS.toLocaleString("en-US")} changed pairs, on lines up to{" "}
+            {WORD_MAX_LINE.toLocaleString("en-US")} characters, and stops early when the lines are numerous or
+            long enough to slow the page.
           </p>
         </ToolPanel>
 
@@ -686,7 +687,8 @@ export function TextDiff() {
               ) : null}
               {info?.capped && words ? (
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                  Word highlighting stopped after {WORD_MAX_PAIRS.toLocaleString("en-US")} changed pairs.
+                  Word highlighting stopped early to keep the page responsive, so the later changed lines show
+                  whole-line colors only. The line diff itself is complete.
                 </p>
               ) : null}
             </ToolPanel>

@@ -229,7 +229,7 @@ export function PlayfairCipher() {
   const step = current >= 0 ? steps[current] : null;
   const output = ok ? groupLetters(ok.output, grouping) : "";
   const fillerUpper = filler.toUpperCase();
-  const alt = /^[A-Z]$/.test(fillerUpper) ? alternateFiller(fillerUpper, variant) : null;
+  const alt = /^[A-Za-z]$/.test(filler) ? alternateFiller(fillerUpper, variant) : null;
   const fillerError = !run.ok && run.field === "filler" ? run.error : null;
   const textError = !run.ok && run.field === "text" ? run.error : null;
 
@@ -239,6 +239,21 @@ export function PlayfairCipher() {
     setDirection(example.direction);
     setVariant(example.variant);
     setSelected(0);
+  }
+
+  /**
+   * The field holds one letter. A second keystroke replaces it wherever the
+   * caret was: keep the character that is not the old filler.
+   */
+  function changeFiller(raw: string) {
+    const chars = Array.from(raw);
+    if (chars.length <= 1) {
+      setFiller(raw);
+      return;
+    }
+    const old = filler.toUpperCase();
+    const fresh = chars.find((ch) => ch.toUpperCase() !== old);
+    setFiller(fresh ?? chars[chars.length - 1]);
   }
 
   function changeVariant(next: Variant) {
@@ -343,8 +358,8 @@ export function PlayfairCipher() {
               <input
                 id="playfair-filler"
                 value={filler}
-                onChange={(e) => setFiller(e.target.value.slice(-1))}
-                maxLength={2}
+                onChange={(e) => changeFiller(e.target.value)}
+                maxLength={4}
                 spellCheck={false}
                 autoComplete="off"
                 autoCapitalize="characters"

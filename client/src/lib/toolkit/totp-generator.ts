@@ -73,7 +73,10 @@ function describeChar(ch: string): string {
  */
 export function decodeBase32(input: string): Base32Result {
   if (input.length > MAX_SECRET_CHARS * 2) {
-    return { ok: false, error: `The secret is longer than ${MAX_SECRET_CHARS} characters, which is far past any real key.` };
+    return {
+      ok: false,
+      error: `The secret is ${input.length} characters with its spacing. This tool reads up to ${MAX_SECRET_CHARS * 2}, far past any real key.`,
+    };
   }
   let body = "";
   let padding = 0;
@@ -493,10 +496,37 @@ export interface BuildUriInput {
   counter: bigint;
 }
 
+/**
+ * Replace unpaired UTF-16 surrogates with U+FFFD. encodeURIComponent throws
+ * a URIError on a lone surrogate, and one can arrive by paste or inside a
+ * label that decodeURIComponent passed through unchanged. Written as a loop
+ * because String.prototype.toWellFormed is ES2024 and older browsers lack it.
+ */
+export function wellFormed(text: string): string {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c >= 0xd800 && c <= 0xdbff) {
+      const d = i + 1 < text.length ? text.charCodeAt(i + 1) : 0;
+      if (d >= 0xdc00 && d <= 0xdfff) {
+        out += text[i] + text[i + 1];
+        i++;
+      } else {
+        out += "\ufffd";
+      }
+    } else if (c >= 0xdc00 && c <= 0xdfff) {
+      out += "\ufffd";
+    } else {
+      out += text[i];
+    }
+  }
+  return out;
+}
+
 /** The inverse of parseOtpauthUri, with the issuer both in the label and as a parameter, as the format advises. */
 export function buildOtpauthUri(input: BuildUriInput): string {
-  const issuer = input.issuer.trim();
-  const account = input.account.trim() || "account";
+  const issuer = wellFormed(input.issuer.trim());
+  const account = wellFormed(input.account.trim()) || "account";
   const label = issuer ? `${encodeURIComponent(issuer)}:${encodeURIComponent(account)}` : encodeURIComponent(account);
   const params = [`secret=${input.secretBase32}`];
   if (issuer) params.push(`issuer=${encodeURIComponent(issuer)}`);

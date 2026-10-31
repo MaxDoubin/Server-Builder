@@ -259,6 +259,15 @@ export function runRailFence(options: {
   const cut = precut(text, MAX_CHARS);
   let chars = Array.from(cut);
   if (cut.length !== text.length || chars.length > MAX_CHARS) {
+    if (direction === "decrypt") {
+      // The first part of a ciphertext is not the ciphertext of anything:
+      // the rail boundaries depend on the full length, so a cut would
+      // silently scramble the result.
+      return {
+        kind: "error",
+        message: `Decryption needs the whole ciphertext, because the rail boundaries depend on its length. This page decrypts up to ${MAX_CHARS.toLocaleString("en-US")} characters, and this text is longer.`,
+      };
+    }
     chars = chars.slice(0, MAX_CHARS);
     text = chars.join("");
     notices.push(`Only the first ${MAX_CHARS.toLocaleString("en-US")} characters were processed.`);
@@ -601,7 +610,7 @@ export function bruteForce(textRaw: string, options: { mode: Mode; offsets: bool
   if (textRaw.length > BRUTE_MAX_INPUT) {
     return {
       kind: "error",
-      message: `The brute force accepts up to ${BRUTE_MAX_CHARS.toLocaleString("en-US")} characters on the fence, and this text is far longer than that. It cannot work on a slice, because the rail boundaries depend on the full length.`,
+      message: `The brute force reads at most ${BRUTE_MAX_INPUT.toLocaleString("en-US")} characters of input, with up to ${BRUTE_MAX_CHARS.toLocaleString("en-US")} of them on the fence, and this text is longer. It cannot work on a slice, because the rail boundaries depend on the full length.`,
     };
   }
   const notices: string[] = [];

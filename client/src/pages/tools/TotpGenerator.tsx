@@ -252,7 +252,17 @@ export function TotpGenerator() {
     return () => window.clearInterval(id);
   }, [live]);
 
-  const unixSeconds: bigint | null = live ? BigInt(Math.floor(nowMs / 1000)) : fixed && fixed.ok ? fixed.value : null;
+  // RFC 6238 counts from T0 = 0, so a device clock set before 1970 has no
+  // time step at all; it is reported below rather than passed on as a
+  // negative counter.
+  const clockBeforeEpoch = live && nowMs < 0;
+  const unixSeconds: bigint | null = live
+    ? clockBeforeEpoch
+      ? null
+      : BigInt(Math.floor(nowMs / 1000))
+    : fixed && fixed.ok
+      ? fixed.value
+      : null;
   const step: bigint | null = mode === "totp" && period.ok && unixSeconds !== null ? timeStep(unixSeconds, period.value) : null;
   const center: bigint | null = mode === "totp" ? step : counter.ok ? counter.value : null;
 
@@ -395,8 +405,11 @@ export function TotpGenerator() {
           : []
       : [];
 
+  // A TOTP URI has no counter and an HOTP URI has no period, so a bad value
+  // in the hidden field must not hide the URI.
+  const uriFieldsOk = mode === "totp" ? period.ok : counter.ok;
   const uri =
-    secret.kind === "ok" && period.ok && counter.ok
+    secret.kind === "ok" && uriFieldsOk
       ? buildOtpauthUri({
           type: mode,
           issuer,
@@ -404,10 +417,11 @@ export function TotpGenerator() {
           secretBase32: secret.base32,
           algorithm: alg,
           digits,
-          period: period.value,
-          counter: counter.value,
+          period: period.ok ? period.value : DEFAULT_PERIOD,
+          counter: counter.ok ? counter.value : ZERO,
         })
       : null;
+  const labelHasColon = issuer.includes(":") || account.includes(":");
 
   const stepLabel = mode === "totp" ? "T" : "C";
   const t = current?.truncation ?? null;
@@ -661,6 +675,11 @@ export function TotpGenerator() {
                 <p role="alert" className={ERROR_BOX}>
                   {fresh.error}
                 </p>
+              ) : clockBeforeEpoch ? (
+                <p role="alert" className={ERROR_BOX}>
+                  This device&apos;s clock reads a time before 1970, where TOTP has no time step. Set the clock, or
+                  enter a fixed Unix time.
+                </p>
               ) : center === null ? (
                 <p className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   Fix the setting marked in red to see a code.
@@ -798,7 +817,9 @@ export function TotpGenerator() {
                     {mode === "totp"
                       ? `Not valid at ${stepLabel} or within ${plural(windowParsed.ok ? windowParsed.value : 0, "step")} of it.`
                       : `Not valid for counters ${center.toString()} to ${(center + BigInt(windowParsed.ok ? windowParsed.value : 0)).toString()}.`}{" "}
-                    Check the hash, digit count and period, which change every code.
+                    {mode === "totp"
+                      ? "If the code should be valid, check that the hash and period match the server's, and that this clock is right."
+                      : "If the code should be valid, check that the hash matches the server's and that the counter is not already past it."}
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -952,6 +973,12 @@ export function TotpGenerator() {
                 </pre>
                 <CopyButton value={uri} label="Copy the otpauth URI" testId="button-copy-uri" />
               </div>
+            ) : null}
+            {labelHasColon ? (
+              <p className={`mt-3 ${WARN_BOX}`} data-testid="text-label-colon">
+                The key URI format does not allow a colon in the issuer or account name. It is percent-encoded here,
+                but an app that decodes the label before splitting it will split at the wrong colon.
+              </p>
             ) : null}
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               This is what an enrollment QR code encodes. Anyone holding it can generate every future code, so treat

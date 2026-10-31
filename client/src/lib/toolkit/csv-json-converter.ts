@@ -544,7 +544,7 @@ export function convertCsv(input: string, opts: CsvOptions): Conversion {
   const long = tooLong(input);
   if (long) return long;
 
-  const detected = opts.delimiter === "auto" ? detectDelimiter(input.replace(/^﻿/, "")) : null;
+  const detected = opts.delimiter === "auto" ? detectDelimiter(input.replace(/^\uFEFF/, "")) : null;
   const delimiter: Delimiter = detected ? detected.delimiter : (opts.delimiter as Delimiter);
   const parsed = parseCsv(input, delimiter);
   const issues: Issue[] = [];

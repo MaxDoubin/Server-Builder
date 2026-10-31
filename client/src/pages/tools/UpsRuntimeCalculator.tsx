@@ -17,6 +17,7 @@ import {
   PEUKERT_PRESETS,
   type Parsed,
   batteryWh,
+  checkBankWh,
   estimateRuntime,
   formatHours,
   formatNum,
@@ -220,7 +221,8 @@ export function UpsRuntimeCalculator() {
     voltsParsed.kind === "ok" && ahParsed.kind === "ok" && countParsed.kind === "ok"
       ? batteryWh(voltsParsed.value, ahParsed.value, countParsed.value)
       : null;
-  const cellsError = cellsWh !== null && cellsWh > 10_000_000 ? "That battery bank is over 10 MWh, past the limit here." : null;
+  const cellsChecked = cellsWh === null ? null : checkBankWh(cellsWh);
+  const cellsError = cellsChecked && cellsChecked.kind === "error" ? cellsChecked.message : null;
   const capacityWh = batteryMode === "wh" ? valueOf(whParsed) : cellsError ? null : cellsWh;
 
   const pfValue = valueOf(pfParsed);
@@ -265,6 +267,7 @@ export function UpsRuntimeCalculator() {
       : null;
 
   const closest = check ? (check.limiting === "W" ? check.wFraction : check.vaFraction) : null;
+  const bothRatings = ratedWValue !== null && ratedVAValue !== null;
 
   const steps = useMemo(
     () =>
@@ -439,7 +442,7 @@ export function UpsRuntimeCalculator() {
                 value={ratedVA}
                 onChange={setRatedVA}
                 parsed={ratedVAParsed}
-                hint="The first number on the model, such as 1500."
+                hint="Often the number in the model name, such as 1500."
                 placeholder="1500"
                 testId="input-rated-va"
               />
@@ -474,7 +477,7 @@ export function UpsRuntimeCalculator() {
                 value={dod}
                 onChange={setDod}
                 parsed={dodParsed}
-                hint="100 runs to the low-battery cutoff. Lower leaves time for a clean shutdown."
+                hint="100 runs to the low-battery cutoff. A lower figure estimates the time until a shutdown that leaves charge in reserve."
                 placeholder="80"
                 testId="input-dod"
               />
@@ -577,7 +580,9 @@ export function UpsRuntimeCalculator() {
               <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                 {result.clamped
                   ? `This load discharges the battery more slowly than its ${inputs.ratedHours}-hour rating, where Peukert's law overstates capacity, so the estimate is held at the linear figure.`
-                  : `This load empties the battery about ${formatNum(1 / result.rateRatio)} times faster than its ${inputs.ratedHours}-hour rating, so under Peukert's law only part of the rated capacity is there to use. Treat the adjusted figure as an estimate: the exponent itself is fitted to test data and drifts with temperature and age.`}
+                  : `This load discharges the battery ${
+                      Number.isFinite(1 / result.rateRatio) ? `about ${formatNum(1 / result.rateRatio)} times` : "far"
+                    } faster than its ${inputs.ratedHours}-hour rating, so under Peukert's law only part of the rated capacity is there to use. Treat the adjusted figure as an estimate: the exponent itself is fitted to test data and drifts with temperature and age.`}
               </p>
             ) : null}
           </ToolPanel>
@@ -629,16 +634,20 @@ export function UpsRuntimeCalculator() {
                   <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {check.fits === false
                       ? check.fitsW === false && check.fitsVA === false
-                        ? "Both limits are exceeded. The UPS will overload on battery and may refuse the load on line power too."
+                        ? "Both limits are exceeded. The UPS treats this as an overload: depending on the model it alarms, transfers to bypass or shuts its output off, and on battery it cannot carry the load."
                         : check.fitsW === false
-                          ? "The watt limit is exceeded even though the VA figure looks fine. The watt rating is the one that usually binds with modern power supplies."
-                          : "The VA limit is exceeded even though the watts fit. A low power factor draws more current than the real power suggests, and the inverter has to carry that current."
+                          ? bothRatings
+                            ? "The watt limit is exceeded even though the VA figure fits. The watt rating is the one that usually binds with modern power supplies."
+                            : "The watt limit is exceeded."
+                          : bothRatings
+                            ? "The VA limit is exceeded even though the watts fit. A low power factor draws more current than the real power suggests, and the inverter has to carry that current."
+                            : "The VA limit is exceeded."
                       : closest !== null && closest > 0.8
-                        ? `Within both limits, but the ${check.limiting} rating is above 80 percent. Many operators keep steady load under about 80 percent to leave room for growth and inrush.`
-                        : `Within both limits. The ${check.limiting} rating is the closer of the two.`}
-                    {ratedWValue === null || ratedVAValue === null
-                      ? " Only one rating was given, so only that limit is checked."
-                      : ""}
+                        ? `Within ${bothRatings ? "both limits" : `the ${check.limiting} limit`}, but the load is above 80 percent of the ${check.limiting} rating. Many operators keep steady load under about 80 percent to leave room for growth and inrush.`
+                        : bothRatings
+                          ? `Within both limits. The ${check.limiting} rating is the closer of the two.`
+                          : `Within the ${check.limiting} limit.`}
+                    {bothRatings ? "" : " Only one rating was given, so only that limit is checked."}
                   </p>
                 </div>
               )

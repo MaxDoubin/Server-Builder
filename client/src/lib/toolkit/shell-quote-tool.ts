@@ -21,6 +21,38 @@ export const MAX_INPUT = 20000;
 /** Most words the splitter returns before it stops. */
 export const MAX_WORDS = 2000;
 
+/** Deepest nesting of $(...), ${...} and "..." the splitter follows. */
+export const MAX_DEPTH = 100;
+
+/**
+ * Scan steps one split may spend on nested constructs. Real command lines use
+ * a small fraction of this; it exists so that input built to make the
+ * scanners rescan the same text, such as thousands of unclosed braces, stops
+ * with a message instead of freezing the page.
+ */
+const MAX_STEPS = 3_000_000;
+
+class SplitLimit extends Error {}
+
+let scanSteps = 0;
+let scanDepth = 0;
+
+function spend(): void {
+  if (++scanSteps > MAX_STEPS) {
+    throw new SplitLimit(
+      "This input is too repetitive to scan safely: it keeps opening brackets, braces or substitutions that never close, so splitting stopped. Try a shorter piece.",
+    );
+  }
+}
+
+function enter(): void {
+  if (++scanDepth > MAX_DEPTH) {
+    throw new SplitLimit(
+      `Substitutions or quotes are nested more than ${MAX_DEPTH} levels deep, which is more than this follows. Try a simpler piece.`,
+    );
+  }
+}
+
 /* ================================================================ forward */
 
 /**
@@ -529,12 +561,14 @@ function isBlank(c: string): boolean {
    closing character, or -1 when the input ends first. */
 
 function skipSingle(src: string, i: number): number {
+  spend();
   return src.indexOf("'", i);
 }
 
 /** i is just past the opening backquote. A backslash escapes the next character. */
 function skipBacktick(src: string, i: number): number {
   for (; i < src.length; i++) {
+    spend();
     if (src[i] === "\\") i++;
     else if (src[i] === "`") return i;
   }
@@ -543,7 +577,17 @@ function skipBacktick(src: string, i: number): number {
 
 /** i is just past the opening double quote. */
 function skipDouble(src: string, i: number): number {
+  enter();
+  try {
+    return skipDoubleInner(src, i);
+  } finally {
+    scanDepth--;
+  }
+}
+
+function skipDoubleInner(src: string, i: number): number {
   for (; i < src.length; i++) {
+    spend();
     const c = src[i];
     if (c === "\\") i++;
     else if (c === '"') return i;
@@ -568,8 +612,18 @@ function skipDouble(src: string, i: number): number {
  * fool this; the shell's own parser is the only complete answer there.
  */
 function findClose(src: string, i: number, close: ")" | "}", inDouble = false): number {
+  enter();
+  try {
+    return findCloseInner(src, i, close, inDouble);
+  } finally {
+    scanDepth--;
+  }
+}
+
+function findCloseInner(src: string, i: number, close: ")" | "}", inDouble: boolean): number {
   let depth = 0;
   for (; i < src.length; i++) {
+    spend();
     const c = src[i];
     if (c === "\\") {
       i++;
@@ -761,6 +815,7 @@ function bracketAt(src: string, i: number): string | null {
   if (src[j] === "!" || src[j] === "^") j++;
   if (src[j] === "]") j++;
   for (; j < src.length; j++) {
+    spend();
     const c = src[j];
     if (c === "]") return src.slice(i, j + 1);
     if (isBlank(c) || c === "\n" || OP_START.has(c) || c === "'" || c === '"' || c === "\\" || c === "$" || c === "`") {
@@ -775,6 +830,7 @@ function braceAt(src: string, i: number): string | null {
   let depth = 0;
   let comma = false;
   for (let j = i; j < src.length; j++) {
+    spend();
     const c = src[j];
     if (c === "\\") {
       j++;
@@ -893,7 +949,23 @@ export function splitCommandLine(input: string): SplitResult {
     };
   }
   const src = input.replace(/\r\n/g, "\n");
-  const result = splitInner(src);
+  let result: SplitResult;
+  scanSteps = 0;
+  scanDepth = 0;
+  try {
+    result = splitInner(src);
+  } catch (e) {
+    // The scanners recurse and loop over the input. Whatever goes wrong, the
+    // page gets a message and not an exception.
+    return {
+      ok: false,
+      message: e instanceof SplitLimit ? e.message : "This input could not be split safely. Try a smaller or simpler piece.",
+      position: 0,
+    };
+  } finally {
+    scanSteps = 0;
+    scanDepth = 0;
+  }
   if (result.ok) return result;
   const pos = Math.max(0, Math.min(result.position, src.length));
   const lineStart = src.lastIndexOf("\n", pos - 1) + 1;
