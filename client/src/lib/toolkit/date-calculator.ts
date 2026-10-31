@@ -215,6 +215,9 @@ const FORM_HELP = "Use the form YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS, for example 2
 export function parseCivil(text: string): ParseResult<Civil> {
   const input = text.trim();
   if (input === "") return { ok: false, message: "Enter a date." };
+  if (/^[+-]?\d{5,}-\d{2}-\d{2}/.test(input) || /^-\d/.test(input)) {
+    return { ok: false, message: `Years run from ${pad(MIN_YEAR, 4)} to ${MAX_YEAR}.` };
+  }
   const match = CIVIL_PATTERN.exec(input);
   if (!match) return { ok: false, message: FORM_HELP };
 

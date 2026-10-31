@@ -385,7 +385,7 @@ function parsePtrName(text: string): Result<ReverseInput> {
   const name = text.toLowerCase().replace(/\.$/, "");
   if (name.length > 253) return fail("That name is longer than the 253 characters DNS allows.");
   if (name.endsWith("ip6.int")) {
-    return fail("ip6.int was retired in 2005 (RFC 4159). IPv6 reverse names live under ip6.arpa.");
+    return fail("ip6.int was deprecated in 2005 (RFC 4159). IPv6 reverse names live under ip6.arpa.");
   }
   let suffix: string;
   if (name === "in-addr.arpa" || name.endsWith(".in-addr.arpa")) suffix = "in-addr.arpa";

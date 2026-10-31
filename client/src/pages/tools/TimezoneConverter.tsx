@@ -50,7 +50,7 @@ import {
 import { ToolPanel, ToolShell } from "./ToolShell";
 
 const LABEL_CLASS =
-  "font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
+  "block font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
 const INPUT_CLASS =
   "mt-3 min-h-[44px] w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none [color-scheme:dark] [.light_&]:[color-scheme:light]";
 const SELECT_CLASS =
@@ -284,7 +284,7 @@ export function TimezoneConverter() {
   return (
     <ToolShell slug="timezone-converter">
       <div className="space-y-6">
-        <ToolPanel title="Date and time">
+        <ToolPanel title="Source time">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
             <div className="min-w-0">
               <label htmlFor="tz-datetime" className={LABEL_CLASS}>

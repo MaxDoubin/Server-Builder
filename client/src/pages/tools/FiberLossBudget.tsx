@@ -110,7 +110,7 @@ function Chip({
 }
 
 export function FiberLossBudget() {
-  const initial = transceiver(DEFAULT_PRESET) as Transceiver;
+  const initial: Transceiver = transceiver(DEFAULT_PRESET) ?? TRANSCEIVERS[0];
   const [presetId, setPresetId] = useState<string>(DEFAULT_PRESET);
   const [tx, setTx] = useState(numText(initial.txMinDbm));
   const [rx, setRx] = useState(numText(initial.rxSensDbm));

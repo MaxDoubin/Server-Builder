@@ -124,6 +124,16 @@ function describeResult(text: string): string {
   return isVisible(text) ? `${text}  ${labels}` : labels;
 }
 
+/**
+ * The first n code units, minus a trailing high surrogate, so a cut through
+ * an emoji does not leave half a pair for the URL encoder to reject.
+ */
+function clip(text: string, n: number): string {
+  if (text.length <= n) return text;
+  const c = text.charCodeAt(n - 1);
+  return text.slice(0, c >= 0xd800 && c <= 0xdbff ? n - 1 : n);
+}
+
 function preview(raw: string): string {
   return raw.length > RAW_PREVIEW ? `${raw.slice(0, RAW_PREVIEW)}...` : raw;
 }
@@ -197,7 +207,7 @@ export function HtmlEntityCodec() {
   // The comparison shows the plain text: what was typed when encoding, what
   // came out when decoding.
   const plain = direction === "encode" ? input : output;
-  const sample = plain.length > CONTEXT_PREVIEW_CHARS ? plain.slice(0, CONTEXT_PREVIEW_CHARS) : plain;
+  const sample = clip(plain, CONTEXT_PREVIEW_CHARS);
   const contexts = useMemo(() => {
     const url = escapeUrlComponent(sample);
     return {
@@ -392,9 +402,8 @@ export function HtmlEntityCodec() {
                 <p className={NOTE_BOX} data-testid="text-unencodable">
                   Left as they are:{" "}
                   {encoded.unencodable.map((u) => `${codePointLabel(u.cp)}${u.count > 1 ? ` (${u.count})` : ""}`).join(", ")}. No
-                  reference brings these back, because the parser reads <code>&amp;#128;</code> to{" "}
-                  <code>&amp;#159;</code> as Windows-1252 (so <code>&amp;#128;</code> is the euro sign) and{" "}
-                  <code>&amp;#0;</code> as U+FFFD.
+                  reference brings these back: <code>&amp;#0;</code> decodes to U+FFFD, and 27 of the numbers from 128
+                  to 159 decode to the Windows-1252 character at that byte, so <code>&amp;#128;</code> is the euro sign.
                 </p>
               ) : null}
               {encoded && encoded.loneSurrogates ? (
@@ -521,9 +530,9 @@ export function HtmlEntityCodec() {
             </p>
             <ul className="mt-3 list-disc space-y-2 pl-5 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <li>
-                Inside a script block, the five characters it escapes are not the ones that matter. A backslash, a line
-                break, <code className={CODE}>{"${...}"}</code> in a template literal, or a value placed outside quotes
-                all pass through untouched.
+                Inside a script block, references are not decoded, so entity encoding corrupts the value and still
+                misses what matters there: a backslash, a line break,{" "}
+                <code className={CODE}>{"${...}"}</code> in a template literal, or a value placed outside quotes.
               </li>
               <li>
                 In <code className={CODE}>onclick</code> and the other event handler attributes, references are decoded
@@ -531,7 +540,7 @@ export function HtmlEntityCodec() {
                 <code className={CODE}>alert(1)</code>.
               </li>
               <li>
-                In <code className={CODE}>href</code> and <code className={CODE}>src</code>,{" "}
+                In an <code className={CODE}>href</code> or an iframe <code className={CODE}>src</code>,{" "}
                 <code className={CODE}>javascript&amp;colon;alert(1)</code> decodes to a javascript: URL, and the URL
                 parser drops tabs and newlines, so <code className={CODE}>jav&amp;Tab;ascript:</code> works too. Check
                 the scheme against an allowlist after decoding.

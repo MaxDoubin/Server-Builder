@@ -439,7 +439,12 @@ export interface EncodeResult {
   encoded: number;
   /** Of those, how many used a name. */
   named: number;
-  /** NUL and U+0080 to U+009F found where encoding was asked for, left raw because no reference round-trips them. */
+  /**
+   * NUL, and the 27 code points from U+0080 to U+009F that the parser remaps
+   * to Windows-1252, found where encoding was asked for. Left raw because no
+   * reference round-trips them. The other five (U+0081, U+008D, U+008F,
+   * U+0090, U+009D) are not remapped, so their references decode to them.
+   */
   unencodable: { cp: number; count: number }[];
   /** Lone surrogates, replaced by U+FFFD. */
   loneSurrogates: number;
@@ -492,9 +497,11 @@ export function encodeEntities(input: string, options: EncodeOptions): EncodeRes
       parts.push(out);
       continue;
     }
-    if (cp === 0 || (cp >= 0x80 && cp <= 0x9f)) {
+    if (cp === 0 || C1_REPLACEMENTS.has(cp)) {
       // &#0; decodes to U+FFFD and &#128; to the euro sign, so no reference
-      // brings these back. Leave them as they are and say so.
+      // brings these back. Leave them as they are and say so. The five C1
+      // codes Windows-1252 leaves undefined are not remapped, so &#129; does
+      // decode to U+0081 (as a parse error, like &#1;) and is written.
       raw.set(cp, (raw.get(cp) ?? 0) + 1);
       parts.push(out);
       continue;

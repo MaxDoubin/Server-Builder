@@ -57,7 +57,7 @@ import {
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
 const LABEL_CLASS =
-  "font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
+  "block font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
 const INPUT_CLASS =
   "mt-2 min-h-[44px] w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none [color-scheme:dark] [.light_&]:[color-scheme:light]";
 const SELECT_CLASS =
@@ -308,6 +308,8 @@ export function DateCalculator() {
                 id="dc-start"
                 type="datetime-local"
                 step={1}
+                min="0001-01-01T00:00"
+                max="9999-12-31T23:59:59"
                 value={startText}
                 onChange={(event) => setStartText(event.target.value)}
                 aria-invalid={startField.error !== null}
@@ -332,6 +334,8 @@ export function DateCalculator() {
                 id="dc-end"
                 type="datetime-local"
                 step={1}
+                min="0001-01-01T00:00"
+                max="9999-12-31T23:59:59"
                 value={endText}
                 onChange={(event) => setEndText(event.target.value)}
                 aria-invalid={endField.error !== null}
@@ -532,6 +536,8 @@ export function DateCalculator() {
                 id="dc-base"
                 type="datetime-local"
                 step={1}
+                min="0001-01-01T00:00"
+                max="9999-12-31T23:59:59"
                 value={baseText}
                 onChange={(event) => setBaseText(event.target.value)}
                 aria-invalid={baseField.error !== null}

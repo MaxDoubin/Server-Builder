@@ -712,7 +712,7 @@ export function classify(ip: IpAddress): Classification {
       result.fallback = {
         kind: "global",
         title: "Global unicast",
-        text: "Not in any special-purpose block. This is ordinary unicast space. IANA gave its last unallocated /8 blocks to the regional internet registries in 2011, so every such block is now held by an RIR or, for older allocations, by the organization it was assigned to. Whether this address is announced and reachable right now is a routing question the registry cannot answer.",
+        text: "Not in any special-purpose block. This is ordinary unicast space. IANA gave out its last unallocated /8 blocks to the regional internet registries in 2011, so every unicast /8 is now administered by an RIR or, for some early allocations, held by the organization it was assigned to. Whether this address is announced and reachable right now is a routing question the registry cannot answer.",
       };
     }
     return result;

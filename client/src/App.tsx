@@ -503,6 +503,12 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const SshConfigBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/SshConfigBuilder").then((m) => ({ default: m.SshConfigBuilder })),
+);
+const SudoersExplainer = lazyWithRetry(() =>
+  import("@/pages/tools/SudoersExplainer").then((m) => ({ default: m.SudoersExplainer })),
+);
 const DhcpOption121Encoder = lazyWithRetry(() =>
   import("@/pages/tools/DhcpOption121Encoder").then((m) => ({ default: m.DhcpOption121Encoder })),
 );
@@ -1701,6 +1707,16 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ssh-config-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <SshConfigBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/sudoers-explainer">
+            <Suspense fallback={<RouteLoading />}>
+              <SudoersExplainer />
             </Suspense>
           </Route>
           <Route path="/tools/dhcp-option-121-encoder">

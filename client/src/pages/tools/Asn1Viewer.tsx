@@ -285,7 +285,7 @@ export function Asn1Viewer() {
       setBlockIndex(0);
       setRowLimit(ROW_STEP);
     } catch {
-      if (alive.current) setFileError(`${chosen.name} could not be read.`);
+      if (alive.current && seq === readSeq.current) setFileError(`${chosen.name} could not be read.`);
     }
   }
 

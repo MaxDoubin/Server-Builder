@@ -9,7 +9,8 @@
  * row with the same number of cells, and body rows padded or cut to fit. A
  * pipe preceded by a backslash never splits a cell, and that one backslash
  * is removed (cmark-gfm's unescape_pipes), which writing a pipe as \| undoes.
- * Output never relies on a form renderers disagree about; see escapeCell.
+ * Output avoids the backslash-before-pipe forms that renderers can read as a
+ * cell boundary; see escapeCell.
  */
 
 export type Align = "none" | "left" | "center" | "right";
@@ -355,10 +356,11 @@ export function codePointLength(s: string): number {
  *
  * A pipe that already has an odd number of backslashes before it is an
  * escaped pipe in the source, so it is left alone. Doubling the backslash
- * would give \\|, a form renderers read differently: marked counts the
- * backslashes and splits the row there, while markdown-it does not. With an
- * even number of backslashes before the pipe (a literal backslash, then a
- * pipe) one more is added, so the run is odd and both read it as escaped.
+ * would give \\|, which marked reads as a literal backslash followed by a
+ * cell boundary, because it counts the backslashes in the run: the row
+ * splits there. With an even number of backslashes before the pipe (a
+ * literal backslash, then a pipe) one more is added, so the run is odd and
+ * the pipe stays escaped.
  */
 export function escapeCell(s: string): string {
   const flat = s.trim().replace(/\r\n|\r|\n/g, BR_SOURCE);

@@ -94,7 +94,7 @@ function fmt(n: number, digits: number): string {
 }
 
 function ampsText(n: number): string {
-  return `${fmt(n, n < 10 ? 2 : 1)} A`;
+  return `${Number(n.toFixed(n < 10 ? 2 : 1)).toLocaleString("en-US")} A`;
 }
 
 function pctText(n: number): string {
@@ -329,7 +329,9 @@ export function PduLoadCalculator() {
               <p id="pdu-breaker-msg" className={breakerParsed.ok ? HINT_CLASS : ERROR_CLASS}>
                 {breakerParsed.ok
                   ? limitForText !== null
-                    ? `Continuous limit ${ampsText(limitForText)}.`
+                    ? derate
+                      ? `Continuous limit ${ampsText(limitForText)}.`
+                      : `Limit ${ampsText(limitForText)}, no derating.`
                     : ""
                   : breakerParsed.message}
               </p>

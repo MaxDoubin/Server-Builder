@@ -685,6 +685,22 @@ export const TOOLS: ToolEntry[] = [
     category: "infrastructure",
     keywords: ["ups", "battery", "runtime", "peukert", "va", "watts", "power factor", "lead-acid", "inverter", "backup power"],
   },
+  {
+    slug: "ssh-config-builder",
+    name: "SSH config builder",
+    blurb:
+      "Build ~/.ssh/config Host blocks with jumps, forwards, and multiplexing, and see the equivalent ssh command. Runs in your browser.",
+    category: "systems",
+    keywords: ["ssh", "ssh config", "proxyjump", "bastion", "port forwarding", "controlmaster", "identityfile", "openssh"],
+  },
+  {
+    slug: "sudoers-explainer",
+    name: "Sudoers explainer",
+    blurb:
+      "Paste sudoers lines and read each rule in plain language, with risky grants like NOPASSWD and shell escapes flagged. Runs in your browser.",
+    category: "systems",
+    keywords: ["sudo", "sudoers", "visudo", "nopasswd", "privilege escalation", "linux", "shell escape", "cmnd_alias"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {
