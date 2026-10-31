@@ -562,9 +562,11 @@ export function TextDiff() {
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <CopyButton value={patch} label="Copy the unified diff" testId="button-copy-diff">
-                    <span>Copy diff -u</span>
-                  </CopyButton>
+                  {patch ? (
+                    <CopyButton value={patch} label="Copy the unified diff" testId="button-copy-diff">
+                      <span>Copy diff -u</span>
+                    </CopyButton>
+                  ) : null}
                   <button type="button" onClick={download} disabled={!patch} className={BUTTON_CLASS} data-testid="button-download">
                     <Download className="h-4 w-4" aria-hidden="true" />
                     .diff

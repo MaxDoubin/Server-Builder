@@ -535,7 +535,7 @@ export function FiberLossBudget() {
               />
               <p id="fiber-margin-msg" className={marginP.ok ? HINT_CLASS : ERROR_CLASS}>
                 {marginP.ok
-                  ? "Room for repair splices, re-terminations and aging. Long single-mode links often hold 3 dB. Multimode budgets are too tight for that."
+                  ? "Room for repair splices, re-terminations and aging. Long single-mode links often hold 2 to 3 dB. Multimode budgets are too tight for that."
                   : marginP.message}
               </p>
             </div>

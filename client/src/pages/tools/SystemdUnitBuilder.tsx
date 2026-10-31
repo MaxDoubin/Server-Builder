@@ -581,7 +581,7 @@ export function SystemdUnitBuilder() {
                   <span>Copy unit</span>
                 </CopyButton>
               </div>
-              <pre className={`${PRE} mt-3`} data-testid="output-unit" tabIndex={0} aria-label="Generated unit file">
+              <pre className={`${PRE} mt-3`} data-testid="output-unit" tabIndex={0} role="region" aria-label="Generated unit file">
                 <UnitText text={build.unit} />
               </pre>
               <p className={HINT} data-testid="text-summary">
@@ -595,7 +595,7 @@ export function SystemdUnitBuilder() {
             <ToolPanel title="Install and verify">
               {build.fileName ? (
                 <>
-                  <pre className={PRE} data-testid="output-commands" tabIndex={0} aria-label="Install commands">
+                  <pre className={PRE} data-testid="output-commands" tabIndex={0} role="region" aria-label="Install commands">
                     {build.commands}
                   </pre>
                   <div className="mt-3 flex flex-wrap items-center gap-2">

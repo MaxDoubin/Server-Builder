@@ -776,7 +776,7 @@ export function PduLoadCalculator() {
               </div>
               <p className={`${HINT_CLASS} mt-3`}>
                 {topology === "delta"
-                  ? "In a delta each connection is a phase of the delta. The line currents above are larger than the phase currents here, by up to √3 when the loads are equal."
+                  ? "In a delta each connection is a phase of the delta. When the three loads are equal, each line current above is √3 times the phase current here."
                   : "In a wye the line-to-neutral rows are phase currents and equal the line currents they sit on. A row across two lines draws that current from each of them."}
               </p>
             </ToolPanel>
@@ -828,9 +828,9 @@ export function PduLoadCalculator() {
                 VA.
               </p>
               <p>
-                A 208 V, 230 V or 240 V single-phase circuit is two conductors at that voltage, often two lines of a
-                three-phase supply. Pick a three-phase supply above to place devices on separate lines and check the
-                balance.
+                At 208 V or 240 V a single-phase circuit usually uses two live conductors, often two lines of a
+                three-phase supply. At 230 V it is usually one line and a neutral. Pick a three-phase supply above to
+                place devices on separate lines and check the balance.
               </p>
             </div>
           )}

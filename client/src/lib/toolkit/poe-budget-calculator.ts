@@ -105,9 +105,11 @@ export function parseWattsMw(
   }
   const w = parsed.value;
   if (w < 0) return { ok: false, message: `The ${opts.label} cannot be negative.` };
-  if (w === 0 && !opts.allowZero) return { ok: false, message: `The ${opts.label} has to be more than 0 W.` };
   if (w > opts.max) return { ok: false, message: `The ${opts.label} is capped at ${opts.max.toLocaleString("en-US")} W.` };
-  return { ok: true, value: Math.round(w * 1000) };
+  // Held in whole milliwatts, so a value under 0.0005 W rounds to 0.
+  const mw = Math.round(w * 1000);
+  if (mw === 0 && !opts.allowZero) return { ok: false, message: `The ${opts.label} has to be at least 0.001 W.` };
+  return { ok: true, value: mw === 0 ? 0 : mw };
 }
 
 /** A whole number in a range. Null for an empty string when not required. */
@@ -119,7 +121,8 @@ export function parseCount(
   if (text === "") {
     return opts.required ? { ok: false, message: `Enter the ${opts.label}.` } : { ok: true, value: null };
   }
-  if (text.length > 12 || !/^\d+$/.test(text.replace(/,/g, ""))) {
+  // Commas only as thousands separators, so "1,5" is refused rather than read as 15.
+  if (text.length > 12 || !/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(text)) {
     return { ok: false, message: `The ${opts.label} is a whole number, such as ${opts.example}.` };
   }
   const n = Number(text.replace(/,/g, ""));
@@ -199,10 +202,12 @@ export function analyzeLine(line: DeviceLineInput, pseType: PseType): DeviceLine
   const port = PSE_TYPES[pseType];
   const requested = poeClass(line.cls);
   const demoted = requested.cls > port.maxClass;
-  // A PSE that cannot supply the requested class assigns the highest class it
-  // has (802.3bt power demotion; an 802.3af PSE reads class 4 as class 0).
-  // Either way the port reserves its own maximum.
-  const assigned = demoted ? poeClass(port.maxClass) : requested;
+  // Classes 4 to 8 all show the class 4 signature in the first class event.
+  // A Type 1 PSE treats that as class 0 (802.3 Clause 33). Type 2, 3 and 4
+  // PSEs demote to the highest class they support (Clause 145 power
+  // demotion). Either way the port reserves its own maximum: 15.4 W for
+  // class 0 equals the Type 1 port limit.
+  const assigned = demoted ? poeClass(pseType === 1 ? 0 : port.maxClass) : requested;
   const allocEachMw = assigned.pseMw;
   const measured = line.measuredMw !== null;
   const actualEachMw = measured ? (line.measuredMw as number) : allocEachMw;
@@ -212,9 +217,11 @@ export function analyzeLine(line: DeviceLineInput, pseType: PseType): DeviceLine
     flags.push({
       level: "warn",
       text:
-        `Class ${requested.cls} needs a Type ${requested.type} PSE. A Type ${pseType} port assigns at most class ${port.maxClass}, ` +
+        (pseType === 1
+          ? `Class ${requested.cls} needs a Type ${requested.type} PSE. A Type 1 port treats class 4 and above as class 0, `
+          : `Class ${requested.cls} needs a Type ${requested.type} PSE. A Type ${pseType} port assigns at most class ${port.maxClass}, `) +
         `so it reserves ${wattsText(assigned.pseMw)} and the device gets ${wattsText(assigned.pdMw, 2)} at worst case. ` +
-        `It has to run within that, in a reduced power mode if it has one, or it will not come up.`,
+        `The device has to run within that, in a reduced power mode if it has one, or it may not power up.`,
     });
   }
   if (measured) {
@@ -229,7 +236,7 @@ export function analyzeLine(line: DeviceLineInput, pseType: PseType): DeviceLine
         level: "danger",
         text:
           `Measured ${wattsText(m)} is above the ${wattsText(assigned.pseMw)} that class ${assigned.cls} allows at the port. ` +
-          `A PSE removes power from a port that overloads its assigned class for too long.`,
+          `A PSE may cut power to a port that stays above its assigned class for longer than a short overload window.`,
       });
     }
   }
@@ -275,20 +282,36 @@ export function analyzeBudget(sw: SwitchInput, input: DeviceLineInput[]): Budget
 
   const flags: Flag[] = [];
   if (budget !== null && devices > 0) {
-    if (actualOver) {
+    const allocText =
+      `Reserved by class, these devices need ${wattsText(allocMw)}, ${wattsText(-(allocHeadroomMw as number))} over the ` +
+      `${wattsText(budget)} budget. A switch that allocates by class refuses power to the ports that do not fit, ` +
+      `usually the lowest priority ones.`;
+    if (measuredDevices === 0) {
+      // With nothing measured the draw is the class figure, so the two totals
+      // are the same number and there is no lower figure to compare.
+      if (allocOver) {
+        flags.push({
+          level: "danger",
+          text: `${allocText} No draw is measured, so there is no lower figure that shows the devices would fit.`,
+        });
+      }
+    } else if (actualOver) {
+      const partial = measuredDevices < devices;
       flags.push({
         level: "danger",
         text:
-          `Even the measured draw, ${wattsText(actualMw)}, is ${wattsText(-(actualHeadroomMw as number))} over the ` +
-          `${wattsText(budget)} budget. The switch will shed ports, lowest priority first.`,
+          `Even the draw, ${wattsText(actualMw)}${partial ? " (measured where known, class maximum elsewhere)" : " as measured"}, ` +
+          `is ${wattsText(-(actualHeadroomMw as number))} over the ${wattsText(budget)} budget. ` +
+          `The switch cannot power all of these devices at once and will deny or cut power to some ports, lowest priority first.`,
       });
     } else if (allocOver) {
+      const partial = measuredDevices < devices;
       flags.push({
         level: "warn",
         text:
-          `Reserved by class, these devices need ${wattsText(allocMw)}, ${wattsText(-(allocHeadroomMw as number))} over the ` +
-          `${wattsText(budget)} budget. A switch that allocates by class will refuse power to the ports that do not fit, ` +
-          `even though the ${measuredDevices > 0 ? "measured" : "estimated"} draw of ${wattsText(actualMw)} would fit.`,
+          `${allocText} The draw of ${wattsText(actualMw)}` +
+          `${partial ? " (measured where known, class maximum elsewhere)" : " as measured"} would fit, ` +
+          `so a switch that allocates by measured draw or by LLDP request could power them all.`,
       });
     }
   }

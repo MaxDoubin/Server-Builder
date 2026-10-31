@@ -117,6 +117,13 @@ const EXAMPLES: Example[] = [
   { label: "Tap: decode", scheme: "tap", direction: "decode", text: ".. ..  ... ....  ... ....  . ....  / ... ...  .. ....  .. ..  .. ...  .... ...." },
 ];
 
+/** Seconds as "4.2 s" or "2 min 5 s". Rounds once, so 119.7 s reads 2 min 0 s, never 1 min 60 s. */
+function formatDuration(seconds: number): string {
+  if (seconds < 59.95) return `${seconds.toFixed(1)} s`;
+  const whole = Math.round(seconds);
+  return `${Math.floor(whole / 60)} min ${whole % 60} s`;
+}
+
 /* ------------------------------------------------------------------ audio */
 
 type AudioContextConstructor = typeof AudioContext;
@@ -652,8 +659,8 @@ export function PolybiusSquare() {
                   </div>
                   <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                     {size === 5
-                      ? "Twenty five cells, so J is written as I. Digits have no cell."
-                      : "Thirty six cells: every letter and the ten digits, nothing merged."}
+                      ? "25 cells, so J is written as I. Digits have no cell."
+                      : "36 cells: every letter and the ten digits, nothing merged."}
                   </p>
                 </div>
 
@@ -882,7 +889,7 @@ export function PolybiusSquare() {
               {isTap && plan && plan.knocks.length ? (
                 <ToolResult
                   label="Knocks"
-                  value={`${plan.knocks.length.toLocaleString("en-US")}, about ${plan.duration < 60 ? `${plan.duration.toFixed(1)} s` : `${Math.floor(plan.duration / 60)} min ${Math.round(plan.duration % 60)} s`}`}
+                  value={`${plan.knocks.length.toLocaleString("en-US")}, about ${formatDuration(plan.duration)}`}
                 />
               ) : null}
             </div>
@@ -996,7 +1003,7 @@ export function PolybiusSquare() {
             <div className="space-y-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <p>
                 <span className="text-[hsl(var(--brand-bone))]">Stage 1, substitution, shown above.</span> Every letter
-                {square.size === 6 ? " or digit" : ""} becomes its row label followed by its column label
+                {square.size === 6 ? " or digit" : ""} becomes two symbols, its row label followed by its column label
                 {selected ? (
                   <>
                     : {cellLabel(square, selected.cell)} sits in row {square.labels[selected.row]}, column{" "}
@@ -1004,14 +1011,15 @@ export function PolybiusSquare() {
                     <code className="text-[hsl(var(--brand-cyan))]">{coordText(selected)}</code>
                   </>
                 ) : null}
-                . The labels {(letterNames ?? "").split("").join(", ")} were chosen because their Morse code forms are hard to
-                confuse over a noisy radio link.
+                . Splitting each character into two symbols is the fractionation. The labels{" "}
+                {(letterNames ?? "").split("").join(", ")} were chosen because their Morse code forms are hard to confuse
+                over a noisy radio link.
               </p>
               <p>
                 <span className="text-[hsl(var(--brand-bone))]">Stage 2, transposition, not performed here.</span> The
                 real cipher writes the stage 1 letters in rows under a second keyword, then reads them out column by
                 column in the alphabetical order of that keyword&apos;s letters. Each plaintext letter&apos;s two halves
-                end up in different columns, far apart in the ciphertext. That split is the fractionation, and it is
+                end up in different columns, far apart in the ciphertext. Fractionation followed by this transposition is
                 where the cipher&apos;s strength came from.
               </p>
               <p className={NOTE_BOX}>
