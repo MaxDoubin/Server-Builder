@@ -24,6 +24,7 @@ import {
   doublingMonths,
   estimateFromTwoPoints,
   formatDate,
+  levelReached,
   monthTickStep,
   monthsToEmpty,
   niceTicks,
@@ -76,6 +77,8 @@ function fmtNum(n: number): string {
   if (!Number.isFinite(n)) return "too large to show";
   const a = Math.abs(n);
   if (a >= 1e15) return n.toExponential(3);
+  // Three significant digits below 1, so 0.004 PB a month does not round to "0".
+  if (a > 0 && a < 1) return a < 1e-6 ? n.toExponential(2) : String(Number(n.toPrecision(3)));
   const digits = a < 100 ? 2 : a < 10000 ? 1 : 0;
   return n.toLocaleString("en-US", { maximumFractionDigits: digits });
 }
@@ -88,8 +91,18 @@ function fmtMonths(t: number): string {
 
 function fmtPct(ratio: number, digits = 1): string {
   if (!Number.isFinite(ratio)) return "over 1,000,000%";
-  if (ratio * 100 >= 1e6) return "over 1,000,000%";
-  return `${(ratio * 100).toLocaleString("en-US", { maximumFractionDigits: digits })}%`;
+  const p = ratio * 100;
+  if (p >= 1e6) return "over 1,000,000%";
+  // Keep a tiny nonzero rate from printing as "0%".
+  if (p !== 0 && Math.abs(p) < Math.pow(10, -digits)) {
+    return `${Math.abs(p) < 1e-6 ? p.toExponential(1) : String(Number(p.toPrecision(2)))}%`;
+  }
+  return `${p.toLocaleString("en-US", { maximumFractionDigits: digits })}%`;
+}
+
+/** "doubling every 23.4 months", capped so a tiny rate does not print a 20 digit number. */
+function fmtPeriod(t: number): string {
+  return t > MAX_DATE_MONTHS ? "more than 100 years" : fmtMonths(t);
 }
 
 function levelLabel(pct: number): string {
@@ -459,13 +472,13 @@ export function StorageGrowthForecast() {
       const doubling = doublingMonths(g.rate);
       growthLine =
         `${fmtPct(g.rate, 2)} per month, ${fmtPct(annualRate(g), 1)} per year` +
-        (doubling !== null ? `, doubling every ${fmtMonths(doubling)}` : "");
+        (doubling !== null ? `, doubling every ${fmtPeriod(doubling)}` : "");
       if (forecast.used === 0) {
         growthNote = "Compound growth from 0 stays at 0. Use the linear model, or enter the usage now.";
       } else if (g.rate === 0) {
         growthNote = "Usage is flat, so a threshold it is not already above is never reached.";
       } else if (g.rate < 0) {
-        growthNote = `Usage is shrinking, halving every ${fmtMonths(Math.LN2 / -Math.log1p(g.rate))}, so a threshold it is not already above is never reached.`;
+        growthNote = `Usage is shrinking, halving every ${fmtPeriod(Math.LN2 / -Math.log1p(g.rate))}, so a threshold it is not already above is never reached.`;
       }
     }
   }
@@ -487,17 +500,21 @@ export function StorageGrowthForecast() {
         `month,date,used_${unit},capacity_${unit},used_percent`,
         ...forecast.rows.map(
           (r) =>
-            `${r.month},${toIso(r.date)},${Number(r.used.toPrecision(12))},${r.capacity},${(r.ratio * 100).toFixed(2)}`,
+            `${r.month},${toIso(r.date)},${Number(r.used.toPrecision(12))},${Number(r.capacity.toPrecision(12))},${(r.ratio * 100).toFixed(2)}`,
         ),
       ].join("\n")
     : "";
 
   const levels = forecast ? forecast.list.map((c) => c.pct) : [];
-  function stateFor(ratio: number): { text: string; tone: string } {
-    if (ratio > 1) return { text: "Over capacity", tone: "text-[hsl(var(--brand-danger))]" };
-    if (ratio >= 1) return { text: "Full", tone: "text-[hsl(var(--brand-danger))]" };
+  function stateFor(used: number, capacity: number): { text: string; tone: string } {
+    // levelReached is the comparison the crossing times use, so a row and the
+    // threshold table never disagree over a rounding error (0.29 * 100 < 29).
+    if (used > capacity) return { text: "Over capacity", tone: "text-[hsl(var(--brand-danger))]" };
+    if (levelReached(used, capacity, 100)) return { text: "Full", tone: "text-[hsl(var(--brand-danger))]" };
     for (let i = levels.length - 2; i >= 0; i -= 1) {
-      if (ratio * 100 >= levels[i]) return { text: `At or above ${levels[i]}%`, tone: "text-[hsl(var(--brand-amber))]" };
+      if (levelReached(used, capacity, levels[i])) {
+        return { text: `At or above ${levels[i].toLocaleString("en-US")}%`, tone: "text-[hsl(var(--brand-amber))]" };
+      }
     }
     return { text: "", tone: "" };
   }
@@ -960,7 +977,7 @@ export function StorageGrowthForecast() {
                   </thead>
                   <tbody>
                     {forecast.rows.map((r) => {
-                      const state = stateFor(r.ratio);
+                      const state = stateFor(r.used, r.capacity);
                       return (
                         <tr key={r.month} className="border-b border-[hsl(var(--brand-iron)/0.5)]">
                           <th scope="row" className={`${TD_CLASS} text-left font-normal text-[hsl(var(--brand-ash))]`}>

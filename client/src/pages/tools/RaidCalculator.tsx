@@ -19,6 +19,7 @@ import {
   UNIT_BYTES,
   calculate,
   compareLevels,
+  diagramWindow,
   diskBars,
   formatMultiplier,
   formatPercent,
@@ -53,6 +54,20 @@ function plural(n: number, one: string, many: string): string {
 
 function times(value: number, upTo = false): string {
   return `${upTo ? "up to " : ""}${formatMultiplier(value)}×`;
+}
+
+/** What worst and best case mean for this level, in a sentence. */
+function toleranceNote(result: RaidResult): string {
+  switch (result.level.id) {
+    case "raid10":
+      return "Worst case is the number of failures survived wherever they land: one, because a second failure in the same mirror pair loses data. Best case is one failure in each pair.";
+    case "raid50":
+      return "Worst case is the number of failures survived wherever they land: one, because a second failure in the same span loses data. Best case is one failure in each span.";
+    case "raid60":
+      return "Worst case is the number of failures survived wherever they land: two, because a third failure in the same span loses data. Best case is two failures in each span.";
+    default:
+      return "This is the number of disks that can be down at once with the data intact.";
+  }
 }
 
 /** What sets the sequential figure for this level, in a sentence. */
@@ -135,7 +150,7 @@ function Legend() {
 }
 
 function Diagram({ result, unit }: { result: RaidResult; unit: Unit }) {
-  const sets = useMemo(() => diskBars(result), [result]);
+  const view = useMemo(() => diagramWindow(diskBars(result)), [result]);
   const sketch = useMemo(
     () => layoutSketch(result.level.id, result.diskCount, result.perSet),
     [result],
@@ -147,7 +162,7 @@ function Diagram({ result, unit }: { result: RaidResult; unit: Unit }) {
     <div data-testid="diagram-disks">
       <Legend />
       <div className="mt-4 flex flex-wrap gap-4">
-        {sets.map(({ set, bars }) => (
+        {view.sets.map(({ set, bars }) => (
           <div
             key={set.index}
             className="min-w-0 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.4)] p-3"
@@ -193,6 +208,14 @@ function Diagram({ result, unit }: { result: RaidResult; unit: Unit }) {
           </div>
         ))}
       </div>
+      {view.truncated ? (
+        <p
+          data-testid="text-diagram-note"
+          className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]"
+        >
+          Showing the first {view.shown} of {view.total} disks, largest first.
+        </p>
+      ) : null}
       <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
         Bar height is disk size. Disks are numbered largest first, which is also how they are grouped.
         {result.level.id === "raid5" || result.level.id === "raid6" || result.level.id === "raid50" || result.level.id === "raid60"
@@ -337,11 +360,13 @@ export function RaidCalculator() {
               >
                 {UNITS.map((u) => (
                   <option key={u} value={u}>
-                    {u}
-                    {u === "GB" || u === "TB" ? " (decimal, as drives are sold)" : " (binary, as many systems report)"}
+                    {u} ({u === "GB" || u === "TB" ? "decimal" : "binary"})
                   </option>
                 ))}
               </select>
+              <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                GB and TB count in powers of 1000, as drives are sold. GiB and TiB count in powers of 1024.
+              </p>
             </div>
           </div>
 
@@ -565,11 +590,7 @@ export function RaidCalculator() {
                   {result.penaltyDetail}
                 </p>
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                  {result.tolerance.worst === result.tolerance.best
-                    ? "This is the number of disks that can be down at once with the data intact."
-                    : result.level.id === "raid10"
-                      ? "Worst case is the number of failures survived wherever they land: one, because a second hit on the same mirror pair loses data. Best case is one failure in each pair."
-                      : "Worst case is the number of failures survived wherever they land. Best case is the most it can survive if every failure lands in a different span."}{" "}
+                  {toleranceNote(result)}{" "}
                   A failed disk starts a rebuild, and a disk lost during it counts against these figures.
                 </p>
               </ToolPanel>
@@ -577,7 +598,7 @@ export function RaidCalculator() {
 
             <ToolPanel title="Performance, relative to one disk">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[320px] border-collapse text-left" data-testid="table-performance">
+                <table className="w-full min-w-[240px] border-collapse text-left" data-testid="table-performance">
                   <thead>
                     <tr className="border-b border-[hsl(var(--brand-iron))]">
                       <th scope="col" className={TH_CLASS}>

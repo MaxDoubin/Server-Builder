@@ -685,6 +685,32 @@ export function diskBars(result: RaidResult): SetBars[] {
   });
 }
 
+/** Most disks the diagram draws, so a 256 disk array stays a readable page. */
+export const MAX_DIAGRAM_DISKS = 64;
+
+export interface DiagramWindow {
+  sets: SetBars[];
+  /** Disks drawn. */
+  shown: number;
+  /** Disks in the array. */
+  total: number;
+  truncated: boolean;
+}
+
+/** The first `limit` disks in order, cutting the last set short if it straddles the limit. */
+export function diagramWindow(sets: SetBars[], limit: number = MAX_DIAGRAM_DISKS): DiagramWindow {
+  const total = sets.reduce((t, s) => t + s.bars.length, 0);
+  const out: SetBars[] = [];
+  let shown = 0;
+  for (const entry of sets) {
+    if (shown >= limit) break;
+    const bars = entry.bars.slice(0, limit - shown);
+    out.push({ set: entry.set, bars });
+    shown += bars.length;
+  }
+  return { sets: out, shown, total, truncated: shown < total };
+}
+
 /** Largest set the cell-by-cell layout sketch is drawn for. */
 export const MAX_SKETCH_DISKS = 10;
 

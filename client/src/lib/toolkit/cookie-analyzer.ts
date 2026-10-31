@@ -630,7 +630,9 @@ export function looksLikeAuthName(name: string): boolean {
   const n = name.replace(/^__(host|secure)-/i, "").toLowerCase();
   if (/csrf|xsrf/.test(n)) return false;
   return (
-    /sess|auth|token|jwt|login|remember|refresh|identity|saml|oidc|sso/.test(n) ||
+    // "sess" only as a word of its own (sess, sessid, session), so "assessment" does not count.
+    /session|(^|[^a-z])sess(id)?([^a-z]|$)|^sess|sessid/.test(n) ||
+    /auth|token|jwt|login|remember|refresh|identity|saml|oidc|sso/.test(n) ||
     /(^|[^a-z])sid([^a-z]|$)/.test(n) ||
     /^sid|sid$/.test(n)
   );

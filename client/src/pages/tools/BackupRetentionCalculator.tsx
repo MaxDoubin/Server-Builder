@@ -120,7 +120,7 @@ function countsText(r: SchemeOk): string {
 
 function diskText(r: SchemeOk): string {
   if (r.diskMin === r.diskMax) return `${range(r.diskMin, r.diskMax)}, the same every day`;
-  return `${range(r.diskMin, r.diskMax)}, largest on a ${r.peakWeekday}`;
+  return `${range(r.diskMin, r.diskMax)}, storage peaks on a ${r.peakWeekday}`;
 }
 
 function chainText(r: SchemeOk): string {
@@ -525,7 +525,7 @@ export function BackupRetentionCalculator() {
               parsed={dedup}
               suffix=": 1"
               testId="input-dedup"
-              hint="Applied to the total. A vendor figure that already counts repeated fulls belongs here alone."
+              hint="Divides the whole stored total. If a vendor quotes one combined reduction ratio, enter it here and set compression to 1."
             />
             <NumberField
               id="brc-copies"
@@ -561,7 +561,7 @@ export function BackupRetentionCalculator() {
                         Scheme
                       </th>
                       <th scope="col" className={TH_CLASS}>
-                        Restore points
+                        Restore points by policy
                       </th>
                       <th scope="col" className={TH_CLASS}>
                         On disk
@@ -699,8 +699,8 @@ export function BackupRetentionCalculator() {
                 </div>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {lock.ok && lock.value > 0
-                    ? `A ${lock.value} day lock means an attacker with admin rights still cannot delete or encrypt the last ${lock.value} days of backups. Every backup they depend on is held too, which is already counted above.`
-                    : "Ransomware operators delete backups before they encrypt production. A copy that cannot be changed or deleted until a lock expires, such as object lock or a hardened repository, is what survives that."}
+                    ? `With a ${lock.value}-day lock, an attacker holding the backup console's administrator credentials still cannot delete or overwrite the last ${lock.value} ${pluralise(lock.value, "day")} of backups. Every backup they depend on is held too, which is already counted above.`
+                    : "Ransomware operators often delete backups before they encrypt production. A copy that cannot be changed or deleted until a lock expires, such as object lock in compliance mode or a hardened repository, is what survives that."}
                 </p>
               </div>
             </div>

@@ -5,12 +5,14 @@
  * a failure still carry peak load plus a margin, and reads efficiency off
  * the 80 PLUS certification points to turn DC load into wall power.
  *
- * Efficiency figures are the program's minimum requirements at 10, 20, 50
- * and 100 percent of rated load, from the 80 PLUS (CLEAResult) tables for
- * 115 V internal, 230 V EU internal and 230 V internal redundant supplies.
- * Between certified points this interpolates linearly. Below the lowest
- * point the program sets no requirement, so the result is flagged rather
- * than extrapolated.
+ * Efficiency figures are the program's minimum requirements at 5, 10, 20,
+ * 50 and 100 percent of rated load, from the 80 PLUS tables published by
+ * CLEAResult ("What do the different PSU ratings mean?", checked October
+ * 2026) for 115 V internal, 230 V EU internal and 230 V internal redundant
+ * supplies. Between certified points this interpolates linearly. Below the
+ * lowest point the program sets no requirement, so the result is flagged
+ * rather than extrapolated. For redundant supplies below Titanium the
+ * program lists 10 percent figures only as suggestions, so they are left out.
  *
  * No React or DOM here, so the arithmetic is unit tested on its own.
  */
@@ -23,7 +25,7 @@ export { BTU_PER_WATT, HOURS_PER_YEAR };
 /* -------------------------------------------------------------- efficiency */
 
 export type Standard = "115v" | "230v-eu" | "230v-redundant";
-export type Tier = "standard" | "bronze" | "silver" | "gold" | "platinum" | "titanium";
+export type Tier = "standard" | "bronze" | "silver" | "gold" | "platinum" | "titanium" | "ruby";
 
 export const STANDARDS: { id: Standard; label: string; note: string }[] = [
   { id: "115v", label: "115 V internal", note: "North American line voltage, non-redundant supplies." },
@@ -31,48 +33,55 @@ export const STANDARDS: { id: Standard; label: string; note: string }[] = [
   {
     id: "230v-redundant",
     label: "230 V internal redundant",
-    note: "Hot-swap data center supplies. There is no base 80 PLUS level in this program.",
+    note: "Hot-swap data center supplies. This table starts at Bronze, and its 10 percent figures below Titanium are only suggested, so they are not used.",
   },
 ];
 
 export const TIERS: { id: Tier; label: string }[] = [
-  { id: "standard", label: "80 PLUS" },
+  { id: "standard", label: "80 PLUS Standard" },
   { id: "bronze", label: "80 PLUS Bronze" },
   { id: "silver", label: "80 PLUS Silver" },
   { id: "gold", label: "80 PLUS Gold" },
   { id: "platinum", label: "80 PLUS Platinum" },
   { id: "titanium", label: "80 PLUS Titanium" },
+  { id: "ruby", label: "80 PLUS Ruby" },
 ];
 
-/** Load fractions the program certifies. Only Titanium is tested at 10 percent. */
-export const LOAD_POINTS = [0.1, 0.2, 0.5, 1] as const;
+/** Load fractions the program certifies. Titanium adds 10 percent and Ruby adds 5 percent. */
+export const LOAD_POINTS = [0.05, 0.1, 0.2, 0.5, 1] as const;
 
-type Row = [number | null, number, number, number];
+type Row = [number | null, number | null, number, number, number];
 
-/** Minimum efficiency in percent at 10, 20, 50 and 100 percent load. */
+/**
+ * Minimum efficiency in percent at 5, 10, 20, 50 and 100 percent load, as
+ * CLEAResult publishes them. null where the level sets no requirement.
+ */
 export const EFFICIENCY_TABLE: Record<Standard, Partial<Record<Tier, Row>>> = {
   "115v": {
-    standard: [null, 80, 80, 80],
-    bronze: [null, 82, 85, 82],
-    silver: [null, 85, 88, 85],
-    gold: [null, 87, 90, 87],
-    platinum: [null, 90, 92, 89],
-    titanium: [90, 92, 94, 90],
+    standard: [null, null, 80, 80, 80],
+    bronze: [null, null, 82, 85, 82],
+    silver: [null, null, 85, 88, 85],
+    gold: [null, null, 87, 90, 87],
+    platinum: [null, null, 90, 92, 89],
+    titanium: [null, 90, 92, 94, 90],
+    ruby: [85, 91, 93, 95, 91],
   },
   "230v-eu": {
-    standard: [null, 82, 85, 82],
-    bronze: [null, 85, 88, 85],
-    silver: [null, 87, 90, 87],
-    gold: [null, 90, 92, 89],
-    platinum: [null, 92, 94, 90],
-    titanium: [90, 94, 96, 94],
+    standard: [null, null, 82, 85, 82],
+    bronze: [null, null, 85, 88, 85],
+    silver: [null, null, 87, 90, 87],
+    gold: [null, null, 90, 92, 89],
+    platinum: [null, null, 92, 94, 90],
+    titanium: [null, 90, 93, 95, 91],
+    ruby: [85, 91, 94, 96, 92],
   },
   "230v-redundant": {
-    bronze: [null, 81, 85, 81],
-    silver: [null, 85, 89, 85],
-    gold: [null, 88, 92, 88],
-    platinum: [null, 90, 94, 91],
-    titanium: [90, 94, 96, 91],
+    bronze: [null, null, 82, 85, 82],
+    silver: [null, null, 85, 89, 85],
+    gold: [null, null, 88, 92, 88],
+    platinum: [null, null, 90, 94, 91],
+    titanium: [null, 90, 94, 96, 91],
+    ruby: [90, 91, 95, 96.5, 92],
   },
 };
 
@@ -83,6 +92,14 @@ export function tierAvailable(standard: Standard, tier: Tier): boolean {
 export interface CurvePoint {
   load: number;
   efficiency: number;
+}
+
+/** Lowest load fraction the tier certifies, or NaN for a tier the standard does not have. */
+export function lowestCertified(standard: Standard, tier: Tier): number {
+  const row = EFFICIENCY_TABLE[standard][tier];
+  if (!row) return NaN;
+  const i = row.findIndex((v) => v !== null);
+  return i < 0 ? NaN : LOAD_POINTS[i];
 }
 
 /** The certified points for a tier as fractions, lowest load first. */
@@ -161,7 +178,7 @@ export const PRESETS: Record<ComponentKind, ComponentPreset> = {
     rated: 300,
     typical: 240,
     peak: 300,
-    hint: "Typical is 80 percent of board power. Training jobs hold a GPU near full board power for hours, so raise it for that. Millisecond spikes are handled separately below.",
+    hint: "Typical is 80 percent of board power. Training jobs hold a GPU near full board power for hours, so raise it for that. Spikes shorter than a millisecond are handled separately below.",
   },
   ram: { kind: "ram", label: "DDR5 RDIMM", typical: 6, peak: 12, hint: "Per module. Larger and faster modules draw more." },
   nvme: { kind: "nvme", label: "NVMe U.2 SSD", typical: 12, peak: 25, hint: "Enterprise U.2 drives commonly allow up to 25 W in their highest power state." },
@@ -174,7 +191,7 @@ export const PRESETS: Record<ComponentKind, ComponentPreset> = {
     hint: "Peak is the spin-up surge, mostly on the 12 V rail. Staggered spin-up lets a controller start drives in groups so the surges do not coincide.",
   },
   fan: { kind: "fan", label: "Fan", typical: 5, peak: 18, hint: "High static pressure server fans draw several times more at full speed than at idle." },
-  nic: { kind: "nic", label: "NIC, 2 x 25 GbE", typical: 12, peak: 18, hint: "Optics or active cables add a few watts per port." },
+  nic: { kind: "nic", label: "NIC, 2 x 25 GbE", typical: 12, peak: 18, hint: "Optical transceivers add power per port, about 1 W each for SFP28 and more at higher speeds." },
   board: { kind: "board", label: "Motherboard and BMC", typical: 40, peak: 60, hint: "Chipset, BMC, voltage regulators and the board's own losses." },
   other: { kind: "other", label: "Other", typical: 10, peak: 15, hint: "RAID or HBA card, riser, anything else." },
 };

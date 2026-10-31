@@ -377,8 +377,10 @@ export interface CableResult {
  * (two for four-pair powering). Solving that quadratic for I and taking the
  * smaller root gives the operating point. With 802.3's worst case inputs
  * (44 V and 20 ohm for Type 1, 50 V and 12.5 ohm for Type 2 and 3, 52 V for
- * Type 4) it returns the PClass figures exactly: 12.95 W at the PD needs
- * 15.4 W at the PSE, 25.5 W needs 30 W, 71.3 W needs 90 W.
+ * Type 4) it returns the PClass figures exactly for classes 0, 3, 4 and 6:
+ * 12.95 W at the PD needs 15.4 W at the PSE, 25.5 W needs 30 W, 51 W needs
+ * 60 W. The standard rounds the other PD figures, so they come back within
+ * 0.1 W (71.3 W needs 90.04 W, 40 W needs 45.08 W).
  */
 export function cableLoss(input: CableInput): Parsed<CableResult> {
   const { pdW, lengthM, voltage, loopOhmsPer100m, pairs } = input;

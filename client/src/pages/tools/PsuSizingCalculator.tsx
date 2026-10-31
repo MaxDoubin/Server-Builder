@@ -31,6 +31,7 @@ import {
   type Tier,
   EFFICIENCY_TABLE,
   fromRating,
+  lowestCertified,
   parseNumber,
   size,
   supplyCounts,
@@ -154,7 +155,7 @@ function regionNote(point: OperatingPoint, name: string, lowest: number): string
     return `At ${name} load each supply runs at ${pct(point.loadFraction)}, under the lowest certified point of ${pct(lowest)}. The program sets no efficiency there and real units fall off, so wall draw is likely higher than shown.`;
   }
   if (point.region === "over") {
-    return `At ${name} load each supply would run at ${pct(point.loadFraction)} of its rating. That is an overload, and the supply's protection would shut it down.`;
+    return `At ${name} load each supply would run at ${pct(point.loadFraction)} of its rating. That is past its continuous rating, and its overload protection may shut it down.`;
   }
   return null;
 }
@@ -198,7 +199,7 @@ function LoadMeter({
       </div>
       <div className="relative h-4 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]" aria-hidden="true">
         <span className="absolute left-0">0</span>
-        {LOAD_POINTS.filter((p) => p >= lowest && p < 1).map((p) => (
+        {LOAD_POINTS.filter((p) => p < 1 && (p === lowest || p >= 0.2)).map((p) => (
           <span key={p} className="absolute -translate-x-1/2" style={{ left: clamp(p) }}>
             {p * 100}
           </span>
@@ -252,9 +253,9 @@ export function PsuSizingCalculator() {
   const price = parseNumber(priceRaw, "Electricity price", { min: 0, max: 10 });
   const tierOk = tierAvailable(standard, tier);
 
-  // Only Titanium is certified at 10 percent load; every other tier starts at 20.
-  const tierRow = EFFICIENCY_TABLE[standard][tier];
-  const lowestPoint = tierRow && tierRow[0] !== null ? LOAD_POINTS[0] : LOAD_POINTS[1];
+  // Ruby is certified from 5 percent load, Titanium from 10, every other level from 20.
+  const lowestRaw = lowestCertified(standard, tier);
+  const lowestPoint = Number.isFinite(lowestRaw) ? lowestRaw : LOAD_POINTS[2];
 
   const inputsOk =
     margin.ok &&
@@ -344,7 +345,7 @@ export function PsuSizingCalculator() {
     }
     if (result.headroomFraction >= 0 && margin.ok && result.headroomFraction + 1e-9 < margin.value / 100) {
       notes.push(
-        `The checked rating leaves ${pct(result.headroomFraction)} headroom over peak after a failure, less than the ${margin.value}% asked for.`,
+        `The checked rating leaves ${pct(result.headroomFraction)} headroom over peak${result.installed > result.carrying ? " after a failure" : ""}, less than the ${margin.value}% asked for.`,
       );
     }
   }
@@ -362,7 +363,7 @@ export function PsuSizingCalculator() {
     : "";
 
   const status = result
-    ? `${result.installed} supplies of ${watts(result.evaluatedW)}. Typical load ${pct(result.typical.loadFraction)} per supply, wall draw ${watts(result.typical.wallW)}.`
+    ? `${result.installed} ${result.installed === 1 ? "supply" : "supplies"} of ${watts(result.evaluatedW)}. Typical load ${pct(result.typical.loadFraction)} per supply, wall draw ${watts(result.typical.wallW)}.`
     : noLoad
       ? "Add at least one component that draws power."
       : "Fix the highlighted field to see the sizing.";
@@ -447,7 +448,7 @@ export function PsuSizingCalculator() {
                           inputMode="decimal"
                           autoComplete="off"
                           aria-invalid={ratedError !== null}
-                          aria-describedby={ratedError ? `${base}-rated-error` : `${base}-hint`}
+                          aria-describedby={ratedError ? `${base}-rated-error` : row.error ? `${base}-error` : `${base}-hint`}
                           data-testid={`input-rated-${index + 1}`}
                           className={`mt-2 ${INPUT_CLASS}`}
                         />
@@ -626,7 +627,7 @@ export function PsuSizingCalculator() {
             {sum.gpuPeak > 0 ? (
               <div className="mt-5">
                 <label htmlFor="psu-transient" className={LABEL_CLASS}>
-                  GPU transient, multiple of board power
+                  GPU transient, multiple of GPU peak
                 </label>
                 <input
                   id="psu-transient"
@@ -645,7 +646,7 @@ export function PsuSizingCalculator() {
                   role={transient.ok ? undefined : "alert"}
                 >
                   {transient.ok
-                    ? "GPUs draw spikes far above board power for fractions of a millisecond. 1 ignores them."
+                    ? "GPUs can spike well above board power for well under a millisecond. 1 ignores the spikes."
                     : transient.message}
                 </p>
               </div>
@@ -694,7 +695,7 @@ export function PsuSizingCalculator() {
             <p className={HINT_TEXT}>{STANDARDS.find((s) => s.id === standard)?.note}</p>
 
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[300px] border-collapse" data-testid="table-efficiency">
+              <table className="w-full min-w-[340px] border-collapse" data-testid="table-efficiency">
                 <caption className="sr-only">
                   Minimum efficiency for {tierLabel}, {standardLabel}, at each certified load
                 </caption>
@@ -715,9 +716,9 @@ export function PsuSizingCalculator() {
                     <th scope="row" className={TH_CLASS}>
                       Min. efficiency
                     </th>
-                    {(EFFICIENCY_TABLE[standard][tier] ?? [null, null, null, null]).map((e, i) => (
-                      <td key={i} className="py-2 pr-4 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
-                        {e === null ? <span className="text-[hsl(var(--brand-ash))]">not tested</span> : `${e}%`}
+                    {(EFFICIENCY_TABLE[standard][tier] ?? LOAD_POINTS.map(() => null)).map((e, i) => (
+                      <td key={i} className="py-2 pr-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
+                        {e === null ? <span className="text-[hsl(var(--brand-ash))]">none</span> : `${e}%`}
                       </td>
                     ))}
                   </tr>
@@ -801,7 +802,7 @@ export function PsuSizingCalculator() {
                     ? "This is the rating you entered."
                     : result.recommendedW
                       ? `The smallest common rating at or above ${watts(result.requiredPerPsuW)}.`
-                      : `No common rating reaches ${watts(result.requiredPerPsuW)}. Raise N so each supply carries less.`}
+                      : `No common rating reaches ${watts(result.requiredPerPsuW)}. Use N+1 or N+N with a larger N so each supply carries less.`}
                 </p>
                 <div className="mt-4">
                   <ToolResult label="DC load, typical" value={watts(sum.typical)} testId="text-dc-typical" />
@@ -879,7 +880,7 @@ export function PsuSizingCalculator() {
                   GPU transients
                 </div>
                 <p className="mt-2 break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  If every GPU spikes to {transient.ok ? transient.value : 1} times its board power while everything
+                  If every GPU spikes to {transient.ok ? transient.value : 1} times its peak figure while everything
                   else is at peak, the {watts(sum.gpuPeak)} of GPU peak becomes{" "}
                   {watts(sum.gpuPeak * (transient.ok ? transient.value : 1))} and the server draws about{" "}
                   {watts(result.transient.watts)}, against {watts(result.transient.capacityW)} of continuous rating

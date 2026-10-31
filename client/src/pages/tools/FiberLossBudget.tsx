@@ -69,6 +69,11 @@ const FLAG_STYLE: Record<Flag["level"], string> = {
 const CUSTOM = "custom";
 const DEFAULT_PRESET = "10gbase-sr";
 
+/** A subtracted amount, without a stray minus sign on zero. */
+function lessText(mdb: number): string {
+  return mdb === 0 ? dbText(0) : `-${dbText(mdb)}`;
+}
+
 function numText(n: number): string {
   return String(Number(n.toFixed(3)));
 }
@@ -670,10 +675,10 @@ export function FiberLossBudget() {
                   <div>
                     <h3 className={`${LABEL_CLASS} mb-1`}>Power budget</h3>
                     <ToolResult label="TX min less RX sensitivity" value={dbText(result.gapMdb)} />
-                    <ToolResult label="Penalty allowance" value={`-${dbText(result.penaltyMdb)}`} />
+                    <ToolResult label="Penalty allowance" value={lessText(result.penaltyMdb)} />
                     <ToolResult label="Budget for the link" value={dbText(result.budgetMdb)} testId="text-fiber-budget" />
                     <ToolResult label="Remaining after link loss" value={dbText(result.remainingMdb)} testId="text-fiber-remaining" />
-                    <ToolResult label="Safety margin" value={`-${dbText(result.marginMdb)}`} />
+                    <ToolResult label="Safety margin" value={lessText(result.marginMdb)} />
                     <ToolResult label="Spare" value={dbText(spare)} testId="text-fiber-spare" />
                   </div>
                 </div>

@@ -437,10 +437,12 @@ export function parseSanList(text: string): { entries: SanEntry[]; errors: strin
     const token = raw.replace(/^(DNS|IP|email|URI):/i, "");
     const prefix = /^(DNS|IP|email|URI):/i.exec(raw)?.[1]?.toLowerCase();
     let entry: SanEntry | null = null;
+    // RFC 5280 4.2.1.6: rfc822Name and uniformResourceIdentifier are IA5String,
+    // so both are limited to printable ASCII here (an IRI must be written as a URI).
     if (prefix === "uri" || (!prefix && /^[a-z][a-z0-9+.-]*:\/\//i.test(token))) {
-      if (/^[a-z][a-z0-9+.-]*:\S+$/i.test(token)) entry = { type: "URI", value: token };
+      if (/^[a-z][a-z0-9+.-]*:[\x21-\x7e]+$/i.test(token)) entry = { type: "URI", value: token };
     } else if (prefix === "email" || (!prefix && token.includes("@"))) {
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(token)) entry = { type: "email", value: token };
+      if (/^[\x21-\x3f\x41-\x7e]+@[\x21-\x3f\x41-\x7e]+\.[\x21-\x3f\x41-\x7e]+$/.test(token)) entry = { type: "email", value: token };
     } else if (prefix === "ip" || (!prefix && (parseIpv4(token) || token.includes(":")))) {
       const bare = token.replace(/^\[|\]$/g, "");
       if (parseIpv4(bare) || parseIpv6(bare)) entry = { type: "IP", value: bare };
@@ -521,7 +523,7 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
   }
 
   if (cn.length > 64) errors.push(`The common name is ${cn.length} characters; the limit is 64. Leave it out or shorten it, and keep the long name in the SANs.`);
-  if (/[\u0000-\u001f\u007f]/.test(cn + org)) errors.push("The subject fields contain control characters.");
+  if (visible(cn + org).hidden) errors.push("The subject fields contain control, zero width or bidirectional characters, which would hide what the command really asks for.");
   if (country && !/^[A-Z]{2}$/.test(country)) errors.push("The country must be a two-letter ISO 3166 code, such as US.");
   if (org.length > 64) errors.push("The organization is longer than the 64 character limit.");
   if (!cn && entries.length === 0) errors.push("Enter a common name or at least one SAN.");

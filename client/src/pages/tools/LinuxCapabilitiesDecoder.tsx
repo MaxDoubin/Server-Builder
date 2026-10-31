@@ -213,7 +213,7 @@ export function LinuxCapabilitiesDecoder() {
           <textarea
             id="capabilities-input"
             value={raw}
-            rows={8}
+            rows={10}
             spellCheck={false}
             autoComplete="off"
             autoCapitalize="off"

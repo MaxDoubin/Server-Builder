@@ -121,7 +121,8 @@ export function parseNumber(raw: string): Parsed<number | null> {
   const n = Number(text.replace(/,/g, ""));
   if (!Number.isFinite(n)) return { ok: false, message: `"${text}" is not a number.` };
   if (Math.abs(n) > MAX_VALUE) return { ok: false, message: "Values are capped at 10^15." };
-  return { ok: true, value: n };
+  // "-0" is 0; otherwise it prints as "-0" in every figure derived from it.
+  return { ok: true, value: n === 0 ? 0 : n };
 }
 
 /** "80, 90" to [80, 90]: sorted, deduplicated, each above 0 and below 100. */
@@ -137,7 +138,7 @@ export function parseThresholds(raw: string): Parsed<number[]> {
       return { ok: false, message: `"${part}" is not a percentage. List them like 80, 90.` };
     }
     const n = Number(part);
-    if (n <= 0 || n > 100) return { ok: false, message: `${part}% is outside 0 to 100.` };
+    if (n <= 0 || n > 100) return { ok: false, message: `${part}% is not a usable threshold. Each one has to be above 0 and at most 100.` };
     // 100 is "full", which is always reported.
     if (n < 100) out.add(n);
   }
@@ -223,6 +224,19 @@ export interface Crossing {
   };
 }
 
+/** True when usage grows over time, so a level above it is eventually reached. */
+export function isGrowing(used: number, growth: Growth): boolean {
+  return growth.model === "linear" ? growth.perMonth > 0 : growth.rate > 0 && used > 0;
+}
+
+/**
+ * Whether usage is at or above pct percent of capacity. The same comparison
+ * monthsToReach makes, so the table and the crossing times agree exactly.
+ */
+export function levelReached(used: number, capacity: number, pct: number): boolean {
+  return used >= (pct / 100) * capacity;
+}
+
 export function crossings(
   used: number,
   total: number,
@@ -231,14 +245,27 @@ export function crossings(
   expansion: Expansion | null,
 ): Crossing[] {
   const levels = [...thresholds.filter((p) => p > 0 && p < 100), 100];
+  const growing = isGrowing(used, growth);
   return levels.map((pct) => {
     const base = monthsToReach(used, growth, (pct / 100) * total);
     const out: Crossing = { pct, base };
     if (expansion) {
-      const bigger = monthsToReach(used, growth, (pct / 100) * (total + expansion.add));
+      const biggerTarget = (pct / 100) * (total + expansion.add);
+      const bigger = monthsToReach(used, growth, biggerTarget);
       if (base !== null && base < expansion.atMonth) {
-        const stillAbove = bigger !== null && bigger <= expansion.atMonth;
-        out.withExpansion = { first: base, beforeExpansion: true, stillAbove, again: stillAbove ? null : bigger };
+        // Growing usage only rises, so it is still above the new line exactly
+        // when it reaches that line by the expansion month. Flat or shrinking
+        // usage is above the line now (base is 0) and may have fallen below
+        // it by then, so check the usage at that month directly.
+        const stillAbove = growing
+          ? bigger !== null && bigger <= expansion.atMonth
+          : levelReached(Math.max(0, usedAt(used, growth, expansion.atMonth)), total + expansion.add, pct);
+        out.withExpansion = {
+          first: base,
+          beforeExpansion: true,
+          stillAbove,
+          again: stillAbove || !growing ? null : bigger,
+        };
       } else {
         out.withExpansion = { first: bigger, beforeExpansion: false, stillAbove: false, again: null };
       }

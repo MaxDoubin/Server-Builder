@@ -84,7 +84,9 @@ const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 /** The values a field expanded to, short enough for a table cell. */
 function describeValues(field: CronField, kind: "minute" | "hour" | "dom" | "month" | "dow"): string {
   const total = { minute: 60, hour: 24, dom: 31, month: 12, dow: 7 }[kind];
-  if (field.values.length === total) return "every one";
+  if (field.values.length === total) {
+    return { minute: "every minute", hour: "every hour", dom: "every day", month: "every month", dow: "every day" }[kind];
+  }
   const label = (v: number): string =>
     kind === "month" ? MONTH_LABELS[v - 1] : kind === "dow" ? DAY_LABELS[v] : String(v);
   const shown = field.values.slice(0, 12).map(label).join(", ");
@@ -278,7 +280,7 @@ export function CronToSystemdTimer() {
             label="Crontab line, or just the five fields"
             value={o.cron}
             onChange={(v) => set("cron", v)}
-            errors={errorsFor("cron").filter((m) => parsed.ok === false && m === parsed.error)}
+            errors={errorsFor("cron")}
             hint={
               <>
                 Five fields (minute hour day-of-month month day-of-week), or a macro such as <code>@daily</code>. A
