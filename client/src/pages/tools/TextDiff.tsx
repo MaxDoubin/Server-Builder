@@ -408,6 +408,7 @@ export function TextDiff() {
                     />
                     <Upload className="h-4 w-4" aria-hidden="true" />
                     Open file
+                    <span className="sr-only"> as the {s.which === "old" ? "original" : "changed"} text</span>
                   </label>
                 </div>
               </ToolPanel>
@@ -571,6 +572,12 @@ export function TextDiff() {
                 </div>
               </div>
 
+              {view === "split" && !identical ? (
+                <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))] sm:hidden">
+                  Side by side scrolls sideways on a narrow screen. Unified fits better.
+                </p>
+              ) : null}
+
               <div className="mt-4" data-testid="output-diff">
                 {bothEmpty ? (
                   <p className="font-mono-tight text-sm text-[hsl(var(--brand-ash))]">Paste or open two texts to compare them.</p>
@@ -581,7 +588,7 @@ export function TextDiff() {
                       : "No differences. The two texts are identical."}
                   </p>
                 ) : view === "split" && side ? (
-                  <div className="overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))]">
+                  <div className="relative overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))]">
                     <table className="w-full min-w-[560px] table-fixed border-collapse [tab-size:4]">
                       <caption className="sr-only">
                         Side by side comparison of {oName} and {nName}
@@ -623,7 +630,7 @@ export function TextDiff() {
                     </table>
                   </div>
                 ) : view === "unified" && uni ? (
-                  <div className="overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))]">
+                  <div className="relative overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))]">
                     <table className="w-full min-w-[320px] border-collapse [tab-size:4]">
                       <caption className="sr-only">
                         Unified diff of {oName} and {nName}

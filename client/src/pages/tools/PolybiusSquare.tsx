@@ -1012,7 +1012,7 @@ export function PolybiusSquare() {
                 real cipher writes the stage 1 letters in rows under a second keyword, then reads them out column by
                 column in the alphabetical order of that keyword&apos;s letters. Each plaintext letter&apos;s two halves
                 end up in different columns, far apart in the ciphertext. That split is the fractionation, and it is
-                where all of the cipher&apos;s strength came from.
+                where the cipher&apos;s strength came from.
               </p>
               <p className={NOTE_BOX}>
                 On its own, stage 1 is a simple substitution: the same letter always gives the same pair, so frequency

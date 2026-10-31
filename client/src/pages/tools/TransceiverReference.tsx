@@ -66,7 +66,8 @@ const NAME_KEY: { code: string; meaning: string }[] = [
   { code: "E", meaning: "Extended reach, 30 to 40 km" },
   { code: "Z", meaning: "About 80 km, a vendor term, not IEEE" },
   { code: "B", meaning: "Bidirectional on one fiber" },
-  { code: "X / R", meaning: "Line code: 8b/10b at 1G, 64b/66b and later codes above" },
+  { code: "X", meaning: "8b/10b block coding, as in 1000BASE-X" },
+  { code: "R", meaning: "64b/66b block coding family, as in 10GBASE-R and every rate above it" },
   { code: "4, 8", meaning: "Lane count, as in SR4 or SR8" },
   { code: ".2", meaning: "Two wavelengths per fiber, as in SR4.2" },
 ];

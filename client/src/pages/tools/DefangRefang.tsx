@@ -201,7 +201,8 @@ export function DefangRefang() {
             ) : (
               <p id="defang-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {text.length.toLocaleString("en-US")} of {MAX_INPUT_CHARS.toLocaleString("en-US")} characters. Refang reads
-                hxxp, hxxps, fxp, [.], (.), {"{.}"}, [dot], \., [@], [at], [:], [://] and [/] in any letter case.
+                hxxp, hxxps, fxp, [.], (.), {"{.}"}, [dot], \., [@], [at], [:], [://] and [/] in any letter case. A name
+                written with non-ASCII letters is left as written, so convert it to its xn-- form first.
               </p>
             )}
             <div className="mt-4 flex flex-wrap items-center gap-2">

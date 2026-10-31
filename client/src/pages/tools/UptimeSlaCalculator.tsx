@@ -117,7 +117,7 @@ function DowntimeRows({ windows, u }: { windows: Window[]; u: { num: bigint; den
         const exact = downtimeSeconds(u, w.seconds);
         return (
           <tr key={w.key} className="border-b border-[hsl(var(--brand-iron)/0.5)] last:border-b-0">
-            <th scope="row" className={`${TD_CLASS} font-normal`}>
+            <th scope="row" className={`${TD_CLASS} text-left font-normal`}>
               {w.label}
             </th>
             <td className={TD_DIM_CLASS}>{w.length}</td>
@@ -326,7 +326,7 @@ export function UptimeSlaCalculator() {
                 <ToolResult label="Unavailable" value={`${formatExact({ num: ok.unavailability.num * 100n, den: ok.unavailability.den }, 12)}%`} />
                 <ToolResult label="Fraction" value={formatFraction(uNum)} />
               </div>
-              <div className="mt-4 overflow-x-auto">
+              <div className="relative mt-4 overflow-x-auto">
                 <table className="w-full min-w-[420px] border-collapse" data-testid="table-downtime">
                   <caption className="sr-only">Allowed downtime at {formatExact(ok.percent, 12)} percent availability</caption>
                   <thead>
@@ -657,7 +657,7 @@ export function UptimeSlaCalculator() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="relative overflow-x-auto">
                 <table className="w-full min-w-[520px] border-collapse" data-testid="table-tiers">
                   <caption className="sr-only">Availability of each tier and its share of the chain's downtime</caption>
                   <thead>
@@ -672,7 +672,7 @@ export function UptimeSlaCalculator() {
                   <tbody>
                     {results.tiers.map((t, i) => (
                       <tr key={tiers[i]?.id ?? i} className="border-b border-[hsl(var(--brand-iron)/0.5)] last:border-b-0">
-                        <th scope="row" className={`${TD_CLASS} max-w-[12rem] break-words font-normal`}>
+                        <th scope="row" className={`${TD_CLASS} max-w-[12rem] break-words text-left font-normal`}>
                           {t.name}
                           {i === results.weakest ? (
                             <span className="ml-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-amber))]">
@@ -705,7 +705,7 @@ export function UptimeSlaCalculator() {
 
         {/* ------------------------------------------------ reference */}
         <ToolPanel title="Every preset at a glance">
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[560px] border-collapse" data-testid="table-presets">
               <caption className="sr-only">Allowed downtime for each common availability target</caption>
               <thead>
@@ -721,7 +721,7 @@ export function UptimeSlaCalculator() {
               <tbody>
                 {PRESET_PERCENTS.map((p) => (
                   <tr key={p.label} className="border-b border-[hsl(var(--brand-iron)/0.5)] last:border-b-0">
-                    <th scope="row" className={`${TD_CLASS} font-normal text-[hsl(var(--brand-signal))]`}>
+                    <th scope="row" className={`${TD_CLASS} text-left font-normal text-[hsl(var(--brand-signal))]`}>
                       {p.label}%
                     </th>
                     {WINDOWS.map((w) => (

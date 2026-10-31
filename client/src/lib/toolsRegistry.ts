@@ -605,6 +605,86 @@ export const TOOLS: ToolEntry[] = [
     category: "security",
     keywords: ["security headers", "hsts", "http headers", "x-frame-options", "referrer-policy", "permissions-policy", "set-cookie", "clickjacking", "curl", "coop"],
   },
+  {
+    slug: "dhcp-option-121-encoder",
+    name: "DHCP option 121 encoder",
+    blurb:
+      "Encode classless static routes for DHCP option 121 or 249 as hex, ISC dhcpd, Kea and dnsmasq config, or decode a pasted option back to routes.",
+    category: "networking",
+    keywords: ["dhcp", "option 121", "option 249", "rfc 3442", "classless static routes", "static route", "dnsmasq", "kea", "isc dhcpd"],
+  },
+  {
+    slug: "tcpdump-filter-builder",
+    name: "tcpdump filter builder",
+    blurb:
+      "Build a tcpdump capture filter from hosts, ports, protocols and TCP flags, with each primitive explained, the full command and the closest Wireshark filter.",
+    category: "networking",
+    keywords: ["tcpdump", "bpf", "capture filter", "pcap", "libpcap", "wireshark", "display filter", "tcp flags", "packet capture"],
+  },
+  {
+    slug: "hmac-generator",
+    name: "HMAC generator",
+    blurb:
+      "Computes and verifies HMAC-SHA-1, SHA-256, SHA-384 and SHA-512 over text, hex or Base64 input, using a constant-time comparison. Runs in your browser.",
+    category: "security",
+    keywords: ["hmac", "sha256", "sha-1", "sha512", "timing attack", "signature", "webhook", "verify", "rfc 2104", "rfc 4231"],
+  },
+  {
+    slug: "playfair-cipher",
+    name: "Playfair cipher",
+    blurb:
+      "Build the 5x5 key square, split text into digraphs with X fillers, and encrypt or decrypt pair by pair with each rule shown. Runs in your browser.",
+    category: "security",
+    keywords: ["playfair", "digraph", "key square", "wheatstone", "classical cipher", "polygraphic substitution", "ctf", "5x5 grid", "decrypt"],
+  },
+  {
+    slug: "rail-fence-cipher",
+    name: "Rail fence cipher",
+    blurb:
+      "Encrypt and decrypt with a chosen rail count and offset, see the zigzag, and brute force an unknown key ranked by English score. Runs in your browser.",
+    category: "security",
+    keywords: ["rail fence", "zigzag cipher", "transposition", "brute force", "ctf", "classical cipher", "cyberchef", "quadgram", "decrypt"],
+  },
+  {
+    slug: "totp-generator",
+    name: "TOTP generator",
+    blurb:
+      "Generates TOTP and HOTP codes from a Base32 secret or otpauth URI, shows every truncation step, and checks codes against a drift window. Runs in your browser.",
+    category: "security",
+    keywords: ["totp", "hotp", "2fa", "mfa", "otp", "otpauth", "authenticator", "rfc 6238", "rfc 4226", "one-time password"],
+  },
+  {
+    slug: "endianness-converter",
+    name: "Endianness converter",
+    blurb:
+      "Reads hex bytes or an integer as 16, 32 and 64-bit integers and floats in both byte orders, with byte swaps and htonl notes. Runs in your browser.",
+    category: "encoding",
+    keywords: ["endianness", "byte order", "big endian", "little endian", "htonl", "ntohs", "byte swap", "network byte order", "dataview", "bswap"],
+  },
+  {
+    slug: "ieee754-inspector",
+    name: "IEEE 754 inspector",
+    blurb:
+      "Shows the float32 and float64 bits of a number, its exact stored value and rounding error, and lets you toggle each bit. Runs in your browser.",
+    category: "encoding",
+    keywords: ["ieee 754", "floating point", "float32", "float64", "binary64", "nan", "subnormal", "rounding error", "ulp", "0.1 + 0.2"],
+  },
+  {
+    slug: "raid-rebuild-risk",
+    name: "RAID rebuild risk",
+    blurb:
+      "Estimate rebuild time and the chance of an unrecoverable read error during a RAID 5 or RAID 6 rebuild, from disk size and URE rating. Runs in your browser.",
+    category: "infrastructure",
+    keywords: ["raid", "raid 5", "raid 6", "ure", "rebuild", "unrecoverable read error", "storage", "parity", "disk failure", "scrub"],
+  },
+  {
+    slug: "ups-runtime-calculator",
+    name: "UPS runtime calculator",
+    blurb:
+      "Estimate UPS battery runtime with inverter efficiency, depth of discharge and Peukert's law, and check the load against both VA and watt ratings.",
+    category: "infrastructure",
+    keywords: ["ups", "battery", "runtime", "peukert", "va", "watts", "power factor", "lead-acid", "inverter", "backup power"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

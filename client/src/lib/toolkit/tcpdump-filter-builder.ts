@@ -22,13 +22,17 @@ export type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 export const MAX_CLAUSES = 20;
 /** tcpdump's default and maximum snapshot length. */
 export const MAX_SNAPLEN = 262144;
-/** Largest value accepted for -c and for packet length tests. */
+/** Largest value accepted for -c (tcpdump reads it into a signed int). */
 export const MAX_COUNT = 2147483647;
+
+/** Echo typed text in an error message without echoing a whole paste. */
+const clip = (s: string) => (s.length > 24 ? `${s.slice(0, 24)}...` : s);
 
 /* ------------------------------------------------------------ addresses */
 
 export function parseIPv4(text: string): Parsed<number> {
   const s = text.trim();
+  if (s.length > 64) return { ok: false, error: "That is too long to be an IPv4 address." };
   const parts = s.split(".");
   if (parts.length !== 4) return { ok: false, error: `An IPv4 address has four dot separated parts; "${s}" has ${parts.length}.` };
   let value = 0;
@@ -107,8 +111,13 @@ export function parseIPv6(text: string): Parsed<bigint> {
   return { ok: true, value };
 }
 
-/** RFC 5952 canonical text: lowercase, no leading zeros, longest zero run as ::. */
+/**
+ * RFC 5952 canonical text: lowercase, no leading zeros, the longest run of
+ * two or more zero groups as :: (the first one on a tie), and, per section 5,
+ * mixed notation for an IPv4-mapped address (::ffff:192.0.2.1).
+ */
 export function formatIPv6(value: bigint): string {
+  if (value >> 32n === 0xffffn) return `::ffff:${formatIPv4(Number(value & 0xffffffffn))}`;
   const groups: number[] = [];
   for (let i = 7; i >= 0; i -= 1) groups.push(Number((value >> BigInt(i * 16)) & 0xffffn));
   let bestStart = -1;
@@ -220,11 +229,11 @@ export function parseNetwork(text: string): Parsed<Network> {
   if (s === "") return { ok: false, error: "Enter a network in CIDR form, such as 10.0.0.0/8 or 2001:db8::/32." };
   const slash = s.indexOf("/");
   if (slash === -1) {
-    return { ok: false, error: `Add a prefix length, for example ${s}/24. A single address belongs in a host clause.` };
+    return { ok: false, error: `Add a prefix length, for example ${clip(s)}/24. A single address belongs in a host clause.` };
   }
   const addrText = s.slice(0, slash);
   const prefixText = s.slice(slash + 1).trim();
-  if (!/^\d{1,3}$/.test(prefixText)) return { ok: false, error: `"/${prefixText}" is not a prefix length.` };
+  if (!/^\d{1,3}$/.test(prefixText)) return { ok: false, error: `"/${clip(prefixText)}" is not a prefix length.` };
   const prefix = Number(prefixText);
   if (addrText.includes(":")) {
     const v6 = parseIPv6(addrText);
@@ -259,7 +268,7 @@ export function parseNetwork(text: string): Parsed<Network> {
 function parseInteger(text: string, min: number, max: number, what: string): Parsed<number> {
   const s = text.trim();
   if (s === "") return { ok: false, error: `Enter ${what}.` };
-  if (!/^\d+$/.test(s)) return { ok: false, error: `"${s}" is not a whole number.` };
+  if (!/^\d+$/.test(s)) return { ok: false, error: `"${clip(s)}" is not a whole number.` };
   if (s.length > 10 || Number(s) > max || Number(s) < min) {
     return { ok: false, error: `${what[0].toUpperCase()}${what.slice(1)} runs from ${min} to ${max.toLocaleString("en-US")}.` };
   }
@@ -299,7 +308,7 @@ export const PROTOCOLS: { id: Proto; label: string; ws: string; phrase: string }
   { id: "tcp", label: "tcp", ws: "tcp", phrase: "TCP segments, over IPv4 or IPv6" },
   { id: "udp", label: "udp", ws: "udp", phrase: "UDP datagrams, over IPv4 or IPv6" },
   { id: "icmp", label: "icmp", ws: "icmp", phrase: "ICMP over IPv4 (ping, unreachable, time exceeded); IPv6 uses icmp6" },
-  { id: "icmp6", label: "icmp6", ws: "icmpv6", phrase: "ICMPv6, which carries IPv6 ping as well as neighbor discovery and router advertisements" },
+  { id: "icmp6", label: "icmp6", ws: "icmpv6", phrase: "ICMPv6, which carries IPv6 ping, error messages and Neighbor Discovery, router advertisements included" },
   { id: "arp", label: "arp", ws: "arp", phrase: "ARP frames, the IPv4 address to MAC lookups on a LAN" },
   { id: "ip", label: "ip", ws: "ip", phrase: "IPv4 packets (EtherType 0x0800)" },
   { id: "ip6", label: "ip6", ws: "ipv6", phrase: "IPv6 packets (EtherType 0x86DD)" },
@@ -449,7 +458,8 @@ function compileBare(c: Clause): Parsed<Omit<Compiled, "text"> & { phrase: strin
           relational: false,
           phrase: `${who} with ${DIR_WORDS[c.dir]} ${what}`,
           detail,
-          // pcap-filter(7), port: over IPv6 "the packet does not use any extension headers".
+          // libpcap's gen_portop6() reads the IPv6 Next Header field and then the
+          // ports at a fixed 40 bytes in, so any extension header defeats it.
           caveats: ["Over IPv6, tcpdump's port tests only match packets with no extension headers; Wireshark's port fields match either way."],
         },
       };
@@ -592,13 +602,59 @@ export interface BuildResult {
   skipped: number[];
 }
 
-/** The protocol a clause pins the packet to, for contradiction checks. */
-function impliedProtocol(c: Clause): string | null {
+/**
+ * Coarse packet classes, used only to spot an and-chain that no packet can
+ * satisfy. The sets follow pcap-filter(7): tcp and udp cover IPv4 and IPv6,
+ * icmp is IPv4 only, an IPv4 host or net also matches ARP and RARP, and the
+ * tcp[] byte offsets that flag tests use exist only over IPv4.
+ */
+const V4 = ["4tcp", "4udp", "4sctp", "4icmp", "4other"];
+const V6 = ["6tcp", "6udp", "6sctp", "6icmp6", "6other"];
+const ALL_CLASSES = [...V4, ...V6, "arp", "rarp", "other"];
+
+/** The packet classes a clause can match, or null when it does not narrow them. */
+function packetClasses(c: Clause): string[] | null {
   if (c.negate) return null;
-  if (c.kind === "flags") return "tcp";
-  if ((c.kind === "port" || c.kind === "portrange") && c.transport !== "any") return c.transport;
-  if (c.kind === "proto" && ["tcp", "udp", "icmp", "icmp6", "arp"].includes(c.proto)) return c.proto;
-  return null;
+  switch (c.kind) {
+    case "host": {
+      const a = parseAddress(c.value);
+      if (!a.ok || a.value.family === "name") return null;
+      return a.value.family === 4 ? [...V4, "arp", "rarp"] : V6;
+    }
+    case "net": {
+      const n = parseNetwork(c.value);
+      if (!n.ok) return null;
+      return n.value.family === 4 ? [...V4, "arp", "rarp"] : V6;
+    }
+    case "port":
+    case "portrange":
+      if (c.transport === "tcp") return ["4tcp", "6tcp"];
+      if (c.transport === "udp") return ["4udp", "6udp"];
+      return ["4tcp", "4udp", "4sctp", "6tcp", "6udp", "6sctp"];
+    case "flags":
+      return ["4tcp"];
+    case "proto":
+      switch (c.proto) {
+        case "tcp":
+          return ["4tcp", "6tcp"];
+        case "udp":
+          return ["4udp", "6udp"];
+        case "icmp":
+          return ["4icmp"];
+        case "icmp6":
+          return ["6icmp6"];
+        case "arp":
+          return ["arp"];
+        case "ip":
+          return V4;
+        case "ip6":
+          return V6;
+        default:
+          return null;
+      }
+    default:
+      return null;
+  }
 }
 
 /**
@@ -674,9 +730,27 @@ export function buildFilter(clauses: Clause[]): BuildResult {
     }
   }
   if (active.length > 1 && active.slice(1).every(({ c }) => c.join === "and")) {
-    const protos = new Set(active.map(({ c }) => impliedProtocol(c)).filter((p): p is string => p !== null));
-    if (protos.size > 1) {
-      warnings.push(`No packet is both ${[...protos].join(" and ")}, so a filter that requires all of them captures nothing.`);
+    const sets = active.map(({ c }) => packetClasses(c));
+    let conflict: [number, number] | null = null;
+    for (let i = 0; i < sets.length && conflict === null; i += 1) {
+      for (let j = i + 1; j < sets.length; j += 1) {
+        const a = sets[i];
+        const b = sets[j];
+        if (a && b && !a.some((k) => b.includes(k))) {
+          conflict = [i, j];
+          break;
+        }
+      }
+    }
+    if (conflict) {
+      const [i, j] = conflict;
+      warnings.push(
+        `No packet can match both ${active[i].x.bpf} (clause ${active[i].index + 1}) and ${active[j].x.bpf} (clause ${active[j].index + 1}), so a filter that requires every clause captures nothing.`,
+      );
+    } else {
+      let common = ALL_CLASSES;
+      for (const set of sets) if (set) common = common.filter((k) => set.includes(k));
+      if (common.length === 0) warnings.push("No packet can match every clause at once, so a filter that requires all of them captures nothing.");
     }
   }
   return { ok: true, bpf, wireshark: ws, items, errors, warnings, grouped, skipped };
@@ -727,12 +801,15 @@ export function buildCommand(o: CommandOptions, filter: string): CommandResult {
         token: `-i ${iface}`,
         text:
           iface === "any"
-            ? "Capture on every interface at once (Linux, and recent macOS and Solaris). On Linux the any device records a cooked link-layer header, and it never puts interfaces in promiscuous mode."
+            ? "Capture on every interface at once, on systems that offer the any pseudo-device, Linux among them. On Linux it records a cooked link-layer header instead of Ethernet, and a capture on any never puts interfaces in promiscuous mode."
             : `Capture on ${iface}. tcpdump -D lists the interface names this host accepts.`,
       });
     }
   } else {
-    parts.push({ token: "(no -i)", text: "Without -i, tcpdump picks the first interface that is up, skipping loopback." });
+    parts.push({
+      token: "(no -i)",
+      text: "Without -i, tcpdump picks the lowest numbered interface that is up, excluding loopback. Naming it removes the guesswork.",
+    });
   }
 
   if (o.numeric) {

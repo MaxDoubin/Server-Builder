@@ -293,11 +293,22 @@ function readUnit(token: string, rate: boolean): UnitRead {
   // Symbols: B, b, bit, KiB, kB, KB, Mbit, Gb, GiB, MiBit.
   const symbol = /^([kKmMgGtTpPeE])?([iI])?(B|b|bit|bits|Bit|Bits|BIT|BITS|byte|bytes|Byte|Bytes|BYTE|BYTES)$/.exec(token);
   if (!symbol) {
+    // A bare prefix, as df -h or a Kubernetes manifest would print it.
     const bare = /^([kKmMgGtTpPeE])([iI]?)$/.exec(token);
     if (bare) {
       const up = bare[1].toUpperCase();
+      if (bare[2]) {
+        return {
+          error: `"${token}" has no B or bit after it. Kubernetes writes ${up}i for a power of 1024 bytes; here write ${up}iB for bytes or ${up}ibit for bits.`,
+        };
+      }
+      if (up === "K") {
+        return {
+          error: `"${token}" has no B or bit after it, and a bare K is ambiguous: ls -lh prints K for 1024 bytes, while Kubernetes reads k as 1000. Write KiB or kB, or kbit for bits.`,
+        };
+      }
       return {
-        error: `"${token}" has no B or bit after it. df -h and ls -lh print ${up} for powers of 1024, while Kubernetes reads ${up} as a power of 1000, so write ${up}iB or ${up === "K" ? "k" : up}B, or ${up}bit for bits.`,
+        error: `"${token}" has no B or bit after it, and a bare ${up} is ambiguous: df -h prints ${up} for a power of 1024, while Kubernetes reads it as a power of 1000. Write ${up}iB or ${up}B, or ${up}bit for bits.`,
       };
     }
     if (/^[ZYRQ]i?(B|b|bit|bits|byte|bytes)$/i.test(token)) {

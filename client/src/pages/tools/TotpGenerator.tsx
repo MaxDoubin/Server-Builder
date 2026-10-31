@@ -816,9 +816,13 @@ export function TotpGenerator() {
                     No match.{" "}
                     {mode === "totp"
                       ? `Not valid at ${stepLabel} or within ${plural(windowParsed.ok ? windowParsed.value : 0, "step")} of it.`
-                      : `Not valid for counters ${center.toString()} to ${(center + BigInt(windowParsed.ok ? windowParsed.value : 0)).toString()}.`}{" "}
+                      : `Not valid for counters ${center.toString()} to ${(() => {
+                          // findMatches stops at 2^64 - 1, so the range shown does too.
+                          const top = center + BigInt(windowParsed.ok ? windowParsed.value : 0);
+                          return (top > UINT64_MAX ? UINT64_MAX : top).toString();
+                        })()}.`}{" "}
                     {mode === "totp"
-                      ? "If the code should be valid, check that the hash and period match the server's, and that this clock is right."
+                      ? `If the code should be valid, check that the hash and period match the server's${live ? ", and that this device's clock is right" : ""}.`
                       : "If the code should be valid, check that the hash matches the server's and that the counter is not already past it."}
                   </p>
                 ) : (

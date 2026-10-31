@@ -32,12 +32,13 @@ export const CUBIC_METERS_PER_CUBIC_FOOT = 0.028316846592;
 export const PROPANE_FT3_PER_GALLON = 36.39;
 /**
  * Below this fraction of the rating a diesel risks wet stacking. It is the
- * load NFPA 110 names for the monthly diesel exercise, and the floor most
- * engine manufacturers give for extended running.
+ * minimum load NFPA 110 names for the monthly diesel exercise when the
+ * manufacturer's exhaust gas temperature is not being held.
  */
 export const WET_STACKING_FRACTION = 0.3;
 
 /** Inputs past these are refused with a message, so every output stays finite. */
+export const MIN_RATING_KW = 0.1;
 export const MAX_RATING_KW = 20_000;
 export const MAX_TANK = 10_000_000;
 export const MAX_TARGET_HOURS = 10_000;
@@ -192,8 +193,7 @@ export function parseNumber(text: string, what: string, rule: NumberRule = {}): 
 
 export function parseRating(text: string): Parsed<number> {
   return parseNumber(text, "the generator rating", {
-    min: 0,
-    minExclusive: true,
+    min: MIN_RATING_KW,
     max: MAX_RATING_KW,
     unit: " kW",
   });

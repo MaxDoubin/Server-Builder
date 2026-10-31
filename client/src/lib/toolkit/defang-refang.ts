@@ -29,11 +29,11 @@ export const MAX_CHANGES_LISTED = 200;
 
 /**
  * Every delegated top-level domain, lowercased, from the IANA list at
- * https://data.iana.org/TLD/tlds-alpha-by-domain.txt (version 2026103000).
+ * https://data.iana.org/TLD/tlds-alpha-by-domain.txt (version 2026103100).
  * A dotted name only counts as a domain when its last label is in here,
  * which is what keeps report.pdf, node.js and e.g. out of the results.
  */
-export const TLD_LIST_VERSION = "2026103000";
+export const TLD_LIST_VERSION = "2026103100";
 
 const TLD_SOURCE = `
   aaa aarp abb abbott abbvie abc able abogado abudhabi ac academy accenture accountant accountants
@@ -421,6 +421,45 @@ export function canonicalUrl(parts: UrlParts): string {
   return `${parts.scheme.toLowerCase()}://${user}${parts.host.toLowerCase()}${parts.rest}`;
 }
 
+/* ------------------------------------------------------- neighboring text */
+
+/**
+ * Scripts written without spaces between words. A Han or Kana character
+ * beside an indicator is ordinary running text (地址198.51.100.1), so it does
+ * not stop the indicator from being read.
+ */
+const UNSPACED_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}\p{Script=Tibetan}]/u;
+const UNICODE_WORD = /[\p{L}\p{M}\p{N}]/u;
+
+/** The whole code point that ends just before offset `i`, or "" at the start. */
+export function codePointBefore(text: string, i: number): string {
+  if (i <= 0) return "";
+  const low = text.charCodeAt(i - 1);
+  if (low >= 0xdc00 && low <= 0xdfff && i >= 2) {
+    const high = text.charCodeAt(i - 2);
+    if (high >= 0xd800 && high <= 0xdbff) return text.slice(i - 2, i);
+  }
+  return text.charAt(i - 1);
+}
+
+/** The whole code point that starts at offset `i`, or "" past the end. */
+export function codePointAfter(text: string, i: number): string {
+  const cp = text.codePointAt(i);
+  return cp === undefined ? "" : String.fromCodePoint(cp);
+}
+
+/**
+ * True for a non-ASCII letter, mark or digit of a script that separates words
+ * with spaces. Beside a candidate it means the candidate is only the head or
+ * tail of a longer word, as in "bücher.de" or "naïve@example.com", and
+ * reporting the ASCII remainder ("cher.de", "ve@example.com") would name a
+ * different host. Internationalized names are matched in their xn-- form.
+ */
+export function gluedToWord(ch: string): boolean {
+  return ch !== "" && ch.charCodeAt(0) > 127 && UNICODE_WORD.test(ch) && !UNSPACED_SCRIPT.test(ch);
+}
+
 /* -------------------------------------------------------------- matching */
 
 export type NetType = "url" | "email" | "ipv6" | "ipv4" | "domain";
@@ -594,17 +633,22 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     if (mask[at]) continue;
     let s = at;
     while (s > 0 && LOCAL_CHAR.test(text.charAt(s - 1))) s--;
+    const localGlued = gluedToWord(codePointBefore(text, s));
     while (s < at && text.charAt(s) === ".") s++;
     let e = at + 1;
     while (e < text.length && HOST_CHAR.test(text.charAt(e))) e++;
+    const domainGlued = gluedToWord(codePointAfter(text, e));
     while (e > at + 1 && ".-_".includes(text.charAt(e - 1))) e--;
     const local = text.slice(s, at);
     const domainText = text.slice(at + 1, e);
     if (local === "" || local.length > 64 || local.endsWith(".") || local.includes("..")) continue;
-    if (masked(s, e)) continue;
+    if (localGlued || domainGlued || masked(s, e)) continue;
     const domain = checkDomain(domainText);
     if (!domain.ok) continue;
-    matches.push(make("email", s, e, `${local}@${domain.name}`, false, { type: "domain", value: domain.name }));
+    // RFC 5321 section 2.4 makes the local part case sensitive in principle,
+    // and also discourages relying on that. Mail systems ignore case, so the
+    // whole address is lowercased and Bob@x.com and bob@x.com are one indicator.
+    matches.push(make("email", s, e, `${local.toLowerCase()}@${domain.name}`, false, { type: "domain", value: domain.name }));
     cover(s, e);
   }
 
@@ -614,6 +658,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     const a = m.index;
     let b = a + m[0].length;
     if (WORDISH.test(text.charAt(a - 1)) || WORDISH.test(text.charAt(b))) continue;
+    if (gluedToWord(codePointBefore(text, a)) || gluedToWord(codePointAfter(text, b))) continue;
     while (b > a && text.charAt(b - 1) === ".") b--;
     // "from 2001:db8::5: refused" ends the address with a colon of punctuation.
     if (text.charAt(b - 1) === ":" && text.charAt(b - 2) !== ":") b--;
@@ -633,6 +678,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
   for (let m = hostRun.exec(text); m !== null; m = hostRun.exec(text)) {
     let a = m.index;
     let b = a + m[0].length;
+    if (gluedToWord(codePointBefore(text, a)) || gluedToWord(codePointAfter(text, b))) continue;
     while (a < b && ".-_".includes(text.charAt(a))) a++;
     while (b > a && ".-_".includes(text.charAt(b - 1))) b--;
     if (a >= b || !text.slice(a, b).includes(".")) continue;
@@ -643,7 +689,18 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
       continue;
     }
     const domain = checkDomain(cand);
-    if (!domain.ok) continue;
+    if (!domain.ok) {
+      // A hyphen joins an address range (198.51.100.1-198.51.100.20) into one
+      // run. Neither end is a host name, so read each end as its own address.
+      if (cand.includes("-")) {
+        let at = a;
+        for (const piece of cand.split("-")) {
+          if (parseIPv4(piece)) matches.push(make("ipv4", at, at + piece.length, piece, false, null));
+          at += piece.length + 1;
+        }
+      }
+      continue;
+    }
     const match = make("domain", a, b, domain.name, false, null);
     if (domain.ambiguous && !match.defanged && !options.keepAmbiguous) {
       skippedCount++;

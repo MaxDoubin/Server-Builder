@@ -538,9 +538,10 @@ export function GeneratorRuntimeCalculator() {
               </div>
               {lightDiesel ? (
                 <p className={WARN_BOX} data-testid="text-wet-stacking">
-                  At {pct(run.loadFraction)} of its rating this diesel is below the 30 percent floor engine makers and
-                  NFPA 110 use for exercising. Long runs this light lead to wet stacking. Size the set closer to the
-                  real load, or plan load bank runs to burn the deposits off.
+                  At {pct(run.loadFraction)} of its rating this diesel is below 30 percent, the least load NFPA 110
+                  allows for the monthly exercise unless the manufacturer's exhaust temperature is held. Long runs
+                  this light lead to wet stacking. Size the set closer to the real load, or plan load bank runs to
+                  burn the deposits off.
                 </p>
               ) : null}
               {run.loadKw === 0 ? (
@@ -666,8 +667,8 @@ export function GeneratorRuntimeCalculator() {
                 {hasTank
                   ? `Tank sizes divide the fuel by the ${usable.ok ? usable.value : ""} percent usable share. `
                   : ""}
-                NFPA 110 states its Class as the hours a system must run at rated load without refueling, so a Class 48
-                design is sized on the full-load line, not on today's load.
+                NFPA 110 defines a system's Class by the hours it must run at rated load without refueling, so a Class
+                48 design is sized on the full-load line, not on today's load.
               </p>
             </div>
           ) : (

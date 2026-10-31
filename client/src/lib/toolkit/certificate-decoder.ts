@@ -51,6 +51,7 @@ import {
   sha1,
   sha256,
   sniffDer,
+  visible,
   TAG,
   MAX_OBJECTS,
 } from "./asn1";
@@ -58,7 +59,7 @@ import {
 /* ------------------------------------------------------------------ types */
 
 export interface SerialInfo {
-  /** Colon separated hex of the magnitude, as OpenSSL prints it. */
+  /** Colon separated hex of the magnitude, as OpenSSL prints it, with a leading minus sign when negative. */
   hex: string;
   decimal: string;
   negative: boolean;
@@ -90,7 +91,7 @@ export interface CertificateInfo {
   /** Issuer and subject are the same name. */
   selfIssued: boolean;
   isCA: boolean;
-  /** Common name, first DNS name, or the whole subject. */
+  /** Common name, first DNS name, or the whole subject, with invisible characters escaped. */
   displayName: string;
 }
 
@@ -115,6 +116,7 @@ export interface Finding {
 
 /* ---------------------------------------------------------------- parsing */
 
+/** X.690 8.3: the serial is a two's complement INTEGER; the hex shows its magnitude, as OpenSSL does. */
 function serialInfo(bytes: Uint8Array): SerialInfo {
   const negative = (bytes[0] & 0x80) !== 0;
   let value = 0n;
@@ -122,8 +124,12 @@ function serialInfo(bytes: Uint8Array): SerialInfo {
   if (negative) value -= 1n << BigInt(bytes.length * 8);
   let start = 0;
   while (start < bytes.length - 1 && bytes[start] === 0) start++;
-  const magnitude = negative ? bytes : bytes.subarray(start);
-  return { hex: colonHex(magnitude), decimal: value.toString(), negative, octets: bytes.length };
+  let hex = colonHex(bytes.subarray(start));
+  if (negative) {
+    const digits = (-value).toString(16).toUpperCase();
+    hex = `-${(digits.length % 2 ? `0${digits}` : digits).replace(/(..)(?=.)/g, "$1:")}`;
+  }
+  return { hex, decimal: value.toString(), negative, octets: bytes.length };
 }
 
 /** Parses one DER certificate. `allowTrailing` is for OpenSSL's TRUSTED CERTIFICATE, which appends trust settings. */
@@ -197,7 +203,7 @@ export function parseCertificate(der: Uint8Array, label = "CERTIFICATE", allowTr
       sha256: colonHex(sha256(certDer)),
       selfIssued: compareNames(issuer, subject) !== "different",
       isCA,
-      displayName: subject.commonNames[0] ?? dns?.value ?? (subject.rfc4514 || "(empty subject)"),
+      displayName: subject.commonNames.length > 0 ? visible(subject.commonNames[0]).text : (dns?.value ?? (subject.rfc4514 || "(empty subject)")),
     };
     return { ok: true, cert };
   } catch (err) {
@@ -215,8 +221,10 @@ export function decodeCertificates(read: ReadResult): DecodeOutcome {
   let sawCsr = false;
   const skipped: Record<string, number> = {};
 
+  let overflow = false;
   const push = (entry: CertEntry) => {
     if (entries.length < MAX_OBJECTS) entries.push(entry);
+    else overflow = true;
   };
 
   for (const obj of read.objects) {
@@ -244,7 +252,7 @@ export function decodeCertificates(read: ReadResult): DecodeOutcome {
     }
   }
 
-  if (read.objects.length > MAX_OBJECTS || entries.length >= MAX_OBJECTS) {
+  if (overflow && !read.notices.some((n) => n.text.startsWith("Only the first"))) {
     notices.push({ tone: "warn", text: `Only the first ${MAX_OBJECTS} certificates are decoded.` });
   }
   if (sawCsr) {
@@ -302,19 +310,24 @@ export function maxPublicLifetimeDays(notBeforeMs: number): number | null {
 
 /* ----------------------------------------------------------------- review */
 
-const PUBLIC_CURVES = new Set(["1.2.840.10045.3.1.7", "1.3.132.0.34", "1.3.132.0.35"]);
+const PUBLIC_CURVES = new Set(["1.2.840.10045.3.1.7", "1.3.132.0.34"]);
 
 /** Problems with the key that matter for both certificates and requests. */
 export function keyFindings(key: PublicKeyInfo): Finding[] {
   const out: Finding[] = [];
   if (key.keyType === "RSA" || key.keyType === "RSA-PSS") {
     const bits = key.bits ?? 0;
-    if (bits < 2048) out.push({ tone: "danger", text: `The RSA key is ${bits} bits. NIST SP 800-131A disallowed RSA keys under 2048 bits after 2013, and 1024 bit keys are within reach of a well funded attacker.` });
+    if (bits === 0) out.push({ tone: "danger", text: "The RSA modulus is zero, so this is not a usable key." });
+    else if (bits < 2048) out.push({ tone: "danger", text: `The RSA key is ${bits} bits. NIST SP 800-131A disallowed RSA keys under 2048 bits after 2013, and 1024 bit keys are within reach of a well funded attacker.` });
     else out.push({ tone: "ok", text: `RSA ${bits} bit key.` });
     if (bits % 8 !== 0) out.push({ tone: "warn", text: `The modulus is ${bits} bits, not a multiple of 8. The Baseline Requirements require that for publicly trusted certificates, and an odd size usually means a broken key generator.` });
   } else if (key.keyType === "EC") {
-    if (key.curve && PUBLIC_CURVES.has(key.curve.oid)) out.push({ tone: "ok", text: `ECDSA key on ${key.curve.name}.` });
-    else out.push({ tone: "warn", text: `The key uses ${key.curve?.name ?? "an unnamed curve"}. Browsers and public CAs accept only P-256, P-384 and P-521.` });
+    // Baseline Requirements 6.1.5 allow P-256, P-384 and P-521; Mozilla's root
+    // store policy (section 5.1) allows only P-256 and P-384.
+    if (key.curve?.oid === "1.3.132.0.35") {
+      out.push({ tone: "info", text: "ECDSA key on P-521. The Baseline Requirements allow it, but Mozilla's root store policy accepts only P-256 and P-384, and some TLS clients do not support it." });
+    } else if (key.curve && PUBLIC_CURVES.has(key.curve.oid)) out.push({ tone: "ok", text: `ECDSA key on ${key.curve.name}.` });
+    else out.push({ tone: "warn", text: `The key uses ${key.curve?.name ?? "an unnamed curve"}. Public CAs issue only on P-256, P-384 and P-521 (Baseline Requirements 6.1.5), and P-256 and P-384 are the curves every TLS client supports.` });
   } else if (key.keyType === "DSA") {
     out.push({ tone: "danger", text: "DSA keys are no longer accepted for TLS by browsers or public CAs, and FIPS 186-5 no longer approves DSA for generating signatures." });
   } else if (key.keyType === "Ed25519" || key.keyType === "Ed448") {
@@ -342,7 +355,10 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
   // Time.
   if (v.state === "expired") out.push({ tone: "danger", text: `${v.text}, on ${new Date(cert.notAfter.ms ?? 0).toISOString().slice(0, 10)}.` });
   else if (v.state === "not-yet-valid") out.push({ tone: "warn", text: `${v.text}. A clock that is wrong on either side produces the same error.` });
-  else if (v.state === "valid" && (v.daysRemaining ?? 0) < 30) out.push({ tone: "warn", text: `Expires in ${v.daysRemaining} day${v.daysRemaining === 1 ? "" : "s"}. Renew now.` });
+  else if (v.state === "valid" && (v.daysRemaining ?? 0) < 30) {
+    const d = v.daysRemaining ?? 0;
+    out.push({ tone: "warn", text: `${d === 0 ? "Expires within a day" : `Expires in ${d} day${d === 1 ? "" : "s"}`}. Replace it before then.` });
+  }
   else if (v.state === "valid") out.push({ tone: "ok", text: v.text + "." });
   if (cert.notBefore.ms !== null && cert.notAfter.ms !== null && cert.notAfter.ms < cert.notBefore.ms) {
     out.push({ tone: "danger", text: "notAfter is earlier than notBefore, so this certificate is never valid." });
@@ -365,10 +381,16 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
     out.push({ tone: "danger", text: "The signature algorithm inside the signed part differs from the one outside it. RFC 5280 4.1.1.2 requires them to be identical; a mismatch is a sign of tampering or a broken encoder." });
   }
   if (alg.weak) {
+    const why =
+      alg.hash === "MD5"
+        ? "MD5 collisions are practical, and in 2008 researchers used one to forge a CA certificate that browsers trusted."
+        : alg.hash === "MD2"
+          ? "MD2 has published collision and preimage attacks far below its design strength."
+          : "SHA-1 collisions are practical (the SHAttered attack, 2017), and browsers stopped accepting SHA-1 certificates from public CAs in 2017.";
     out.push(
       cert.selfIssued
         ? { tone: "info", text: `Self-signed with ${alg.name}. A trust anchor is trusted by its key, not its self-signature, so the weak hash matters less here than anywhere else.` }
-        : { tone: "danger", text: `Signed with ${alg.name}. Collisions in ${alg.hash} are practical (SHAttered, 2017, for SHA-1; MD5 was used to forge a CA certificate in 2008), and browsers rejected SHA-1 certificates from 2017.` },
+        : { tone: "danger", text: `Signed with ${alg.name}. ${why}` },
     );
   } else if (alg.family === "unknown") out.push({ tone: "info", text: `The signature algorithm ${alg.oid} is not one this decoder recognizes.` });
 
@@ -407,8 +429,17 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
     } else {
       const dns = san.filter((n) => n.type === "DNS" || n.type === "IP").map((n) => n.raw.toLowerCase());
       for (const cn of cert.subject.commonNames) {
-        if (/^[a-z0-9*][a-z0-9.*-]*$/i.test(cn) && !dns.includes(cn.toLowerCase())) {
-          out.push({ tone: "info", text: `The common name ${cn} is not one of the SAN entries. Clients ignore the CN, so it is the SAN list that decides which names work.` });
+        const lower = cn.toLowerCase();
+        if (/^[a-z0-9*][a-z0-9.*-]*$/i.test(cn) && !dns.includes(lower)) {
+          // RFC 9525 6.3: *.example.com matches exactly one whole leftmost label.
+          const dot = lower.indexOf(".");
+          const covered = dot > 0 && !lower.startsWith("*") && dns.includes(`*${lower.slice(dot)}`);
+          out.push({
+            tone: "info",
+            text: covered
+              ? `The common name ${cn} is not itself a SAN entry, but the wildcard *${lower.slice(dot)} covers it, so clients accept the name.`
+              : `The common name ${cn} is not one of the SAN entries. Clients ignore the CN, so it is the SAN list that decides which names work.`,
+          });
         }
       }
       const wild = san.filter((n) => n.type === "DNS" && n.raw.startsWith("*."));

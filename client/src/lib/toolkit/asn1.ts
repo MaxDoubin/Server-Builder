@@ -418,6 +418,7 @@ export function decodeStringBytes(tag: number, bytes: Uint8Array): DecodedString
 
 /** Control, bidirectional override and zero width characters, which can make two names look identical. */
 const INVISIBLE = /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
+const INVISIBLE_ONE = /^[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]$/;
 
 /** Makes invisible characters visible as \xNN or \u{NNNN}, so a NUL inside a name cannot hide. */
 export function visible(text: string): { text: string; hidden: boolean } {
@@ -1062,6 +1063,8 @@ export interface NameAttribute {
   label: string;
   /** The decoded value, or #hex for a value that is not a string. */
   value: string;
+  /** Lowercase hex of the whole encoded value (tag, length and content). */
+  valueHex: string;
   /** The value with invisible characters made visible. */
   display: string;
   /** UTF8String, PrintableString and so on. */
@@ -1084,14 +1087,22 @@ export interface DistinguishedName {
   commonNames: string[];
 }
 
-/** RFC 4514 section 2.4 escaping for one string value. */
+/**
+ * RFC 4514 section 2.4 escaping for one string value. Control, zero width and
+ * bidirectional characters, which the RFC allows to be written as hex pairs,
+ * are always written that way (U+202E becomes \e2\80\ae), so the string is
+ * both valid RFC 4514 and safe to show.
+ */
 export function escapeRfc4514(value: string): string {
+  const utf8 = new TextEncoder();
   let out = "";
-  for (let i = 0; i < value.length; i++) {
-    const ch = value[i];
-    if (ch === "\u0000") out += "\\00";
-    else if (',+"\\<>;'.includes(ch)) out += `\\${ch}`;
-    else if ((i === 0 && (ch === " " || ch === "#")) || (i === value.length - 1 && ch === " ")) out += `\\${ch}`;
+  const chars = Array.from(value);
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i];
+    if (ch === "\u0000" || INVISIBLE_ONE.test(ch)) {
+      for (const b of utf8.encode(ch)) out += `\\${b.toString(16).padStart(2, "0")}`;
+    } else if (',+"\\<>;'.includes(ch)) out += `\\${ch}`;
+    else if ((i === 0 && (ch === " " || ch === "#")) || (i === chars.length - 1 && ch === " ")) out += `\\${ch}`;
     else out += ch;
   }
   return out;
@@ -1142,6 +1153,7 @@ export function parseName(buf: Uint8Array, node: DerNode | undefined, what: stri
         short: info?.short ?? oid,
         label: info?.label ?? oidName(oid),
         value,
+        valueHex: toHex(bytesOf(buf, valueNode)),
         display: vis.text,
         valueType,
         issues,
@@ -1151,12 +1163,19 @@ export function parseName(buf: Uint8Array, node: DerNode | undefined, what: stri
     rdns.push(rdn);
   }
 
+  // RFC 4514 2.3 and 2.4: a type with a registered short name is written by
+  // that name and a string value is escaped; a type written as a dotted OID,
+  // or a value that is not a string, is written as # and the hex of its BER
+  // encoding.
   const rfc4514 = rdns
     .slice()
     .reverse()
     .map((rdn) =>
       rdn
-        .map((a) => `${NAME_ATTRS[a.oid]?.ldap ?? a.oid}=${a.isString ? escapeRfc4514(a.value) : a.value}`)
+        .map((a) => {
+          const ldap = NAME_ATTRS[a.oid]?.ldap;
+          return ldap && a.isString ? `${ldap}=${escapeRfc4514(a.value)}` : `${ldap ?? a.oid}=#${a.valueHex}`;
+        })
         .join("+"),
     )
     .join(",");
@@ -1375,7 +1394,7 @@ export function parsePublicKey(buf: Uint8Array, node: DerNode | undefined, at: n
     info.rows.push({ label: "Modulus size", value: `${n} bits` });
     info.rows.push({ label: "Public exponent", value: `${exponent} (0x${exponent.toString(16)})` });
     if (exponent < 3n || exponent % 2n === 0n) info.issues.push("The public exponent is even or below 3, so this is not a working RSA key.");
-    else if (exponent < 65537n) info.issues.push(`The public exponent is ${exponent}. Small exponents are legal but fragile: they have enabled attacks against implementations with weak padding checks, and 65537 is the standard choice.`);
+    else if (exponent < 65537n) info.issues.push(`The public exponent is ${exponent}. That is valid, but the Baseline Requirements (6.1.6) recommend at least 65537, and an exponent of 3 has enabled signature forgeries against verifiers with loose padding checks.`);
     if (oid === "1.2.840.113549.1.1.10") info.rows.push({ label: "Restriction", value: "Key restricted to RSASSA-PSS signatures (RFC 4055)" });
   } else if (oid === "1.2.840.10045.2.1") {
     // RFC 5480 2.1.1: the parameters carry the named curve.
@@ -1426,7 +1445,8 @@ export function parsePublicKey(buf: Uint8Array, node: DerNode | undefined, at: n
       info.summary = `DSA ${info.bits} bit`;
       info.rows.push({ label: "Prime size", value: `${info.bits} bits` });
     } else info.summary = "DSA";
-  } else if (oid.startsWith("2.16.840.1.101.3.4.3.1")) {
+  } else if (oid === "2.16.840.1.101.3.4.3.17" || oid === "2.16.840.1.101.3.4.3.18" || oid === "2.16.840.1.101.3.4.3.19") {
+    // FIPS 204 ML-DSA-44, ML-DSA-65 and ML-DSA-87.
     info.keyType = "ML-DSA";
     info.summary = oidName(oid);
     info.rows.push({ label: "Key", value: `${key.length} bytes` });
@@ -1438,8 +1458,15 @@ export function parsePublicKey(buf: Uint8Array, node: DerNode | undefined, at: n
 
 /* -------------------------------------------------------------- IP format */
 
-/** RFC 5952: lowercase, no leading zeros, the longest run of two or more zero groups compressed. */
+/**
+ * RFC 5952: lowercase, no leading zeros, the longest run of two or more zero
+ * groups compressed (the first one on a tie), and section 5's dotted tail for
+ * IPv4-mapped addresses (::ffff:192.0.2.1).
+ */
 export function formatIpv6(bytes: Uint8Array): string {
+  if (bytes.subarray(0, 10).every((b) => b === 0) && bytes[10] === 0xff && bytes[11] === 0xff) {
+    return `::ffff:${Array.from(bytes.subarray(12, 16)).join(".")}`;
+  }
   const groups: number[] = [];
   for (let i = 0; i < 16; i += 2) groups.push((bytes[i] << 8) | bytes[i + 1]);
   let bestStart = -1;

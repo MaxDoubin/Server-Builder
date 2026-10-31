@@ -25,6 +25,8 @@ export const MAX_ATTRIBUTE_VALUE_BYTES = 1024;
 export const AGE_LIMIT_SECONDS = 34_560_000;
 /** Longest decoded preview shown for a value. */
 export const MAX_PREVIEW_CHARS = 1200;
+/** Deepest JSON nesting decoded for a preview. Deeper values are not previewed. */
+export const MAX_JSON_DEPTH = 64;
 /** Most findings listed for one cookie, after identical ones are merged. */
 export const MAX_FINDINGS = 40;
 /** Most attribute rows the page lists for one cookie. Every attribute is still parsed. */
@@ -242,8 +244,9 @@ export function parseRequestUrl(input: string): UrlResult {
   }
   const host = parsed.hostname.toLowerCase();
   if (host === "") return { ok: false, error: "That URL has no host." };
+  // 127.0.0.0/8 only as an IPv4 literal: a name such as 127.example.com is not loopback.
   const loopback =
-    host === "localhost" || host.endsWith(".localhost") || /^127\./.test(host) || host === "[::1]";
+    host === "localhost" || host.endsWith(".localhost") || (IPV4_RE.test(host) && host.startsWith("127.")) || host === "[::1]";
   return {
     ok: true,
     url: {
@@ -376,7 +379,35 @@ function hexPreview(bytes: Uint8Array, max = 24): string {
   return bytes.length > max ? `${shown} ...` : shown;
 }
 
+/** True when brackets nest deeper than max outside strings. A cheap scan run before JSON.parse. */
+export function jsonTooDeep(text: string, max: number): boolean {
+  let depth = 0;
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === "\\") i++;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === "{" || c === "[") {
+      if (++depth > max) return true;
+    } else if (c === "}" || c === "]") depth--;
+  }
+  return false;
+}
+
+/** Pretty JSON that cannot throw. JSON.stringify recurses, so a deep value could overflow the stack. */
+function pretty(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "(too deeply nested to display)";
+  }
+}
+
 function jsonObject(text: string): Record<string, unknown> | null {
+  // Capped so that printing the preview can never overflow the stack.
+  if (jsonTooDeep(text, MAX_JSON_DEPTH)) return null;
   try {
     const v: unknown = JSON.parse(text);
     return typeof v === "object" && v !== null && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
@@ -436,12 +467,12 @@ export function inspectValue(rawValue: string): { insights: ValueInsight[]; jwt:
 
   const jwt = peekJwt(value);
   if (jwt) {
-    const payloadText = jwt.payload ? JSON.stringify(jwt.payload, null, 2) : "(payload is not a JSON object)";
+    const payloadText = jwt.payload ? pretty(jwt.payload) : "(payload is not a JSON object)";
     insights.push({
       kind: "jwt",
       title: `JWT, alg ${jwt.alg ?? "missing"}`,
       detail: "Header and payload decoded locally. Anyone holding the cookie can read these; only the signature, checked with the key, says whether they are genuine.",
-      preview: clip(`${JSON.stringify(jwt.header, null, 2)}\n${payloadText}`),
+      preview: clip(`${pretty(jwt.header)}\n${payloadText}`),
     });
     return { insights, jwt };
   }
@@ -473,7 +504,7 @@ export function inspectValue(rawValue: string): { insights: ValueInsight[]; jwt:
           kind: "base64-json",
           title: "Base64 encoded JSON",
           detail: "Encoding is not encryption. If the application trusts these fields without a signature, a user can edit them.",
-          preview: clip(JSON.stringify(obj, null, 2)),
+          preview: clip(pretty(obj)),
         });
       } else if (text && /[A-Za-z]{3}/.test(text)) {
         insights.push({
@@ -1201,11 +1232,18 @@ export interface Analysis {
 
 const HEADER_RE = /^(?:<\s*)?set-cookie\s*:\s*/i;
 const OTHER_HEADER_RE = /^(?:<\s*)?[A-Za-z][A-Za-z0-9-]*\s*:\s*/;
+/*
+  The rest of a curl -v transcript: "*" connection notes, ">" request lines,
+  "{" and "}" data markers, a bare "<" between headers and body, HTTP/2
+  pseudo-headers and the status line. None of them can be a Set-Cookie.
+*/
+const TRANSCRIPT_RE = /^(?:[*>{}]|<\s*$|(?:<\s*)?:[a-z]+\s*:|(?:<\s*)?HTTP\/)/i;
 
 /**
  * Split a paste into set-cookie-strings. Accepts bare values, "Set-Cookie:"
  * header lines, and curl -v output. When any line carries the header name,
- * lines without it are treated as other headers and skipped.
+ * other headers, curl transcript lines and lines with no = are skipped; a
+ * bare name=value line among them is still analyzed.
  */
 export function analyzePaste(input: string, ctx: Context): Analysis {
   const notes: Finding[] = [];
@@ -1244,7 +1282,9 @@ export function analyzePaste(input: string, ctx: Context): Analysis {
     let body = text;
     if (HEADER_RE.test(text)) body = trimWsp(text.replace(HEADER_RE, ""));
     else if (anyHeader) {
-      if (OTHER_HEADER_RE.test(text) || /^(?:<\s*)?HTTP\//i.test(text)) {
+      // A line with no = cannot carry a name=value pair, so among header
+      // lines it is response body or transcript text, not a bare cookie.
+      if (OTHER_HEADER_RE.test(text) || TRANSCRIPT_RE.test(text) || !text.includes("=")) {
         skipped.push({ line: lineNo, text, reason: "Not a Set-Cookie header." });
         return;
       }

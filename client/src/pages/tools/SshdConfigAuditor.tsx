@@ -322,7 +322,8 @@ export function SshdConfigAuditor() {
               <CodeLines text={VERIFY} />
             </pre>
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              sshd -T is the authority: it prints what the running binary will actually use, after every Include and default.
+              sshd -T is the authority on what the file says: it prints every value the installed sshd takes from the config on
+              disk, after every Include and default. The running daemon only picks up a change when it is reloaded.
             </p>
           </ToolPanel>
         </div>

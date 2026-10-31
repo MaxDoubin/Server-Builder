@@ -686,9 +686,11 @@ export function BackupRetentionCalculator() {
                   3-2-1
                 </div>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  Three copies of the data, on two different kinds of storage, one of them offsite. Production counts as
-                  one, so the figure above for {copyCount} {pluralise(copyCount, "copy", "copies")}{" "}
-                  {copyCount >= 2 ? "covers the other two" : "falls short: 3-2-1 needs two backup copies"}.
+                  Three copies of the data, on two different kinds of storage, one of them offsite. Production is the
+                  first copy, so the backups supply the other two.{" "}
+                  {copyCount >= 2
+                    ? `The storage figures above are for ${copyCount} backup copies, which meets that.`
+                    : "The storage figures above are for one backup copy, which falls short: add a second on different storage."}
                 </p>
               </div>
               <div className="rounded-2xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.06)] p-5">

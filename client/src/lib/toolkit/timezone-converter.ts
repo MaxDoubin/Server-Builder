@@ -137,6 +137,32 @@ export function deviceZone(): string {
   }
 }
 
+/**
+ * Browsers list zones under the older canonical spelling of a few renamed
+ * cities (Chrome says Asia/Calcutta, not Asia/Kolkata). Both names are links
+ * to the same zone in the IANA database. Anyone searching a list for Kolkata
+ * or Kyiv expects the current name, so it replaces the old one when the
+ * browser accepts it.
+ */
+const CURRENT_NAMES: [legacy: string, current: string][] = [
+  ["Asia/Calcutta", "Asia/Kolkata"],
+  ["Asia/Katmandu", "Asia/Kathmandu"],
+  ["Asia/Saigon", "Asia/Ho_Chi_Minh"],
+  ["Asia/Rangoon", "Asia/Yangon"],
+  ["Asia/Thimbu", "Asia/Thimphu"],
+  ["Asia/Ulan_Bator", "Asia/Ulaanbaatar"],
+  ["Asia/Macao", "Asia/Macau"],
+  ["Europe/Kiev", "Europe/Kyiv"],
+  ["America/Buenos_Aires", "America/Argentina/Buenos_Aires"],
+  ["America/Godthab", "America/Nuuk"],
+  ["America/Indianapolis", "America/Indiana/Indianapolis"],
+  ["America/Louisville", "America/Kentucky/Louisville"],
+  ["Atlantic/Faeroe", "Atlantic/Faroe"],
+  ["Pacific/Enderbury", "Pacific/Kanton"],
+  ["Pacific/Ponape", "Pacific/Pohnpei"],
+  ["Pacific/Truk", "Pacific/Chuuk"],
+];
+
 /** Every zone the browser knows, sorted, with UTC first. Falls back to a short list on old browsers. */
 export function listZones(): string[] {
   let zones: string[] = [];
@@ -148,6 +174,12 @@ export function listZones(): string[] {
   }
   if (zones.length === 0) zones = FALLBACK_ZONES;
   const unique = new Set(zones.filter(isValidZone));
+  for (const [legacy, current] of CURRENT_NAMES) {
+    if (unique.has(legacy) && isValidZone(current)) {
+      unique.delete(legacy);
+      unique.add(current);
+    }
+  }
   unique.delete("UTC");
   return ["UTC", ...[...unique].sort()];
 }

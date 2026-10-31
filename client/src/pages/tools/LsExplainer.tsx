@@ -348,7 +348,7 @@ export function LsExplainer() {
                               aria-current={active ? "true" : undefined}
                               aria-label={`Explain line ${e.lineNo}, ${shown(e.name)}`}
                               data-testid={`button-entry-${e.lineNo}`}
-                              className={`min-h-[28px] max-w-[18rem] truncate rounded-md px-2 py-1 text-left font-mono-tight text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                              className={`min-h-[28px] min-w-[2rem] max-w-[18rem] truncate rounded-md px-2 py-1 text-left font-mono-tight text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                                 active
                                   ? "text-[hsl(var(--brand-signal))] underline underline-offset-4"
                                   : "text-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-signal))]"

@@ -27,6 +27,8 @@ export const MAX_TEXT_CHARS = 3_145_728;
 export const MAX_DEPTH = 32;
 /** Records examined in total, speculative attempts included, before the decoder stops. */
 export const MAX_FIELDS = 50_000;
+/** Longest paste checked for the "also valid Base64" hint. */
+const ALSO_VALID_MAX_CHARS = 65_536;
 /** Values listed for a packed repeated interpretation. */
 export const MAX_PACKED_SHOWN = 64;
 
@@ -129,25 +131,33 @@ function nibble(code: number): number {
 type Attempt = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 
 function parseHex(text: string): Attempt {
-  const cleaned = text
-    .replace(/\\x/gi, " ")
-    .replace(/\b0x/gi, " ")
-    .replace(/[\s:,;{}[\]()]/g, "");
-  const bad = cleaned.search(/[^0-9a-fA-F]/);
-  if (bad >= 0) {
-    return { ok: false, error: `"${cleaned[bad]}" is not a hex digit.` };
+  // \x and 0x prefixes become separators, then one pass collects the digits
+  // and skips whitespace and the punctuation a dump might carry.
+  const src = text.replace(/\\x/gi, " ").replace(/\b0x/gi, " ");
+  const digits = new Uint8Array(src.length);
+  let n = 0;
+  for (let i = 0; i < src.length; i++) {
+    const c = src.charCodeAt(i);
+    if ((c >= 48 && c <= 57) || (c >= 97 && c <= 102) || (c >= 65 && c <= 70)) {
+      digits[n++] = nibble(c);
+    } else if (c === 32 || (c >= 9 && c <= 13) || c === 58 || c === 44 || c === 59) {
+      continue;
+    } else if (c === 123 || c === 125 || c === 91 || c === 93 || c === 40 || c === 41) {
+      continue;
+    } else if (c > 127 && /\s/.test(src[i])) {
+      continue;
+    } else {
+      return { ok: false, error: `"${src[i]}" is not a hex digit.` };
+    }
   }
-  if (cleaned.length % 2 === 1) {
-    return { ok: false, error: `There are ${cleaned.length} hex digits, an odd number, so the last byte is incomplete.` };
+  if (n % 2 === 1) {
+    return { ok: false, error: `There are ${n} hex digits, an odd number, so the last byte is incomplete.` };
   }
-  if (cleaned.length / 2 > MAX_INPUT_BYTES) {
-    return { ok: false, error: `That is ${(cleaned.length / 2).toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.` };
+  if (n / 2 > MAX_INPUT_BYTES) {
+    return { ok: false, error: `That is ${(n / 2).toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.` };
   }
-  // Every character is now known to be a hex digit.
-  const out = new Uint8Array(cleaned.length / 2);
-  for (let i = 0; i < out.length; i++) {
-    out[i] = (nibble(cleaned.charCodeAt(i * 2)) << 4) | nibble(cleaned.charCodeAt(i * 2 + 1));
-  }
+  const out = new Uint8Array(n / 2);
+  for (let i = 0; i < out.length; i++) out[i] = (digits[i * 2] << 4) | digits[i * 2 + 1];
   return { ok: true, bytes: out };
 }
 
@@ -198,8 +208,13 @@ export function parseInput(text: string, format: InputFormat): InputResult | nul
     return r.ok ? { ok: true, bytes: r.bytes, format: "base64", alsoValid: false } : { ok: false, error: `Not valid Base64: ${r.error}` };
   }
   const hex = parseHex(text);
+  if (hex.ok) {
+    // The hint exists for short pastes that could be either. Decoding a
+    // megabyte of hex as Base64 as well would only cost time.
+    const other = text.length <= ALSO_VALID_MAX_CHARS ? parseBase64(text) : null;
+    return { ok: true, bytes: hex.bytes, format: "hex", alsoValid: other !== null && other.ok && other.bytes.length > 0 };
+  }
   const b64 = parseBase64(text);
-  if (hex.ok) return { ok: true, bytes: hex.bytes, format: "hex", alsoValid: b64.ok && b64.bytes.length > 0 };
   if (b64.ok) return { ok: true, bytes: b64.bytes, format: "base64", alsoValid: false };
   return { ok: false, error: `Not valid hex (${hex.error}) or Base64 (${b64.error})` };
 }

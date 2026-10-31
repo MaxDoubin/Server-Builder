@@ -85,8 +85,8 @@ const VALUE_LABEL: Record<ClauseKind, string> = {
 
 const GENERAL_DIFFERENCES = [
   "A capture filter decides what is recorded, so anything it rejects is gone. A display filter only hides packets that are already in the file and can be changed at any time.",
-  "Display filters match a field anywhere in the dissection, including the copy of the original IP and transport headers quoted inside an ICMP error. Capture filters read fixed offsets in the packet's own headers.",
-  "The syntax is different: tcpdump writes host 10.0.0.5 and port 53, Wireshark writes ip.addr == 10.0.0.5 && udp.port == 53. Wireshark's capture filter box takes the tcpdump syntax, not the display syntax.",
+  "Display filters match a field anywhere in the dissection, including the copy of the original IP and transport headers quoted inside an ICMP error. Capture filters only test the packet's own headers.",
+  "The syntax is different: tcpdump writes host 10.0.0.5 and udp port 53, Wireshark writes ip.addr == 10.0.0.5 && udp.port == 53. Wireshark's capture filter box takes the tcpdump syntax, not the display syntax.",
 ];
 
 /* ------------------------------------------------------------------ view */

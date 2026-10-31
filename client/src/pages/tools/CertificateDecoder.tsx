@@ -21,6 +21,7 @@ import {
   readPemText,
   toPem,
   verifySignature,
+  visible,
   type DistinguishedName,
   type ExtensionView,
   type InputNotice,
@@ -246,13 +247,24 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** A host name to put in the example commands. */
+/**
+ * A host name to put in the example shell commands. Names come from the
+ * certificate, which anyone can craft, so only a plain host name is used:
+ * a SAN such as "a.com;rm -rf ~" must never reach a command a reader copies.
+ */
+const SAFE_HOST = /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,63}$/i;
+
 function exampleHost(cert: CertificateInfo | undefined): string {
-  const dns = cert?.extensions.san?.find((n) => n.type === "DNS" && !n.raw.includes("*"))?.raw;
+  const dns = cert?.extensions.san?.find((n) => n.type === "DNS" && SAFE_HOST.test(n.raw))?.raw;
   const cn = cert?.subject.commonNames[0];
   if (dns) return dns;
-  if (cn && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(cn)) return cn;
+  if (cn && SAFE_HOST.test(cn)) return cn;
   return "example.com";
+}
+
+/** An issuer's name for display: its first common name, escaped, or the whole name. */
+function issuerName(name: DistinguishedName, empty: string): string {
+  return name.commonNames.length > 0 ? visible(name.commonNames[0]).text : name.rfc4514 || empty;
 }
 
 /* ------------------------------------------------------------------- page */
@@ -283,7 +295,7 @@ export function CertificateDecoder() {
   const read = useMemo<ReadResult>(() => (file ? file.result : readPemText(text)), [file, text]);
   const outcome = useMemo(() => decodeCertificates(read), [read]);
   const certs = useMemo(() => outcome.entries.flatMap((e) => (e.ok ? [e.cert] : [])), [outcome]);
-  const failures = outcome.entries.filter((e): e is { ok: false; label: string; error: string } => !e.ok);
+  const failures = outcome.entries.flatMap((e, i) => (e.ok ? [] : [{ position: i + 1, label: e.label, error: e.error }]));
   const chain = useMemo(() => analyzeChain(certs), [certs]);
   const chainKey = certs.map((c) => c.sha256).join("|");
 
@@ -452,10 +464,18 @@ export function CertificateDecoder() {
         {outcome.notices.length > 0 || failures.length > 0 ? (
           <div className="space-y-2">
             <FindingList findings={noticeFindings(outcome.notices)} testId="list-notices" />
-            <FindingList findings={failures.map((f, i) => ({ tone: "danger" as const, text: `Block ${i + 1} (${f.label}) did not decode: ${f.error}` }))} />
+            <FindingList
+              findings={failures.map((f) => ({
+                tone: "danger" as const,
+                text: `${outcome.entries.length > 1 ? `Entry ${f.position} of ${outcome.entries.length}` : "The entry"} (${f.label}) did not decode: ${f.error}`,
+              }))}
+            />
             {outcome.sawCsr ? (
               <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                <Link href="/tools/csr-decoder" className="text-[hsl(var(--brand-cyan))] underline underline-offset-4 hover:text-[hsl(var(--brand-bone))]">
+                <Link
+                  href="/tools/csr-decoder"
+                  className="inline-flex min-h-[24px] items-center text-[hsl(var(--brand-cyan))] underline underline-offset-4 hover:text-[hsl(var(--brand-bone))]"
+                >
                   Open the CSR decoder
                 </Link>{" "}
                 to read a certificate signing request.
@@ -486,7 +506,7 @@ export function CertificateDecoder() {
                         </span>
                       </div>
                       <p className="mt-1 break-all font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                        Issued by {c.issuer.commonNames[0] ?? (c.issuer.rfc4514 || "an empty name")}
+                        Issued by {issuerName(c.issuer, "an empty name")}
                       </p>
                     </div>
                     {link || c.selfIssued ? (
@@ -535,7 +555,7 @@ export function CertificateDecoder() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ToolPanel title={certs.length > 1 ? `Certificate ${index + 1} of ${certs.length}` : "Summary"}>
                 <ToolResult label="Subject" value={cert.displayName} testId="text-subject" />
-                <ToolResult label="Issuer" value={cert.issuer.commonNames[0] ?? (cert.issuer.rfc4514 || "empty")} testId="text-issuer" />
+                <ToolResult label="Issuer" value={issuerName(cert.issuer, "empty")} testId="text-issuer" />
                 <ToolResult label="Version" value={`v${cert.version}`} />
                 <ToolResult label="Serial (hex)" value={cert.serial.hex} testId="text-serial" />
                 <ToolResult label="Serial (decimal)" value={cert.serial.decimal} />
@@ -635,7 +655,8 @@ export function CertificateDecoder() {
                 <CopyRow label="SHA-256" value={cert.sha256} />
                 <CopyRow label="SHA-1" value={cert.sha1} />
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                  Computed over the DER encoding, which is what OpenSSL, browsers and certificate pinning configurations compare.
+                  Computed over the whole certificate in DER, the same bytes openssl x509 -fingerprint hashes. A key pin hashes only the
+                  SubjectPublicKeyInfo; that value is in the public key panel.
                 </p>
               </ToolPanel>
               <ToolPanel title="This certificate as PEM">

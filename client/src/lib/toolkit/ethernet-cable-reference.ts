@@ -52,7 +52,7 @@ export const CATEGORIES: Category[] = [
     construction: "U/UTP, sometimes F/UTP",
     connector: "RJ45",
     fastest: "2.5GBASE-T to 100 m",
-    notes: "Tightened the crosstalk and return loss limits that 1000BASE-T depends on. The lowest category TIA-568 still recognizes.",
+    notes: "Tightened the crosstalk and return loss limits that 1000BASE-T depends on. The minimum category TIA-568 recognizes for new horizontal cabling.",
   },
   {
     id: "cat6",
@@ -612,7 +612,7 @@ export function parseShield(raw: string): ShieldResult | null {
   if (!m) {
     if (/^FS\//.test(code)) return { ok: false, message: "The braid is written first: SF, not FS." };
     if (/^(U|F|S|SF)\/S/.test(code)) {
-      return { ok: false, message: "In the ISO code the pair screen is U (none) or F (foil). A braid goes only in the overall position." };
+      return { ok: false, message: "This tool reads the pair screen as U (none) or F (foil). A braid is the overall screen, so a braid over foil-wrapped pairs is S/FTP." };
     }
     return {
       ok: false,

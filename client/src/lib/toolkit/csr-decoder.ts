@@ -156,7 +156,7 @@ export function decodeCsrs(read: ReadResult): CsrDecodeOutcome {
   let sawCertificate = false;
   for (const obj of read.objects) {
     if (entries.length >= MAX_OBJECTS) break;
-    if (obj.label === "CERTIFICATE" || obj.label === "X509 CERTIFICATE" || obj.label === "TRUSTED CERTIFICATE" || obj.label === "PKCS7") {
+    if (["CERTIFICATE", "X509 CERTIFICATE", "TRUSTED CERTIFICATE", "PKCS7", "PKCS #7 SIGNED DATA"].includes(obj.label)) {
       sawCertificate = true;
       continue;
     }
@@ -202,13 +202,14 @@ export function parseIpv6(text: string): number[] | null {
   if (!/^[0-9a-fA-F:.]+$/.test(text) || text.length > 45) return null;
   const halves = text.split("::");
   if (halves.length > 2) return null;
-  const toGroups = (part: string): number[] | null => {
+  // RFC 4291 2.2 form 3: a dotted IPv4 tail may appear only at the very end.
+  const toGroups = (part: string, last: boolean): number[] | null => {
     if (part === "") return [];
     const out: number[] = [];
     const pieces = part.split(":");
     for (let i = 0; i < pieces.length; i++) {
       const p = pieces[i];
-      if (i === pieces.length - 1 && p.includes(".")) {
+      if (last && i === pieces.length - 1 && p.includes(".")) {
         const v4 = parseIpv4(p);
         if (!v4) return null;
         out.push((v4[0] << 8) | v4[1], (v4[2] << 8) | v4[3]);
@@ -217,8 +218,8 @@ export function parseIpv6(text: string): number[] | null {
     }
     return out;
   };
-  const head = toGroups(halves[0]);
-  const tail = halves.length === 2 ? toGroups(halves[1]) : [];
+  const head = toGroups(halves[0], halves.length === 1);
+  const tail = halves.length === 2 ? toGroups(halves[1], true) : [];
   if (!head || !tail) return null;
   const total = head.length + tail.length;
   if (halves.length === 1 ? total !== 8 : total > 7) return null;
@@ -228,7 +229,11 @@ export function parseIpv6(text: string): number[] | null {
   return bytes;
 }
 
-/** Addresses no public CA may certify: private, loopback, link local, shared, documentation, multicast, reserved. */
+/**
+ * Addresses no public CA may certify: private (RFC 1918, RFC 4193), loopback,
+ * link local, shared (RFC 6598), documentation (RFC 5737, RFC 3849), the
+ * IETF protocol block 192.0.0.0/24, benchmarking, multicast and reserved.
+ */
 export function isReservedIp(text: string): boolean {
   const v4 = parseIpv4(text);
   if (v4) {
@@ -239,7 +244,7 @@ export function isReservedIp(text: string): boolean {
       (a === 169 && b === 254) ||
       (a === 172 && b >= 16 && b <= 31) ||
       (a === 192 && b === 168) ||
-      (a === 192 && b === 0 && v4[2] === 2) ||
+      (a === 192 && b === 0 && (v4[2] === 0 || v4[2] === 2)) ||
       (a === 198 && (b === 18 || b === 19)) ||
       (a === 198 && b === 51 && v4[2] === 100) ||
       (a === 203 && b === 0 && v4[2] === 113)
@@ -247,6 +252,8 @@ export function isReservedIp(text: string): boolean {
   }
   const v6 = parseIpv6(text);
   if (!v6) return false;
+  // ::ffff:a.b.c.d (RFC 4291 2.5.5.2) carries an IPv4 address; judge that address.
+  if (v6.slice(0, 10).every((x) => x === 0) && v6[10] === 0xff && v6[11] === 0xff) return isReservedIp(v6.slice(12).join("."));
   const allZeroButLast = v6.slice(0, 15).every((x) => x === 0);
   return (
     (allZeroButLast && (v6[15] === 0 || v6[15] === 1)) ||
@@ -315,14 +322,15 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
     out.push({ tone: "ok", text: `${sans.length} subjectAltName entr${sans.length === 1 ? "y" : "ies"} requested.` });
   }
   for (const cn of cns) {
+    const shownCn = visible(cn).text;
     if (cn.length > 64) out.push({ tone: "danger", text: `The common name is ${cn.length} characters. X.520 caps it at 64 (ub-common-name in RFC 5280), so CAs reject it. Leave the long name in the SAN only.` });
     if (sans.length > 0 && !sanValues.includes(cn.toLowerCase())) {
       const covering = dnsSans.find((n) => wildcardVerdict(n.raw) === "ok" && cn.toLowerCase().endsWith(n.raw.slice(1).toLowerCase()) && !cn.slice(0, cn.length - n.raw.length + 1).includes("."));
       out.push({
         tone: "warn",
         text: covering
-          ? `The common name ${cn} is not in the SAN list. ${covering.raw} would match it in a browser, but the Baseline Requirements say the CN must be one of the SAN values exactly, so a public CA will drop or reject it.`
-          : `The common name ${cn} is not in the SAN list. The Baseline Requirements require the CN to repeat one of the SAN values, and clients ignore the CN anyway, so add it to the SANs.`,
+          ? `The common name ${shownCn} is not in the SAN list. ${covering.value} would match it in a browser, but the Baseline Requirements say the CN must be one of the SAN values exactly, so a public CA will drop or reject it.`
+          : `The common name ${shownCn} is not in the SAN list. The Baseline Requirements require the CN to repeat one of the SAN values, and clients ignore the CN anyway, so add it to the SANs.`,
       });
     }
   }
@@ -331,26 +339,27 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
   const hostNames = [...new Set([...cns.filter((c) => /^[a-z0-9*][a-z0-9.*_-]*$/i.test(c)), ...dnsSans.map((n) => n.raw)])];
   for (const host of hostNames) {
     const verdict = wildcardVerdict(host);
+    const shown = visible(host).text;
     if (verdict === "ok") {
-      const apex = host.slice(2).toLowerCase();
+      const apex = visible(host.slice(2).toLowerCase()).text;
       out.push({
         tone: "info",
-        text: `${host} covers exactly one label: it matches a.${apex} but not ${apex} and not a.b.${apex}.${sanValues.includes(apex) ? "" : ` Add ${apex} as its own SAN if the bare domain needs to work.`}`,
+        text: `${shown} covers exactly one label: it matches a.${apex} but not ${apex} and not a.b.${apex}.${sanValues.includes(host.slice(2).toLowerCase()) ? "" : ` Add ${apex} as its own SAN if the bare domain needs to work.`}`,
       });
     } else if (verdict === "partial") {
-      out.push({ tone: "danger", text: `${host} is a partial wildcard. The Baseline Requirements allow * only as the entire leftmost label, and RFC 9525 dropped partial matching.` });
+      out.push({ tone: "danger", text: `${shown} is a partial wildcard. The Baseline Requirements allow * only as the entire leftmost label, and RFC 9525 dropped partial matching.` });
     } else if (verdict === "not-leftmost") {
-      out.push({ tone: "danger", text: `${host} puts the wildcard below the leftmost label, which no CA issues and no client matches.` });
+      out.push({ tone: "danger", text: `${shown} puts the wildcard below the leftmost label, which no CA issues and no client matches.` });
     } else if (verdict === "multiple") {
-      out.push({ tone: "danger", text: `${host} has more than one wildcard. Only one is allowed, as the whole leftmost label.` });
+      out.push({ tone: "danger", text: `${shown} has more than one wildcard. Only one is allowed, as the whole leftmost label.` });
     } else if (verdict === "too-broad") {
-      out.push({ tone: "danger", text: `${host} is a wildcard directly under a top-level domain. No CA will issue it, and the same applies under any public suffix such as co.uk.` });
+      out.push({ tone: "danger", text: `${shown} is a wildcard directly under a top-level domain. No CA will issue it, and the same applies under any public suffix such as co.uk.` });
     }
-    if (/_/.test(host)) out.push({ tone: "danger", text: `${host} contains an underscore, which is not allowed in a host name and has been banned from publicly trusted certificates since 2019.` });
-    if (/[^\x21-\x7e]/.test(host)) out.push({ tone: "danger", text: `${visible(host).text} contains characters outside ASCII. An internationalized name must be written in its xn-- (A-label) form.` });
+    if (/_/.test(host)) out.push({ tone: "danger", text: `${shown} contains an underscore, which is not allowed in a host name and has been banned from publicly trusted certificates since 2019.` });
+    if (/[^\x21-\x7e]/.test(host)) out.push({ tone: "danger", text: `${shown} contains characters outside printable ASCII. An internationalized name must be written in its xn-- (A-label) form.` });
     if (verdict === "none" || verdict === "ok") {
       const bare = host.replace(/^\*\./, "");
-      if (isInternalName(bare)) out.push({ tone: "info", text: `${host} is not a public domain name. Public CAs stopped certifying internal names in 2015, so this needs a private CA.` });
+      if (isInternalName(bare)) out.push({ tone: "info", text: `${shown} is not a public domain name. Public CAs stopped certifying internal names in 2015, so this needs a private CA.` });
     }
   }
   for (const ip of ipSans) {
@@ -529,9 +538,13 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
   if (cn) subjParts.push(`/CN=${subjEscape(cn)}`);
   const subj = subjParts.join("") || "/";
   const sanText = entries.map((e) => `${e.type}:${e.value}`).join(",");
+  // Without -utf8 (or utf8 = yes in a config file) OpenSSL reads each byte of
+  // a field as one Latin-1 character, so every non-ASCII letter would be
+  // stored as two wrong characters.
+  const utf8 = /[^\x00-\x7f]/.test(cn + org);
 
   const lines = [
-    `openssl req -new -newkey ${key.newkey} -nodes \\`,
+    `openssl req -new -newkey ${key.newkey} -nodes${utf8 ? " -utf8" : ""} \\`,
     `  -keyout ${shellQuote(`${stem}.key`)} -out ${shellQuote(`${stem}.csr`)} \\`,
     `  -subj ${shellQuote(subj)}${sanText ? " \\" : ""}`,
   ];
@@ -546,6 +559,7 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
   const config = [
     "[req]",
     "prompt = no",
+    ...(utf8 ? ["utf8 = yes"] : []),
     "distinguished_name = dn",
     ...(entries.length ? ["req_extensions = req_ext"] : []),
     "",

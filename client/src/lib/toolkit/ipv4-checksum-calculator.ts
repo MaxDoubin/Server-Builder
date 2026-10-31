@@ -121,6 +121,11 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
   return { ok: true, bytes };
 }
 
+/** "1 byte" or "N bytes", for messages where the count can be 1. */
+function byteCount(n: number): string {
+  return `${n.toLocaleString("en-US")} ${n === 1 ? "byte" : "bytes"}`;
+}
+
 export function hex16(value: number): string {
   return (value & 0xffff).toString(16).padStart(4, "0");
 }
@@ -458,9 +463,9 @@ export function analyzeIpv4Header(bytes: Uint8Array): Ipv4HeaderOutcome {
   if (trailing.length > 0) {
     const expected = totalLength - headerLength;
     warnings.push(
-      `${trailing.length} bytes after the header were not summed: the IPv4 checksum covers the header only.` +
+      `${byteCount(trailing.length)} after the header ${trailing.length === 1 ? "was" : "were"} not summed: the IPv4 checksum covers the header only.` +
         (totalLength >= headerLength && trailing.length !== expected
-          ? ` The total length field says the payload is ${expected} bytes.`
+          ? ` The total length field says the payload is ${byteCount(expected)}.`
           : ""),
     );
   }
@@ -682,7 +687,7 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
     const udpLength = (segment[4] << 8) | segment[5];
     if (udpLength !== segment.length) {
       warnings.push(
-        `The UDP length field says ${udpLength} bytes, but ${segment.length} were pasted. The checksum covers the bytes the length field names, so one of them is wrong or incomplete.`,
+        `The UDP length field says ${byteCount(udpLength)}, but ${segment.length} were pasted. The checksum covers the bytes the length field names, so one of them is wrong or incomplete.`,
       );
     }
   }

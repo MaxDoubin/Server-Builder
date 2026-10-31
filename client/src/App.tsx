@@ -503,6 +503,36 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const DhcpOption121Encoder = lazyWithRetry(() =>
+  import("@/pages/tools/DhcpOption121Encoder").then((m) => ({ default: m.DhcpOption121Encoder })),
+);
+const TcpdumpFilterBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/TcpdumpFilterBuilder").then((m) => ({ default: m.TcpdumpFilterBuilder })),
+);
+const HmacGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/HmacGenerator").then((m) => ({ default: m.HmacGenerator })),
+);
+const PlayfairCipher = lazyWithRetry(() =>
+  import("@/pages/tools/PlayfairCipher").then((m) => ({ default: m.PlayfairCipher })),
+);
+const RailFenceCipher = lazyWithRetry(() =>
+  import("@/pages/tools/RailFenceCipher").then((m) => ({ default: m.RailFenceCipher })),
+);
+const TotpGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/TotpGenerator").then((m) => ({ default: m.TotpGenerator })),
+);
+const EndiannessConverter = lazyWithRetry(() =>
+  import("@/pages/tools/EndiannessConverter").then((m) => ({ default: m.EndiannessConverter })),
+);
+const Ieee754Inspector = lazyWithRetry(() =>
+  import("@/pages/tools/Ieee754Inspector").then((m) => ({ default: m.Ieee754Inspector })),
+);
+const RaidRebuildRisk = lazyWithRetry(() =>
+  import("@/pages/tools/RaidRebuildRisk").then((m) => ({ default: m.RaidRebuildRisk })),
+);
+const UpsRuntimeCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/UpsRuntimeCalculator").then((m) => ({ default: m.UpsRuntimeCalculator })),
+);
 const AccessLogAnalyzer = lazyWithRetry(() =>
   import("@/pages/tools/AccessLogAnalyzer").then((m) => ({ default: m.AccessLogAnalyzer })),
 );
@@ -1671,6 +1701,56 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/dhcp-option-121-encoder">
+            <Suspense fallback={<RouteLoading />}>
+              <DhcpOption121Encoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/tcpdump-filter-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <TcpdumpFilterBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/hmac-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <HmacGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/playfair-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <PlayfairCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/rail-fence-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <RailFenceCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/totp-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <TotpGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/endianness-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <EndiannessConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ieee754-inspector">
+            <Suspense fallback={<RouteLoading />}>
+              <Ieee754Inspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/raid-rebuild-risk">
+            <Suspense fallback={<RouteLoading />}>
+              <RaidRebuildRisk />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ups-runtime-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <UpsRuntimeCalculator />
             </Suspense>
           </Route>
           <Route path="/tools/access-log-analyzer">

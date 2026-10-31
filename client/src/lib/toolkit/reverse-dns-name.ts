@@ -254,7 +254,9 @@ function decimalOctet(label: string, index: number): Result<number> {
  * start/prefix (its examples) and start-prefix are read, plus a dash range
  * such as 64-127 when the numbers can only mean that.
  */
-function readClassless(label: string): Result<{ start: number; prefix: number; note: string | null }> {
+function readClassless(
+  label: string,
+): Result<{ start: number; prefix: number; note: string | null; rangeAlternative: number | null }> {
   const m = CLASSLESS_LABEL.exec(label);
   if (!m) return fail(`"${quote(label)}" is not a classless label.`);
   const a = Number(m[1]);
@@ -275,7 +277,7 @@ function readClassless(label: string): Result<{ start: number; prefix: number; n
       }
       return fail(`${label} is not aligned: a /${b} block starts on a multiple of ${2 ** (32 - b)}, and ${a} is not one.`);
     }
-    return { ok: true, value: { start: a, prefix: asPrefix, note: null } };
+    return { ok: true, value: { start: a, prefix: asPrefix, note: null, rangeAlternative: null } };
   }
   if (asPrefix !== null) {
     return {
@@ -284,10 +286,14 @@ function readClassless(label: string): Result<{ start: number; prefix: number; n
         start: a,
         prefix: asPrefix,
         note: `Read ${label} as start ${a} with prefix length /${asPrefix}. RFC 2317 leaves the label format to the operator, and some write a range instead, which here would mean ${a} to ${b} (/${asRange}).`,
+        rangeAlternative: asRange,
       },
     };
   }
-  return { ok: true, value: { start: a, prefix: asRange, note: `Read ${label} as the range ${a} to ${b}, a /${asRange}.` } };
+  return {
+    ok: true,
+    value: { start: a, prefix: asRange, note: `Read ${label} as the range ${a} to ${b}, a /${asRange}.`, rangeAlternative: null },
+  };
 }
 
 function parseInAddr(labels: string[], name: string): Result<ReverseInput> {
@@ -305,13 +311,24 @@ function parseInAddr(labels: string[], name: string): Result<ReverseInput> {
     }
     const c = readClassless(labels[classlessAt]);
     if (!c.ok) return c;
-    const { start, prefix, note } = c.value;
-    const end = start + 2 ** (32 - prefix) - 1;
+    const { start, rangeAlternative } = c.value;
+    let { prefix, note } = c.value;
+    let end = start + 2 ** (32 - prefix) - 1;
     let host: number | null = null;
     if (classlessAt === 1) {
       const r = decimalOctet(labels[0], 1);
       if (!r.ok) return r;
       host = r.value;
+      // A label such as 0-31 reads two ways. If the host only fits the
+      // range reading, that is the one the zone's operator meant.
+      if ((host < start || host > end) && rangeAlternative !== null) {
+        const altEnd = start + 2 ** (32 - rangeAlternative) - 1;
+        if (host >= start && host <= altEnd) {
+          note = `Read ${labels[1]} as the range ${start} to ${altEnd}, a /${rangeAlternative}, because host ${host} is outside a /${prefix} starting at ${start}.`;
+          prefix = rangeAlternative;
+          end = altEnd;
+        }
+      }
       if (host < start || host > end) {
         return fail(`Host ${host} is outside the block ${labels[1]}, which covers ${start} to ${end}.`);
       }
@@ -375,7 +392,10 @@ function parsePtrName(text: string): Result<ReverseInput> {
   else if (name === "ip6.arpa" || name.endsWith(".ip6.arpa")) suffix = "ip6.arpa";
   else return fail("A reverse name ends in in-addr.arpa (IPv4) or ip6.arpa (IPv6).");
 
-  const head = name.slice(0, Math.max(0, name.length - suffix.length - 1));
+  if (name !== suffix && name.length === suffix.length + 1) {
+    return fail("There is an empty label: the name starts with a dot.");
+  }
+  const head = name === suffix ? "" : name.slice(0, name.length - suffix.length - 1);
   const labels = head === "" ? [] : head.split(".");
   if (labels.some((l) => l === "")) return fail("There is an empty label: two dots in a row, or a dot at the start.");
   return suffix === "in-addr.arpa" ? parseInAddr(labels, `${name}.`) : parseIp6Arpa(labels, `${name}.`);
@@ -390,6 +410,9 @@ export function parseReverseInput(raw: string): Result<ReverseInput> {
   }
   const stray = strayCharacter(text);
   if (stray) return fail(stray);
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) {
+    return fail("That looks like a URL. Enter only the address, without the scheme, port or path.");
+  }
   if (/arpa\.*$/i.test(text) || /ip6\.int\.*$/i.test(text)) return parsePtrName(text);
 
   let addressText = text;
@@ -405,7 +428,11 @@ export function parseReverseInput(raw: string): Result<ReverseInput> {
   }
   const parsed = parseIp(addressText);
   if (!parsed.ok) {
-    if (/[g-z]/i.test(addressText) && !addressText.includes(":") && !addressText.includes("%")) {
+    // Host-name shaped text with a letter past f, but not the hex and octal
+    // octet forms (0x7f.0.0.1) the address parser explains better itself.
+    const hostShaped = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.?$/i.test(addressText) && /[g-z]/i.test(addressText);
+    const octetForms = /^(0x[0-9a-f]*|\d+)(\.(0x[0-9a-f]*|\d+))*$/i.test(addressText);
+    if (hostShaped && !octetForms) {
       return fail("That looks like a host name. Enter an IP address, or a reverse name ending in in-addr.arpa or ip6.arpa.");
     }
     return parsed;

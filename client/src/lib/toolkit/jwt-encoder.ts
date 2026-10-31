@@ -19,6 +19,12 @@ export const MAX_TOKEN_CHARS = 65_536;
 export const MAX_SECRET_BYTES = 4096;
 /** Longest PEM block accepted, in characters. */
 export const MAX_PEM_CHARS = 16_384;
+/**
+ * Deepest JSON nesting accepted in a header or payload. JSON.stringify
+ * recurses, so a few thousand levels overflow the stack; real tokens rarely
+ * go past five.
+ */
+export const MAX_JSON_DEPTH = 64;
 
 /* -------------------------------------------------------------- algorithms */
 
@@ -199,11 +205,40 @@ function asciiBytes(text: string): Uint8Array {
 export type JsonObject = Record<string, unknown>;
 export type ParsedObject = { ok: true; value: JsonObject } | { ok: false; error: string };
 
+/** The deepest bracket nesting outside strings, counted without parsing. */
+export function jsonDepth(text: string): number {
+  let depth = 0;
+  let max = 0;
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === "\\") i++;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === "{" || c === "[") max = Math.max(max, ++depth);
+    else if (c === "}" || c === "]") depth--;
+  }
+  return max;
+}
+
+/** Pretty JSON for display that never throws. */
+export function prettyJson(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "(too deeply nested to display)";
+  }
+}
+
 /** Parse a JOSE header or a claims set, both of which must be JSON objects. */
 export function parseJsonObject(text: string, label: string): ParsedObject {
   if (text.trim() === "") return { ok: false, error: `The ${label} is empty. It has to be a JSON object, at least {}.` };
   if (text.length > MAX_JSON_CHARS) {
     return { ok: false, error: `The ${label} is ${text.length.toLocaleString("en-US")} characters. This page reads up to ${MAX_JSON_CHARS.toLocaleString("en-US")}.` };
+  }
+  if (jsonDepth(text) > MAX_JSON_DEPTH) {
+    return { ok: false, error: `The ${label} nests objects or arrays more than ${MAX_JSON_DEPTH} levels deep. This page reads up to ${MAX_JSON_DEPTH}.` };
   }
   let value: unknown;
   try {
@@ -219,13 +254,45 @@ export function parseJsonObject(text: string, label: string): ParsedObject {
   return { ok: true, value: value as JsonObject };
 }
 
+/** The exact integer a JSON number literal denotes, or null when it is not an integer. */
+function exactInteger(literal: string): bigint | null {
+  const m = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(literal);
+  if (!m) return null;
+  const frac = m[3] ?? "";
+  let digits = (m[2] + frac).replace(/^0+(?=\d)/, "");
+  let exp10 = Number(m[4] ?? "0") - frac.length;
+  if (/^0+$/.test(digits)) return BigInt(0);
+  while (exp10 < 0 && digits.endsWith("0")) {
+    digits = digits.slice(0, -1);
+    exp10++;
+  }
+  // Callers only pass finite doubles, so a larger exponent cannot occur; the cap keeps BigInt cheap.
+  if (exp10 < 0 || exp10 > 400) return null;
+  const value = BigInt(digits) * BigInt(10) ** BigInt(exp10);
+  return m[1] === "-" ? -value : value;
+}
+
+export interface IntegerRewrite {
+  /** The literal as typed. */
+  typed: string;
+  /** What JSON.stringify writes for it, which is what gets signed. */
+  written: string;
+}
+
 /**
- * Integer literals in valid JSON text that JSON.parse cannot hold exactly
- * (past 2^53), as the reader typed them. Strings are skipped, so a long
- * numeric string is not reported.
+ * Integer literals that do not survive JSON.parse and JSON.stringify. Past
+ * 2^53 a double cannot hold every integer, so 9007199254740993 is written
+ * back as 9007199254740992, and even an exact 2^60 is written in the
+ * shortest form that round-trips, 1152921504606847000, which an exact
+ * parser on the other side reads as a different integer. A literal too large
+ * for a double becomes Infinity and is written as null. Literals that come
+ * back as the same integer (1e20, 9007199254740992) are not reported, and
+ * strings are skipped, so a long numeric string is not reported.
  */
-export function roundedIntegers(text: string): string[] {
-  const found: string[] = [];
+export function integerRewrites(text: string): IntegerRewrite[] {
+  const found: IntegerRewrite[] = [];
+  const seen = new Set<string>();
+  const number = /-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
   let i = 0;
   while (i < text.length && found.length < 5) {
     const c = text[i];
@@ -236,30 +303,62 @@ export function roundedIntegers(text: string): string[] {
       continue;
     }
     if (c === "-" || (c >= "0" && c <= "9")) {
-      const m = /^-?\d+(\.\d+)?([eE][+-]?\d+)?/.exec(text.slice(i, i + 400));
+      number.lastIndex = i;
+      const m = number.exec(text);
       const literal = m ? m[0] : c;
-      const n = Number(literal);
-      if (Number.isInteger(n) && !Number.isSafeInteger(n)) found.push(literal);
       i += literal.length;
+      if (seen.has(literal)) continue;
+      const n = Number(literal);
+      if (!Number.isFinite(n)) {
+        seen.add(literal);
+        found.push({ typed: literal.length > 40 ? `${literal.slice(0, 40)}...` : literal, written: "null" });
+        continue;
+      }
+      if (Number.isSafeInteger(n) || !Number.isInteger(n)) continue;
+      const typed = exactInteger(literal);
+      const written = JSON.stringify(n);
+      if (typed !== null && typed !== exactInteger(written)) {
+        seen.add(literal);
+        found.push({ typed: literal, written });
+      }
       continue;
     }
     i++;
   }
-  return [...new Set(found)];
+  return found;
+}
+
+/** The typed literals of integerRewrites, for callers that only need to know which ones. */
+export function roundedIntegers(text: string): string[] {
+  return integerRewrites(text).map((r) => r.typed);
 }
 
 /** Set one claim to a NumericDate (RFC 7519 section 2) and pretty print the result. */
 export function setNumericClaim(payloadText: string, claim: "iat" | "nbf" | "exp", seconds: number): { ok: true; text: string } | { ok: false; error: string } {
-  const parsed = parseJsonObject(payloadText.trim() === "" ? "{}" : payloadText, "payload");
+  const source = payloadText.trim() === "" ? "{}" : payloadText;
+  const parsed = parseJsonObject(source, "payload");
   if (!parsed.ok) return { ok: false, error: `${parsed.error} Fix it before adding ${claim}.` };
+  // Rewriting the text would silently replace these with their rounded values.
+  const rewrites = integerRewrites(source);
+  if (rewrites.length) {
+    const list = rewrites.map((r) => `${r.typed} (would become ${r.written})`).join(", ");
+    return {
+      ok: false,
+      error: `The payload has ${list}, past what a JavaScript number holds exactly, so rewriting the text would change ${rewrites.length === 1 ? "it" : "them"}. Add ${claim} by hand, or make the number a string.`,
+    };
+  }
   const next: JsonObject = { ...parsed.value, [claim]: Math.floor(seconds) };
   return { ok: true, text: JSON.stringify(next, null, 2) };
 }
 
-/** Replace "alg" in a header, keeping the other members and their order. */
+/**
+ * Replace "alg" in a header, keeping the other members and their order.
+ * Null when the header does not parse, or when rewriting it would change a
+ * large integer in it; the caller then leaves the text alone.
+ */
 export function setHeaderAlg(headerText: string, alg: JwsAlg): string | null {
   const parsed = parseJsonObject(headerText, "header");
-  if (!parsed.ok) return null;
+  if (!parsed.ok || integerRewrites(headerText).length) return null;
   const next: JsonObject = "alg" in parsed.value ? {} : { alg };
   for (const [k, v] of Object.entries(parsed.value)) next[k] = k === "alg" ? alg : v;
   return JSON.stringify(next, null, 2);
@@ -682,11 +781,12 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
     ["header", input.headerText],
     ["payload", input.payloadText],
   ] as const) {
-    const rounded = roundedIntegers(text);
-    if (rounded.length) {
+    const rewrites = integerRewrites(text);
+    if (rewrites.length) {
+      const list = rewrites.map((r) => `${r.typed} was signed as ${r.written}`).join("; ");
       notes.push({
         tone: "warn",
-        text: `The ${label} has ${rounded.join(", ")}, past 2^53, the largest integer JSON numbers carry exactly in JavaScript. It was rounded before signing. Send large identifiers as strings.`,
+        text: `In the ${label}, ${list}. JavaScript numbers hold every integer exactly only up to 2^53, so the signed JSON differs from what was typed. Send large identifiers as strings.`,
       });
     }
   }
@@ -839,6 +939,9 @@ export function parseToken(input: string): TokenParse {
   if (headerSeg === "") return { ok: false, error: "The header segment is empty." };
   const headerText = decodeUtf8(decoded[0]);
   if (headerText === null) return { ok: false, error: "The header does not decode to UTF-8 text." };
+  if (jsonDepth(headerText) > MAX_JSON_DEPTH) {
+    return { ok: false, error: `The header nests more than ${MAX_JSON_DEPTH} levels deep. This page reads up to ${MAX_JSON_DEPTH}.` };
+  }
   let header: unknown;
   try {
     header = JSON.parse(headerText);
@@ -848,7 +951,8 @@ export function parseToken(input: string): TokenParse {
   if (typeof header !== "object" || header === null || Array.isArray(header)) return { ok: false, error: "The header is JSON but not an object." };
   const payloadText = decodeUtf8(decoded[1]);
   let payload: JsonObject | null = null;
-  if (payloadText !== null) {
+  // A JWS payload need not be JSON at all, so a deep one is kept as text rather than refused.
+  if (payloadText !== null && jsonDepth(payloadText) <= MAX_JSON_DEPTH) {
     try {
       const p: unknown = JSON.parse(payloadText);
       if (p && typeof p === "object" && !Array.isArray(p)) payload = p as JsonObject;
@@ -884,6 +988,7 @@ const DER_ECDSA = /^30[0-9a-f]{2}02/;
 export async function verifyToken(tokenText: string, key: KeyInput, now: number): Promise<VerifyResult> {
   const parsed = parseToken(tokenText);
   if (!parsed.ok) return parsed;
+  if (key.kind === "pem" && key.text.trim() === "") return { ok: false, error: "Paste a public key (BEGIN PUBLIC KEY) to verify with." };
   const t = parsed.token;
   const notes: Note[] = [];
   const rawAlg = t.header.alg;
@@ -897,13 +1002,21 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
   }
   if ("jwk" in t.header) notes.push({ tone: "warn", text: "The header embeds a jwk. Anyone can embed their own public key, so a verifier must never trust it as the signing key." });
   if ("kid" in t.header) notes.push({ tone: "info", text: `kid is ${JSON.stringify(t.header.kid)}. It only selects among keys you already trust; a verifier must not use it in file paths or queries unescaped.` });
-  if (t.payload === null) notes.push({ tone: "info", text: "The payload is not a JSON object, so it is not a JWT claims set. The signature can still be checked." });
+  if (t.payload === null) {
+    notes.push({
+      tone: "info",
+      text:
+        t.payloadText !== null && jsonDepth(t.payloadText) > MAX_JSON_DEPTH
+          ? `The payload nests more than ${MAX_JSON_DEPTH} levels deep, so it is shown as text and its claims are not checked. The signature can still be checked.`
+          : "The payload is not a JSON object, so it is not a JWT claims set. The signature can still be checked.",
+    });
+  }
 
   if (alg === null) return reject(rawAlg === undefined ? "Rejected: the header has no alg." : "Rejected: alg is not a string.");
   if (isNoneAlg(alg)) {
     notes.push({
       tone: "danger",
-      text: `alg ${JSON.stringify(alg)} marks an Unsecured JWS${t.signature.length ? ", and this one still carries a signature segment, which section 3.6 forbids" : " with an empty signature"}. RFC 7518 section 3.6 says implementations must not accept it by default.${alg !== "none" ? " alg is case-sensitive, so this is not even the registered value; libraries that compared it case-insensitively were bypassed this way." : ""}`,
+      text: `alg ${JSON.stringify(alg)} marks an Unsecured JWS${t.signature.length ? ", and this one still carries a signature segment, which section 3.6 forbids" : " with an empty signature"}. RFC 7518 section 3.6 says implementations must not accept it by default.${alg !== "none" ? " alg is case-sensitive, so this is not even the registered value. Filters that block only the lowercase spelling have been bypassed with variants like this one." : ""}`,
     });
     return reject("Rejected: alg none carries no signature to verify.");
   }

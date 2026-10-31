@@ -108,7 +108,7 @@ export function ReverseDnsName() {
     }
     if (input.kind === "ptr" && input.classless && isAddress) {
       notes.push(
-        `${input.name} is the RFC 2317 target name. A resolver asking for ${ptrName(4, value)} finds a CNAME in the /24 zone pointing here, and the PTR record is answered from the delegated child zone.`,
+        `${input.name.replace(/\.$/, "")} is an RFC 2317 target name. A resolver asking for ${ptrName(4, value)} finds a CNAME in the /24 zone pointing here, and the PTR record is answered from the delegated child zone.`,
       );
     }
     if (input.kind === "ptr" && input.note) notes.push(input.note);
@@ -118,7 +118,7 @@ export function ReverseDnsName() {
     if (family === 6 && value >> 32n === 0xffffn) {
       const v4 = value & 0xffffffffn;
       notes.push(
-        `This is an IPv4-mapped address. On the wire the host is ${formatIp(4, v4)}, whose reverse name is ${ptrName(4, v4)}. Software that logs the mapped form will query ip6.arpa and usually find nothing.`,
+        `This is an IPv4-mapped address. On the wire the host is ${formatIp(4, v4)}, and its PTR record lives at ${ptrName(4, v4)}. The glibc resolver unmaps such an address before a reverse lookup, but a tool that builds the reverse name from the IPv6 text as written asks the ip6.arpa tree and usually finds nothing. To check the record, run dig -x ${formatIp(4, v4)}.`,
       );
     }
     return {
@@ -491,9 +491,9 @@ export function ReverseDnsName() {
                         <CodeBlock text={zoneFiles.child} label="Copy the child zone records" testId="text-child-zone" />
                       </div>
                       <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                        RFC 2317 does not fix the child label. Its own examples use the slash form; a dash is common
-                        because some provisioning tools reject a slash in a name. Blocks from /{CLASSLESS_MIN} to /32 are
-                        handled here.
+                        RFC 2317 does not fix the child label. Its examples use a slash, but it advises a more
+                        conservative character such as a hyphen, because some DNS software handles the slash badly.
+                        Blocks from /{CLASSLESS_MIN} to /32 are handled here.
                       </p>
                     </>
                   ) : null}

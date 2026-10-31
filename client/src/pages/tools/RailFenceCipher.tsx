@@ -332,7 +332,8 @@ export function RailFenceCipher() {
             className={`mt-2 resize-y break-all leading-relaxed ${INPUT}`}
           />
           <p id="rail-text-hint" className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-            Up to {MAX_CHARS.toLocaleString("en-US")} characters. Case is kept. Nothing leaves this tab.
+            Up to {MAX_CHARS.toLocaleString("en-US")} characters: longer plaintext is cut, longer
+            ciphertext is refused. Case is kept. Nothing leaves this tab.
           </p>
 
           <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -701,7 +702,7 @@ export function RailFenceCipher() {
                 higher, and the same letters scrambled score around -7.5. Short messages, under about
                 fifteen letters, give the score too little to work with, so read the top few rows.
                 {bruteOk.offsets
-                  ? " With offsets on, a wrong offset often yields the right text rotated by a character or two, which scores almost as well."
+                  ? " With offsets on, a wrong offset often yields the right text rotated by a few characters, which can score as well as the true key or better, so check the next rows for the same text starting in another place."
                   : ""}
               </p>
             </>

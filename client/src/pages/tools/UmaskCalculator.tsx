@@ -446,7 +446,7 @@ export function UmaskCalculator() {
                 >
                   {request.kind === "error"
                     ? request.message
-                    : "ssh-keygen asks for 0600 when it writes a private key, and a linker asks for 0777 when it writes an executable. The mask can only take bits away from what was asked."}
+                    : "ssh-keygen asks for 0600 when it writes a private key. A linker writing an executable asks for 0777, or adds the execute bits the mask allows. The mask can only take bits away from what was asked."}
                 </p>
               </div>
             </ToolPanel>

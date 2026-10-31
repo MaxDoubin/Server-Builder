@@ -19,6 +19,7 @@ import {
   generateKeyPair,
   JWS_ALGS,
   MAX_JSON_CHARS,
+  prettyJson,
   randomSecret,
   setHeaderAlg,
   setNumericClaim,
@@ -189,13 +190,14 @@ export function JwtEncoder() {
   const buildPending = !built || built.input !== buildInput;
 
   // A key pair generation outlives a click; drop its result if the page is gone.
+  // Set on every mount, so a remount (React StrictMode runs effects twice) does not leave it false.
   const mounted = useRef(true);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
       mounted.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   function chooseAlg(next: JwsAlg) {
     setAlg(next);
@@ -476,7 +478,7 @@ export function JwtEncoder() {
                   <ToolResult label="Token length" value={`${result.token.length.toLocaleString("en-US")} characters`} />
                 </div>
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                  The segments carry the compact form of the JSON on the left, so its whitespace and line breaks are not signed. The signature covers the two segments joined by a dot, exactly as they appear above.
+                  The segments carry the compact form of the JSON you entered, so its whitespace and line breaks are not signed. The signature covers the two segments joined by a dot, exactly as they appear above.
                 </p>
               </>
             ) : null}
@@ -614,12 +616,12 @@ export function JwtEncoder() {
                   />
                   <div>
                     <h3 className={LABEL}>Header</h3>
-                    <pre className={`mt-2 ${PRE}`}>{JSON.stringify(vResult.token.header, null, 2)}</pre>
+                    <pre className={`mt-2 ${PRE}`}>{prettyJson(vResult.token.header)}</pre>
                   </div>
                   <div>
                     <h3 className={LABEL}>Payload</h3>
                     <pre className={`mt-2 ${PRE}`}>
-                      {vResult.token.payload ? JSON.stringify(vResult.token.payload, null, 2) : vResult.token.payloadText ?? "(not UTF-8 text)"}
+                      {vResult.token.payload ? prettyJson(vResult.token.payload) : vResult.token.payloadText ?? "(not UTF-8 text)"}
                     </pre>
                   </div>
                   <NoteList notes={vResult.notes} testId="list-verify-notes" />

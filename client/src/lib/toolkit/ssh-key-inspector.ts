@@ -211,7 +211,10 @@ export function toBase64(bytes: Uint8Array): string {
   return out;
 }
 
-export type B64Result = { ok: true; bytes: Uint8Array; padded: boolean } | { ok: false; error: string };
+export type B64Result =
+  /** canonical is false when the bits after the last full byte are not zero. */
+  | { ok: true; bytes: Uint8Array; padded: boolean; canonical: boolean }
+  | { ok: false; error: string };
 
 /** Strict standard alphabet Base64, the form ssh-keygen writes. */
 export function fromBase64(text: string): B64Result {
@@ -248,7 +251,9 @@ export function fromBase64(text: string): B64Result {
       out[j++] = (acc >> bits) & 0xff;
     }
   }
-  return { ok: true, bytes: out.subarray(0, j), padded };
+  // RFC 4648 3.5: the bits left over after the last full byte must be zero.
+  const canonical = bits === 0 || (acc & ((1 << bits) - 1)) === 0;
+  return { ok: true, bytes: out.subarray(0, j), padded, canonical };
 }
 
 /** ssh-keygen -l: "SHA256:" and the digest in Base64 with the padding removed. */
@@ -513,8 +518,11 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
         details.push({ label: "Point", value: `uncompressed, ${point.length} bytes` });
       } else if ((point[0] === 0x02 || point[0] === 0x03) && point.length === 1 + fb) {
         details.push({ label: "Point", value: `compressed, ${point.length} bytes` });
+        // sshbuf_get_ec in OpenSSH: "Only handle uncompressed points".
+        problems.push("The public point is in compressed SEC1 form. RFC 5656 permits it, but OpenSSH reads only uncompressed points (prefix 0x04) and rejects this key.");
       } else {
-        problems.push(`The public point is ${point.length} bytes starting 0x${toHex(point.subarray(0, 1)) || "(empty)"}, which is not a valid SEC1 encoding for ${want}.`);
+        const start = point.length ? `starting 0x${toHex(point.subarray(0, 1))}` : "and empty";
+        problems.push(`The public point is ${point.length} bytes ${start}, which is not a valid SEC1 encoding for ${want}.`);
       }
       if (info.family === "ecdsa-sk") {
         out.application = utf8(r.string("the FIDO application string"));
@@ -723,7 +731,7 @@ const OPTION_SPECS: OptionSpec[] = [
   {
     canonical: "cert-authority",
     takesValue: false,
-    explanation: "The key on this line is a certificate authority. Any user certificate it signed is accepted for this account, subject to the certificate's own principals and restrictions.",
+    explanation: "The key on this line is a certificate authority. A user certificate it signed is accepted for this account when the certificate lists the account name as a principal (or, with principals=, one of those names). Restrictions in the certificate apply on top of the line's options.",
   },
   {
     canonical: "command",
@@ -753,7 +761,7 @@ const OPTION_SPECS: OptionSpec[] = [
   {
     canonical: "permitlisten",
     takesValue: true,
-    explanation: "Limits remote forwarding (ssh -R) to listening on this [host:]port. Repeat the option to allow more than one.",
+    explanation: "Limits remote forwarding (ssh -R) to listening on this [host:]port. A bare port allows any listen address. Repeat the option to allow more than one.",
   },
   {
     canonical: "permitopen",
@@ -789,6 +797,11 @@ const OPTION_SPECS: OptionSpec[] = [
     canonical: "verify-required",
     takesValue: false,
     explanation: "For FIDO security keys only: requires that the authenticator verified the user, for example with a PIN, for every signature.",
+  },
+  {
+    canonical: "no-verify-required",
+    takesValue: false,
+    explanation: "For FIDO security keys only: turns verify-required back off. sshd accepts this spelling although sshd(8) does not list it.",
   },
 ];
 
@@ -826,22 +839,27 @@ export function parseOptions(field: string, nowMs: number): OptionsParse {
         return { ok: false, error: `The value of ${name} must be in double quotes, as in ${name}="...".`, options };
       }
       i++;
-      let v = "";
+      // Collect runs between escapes as slices, so a long value is not built
+      // one character at a time.
+      const parts: string[] = [];
+      let start = i;
       let closed = false;
       while (i < field.length) {
         if (field[i] === "\\" && field[i + 1] === '"') {
-          v += '"';
+          parts.push(field.slice(start, i), '"');
           i += 2;
+          start = i;
         } else if (field[i] === '"') {
+          parts.push(field.slice(start, i));
           closed = true;
           i++;
           break;
         } else {
-          v += field[i++];
+          i++;
         }
       }
       if (!closed) return { ok: false, error: `The value of ${name} has no closing double quote.`, options };
-      value = v;
+      value = parts.join("");
     }
     options.push(describeOption(name, value, nowMs));
     if (i < field.length) {
@@ -857,7 +875,7 @@ export function parseOptions(field: string, nowMs: number): OptionsParse {
 
 /** sshd(8) timespec: YYYYMMDD[Z] or YYYYMMDDHHMM[SS][Z]. */
 export function parseExpiry(value: string): { ok: true; ms: number; utc: boolean; text: string } | { ok: false; error: string } {
-  const m = /^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})?)?(Z?)$/.exec(value);
+  const m = /^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})?)?([Zz]?)$/.exec(value);
   if (!m) return { ok: false, error: `"${value}" is not a valid expiry-time. Use YYYYMMDD or YYYYMMDDHHMM[SS], with an optional Z for UTC.` };
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const hh = m[4] ? Number(m[4]) : 0;
@@ -870,15 +888,16 @@ export function parseExpiry(value: string): { ok: true; ms: number; utc: boolean
   }
   const p2 = (n: number) => String(n).padStart(2, "0");
   const text = `${m[1]}-${m[2]}-${m[3]} ${p2(hh)}:${p2(mm)}:${p2(ss)} ${m[7] ? "UTC" : "server local time"}`;
-  return { ok: true, ms, utc: m[7] === "Z", text };
+  return { ok: true, ms, utc: m[7] !== "", text };
 }
 
 const PORT = /^(?:\*|[0-9]{1,5})$/;
 
+/** auth-options.c handle_permit: "*" or a2port() > 0, so 1 to 65535. */
 function validPort(p: string): boolean {
   if (p === "*") return true;
   const n = Number(p);
-  return PORT.test(p) && n >= 0 && n <= 65535;
+  return PORT.test(p) && n >= 1 && n <= 65535;
 }
 
 /** host:port with an IPv6 host in brackets. */
@@ -899,7 +918,7 @@ function describeOption(name: string, value: string | null, nowMs: number): Auth
       name,
       canonical: null,
       value,
-      explanation: "Not an option sshd knows. sshd logs \"bad options\" and ignores this whole line, so the key cannot log in.",
+      explanation: "Not an option sshd knows. sshd logs \"bad key options\" and skips this whole line, so the key cannot log in through it.",
       detail: null,
       error: `Unknown option "${name}".`,
       expired: false,
@@ -946,15 +965,15 @@ function describeOption(name: string, value: string | null, nowMs: number): Auth
     case "permitopen": {
       const hp = splitHostPort(value);
       if (!hp || hp.host === null || hp.host === "" || !validPort(hp.port)) {
-        opt.error = `permitopen="${value}" must be host:port, with IPv6 hosts in brackets and a port of 0 to 65535 or *.`;
+        opt.error = `permitopen="${value}" must be host:port, with IPv6 hosts in brackets and a port of 1 to 65535 or *.`;
       } else opt.detail = `Allows ssh -L to ${hp.host} port ${hp.port}.`;
       break;
     }
     case "permitlisten": {
       const hp = splitHostPort(value);
       if (!hp || !validPort(hp.port) || hp.host === "") {
-        opt.error = `permitlisten="${value}" must be [host:]port, with a port of 0 to 65535 or *.`;
-      } else opt.detail = `Allows ssh -R to listen on ${hp.host ?? "the default address"} port ${hp.port}.`;
+        opt.error = `permitlisten="${value}" must be [host:]port, with a port of 1 to 65535 or *.`;
+      } else opt.detail = `Allows ssh -R to listen on ${hp.host === null ? "any address" : hp.host} port ${hp.port}.`;
       break;
     }
     case "environment": {
@@ -965,7 +984,9 @@ function describeOption(name: string, value: string | null, nowMs: number): Auth
       break;
     }
     case "tunnel": {
-      if (!/^(?:\d+|any)$/i.test(value)) opt.error = `tunnel="${value}" must be a device number.`;
+      if (!/^(?:\d{1,10}|any)$/i.test(value) || (/^\d/.test(value) && Number(value) > 2147483645)) {
+        opt.error = `tunnel="${value}" must be a device number from 0 to 2147483645, or any.`;
+      }
       break;
     }
     case "principals": {
@@ -1113,7 +1134,18 @@ function looksLikeHosts(field: string): boolean {
   return field.split(",").every((h) => /^!?(\[[^\]]+\](:\d+)?|[A-Za-z0-9.*?_:-]+)$/.test(h) && /[.:*?\[]/.test(h));
 }
 
-function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number): void {
+/**
+ * The comment ssh-keygen -lf prints. In do_fingerprint() a line that does not
+ * start with a key has its first field (options or host names) taken as the
+ * comment; a trailing comment replaces it unless it starts with #; with
+ * neither, "no comment" is printed.
+ */
+function keygenComment(trailing: string, firstField: string | null): string {
+  if (trailing && !trailing.startsWith("#")) return trailing;
+  return firstField || "no comment";
+}
+
+function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number, firstField: string | null = null): void {
   line.typeField = typeField;
   const typeKnown = isKeyType(typeField);
   if (!typeKnown) {
@@ -1147,14 +1179,23 @@ function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number
   }
   if (!b64.padded) {
     line.findings.push({
-      tone: "warn",
-      text: "The key data is missing its trailing = padding. ssh-keygen always writes it and OpenSSH's Base64 decoder expects it, so restore it before using this line.",
+      tone: "danger",
+      text: "The key data is missing its trailing = padding. ssh-keygen always writes it, and OpenSSH's Base64 decoder rejects key data that ends without it.",
+    });
+  } else if (!b64.canonical) {
+    line.findings.push({
+      tone: "danger",
+      text: "The last Base64 character carries bits that are not zero after the final byte. The decoded key is the same, but OpenSSH's Base64 decoder rejects data in this form.",
     });
   }
   line.sha256 = fingerprintSha256(key.plainBlob);
   line.md5 = fingerprintMd5(key.plainBlob);
-  if (key.bits !== null && key.family !== "ed448") {
-    const comment = line.comment || "no comment";
+  // ssh-keygen prints nothing for a line its own key reader refuses: an
+  // unknown type, a type that does not match the blob, or Base64 that
+  // OpenSSH's decoder rejects.
+  const keygenReads = typeKnown && key.type === typeField && b64.padded && b64.canonical;
+  if (keygenReads && key.bits !== null && key.family !== "ed448") {
+    const comment = keygenComment(line.comment, firstField);
     line.keygen = `${key.bits} ${line.sha256} ${comment} (${key.label})`;
     line.keygenMd5 = `${key.bits} ${line.md5} ${comment} (${key.label})`;
   }
@@ -1245,8 +1286,10 @@ function optionFindings(line: KeyLine): void {
     }
   }
   const has = (name: string) => opts.some((o) => o.canonical === name);
-  if (opts.filter((o) => o.canonical === "command").length > 1) {
-    f.push({ tone: "danger", text: "More than one command= option. sshd refuses a line with multiple command clauses." });
+  for (const single of ["command", "from", "principals"]) {
+    if (opts.filter((o) => o.canonical === single).length > 1) {
+      f.push({ tone: "danger", text: `More than one ${single}= option. sshd refuses a line with multiple ${single} clauses.` });
+    }
   }
   const eff = line.effective;
   if (has("command") && eff && (eff.portForwarding || eff.agentForwarding || eff.x11Forwarding)) {
@@ -1320,6 +1363,19 @@ function parseRfc4716(block: string[], startLine: number, nowMs: number): KeyLin
   return line;
 }
 
+/**
+ * Strip spaces and tabs from both ends. A regular expression such as
+ * /[ \t]+$/ retries from every position in a long run of spaces that is not
+ * at the end, which is quadratic; this loop is linear.
+ */
+function trimSpaceTab(s: string): string {
+  let a = 0;
+  let b = s.length;
+  while (a < b && (s[a] === " " || s[a] === "\t")) a++;
+  while (b > a && (s[b - 1] === " " || s[b - 1] === "\t")) b--;
+  return s.slice(a, b);
+}
+
 /** Parse authorized_keys style text: one key per line, with optional options. */
 export function inspectKeys(text: string, nowMs: number): InspectResult {
   let capNote: string | null = null;
@@ -1338,7 +1394,7 @@ export function inspectKeys(text: string, nowMs: number): InspectResult {
       capNote = `Only the first ${MAX_LINES.toLocaleString("en-US")} key lines were inspected.`;
       break;
     }
-    const raw = rows[n].replace(/^[ \t]+/, "").replace(/[ \t]+$/, "");
+    const raw = trimSpaceTab(rows[n]);
     if (raw === "") {
       blankLines++;
       continue;
@@ -1400,7 +1456,8 @@ export function inspectKeys(text: string, nowMs: number): InspectResult {
 }
 
 function splitKeyAndComment(rest: string): { type: string; data: string; comment: string } {
-  const m = /^(\S+)(?:[ \t]+(\S+))?(?:[ \t]+(.*))?$/.exec(rest);
+  // [\s\S] rather than ".", which stops at U+2028, U+2029 and a lone CR.
+  const m = /^(\S+)(?:[ \t]+(\S+))?(?:[ \t]+([\s\S]*))?$/.exec(rest);
   if (!m) return { type: "", data: "", comment: "" };
   return { type: m[1], data: m[2] ?? "", comment: (m[3] ?? "").trim() };
 }
@@ -1450,11 +1507,17 @@ export function parseLine(raw: string, lineNumber: number, nowMs: number): KeyLi
       line.source = "known_hosts";
       line.hosts = scanned.field;
       line.comment = after.comment;
-      finishKey(line, after.type, after.data, nowMs);
+      if (!after.type) {
+        line.error = "There is a host list but no key after it.";
+        return line;
+      }
       // ssh-keygen -lf prints the host field where a comment would go.
-      if (line.key && line.keygen) {
-        line.keygen = `${line.key.bits} ${line.sha256} ${line.hosts} (${line.key.label})`;
-        line.keygenMd5 = `${line.key.bits} ${line.md5} ${line.hosts} (${line.key.label})`;
+      finishKey(line, after.type, after.data, nowMs, line.hosts);
+      // Its parser takes a leading @marker as that first field and then fails
+      // to read a key from the host list, so it skips marker lines.
+      if (line.marker) {
+        line.keygen = null;
+        line.keygenMd5 = null;
       }
       line.findings.unshift({
         tone: "info",
@@ -1474,7 +1537,7 @@ export function parseLine(raw: string, lineNumber: number, nowMs: number): KeyLi
       return line;
     }
     line.effective = effectivePermissions(line.options);
-    finishKey(line, after.type, after.data, nowMs);
+    finishKey(line, after.type, after.data, nowMs, scanned.field);
     optionFindings(line);
     return line;
   }

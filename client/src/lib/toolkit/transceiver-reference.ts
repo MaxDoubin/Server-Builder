@@ -336,7 +336,8 @@ export const MODULES: Module[] = [
     connector: "Fixed twinax cable",
     lanes: "1 x 25G",
     definedBy: "IEEE 802.3by",
-    notes: "The cable class sets the FEC: CA-25G-L needs RS-FEC, CA-25G-S works with BASE-R FEC, CA-25G-N needs none.",
+    notes:
+      "The cable class sets the FEC: CA-25G-L (5 m) needs RS-FEC, CA-25G-S (3 m) needs BASE-R FEC or RS-FEC, and CA-25G-N (3 m) needs none. Both ends negotiate it, so a mismatched port setting can keep the link down.",
     tags: ["twinax", "copper", "direct attach", "fec", "ca-25g-l"],
   },
 

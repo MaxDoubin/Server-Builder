@@ -607,6 +607,8 @@ export function decodeQ(text: string): BytesOrError {
 }
 
 const ENCODED_WORD = /=\?([^?\s]+)\?([BbQq])\?([^?\s]*)\?=/g;
+/** The opening of an encoded-word, to spot ones that never complete. */
+const WORD_OPENING = /=\?[^?\s]+\?[BbQq]\?/g;
 
 function concat(parts: Uint8Array[]): Uint8Array {
   let length = 0;
@@ -755,6 +757,15 @@ export function decodeHeader(input: string): HeaderDecodeResult {
   }
 
   for (const w of words) if (w.error) warnings.add(`The word ${shorten(w.raw)} was left as is: ${w.error}`);
+  // An opening such as =?UTF-8?B? in text that is not part of a complete
+  // word: a space or a stray "?" inside the payload, or a missing "?=".
+  let incomplete = 0;
+  for (const seg of segs) if (seg.kind === "text") incomplete += (seg.value.match(WORD_OPENING) ?? []).length;
+  if (incomplete) {
+    warnings.add(
+      `${incomplete} ${incomplete === 1 ? "sequence looks" : "sequences look"} like the start of an encoded-word but ${incomplete === 1 ? "is" : "are"} not complete. RFC 2047 section 2 allows no spaces and no extra question marks inside an encoded-word, and it must end in "?=", so ${incomplete === 1 ? "it was" : "they were"} left as is.`,
+    );
+  }
   if (unspaced) {
     warnings.add(
       `${unspaced} ${unspaced === 1 ? "encoded-word touches" : "encoded-words touch"} the text or word beside ${unspaced === 1 ? "it" : "them"} with no whitespace between. RFC 2047 section 5 requires a separating space; most clients decode it anyway, as done here.`,

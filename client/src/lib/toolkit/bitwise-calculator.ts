@@ -435,7 +435,7 @@ export function explain(
   const aSet = popcount(a);
   const rSet = popcount(result);
   const times = (n: number) => (n === 1 ? "1 place" : `${n} places`);
-  const pow = `2^${count}`;
+  const pow = count === 1 ? "2" : `2^${count}`;
 
   switch (op) {
     case "and":
@@ -539,7 +539,7 @@ export function explain(
       `The count ${count} is not less than the width ${width}. In C that is undefined behavior, and processors differ on whether they shift every bit out or mask the count first. This page shows the mathematical result: ${op === "sar" ? "every bit is a copy of the sign" : "every bit is gone"}.`,
     );
   }
-  if (op === "shl" && count > 0 && count < width && toSigned(a, width) >= 0n && toSigned(result, width) < 0n) {
+  if (signed && op === "shl" && count > 0 && count < width && toSigned(a, width) >= 0n && toSigned(result, width) < 0n) {
     out.push(
       `The result has its top bit set, so read as signed it went negative (${toSigned(result, width)}). In C, a left shift that overflows a signed type is undefined behavior; use an unsigned type for bit work.`,
     );

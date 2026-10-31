@@ -644,7 +644,7 @@ function SumPanel() {
 
       {data ? (
         <div className="mt-6" data-testid="output-sum">
-          <p className="break-all font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+          <p className="break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             The decimal sum a + b is exactly <span className="text-[hsl(var(--brand-bone))]">{literalText}</span>. The
             question is whether adding the two stored values gives the same float as storing that decimal directly.
           </p>
@@ -803,7 +803,7 @@ export function Ieee754Inspector() {
             role="status"
             aria-live="polite"
             data-testid="text-reading"
-            className="break-all font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]"
+            className="break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]"
           >
             {reading}
           </p>

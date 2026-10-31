@@ -37,6 +37,9 @@ export const MAX_DECODE_CHARS = 16384;
 
 /* ------------------------------------------------------------ addresses */
 
+/** Echo typed or pasted text in an error message without echoing a whole megabyte. */
+const clip = (s: string) => (s.length > 24 ? `${s.slice(0, 24)}...` : s);
+
 export function formatIPv4(value: number): string {
   const v = value >>> 0;
   return [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255].join(".");
@@ -121,7 +124,7 @@ export function parseCidr(text: string): Parsed<Cidr> {
   if (slash === -1) {
     return {
       ok: false,
-      error: `Add a prefix length, for example ${s}/24. Use /32 for a single host and 0.0.0.0/0 for the default route.`,
+      error: `Add a prefix length, for example ${clip(s)}/24. Use /32 for a single host and 0.0.0.0/0 for the default route.`,
     };
   }
   const addr = parseIPv4(s.slice(0, slash));
@@ -145,7 +148,7 @@ export function parseCidr(text: string): Parsed<Cidr> {
     }
     prefix = p;
   } else {
-    return { ok: false, error: `"/${tail}" is not a prefix length. Write a number from 0 to 32.` };
+    return { ok: false, error: `"/${clip(tail)}" is not a prefix length. Write a number from 0 to 32.` };
   }
   const network = (addr.value & maskOf(prefix)) >>> 0;
   return {
@@ -211,12 +214,9 @@ export interface DecodeResult {
 
 const hex2 = (n: number) => n.toString(16).padStart(2, "0");
 
-/** Echo a pasted token in an error message without echoing a whole megabyte. */
-const clip = (s: string) => (s.length > 16 ? `${s.slice(0, 16)}...` : s);
-
 /**
- * Walk the option data route by route, validating each length as RFC 3442
- * section 2 lays it out. A leading 121 or 249 can never be a width (widths
+ * Walk the option data route by route, validating each length against the
+ * RFC 3442 descriptor format. A leading 121 or 249 can never be a width (widths
  * stop at 32), so when it is followed by a length octet that matches the
  * rest of the input, it is a pasted option header and is removed.
  */
@@ -288,7 +288,7 @@ export function decodeOption(input: number[]): DecodeResult {
   for (const r of routes) {
     if (r.hostBitsSet) {
       warnings.push(
-        `The route at byte ${r.offset} sends ${formatIPv4(r.sent)} with a /${r.prefix}, so bits past the prefix are set. RFC 3442 sends the subnet number with the mask applied; it is shown here as ${cidrString(r.network, r.prefix)}.`,
+        `The route at byte ${r.offset} sends ${formatIPv4(r.sent)} with a /${r.prefix}, so bits past the prefix are set. RFC 3442 requires the client to zero them, so it installs ${cidrString(r.network, r.prefix)}, which is what is shown here.`,
       );
     }
   }

@@ -170,6 +170,8 @@ const ROLE_STYLE: Record<WordRole, string> = {
 function WordTable({ words }: { words: AnnotatedWord[] }) {
   const listed = words.slice(0, MAX_LISTED_WORDS);
   const hidden = words.length - listed.length;
+  const hasPseudo = words.some((w) => w.role === "pseudo");
+  const hasChecksum = words.some((w) => w.role === "checksum");
   const th =
     "py-2 pr-4 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]";
   return (
@@ -227,9 +229,19 @@ function WordTable({ words }: { words: AnnotatedWord[] }) {
       ) : null}
       <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
         The running sum keeps every carry and folds once at the end, which RFC 1071 allows because
-        ones' complement addition is associative.{" "}
-        <span className="text-[hsl(var(--brand-cyan))]">Cyan</span> words are the pseudo-header and{" "}
-        <span className="text-[hsl(var(--brand-amber))]">amber</span> is the checksum field, summed as zero.
+        ones' complement addition is associative.
+        {hasPseudo ? (
+          <>
+            {" "}
+            <span className="text-[hsl(var(--brand-cyan))]">Cyan</span> words are the pseudo-header.
+          </>
+        ) : null}
+        {hasChecksum ? (
+          <>
+            {" "}
+            The <span className="text-[hsl(var(--brand-amber))]">amber</span> word is the checksum field, summed as zero.
+          </>
+        ) : null}
       </p>
     </ToolPanel>
   );
@@ -371,7 +383,7 @@ export function Ipv4ChecksumCalculator() {
                 role="tab"
                 id={`tab-${m.id}`}
                 aria-selected={active}
-                aria-controls={`panel-${m.id}`}
+                aria-controls={active ? `panel-${m.id}` : undefined}
                 tabIndex={active ? 0 : -1}
                 data-testid={`tab-${m.id}`}
                 ref={(node) => {
@@ -454,7 +466,7 @@ export function Ipv4ChecksumCalculator() {
                       <ToolResult label="Source" value={header.source} />
                       <ToolResult label="Destination" value={header.destination} />
                       <ToolResult
-                        label="After TTL - 1"
+                        label="Checksum after TTL - 1"
                         value={header.afterTtlDecrement === null ? "TTL is already 0, nothing to decrement" : h(header.afterTtlDecrement)}
                       />
                     </div>

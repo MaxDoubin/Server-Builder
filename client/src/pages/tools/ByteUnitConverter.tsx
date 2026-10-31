@@ -17,19 +17,20 @@ import {
   TOOL_UNITS,
   UNITS,
   UNIT_GROUPS,
+  explorerFigure,
   fixed,
   formatRational,
   groupDigits,
   idemaSectors,
   inUnit,
   largestUnit,
+  lsblkFigure,
   parseQuantity,
   percent,
   plainDecimal,
   powerOfTwoBytes,
   prefixGaps,
   tcpPayloadRate,
-  truncatedFixed,
   unitBySymbol,
   type Precision,
   type Rational,
@@ -376,24 +377,22 @@ export function ByteUnitConverter() {
               <span className="break-all text-[hsl(var(--brand-bone))]" data-testid="text-drive-iec">
                 {formatRational(inUnit(driveBits, driveIec), "exact").text} {driveIec.symbol}
               </span>{" "}
-              exactly. Windows Explorer does this division, cuts the answer to three digits and keeps the SI name, so
-              it shows the drive as about{" "}
+              exactly. Windows Explorer does this division, cuts the answer to three significant digits and keeps
+              the SI name, so it shows the drive as about{" "}
               <span className="text-[hsl(var(--brand-bone))]" data-testid="text-drive-windows">
-                {truncatedFixed(inUnit(driveBits, driveIec), driveIec.symbol === "GiB" ? 0 : 2)}{" "}
-                {driveIec.symbol.replace("i", "")}
+                {explorerFigure(inUnit(driveBits, driveIec))} {driveIec.symbol.replace("i", "")}
               </span>
               .
             </li>
             <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <span className="text-[hsl(var(--brand-signal))]">4.</span> Real drives are a little larger than the
-              label. IDEMA LBA1-03 fixes the sector count for a {drive.label} drive at{" "}
+              label. IDEMA LBA1-03 specifies the sector count for a {drive.label} drive:{" "}
               <span className="text-[hsl(var(--brand-bone))]">{groupDigits(sectors)}</span> sectors of 512 bytes,{" "}
-              {groupDigits(sectorBytes)} bytes, which is{" "}
+              {groupDigits(sectorBytes)} bytes, which is about{" "}
               <span className="text-[hsl(var(--brand-bone))]">
                 {fixed(inUnit(bitsOfBytes(sectorBytes), sectorIec), 2)} {sectorIec.symbol}
               </span>
-              . lsblk prints that as {fixed(inUnit(bitsOfBytes(sectorBytes), sectorIec), 1)}
-              {sectorIec.symbol.charAt(0)}.
+              . lsblk prints that as <span data-testid="text-drive-lsblk">{lsblkFigure(sectorBytes)}</span>.
             </li>
             {gap ? (
               <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

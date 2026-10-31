@@ -183,7 +183,11 @@ function CheckRun() {
           <span className="min-w-0 break-words">{parsed.message}</span>
         </p>
       ) : (
-        <p id="eth-length-message" className="mt-3 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+        <p
+          id="eth-length-message"
+          aria-live="polite"
+          className="mt-3 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]"
+        >
           {meters === null
             ? "Enter the whole channel, patch cords included. A bare number is meters."
             : `${getSpeed(speed).name} over ${formatRun(meters)}. ${getSpeed(speed).pairs}; ${getSpeed(speed).coding}.`}
@@ -196,7 +200,7 @@ function CheckRun() {
         </p>
       ) : null}
 
-      <ul className="mt-5 space-y-0" data-testid="output-cable-check" aria-live="polite">
+      <ul className="mt-5 space-y-0" data-testid="output-cable-check">
         {CATEGORIES.map((c) => {
           const v = meters !== null ? checkRun(speed, c.id, meters) : null;
           const support = SUPPORT[speed][c.id];

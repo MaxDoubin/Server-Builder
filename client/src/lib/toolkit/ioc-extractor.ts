@@ -17,8 +17,11 @@
 
 import {
   MAX_INPUT_CHARS,
+  codePointAfter,
+  codePointBefore,
   defangIndicator,
   findNetworkIndicators,
+  gluedToWord,
   lineOf,
   lineStarts,
   tooLongMessage,
@@ -328,6 +331,7 @@ export function extractIocs(input: string, options: ExtractOptions): ExtractResu
   const run = /[A-Za-z0-9]+/g;
   for (let m = run.exec(text); m !== null; m = run.exec(text)) {
     const token = m[0];
+    if (gluedToWord(codePointBefore(text, m.index)) || gluedToWord(codePointAfter(text, m.index + token.length))) continue;
     const offset = starts[m.index];
     const hashType = HASH_TYPE[token.length];
     if (hashType && HEX.test(token)) {
@@ -351,12 +355,14 @@ export function extractIocs(input: string, options: ExtractOptions): ExtractResu
 
   // CVE IDs: CVE-YYYY-NNNN with four or more sequence digits (the 2014 ID
   // syntax change), leading zeros only in a four digit sequence, and no year
-  // before 1999, when the list began.
-  const cve = /CVE-(\d{4})-(\d{4,})/gi;
+  // before 1999, when the list began. Web pages and PDF reports often set the
+  // hyphens as U+2010 to U+2013 or U+2212, which copy out intact.
+  const cve = /CVE[-\u2010-\u2013\u2212](\d{4})[-\u2010-\u2013\u2212](\d{4,})/gi;
   for (let m = cve.exec(text); m !== null; m = cve.exec(text)) {
     const before = text.charAt(m.index - 1);
     const after = text.charAt(m.index + m[0].length);
     if (/[A-Za-z0-9]/.test(before) || /[A-Za-z]/.test(after)) continue;
+    if (gluedToWord(codePointBefore(text, m.index)) || gluedToWord(codePointAfter(text, m.index + m[0].length))) continue;
     if (Number(m[1]) < 1999) continue;
     if (m[2].length > 4 && m[2].charAt(0) === "0") continue;
     add("cve", `CVE-${m[1]}-${m[2]}`, starts[m.index], false, null);

@@ -434,23 +434,67 @@ const NOT_DER: Record<string, string> = {
   "PGP SIGNATURE": "OpenPGP armor holds OpenPGP packets (RFC 9580), not DER.",
 };
 
-/** RFC 7468 textual encoding. Any label is accepted; RFC 1421 headers are skipped. */
+/**
+ * Index of the first "-----" at or after from when no line break comes
+ * before it, else -1. Each call scans only up to that next "-----", and
+ * every BEGIN or END marker starts with one, so the scans never overlap.
+ */
+function dashesOnLine(text: string, from: number): number {
+  const close = text.indexOf("-----", from);
+  if (close === -1) return -1;
+  for (let i = from; i < close; i++) {
+    if (text[i] === "\n" || text[i] === "\r") return -1;
+  }
+  return close;
+}
+
+/**
+ * RFC 7468 textual encoding. Any label is accepted; RFC 1421 headers are skipped.
+ * A plain indexOf scan rather than one regular expression, so text with many
+ * BEGIN lines and no END line stays linear instead of backtracking.
+ */
 export function parsePem(text: string): InputResult {
-  const re = /-----BEGIN ([^\r\n]*?)-----([\s\S]*?)-----END ([^\r\n]*?)-----/g;
   const blocks: InputBlock[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    const label = m[1].trim();
-    const endLabel = m[3].trim();
-    if (label !== endLabel) {
-      blocks.push({ label, bytes: null, error: `BEGIN ${label} is closed by END ${endLabel}. The labels must match.` });
+  let pos = 0;
+  while (blocks.length < 64) {
+    const begin = text.indexOf("-----BEGIN ", pos);
+    if (begin === -1) break;
+    const labelStart = begin + 11;
+    const labelClose = dashesOnLine(text, labelStart);
+    if (labelClose === -1) {
+      pos = labelStart;
+      continue;
+    }
+    const label = text.slice(labelStart, labelClose).trim();
+    const bodyStart = labelClose + 5;
+
+    // The first END line that is closed by five dashes on the same line.
+    let search = bodyStart;
+    let found: { bodyEnd: number; endLabel: string; next: number } | null = null;
+    for (;;) {
+      const end = text.indexOf("-----END ", search);
+      if (end === -1) break;
+      const endLabelStart = end + 9;
+      const endClose = dashesOnLine(text, endLabelStart);
+      if (endClose !== -1) {
+        found = { bodyEnd: end, endLabel: text.slice(endLabelStart, endClose).trim(), next: endClose + 5 };
+        break;
+      }
+      search = endLabelStart;
+    }
+    // No END after this BEGIN means no END after any later BEGIN either.
+    if (!found) break;
+    pos = found.next;
+
+    if (label !== found.endLabel) {
+      blocks.push({ label, bytes: null, error: `BEGIN ${label} is closed by END ${found.endLabel}. The labels must match.` });
       continue;
     }
     if (NOT_DER[label]) {
       blocks.push({ label, bytes: null, error: NOT_DER[label] });
       continue;
     }
-    let body = m[2];
+    let body = text.slice(bodyStart, found.bodyEnd);
     const lines = body.split(/\r?\n/);
     const headerLines = lines.filter((line) => /^[A-Za-z][A-Za-z0-9-]*:/.test(line.trim()));
     if (headerLines.some((line) => /^Proc-Type:\s*4\s*,\s*ENCRYPTED/i.test(line.trim()))) {
@@ -466,10 +510,9 @@ export function parsePem(text: string): InputResult {
     }
     const decoded = decodeBase64(body);
     blocks.push(decoded.ok ? { label, bytes: decoded.bytes, error: null } : { label, bytes: null, error: decoded.error });
-    if (blocks.length >= 64) break;
   }
   if (blocks.length === 0) {
-    if (/-----BEGIN /.test(text)) {
+    if (text.includes("-----BEGIN ")) {
       return { ok: false, error: "There is a BEGIN line but no matching END line, so the PEM block is incomplete." };
     }
     return { ok: false, error: "No PEM block found. A PEM block starts with a line such as -----BEGIN CERTIFICATE-----." };
@@ -506,7 +549,9 @@ export function decodeInput(text: string, format: InputFormat): InputResult {
 }
 
 /** An opened file: DER as is, or text that is decoded like a paste. */
-export function decodeFileBytes(bytes: Uint8Array): InputResult {
+export function decodeFileBytes(input: Uint8Array): InputResult {
+  // A UTF-8 byte order mark in front of a PEM file is not part of the text.
+  const bytes = input.length >= 3 && input[0] === 0xef && input[1] === 0xbb && input[2] === 0xbf ? input.subarray(3) : input;
   let printable = bytes.length > 0;
   for (let i = 0; i < bytes.length && printable; i++) {
     const b = bytes[i];
@@ -885,17 +930,40 @@ function hexField(bytes: Uint8Array, sep = " "): string {
   return `${toHex(bytes, 0, MAX_FIELD_HEX_BYTES, sep)} ... (${formatCount(bytes.length)} bytes; the byte panel shows them all)`;
 }
 
+/** Arcs longer than this many octets (1,120 bits) are not converted to decimal. */
+export const MAX_OID_ARC_OCTETS = 160;
+/** Object identifiers with more arcs than this are not decoded. */
+export const MAX_OID_ARCS = 1_000;
+
+export type OidResult =
+  | { ok: true; dotted: string; issues: Asn1Issue[] }
+  /** cap is true when the value may be valid but is beyond what the viewer converts. */
+  | { ok: false; error: string; cap: boolean };
+
 /** X.690 8.19: base 128 subidentifiers, the first one carrying two arcs. */
-export function decodeOid(bytes: Uint8Array, relative = false): { ok: true; dotted: string; issues: Asn1Issue[] } | { ok: false; error: string } {
-  if (bytes.length === 0) return { ok: false, error: "An OBJECT IDENTIFIER needs at least one content octet (X.690 8.19.2)." };
+export function decodeOid(bytes: Uint8Array, relative = false): OidResult {
+  if (bytes.length === 0) return { ok: false, cap: false, error: "An OBJECT IDENTIFIER needs at least one content octet (X.690 8.19.2)." };
+  if (bytes[bytes.length - 1] & 0x80) {
+    return { ok: false, cap: false, error: "The last subidentifier is cut off: its final octet still has bit 8 set." };
+  }
   const issues: Asn1Issue[] = [];
   const subs: bigint[] = [];
   let value = BigInt(0);
   let fresh = true;
+  let octets = 0;
   for (let i = 0; i < bytes.length; i++) {
     const b = bytes[i];
     if (fresh && b === 0x80) {
       issues.push({ level: "invalid", text: `Subidentifier at content byte ${i} starts with 0x80, a padding octet X.690 8.19.2 forbids.` });
+    }
+    // Shifting a BigInt costs time in proportion to its size, so one huge arc
+    // would make this loop quadratic. Stop well before that matters.
+    if (++octets > MAX_OID_ARC_OCTETS) {
+      return {
+        ok: false,
+        cap: true,
+        error: `One arc is longer than ${MAX_OID_ARC_OCTETS} octets (over ${formatCount(MAX_OID_ARC_OCTETS * 7)} bits). The viewer does not convert arcs that large to decimal.`,
+      };
     }
     value = (value << BigInt(7)) | BigInt(b & 0x7f);
     fresh = false;
@@ -903,12 +971,12 @@ export function decodeOid(bytes: Uint8Array, relative = false): { ok: true; dott
       subs.push(value);
       value = BigInt(0);
       fresh = true;
+      octets = 0;
+      if (subs.length > MAX_OID_ARCS) {
+        return { ok: false, cap: true, error: `More than ${formatCount(MAX_OID_ARCS)} arcs. The viewer does not decode object identifiers that long.` };
+      }
     }
   }
-  if (!fresh) {
-    return { ok: false, error: "The last subidentifier is cut off: its final octet still has bit 8 set." };
-  }
-  if (subs.length > 1000) return { ok: false, error: "More than 1,000 arcs. This is not a usable object identifier." };
   const arcs: string[] = [];
   if (relative) {
     for (const s of subs) arcs.push(s.toString());
@@ -1047,7 +1115,8 @@ export function decodeGeneralizedTime(text: string): { ok: true; iso: string; is
   if (m[8] && /0$/.test(m[8])) issues.push({ level: "der", text: "DER forbids trailing zeros in fractional seconds (X.690 11.7.3)." });
   // X.680 46.2 lets the fraction follow the hour or the minute too, where it
   // is a fraction of that unit rather than of a second.
-  const frac = !m[8] ? "" : m[6] ? `.${m[8]}` : ` plus .${m[8]} of the last ${m[5] ? "minute" : "hour"}`;
+  const digits = m[8] && m[8].length > 30 ? `${m[8].slice(0, 30)}...` : m[8];
+  const frac = !digits ? "" : m[6] ? `.${digits}` : ` plus .${digits} of the last ${m[5] ? "minute" : "hour"}`;
   const zone = m[9] === undefined ? "local time (no zone given)" : m[9] === "Z" ? "UTC" : `UTC${m[9].slice(0, 3)}:${m[9].slice(3)}`;
   return {
     ok: true,
@@ -1070,6 +1139,13 @@ function hexPreview(buf: Uint8Array, start: number, end: number, max = 24): stri
 }
 
 const ENCAPSULATED_PRIMITIVES = new Set([1, 2, 3, 4, 6, 10, 12, 19, 22, 23, 24, 30]);
+/**
+ * A BIT STRING holds DER in a few places (an RSA key's SEQUENCE, a DSA key's
+ * INTEGER, a DSA or ECDSA signature's SEQUENCE). An elliptic curve point
+ * starts 0x04, the OCTET STRING tag, and its second byte is random, so about
+ * one P-256 key in 256 would otherwise read as an encapsulated OCTET STRING.
+ */
+const BIT_STRING_PRIMITIVES = new Set([2]);
 
 /**
  * Try to read DER nested inside an OCTET STRING or BIT STRING. X.509
@@ -1078,7 +1154,13 @@ const ENCAPSULATED_PRIMITIVES = new Set([1, 2, 3, 4, 6, 10, 12, 19, 22, 23, 24, 
  * bytes, the probe runs in strict mode and accepts only one clean DER
  * element of a common universal type that fills the contents exactly.
  */
-function tryEncapsulated(ctx: Ctx, start: number, end: number, depth: number): Asn1Node[] | null {
+function tryEncapsulated(
+  ctx: Ctx,
+  start: number,
+  end: number,
+  depth: number,
+  primitives: Set<number> = ENCAPSULATED_PRIMITIVES,
+): Asn1Node[] | null {
   if (end - start < 3 || depth >= MAX_DEPTH) return null;
   const sub: Ctx = { buf: ctx.buf, count: ctx.count, strict: true, errors: [], depthCapHit: false, issues: 0 };
   const out: Asn1Node[] = [];
@@ -1090,7 +1172,7 @@ function tryEncapsulated(ctx: Ctx, start: number, end: number, depth: number): A
   if (sub.errors.length || sub.issues || sub.depthCapHit || out.length !== 1) return null;
   const only = out[0];
   if (only.tagClass !== "universal" || only.end !== end) return null;
-  if (only.constructed ? only.tagNumber !== 16 && only.tagNumber !== 17 : !ENCAPSULATED_PRIMITIVES.has(only.tagNumber)) {
+  if (only.constructed ? only.tagNumber !== 16 && only.tagNumber !== 17 : !primitives.has(only.tagNumber)) {
     return null;
   }
   ctx.count = sub.count;
@@ -1187,7 +1269,7 @@ function decodePrimitive(ctx: Ctx, node: Asn1Node, depth: number): void {
       }
       node.summary = `${formatCount(bitCount)} bits${unused ? `, ${unused} unused` : ""}: ${hexPreview(buf, node.contentStart + 1, node.contentEnd)}`;
       if (unused === 0) {
-        const inner = tryEncapsulated(ctx, node.contentStart + 1, node.contentEnd, depth + 1);
+        const inner = tryEncapsulated(ctx, node.contentStart + 1, node.contentEnd, depth + 1, BIT_STRING_PRIMITIVES);
         if (inner) {
           node.children = inner;
           node.encapsulated = true;
@@ -1220,8 +1302,10 @@ function decodePrimitive(ctx: Ctx, node: Asn1Node, depth: number): void {
     case 13: {
       const r = decodeOid(c, node.tagNumber === 13);
       if (!r.ok) {
-        issues.push({ level: "invalid", text: r.error });
+        if (r.cap) node.note = r.error;
+        else issues.push({ level: "invalid", text: r.error });
         node.summary = hexPreview(buf, node.contentStart, node.contentEnd);
+        if (c.length) fields.push({ label: "Hex", value: hexField(c) });
         return;
       }
       issues.push(...r.issues);

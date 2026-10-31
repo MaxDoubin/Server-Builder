@@ -394,7 +394,7 @@ export function PoeBudgetCalculator() {
                           className={INPUT_CLASS}
                         />
                       </div>
-                      <div>
+                      <div className="col-span-2 sm:col-span-1">
                         <label htmlFor={`${base}-qty`} className={LABEL_CLASS}>
                           Qty
                         </label>
@@ -411,7 +411,7 @@ export function PoeBudgetCalculator() {
                           className={INPUT_CLASS}
                         />
                       </div>
-                      <div>
+                      <div className="col-span-2 sm:col-span-1">
                         <label htmlFor={`${base}-cls`} className={LABEL_CLASS}>
                           Class
                         </label>

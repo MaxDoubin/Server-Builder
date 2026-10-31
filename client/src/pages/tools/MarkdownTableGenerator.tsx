@@ -454,8 +454,8 @@ export function MarkdownTableGenerator() {
             ) : null}
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               Cell text is written as Markdown source, so emphasis, code spans and links inside a cell still work.
-              Every pipe is escaped as <code className="text-[hsl(var(--brand-cyan))]">\|</code>, and line breaks
-              become <code className="text-[hsl(var(--brand-cyan))]">&lt;br&gt;</code>.
+              Every pipe is escaped as <code className="text-[hsl(var(--brand-cyan))]">\|</code> unless you already
+              wrote it that way, and line breaks become <code className="text-[hsl(var(--brand-cyan))]">&lt;br&gt;</code>.
             </p>
           </ToolPanel>
 

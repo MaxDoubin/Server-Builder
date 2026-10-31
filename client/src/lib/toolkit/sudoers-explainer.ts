@@ -173,6 +173,31 @@ const KNOWN_TAGS = new Set([
   "NOINTERCEPT",
 ]);
 
+/**
+ * A tag overrides its opposite for the command it sits on and every command
+ * after it in the same spec list (sudoers(5)). So "NOPASSWD: a, PASSWD: b"
+ * requires a password for b. Setting a tag removes its opposite from the set
+ * carried forward.
+ */
+const OPPOSITE_TAG: Record<string, string> = {
+  NOPASSWD: "PASSWD",
+  PASSWD: "NOPASSWD",
+  NOEXEC: "EXEC",
+  EXEC: "NOEXEC",
+  SETENV: "NOSETENV",
+  NOSETENV: "SETENV",
+  LOG_INPUT: "NOLOG_INPUT",
+  NOLOG_INPUT: "LOG_INPUT",
+  LOG_OUTPUT: "NOLOG_OUTPUT",
+  NOLOG_OUTPUT: "LOG_OUTPUT",
+  MAIL: "NOMAIL",
+  NOMAIL: "MAIL",
+  FOLLOW: "NOFOLLOW",
+  NOFOLLOW: "FOLLOW",
+  INTERCEPT: "NOINTERCEPT",
+  NOINTERCEPT: "INTERCEPT",
+};
+
 /* ----------------------------------------------------------------- parse */
 
 /** Parse the runas clause (user:group) sitting at the front of a command spec. */
@@ -203,11 +228,17 @@ function parseCommandSpecs(text: string): CommandSpec[] {
     }
 
     const tags = [...carriedTags];
-    // Tags are uppercase words followed by a colon, and they stack.
+    // Tags are uppercase words followed by a colon. A tag removes its opposite
+    // from the set (PASSWD cancels an earlier NOPASSWD, and so on).
     for (;;) {
       const tagMatch = rest.match(/^([A-Z_]+)\s*:\s*/);
       if (!tagMatch || !KNOWN_TAGS.has(tagMatch[1])) break;
-      if (!tags.includes(tagMatch[1])) tags.push(tagMatch[1]);
+      const tag = tagMatch[1];
+      const opposite = OPPOSITE_TAG[tag];
+      for (let k = tags.length - 1; k >= 0; k -= 1) {
+        if (tags[k] === tag || tags[k] === opposite) tags.splice(k, 1);
+      }
+      tags.push(tag);
       rest = rest.slice(tagMatch[0].length).trim();
     }
     carriedTags = tags;
@@ -258,27 +289,31 @@ function parseLine(raw: string, line: number): ParsedLine | null {
     };
   }
 
-  // Defaults lines, with an optional binding (:user, @host, >runas, !cmnd).
-  const defaults = trimmed.match(/^Defaults\s*([:@>!])?\s*([^\s]+)?\s*(.*)$/);
-  if (defaults && /^Defaults\b/.test(trimmed)) {
-    const bind = defaults[1] ?? "";
-    // With no binding, the second group is actually the first setting, not a target.
-    if (bind === "") {
+  // Defaults lines. The binding operator must immediately follow the keyword
+  // with no space (sudoers(5)): Defaults:user, Defaults@host, Defaults>runas,
+  // Defaults!cmnd. With a space after Defaults the line is global, and a
+  // leading ! in the parameter list negates a boolean flag, as in
+  // "Defaults !authenticate". Both forms were checked against visudo -c.
+  if (/^Defaults(?![A-Za-z0-9_])/.test(trimmed)) {
+    const op = trimmed.charAt(8);
+    if (op === ":" || op === "@" || op === ">" || op === "!") {
+      const after = trimmed.slice(9).trim();
+      const m = after.match(/^(\S+)\s*(.*)$/);
       return {
         type: "defaults",
         line,
-        bind: "",
-        target: "",
-        settings: trimmed.replace(/^Defaults\s*/, "").trim(),
+        bind: op,
+        target: m ? m[1] : "",
+        settings: m ? m[2].trim() : "",
         raw: trimmed,
       };
     }
     return {
       type: "defaults",
       line,
-      bind,
-      target: (defaults[2] ?? "").trim(),
-      settings: (defaults[3] ?? "").trim(),
+      bind: "",
+      target: "",
+      settings: trimmed.replace(/^Defaults\s*/, "").trim(),
       raw: trimmed,
     };
   }
@@ -391,9 +426,23 @@ function joinList(items: string[]): string {
 
 function describeRunAs(runAs: RunAs | null): string {
   if (runAs === null) return "root";
-  const user = runAs.user === "" ? "root" : runAs.user === "ALL" ? "any user" : runAs.user;
-  if (runAs.group === null || runAs.group === "") return user;
-  const group = runAs.group === "ALL" ? "any group" : `group ${runAs.group}`;
+  const hasGroup = runAs.group !== null && runAs.group !== "";
+  let user: string;
+  if (runAs.user === "") {
+    // (:group) keeps the invoking user's identity but changes the group; an
+    // empty () or an absent clause runs as root.
+    user = hasGroup ? "the invoking user" : "root";
+  } else if (runAs.user === "ALL") {
+    user = "any user";
+  } else if (runAs.user.startsWith("#")) {
+    user = `the user with UID ${runAs.user.slice(1)}`;
+  } else {
+    user = runAs.user;
+  }
+  if (!hasGroup) return user;
+  const g = runAs.group as string;
+  const group =
+    g === "ALL" ? "any group" : g.startsWith("#") ? `the group with GID ${g.slice(1)}` : `group ${g}`;
   return `${user}, ${group}`;
 }
 
@@ -574,9 +623,6 @@ function explainDefaults(def: DefaultsLine): Explained {
             : `the command ${def.target}`;
   const summary = [`Sets options for ${scope}: ${def.settings || "(none given)"}.`];
   const findings: Finding[] = [];
-  if (/!?\s*requiretty\b/i.test(def.settings) === false && /\brequiretty\b/i.test(def.settings)) {
-    // handled below
-  }
   if (/!\s*authenticate\b/i.test(def.settings)) {
     findings.push({
       tone: "danger",

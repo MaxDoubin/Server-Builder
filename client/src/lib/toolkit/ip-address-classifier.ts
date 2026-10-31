@@ -2,8 +2,10 @@
  * IP address parsing and special-purpose classification.
  *
  * The data is the IANA IPv4 and IPv6 Special-Purpose Address Registries,
- * the pair RFC 6890 created and RFC 8190 updated, transcribed with their
- * five attribute columns. A handful of related blocks that live in other
+ * the pair RFC 6890 restructured and RFC 8190 updated (IANA now titles them
+ * "IPv4/IPv6 Special-Purpose Address Space"), transcribed with their five
+ * attribute columns and checked row by row against the registry CSVs as
+ * updated 2025-10-09. A handful of related blocks that live in other
  * IANA registries (multicast, the deprecated IPv6 site-local prefix) are
  * listed separately and flagged as such, so nothing here claims a registry
  * attribute the registry does not publish.
@@ -198,6 +200,9 @@ export function parseIp(raw: string): Result<IpAddress> {
   }
   const stray = strayCharacter(text);
   if (stray) return fail(stray);
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) {
+    return fail("That looks like a URL. Enter only the address, without the scheme, port or path.");
+  }
   if (/^\d{1,3}(\.\d{1,3}){3}:\d*$/.test(text) || /^\[[^\][]*\]:\d*$/.test(text)) {
     return fail("That looks like an address followed by a port. Enter the address alone, without the colon and port number.");
   }
@@ -205,6 +210,9 @@ export function parseIp(raw: string): Result<IpAddress> {
     const m = /^\[([^\][]*)\]$/.exec(text);
     if (!m) return fail("A bracketed address must look like [2001:db8::1], with nothing outside the brackets.");
     text = m[1].trim();
+    if (text !== "" && !text.includes(":")) {
+      return fail("Brackets are only written around IPv6 addresses, such as [2001:db8::1] inside a URL (RFC 3986). Enter an IPv4 address without them.");
+    }
   }
   if (text.includes("/")) {
     return fail("Enter a single address without a prefix length.");
@@ -441,7 +449,7 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-service-continuity", ["192.0.0.0/29"], "IPv4 Service Continuity Prefix", ["RFC 7335"], [T, T, T, F, F],
     "First assigned to DS-Lite (RFC 6333) for the link between the subscriber's tunnel endpoint and the provider's AFTR, then generalized by RFC 7335 for other IPv4 continuity mechanisms over IPv6."),
   entry(4, "v4-dummy", ["192.0.0.8/32"], "IPv4 dummy address", ["RFC 7600"], [T, F, F, F, F],
-    "A placeholder source for ICMPv4 messages sent by a node that has no IPv4 address of its own. Never valid as a destination."),
+    "The source address a translator puts on an ICMPv4 error, such as a traceroute reply, that it builds from an ICMPv6 error sent by a router with no IPv4 address of its own (RFC 7600). Never valid as a destination."),
   entry(4, "v4-pcp-anycast", ["192.0.0.9/32"], "Port Control Protocol Anycast", ["RFC 7723"], [T, T, T, T, F],
     "Anycast address where a client can reach a Port Control Protocol server without being configured with one."),
   entry(4, "v4-turn-anycast", ["192.0.0.10/32"], "Traversal Using Relays around NAT Anycast", ["RFC 8155"], [T, T, T, T, F],
@@ -451,7 +459,7 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-test-net-1", ["192.0.2.0/24"], "Documentation (TEST-NET-1)", ["RFC 5737"], [F, F, F, F, F],
     "Reserved for examples in documentation. It is not routed on the internet, so an example cannot point at someone's real host. Seeing it in live traffic usually means a sample configuration was deployed without being edited."),
   entry(4, "v4-as112-dname", ["192.31.196.0/24"], "AS112-v4", ["RFC 7535"], [T, T, T, T, F],
-    "Anycast block for the AS112 DNAME redirection service, which absorbs reverse lookups for private and other non-unique space that leaked out of networks that should have answered them locally."),
+    "Anycast block for AS112 servers that take part in DNAME redirection. Any zone that should be answered locally, such as the reverse zones for private space, can be pointed at them with a DNAME, and the queries that leak out get a negative answer."),
   entry(4, "v4-amt", ["192.52.193.0/24"], "AMT", ["RFC 7450"], [T, T, T, T, F],
     "Relay discovery for Automatic Multicast Tunneling, which lets hosts on unicast-only networks receive multicast."),
   entry(4, "v4-6to4-relay", ["192.88.99.0/24"], "Deprecated (6to4 Relay Anycast)", ["RFC 7526"], NONE,
@@ -489,8 +497,8 @@ export const IPV4_RELATED: SpecialEntry[] = [
   entry(4, "v4-mcast-test-net", ["233.252.0.0/24"], "MCAST-TEST-NET (documentation)", ["RFC 5771", "RFC 6676"], NONE,
     "Multicast addresses reserved for documentation and example code.",
     { registry: "multicast" }),
-  entry(4, "v4-mcast-admin", ["239.0.0.0/8"], "Administratively Scoped", ["RFC 2365"], NONE,
-    "The multicast counterpart of private space: used inside an organization and filtered at its boundary.",
+  entry(4, "v4-mcast-admin", ["239.0.0.0/8"], "Organization-Local Scope", ["RFC 2365"], NONE,
+    "Administratively scoped multicast, the counterpart of private space: used inside an organization and filtered at its boundary.",
     { registry: "multicast" }),
 ];
 
@@ -508,6 +516,8 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
     "Reserved for translation inside one network. Unlike the well-known prefix it is not globally reachable, and an operator can carve sub-prefixes from it for different translation mechanisms."),
   entry(6, "v6-discard", ["100::/64"], "Discard-Only Address Block", ["RFC 6666"], [T, T, T, F, F],
     "For remotely triggered black hole routing: traffic routed here is meant to be dropped, so operators have a prefix that is known to go nowhere."),
+  entry(6, "v6-dummy", ["100:0:0:1::/64"], "Dummy IPv6 Prefix", ["RFC 9780"], [T, F, F, F, F],
+    "Used as the destination in the inner IPv6 header of MPLS OAM packets, such as LSP Ping echo requests and multipoint BFD. The packet travels by label switching, and a destination that is valid only as a source makes the receiving router treat it as an exception and answer it instead of forwarding it. RFC 9780 recommends it over the IPv4-mapped loopback ::ffff:127.0.0.1 used before."),
   entry(6, "v6-ietf", ["2001::/23"], "IETF Protocol Assignments", ["RFC 2928"], [F, F, F, F, F],
     "Held by the IETF for protocol assignments. Not usable unless a more specific entry assigns the address.",
     { footnote: MORE_SPECIFIC_FOOTNOTE }),
@@ -520,7 +530,7 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
     "Anycast address for discovering a TURN relay server."),
   entry(6, "v6-srp-anycast", ["2001:1::3/128"], "DNS-SD Service Registration Protocol Anycast", ["RFC 9665"], [T, T, T, T, F],
     "Anycast address for reaching a DNS-SD Service Registration Protocol server."),
-  entry(6, "v6-benchmarking", ["2001:2::/48"], "Benchmarking", ["RFC 5180"], [T, T, T, F, F],
+  entry(6, "v6-benchmarking", ["2001:2::/48"], "Benchmarking", ["RFC 5180", "RFC Errata 1752"], [T, T, T, F, F],
     "The IPv6 counterpart of 198.18.0.0/15, for testing network devices in a lab."),
   entry(6, "v6-amt", ["2001:3::/32"], "AMT", ["RFC 7450"], [T, T, T, T, F],
     "Relay discovery for Automatic Multicast Tunneling."),
@@ -548,7 +558,7 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
     "Unique local addresses, the closest IPv6 analog to RFC 1918. In practice only fd00::/8 is used: a site picks a random 40-bit Global ID so two networks that later merge are unlikely to collide.",
     { footnote: "Drawn from the global unicast range but specified as not globally routed; see RFC 4193." }),
   entry(6, "v6-link-local", ["fe80::/10"], "Link-Local Unicast", ["RFC 4291"], [T, T, F, F, T],
-    "Every IPv6 interface has one, formed automatically. Valid only on its own link and never forwarded. The same address can exist on every interface, so using one needs a zone ID such as fe80::1%eth0."),
+    "Every IPv6 interface has one, usually formed automatically. Valid only on its own link and never forwarded. The same address can exist on every link, so on a host with more than one interface, using one needs a zone ID such as fe80::1%eth0."),
 ];
 
 /** Related IPv6 blocks from the IPv6 Address Space registry. No attribute columns there. */
@@ -593,7 +603,7 @@ export interface Classification {
   /** The most specific related (non special-purpose) entry, if any. */
   related: Match | null;
   /** What to say when no special-purpose entry applies. */
-  fallback: { title: string; text: string } | null;
+  fallback: { kind: "global" | "reserved"; title: string; text: string } | null;
   wellKnown: string | null;
   embedded: Embedded[];
   details: { label: string; value: string }[];
@@ -624,7 +634,7 @@ const V4_WELL_KNOWN: Record<string, string> = {
   "224.0.0.6": "OSPF AllDRouters (RFC 2328)",
   "224.0.0.9": "RIPv2 routers (RFC 2453)",
   "224.0.0.13": "All PIM routers (RFC 7761)",
-  "224.0.0.18": "VRRP (RFC 5798)",
+  "224.0.0.18": "VRRP (RFC 9568)",
   "224.0.0.22": "IGMPv3 reports (RFC 3376)",
   "224.0.0.251": "Multicast DNS (RFC 6762)",
   "224.0.0.252": "LLMNR (RFC 4795)",
@@ -639,10 +649,10 @@ const V6_WELL_KNOWN: Record<string, string> = {
   "ff02::5": "OSPFv3 AllSPFRouters (RFC 5340)",
   "ff02::6": "OSPFv3 AllDRouters (RFC 5340)",
   "ff02::9": "RIPng routers (RFC 2080)",
-  "ff02::16": "All MLDv2-capable routers (RFC 3810)",
+  "ff02::16": "All MLDv2-capable routers (RFC 9777)",
   "ff02::fb": "Multicast DNS (RFC 6762)",
-  "ff02::1:2": "All DHCP relay agents and servers (RFC 8415)",
-  "ff05::1:3": "All DHCP servers, site scope (RFC 8415)",
+  "ff02::1:2": "All DHCP relay agents and servers (RFC 9915)",
+  "ff05::1:3": "All DHCP servers, site scope (RFC 9915)",
 };
 
 /** RFC 4291 section 2.7 and RFC 7346 multicast scope values. */
@@ -700,8 +710,9 @@ export function classify(ip: IpAddress): Classification {
     result.details.push({ label: "As hex", value: `0x${hex(value, 8)}` });
     if (!result.primary && !result.related) {
       result.fallback = {
+        kind: "global",
         title: "Global unicast",
-        text: "Not in any special-purpose block. This is ordinary unicast space, and since the IANA free pool ran out in 2011 all of it has been allocated, to the regional internet registries or, historically, directly to organizations. Whether this address is announced and reachable right now is a routing question the registry cannot answer.",
+        text: "Not in any special-purpose block. This is ordinary unicast space. IANA gave its last unallocated /8 blocks to the regional internet registries in 2011, so every such block is now held by an RIR or, for older allocations, by the organization it was assigned to. Whether this address is announced and reachable right now is a routing question the registry cannot answer.",
       };
     }
     return result;
@@ -714,10 +725,12 @@ export function classify(ip: IpAddress): Classification {
     const global = inBlock(6, value, 0x2000n << 112n, 3);
     result.fallback = global
       ? {
+          kind: "global",
           title: "Global unicast (2000::/3)",
           text: "Not in any special-purpose block. IANA allocates blocks from 2000::/3 to the regional internet registries; whether this particular address is allocated and routed is not something the registry can tell you.",
         }
       : {
+          kind: "reserved",
           title: "Reserved by the IETF",
           text: "Not in any special-purpose block, and outside the ranges allocated for use: global unicast 2000::/3, unique local fc00::/7, link-local fe80::/10 and multicast ff00::/8. The IPv6 Address Space registry lists the rest of the space as reserved by the IETF.",
         };

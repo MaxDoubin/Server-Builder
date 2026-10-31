@@ -164,8 +164,13 @@ export function parseUmask(raw: string, current: number = DEFAULT_UMASK): Parsed
     return error(`That is longer than ${MAX_INPUT_LENGTH} characters. A umask is a few octal digits or a short u=,g=,o= list.`);
   }
 
-  input = input.replace(/^umask\b\s*/, "").replace(/^-S(?:\s+|$)/, "").replace(/\s+/g, "");
+  // Spaces after commas are forgiven; any other space would split the value
+  // into two shell words, and joining them ("22 7" as 227) would guess.
+  input = input.replace(/^umask\b\s*/, "").replace(/^-S(?:\s+|$)/, "").replace(/\s*,\s*/g, ",");
   if (input === "") return error("Add a value after umask, for example 022 or u=rwx,g=rx,o=.");
+  if (/\s/.test(input)) {
+    return error("A umask is one word with no spaces inside it, such as 022 or u=rwx,g=rx,o=.");
+  }
 
   if (/^\d+$/.test(input)) return parseOctal(input);
   // Starts like a number but is not one: 0o22, 02a, 0x12. Say so in octal

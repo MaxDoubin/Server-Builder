@@ -303,8 +303,10 @@ export function parseAddress(raw: string): Parsed<Address | null> {
     };
   }
 
-  if (!/^[\d.]+$/.test(addrText)) {
-    return { ok: false, error: "Use a numeric address. Host names are resolved once when the rule is loaded, which is rarely what anyone wants." };
+  if (!/^[0-9.]+$/.test(addrText)) {
+    return /^[A-Za-z0-9.-]+$/.test(addrText)
+      ? { ok: false, error: "Use a numeric address. Host names are resolved once when the rule is loaded, which is rarely what anyone wants." }
+      : { ok: false, error: "An IPv4 address uses only the digits 0 to 9 and dots; an IPv6 address needs colons." };
   }
   const parsed = parseV4(addrText);
   if (!parsed.ok) return parsed;
@@ -378,7 +380,7 @@ export function checkIface(raw: string): Parsed<string | null> {
   if (/[+*]/.test(text)) {
     return {
       ok: false,
-      error: "Wildcards differ between tools (eth+ in iptables, eth* in nftables, none in ufw), so this builder takes one exact interface name.",
+      error: "Wildcards differ between tools (eth+ in iptables, eth* in nftables), so this builder takes one exact interface name.",
     };
   }
   if (text.includes(":")) {
@@ -784,8 +786,8 @@ function buildFirewalld(r: Ready): ToolOutput {
   const needFamily = r.src !== null || r.dst !== null || spec.protocol === "icmp" || spec.protocol === "icmpv6";
   const family = r.family === "both" ? null : r.family;
   const head = ["rule"];
-  if (spec.placement === "top") head.push('priority="-1"');
   if (needFamily && family) head.push(`family="${family}"`);
+  if (spec.placement === "top") head.push('priority="-1"');
   if (r.src) head.push(`source address="${r.src.text}"`);
   if (r.dst) head.push(`destination address="${r.dst.text}"`);
 
@@ -853,10 +855,10 @@ function buildFirewalld(r: Ready): ToolOutput {
   if (rich.length > 1) notes.push("A rich rule holds one port element, so each port, range and protocol gets its own rule.");
   if (spec.placement === "top") {
     notes.push(
-      'Rich rules have no position. Within a priority firewalld runs log rules, then deny rules, then allow rules. A negative priority="-1" runs before all of them.',
+      'Rich rules have no position. At the default priority of 0, firewalld runs log rules, then deny rules, then allow rules. A rule with a negative priority such as priority="-1" runs before all of them.',
     );
   } else if (spec.action === "accept") {
-    notes.push("Within the same priority firewalld runs every drop and reject rich rule before any accept rule, whatever order they were added in.");
+    notes.push("At the default priority of 0, firewalld runs every drop and reject rich rule before any accept rule, whatever order they were added in.");
   }
 
   const persist = [
@@ -888,7 +890,9 @@ export function buildRule(spec: RuleSpec): BuildResult {
   const outIface = usesOut(spec.direction) ? take("outIface", checkIface(spec.outIface)) : null;
   const comment = take("comment", checkComment(spec.comment));
   const prefixText = spec.log ? take("logPrefix", checkLogPrefix(spec.logPrefix)) : null;
-  const zone = take("zone", checkZone(spec.zone)) ?? "public";
+  // The zone only applies to input rules, and the form only shows it for them,
+  // so a stale value left over from an input rule must not block the others.
+  const zone = spec.direction === "input" ? (take("zone", checkZone(spec.zone)) ?? "public") : "public";
 
   const portsGiven = spec.sourcePorts.trim() !== "" || spec.destPorts.trim() !== "";
   if (portsGiven && !(spec.protocol === "tcp" || spec.protocol === "udp" || spec.protocol === "tcpudp")) {
@@ -1221,7 +1225,7 @@ export function buildBaseline(spec: BaselineSpec): BaselineResult {
     `${sudo}ufw default deny incoming`,
     `${sudo}ufw default allow outgoing`,
     `${sudo}ufw allow proto tcp from ${mgmt.text} to any port ${port} comment 'SSH from management'`,
-    "# Add the SSH rule before enabling, or enable cuts the session you are typing in:",
+    "# Add the SSH rule first. Without it, enable blocks every new SSH login, including your next one:",
     `${sudo}ufw enable`,
     `${sudo}ufw status verbose`,
   ];

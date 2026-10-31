@@ -8,8 +8,8 @@
  * tables extension as cmark-gfm implements it: a header row, a delimiter
  * row with the same number of cells, and body rows padded or cut to fit. A
  * pipe preceded by a backslash never splits a cell, and that one backslash
- * is removed (cmark-gfm's unescape_pipes), which is exactly undone by
- * writing every pipe in a cell as \|.
+ * is removed (cmark-gfm's unescape_pipes), which writing a pipe as \| undoes.
+ * Output never relies on a form renderers disagree about; see escapeCell.
  */
 
 export type Align = "none" | "left" | "center" | "right";
@@ -349,12 +349,26 @@ export function codePointLength(s: string): number {
   return n;
 }
 
-/** One cell as Markdown source: trimmed, line breaks as <br>, every pipe escaped. */
+/**
+ * One cell as Markdown source: trimmed, line breaks as <br>, every pipe that
+ * would split the row written as \|.
+ *
+ * A pipe that already has an odd number of backslashes before it is an
+ * escaped pipe in the source, so it is left alone. Doubling the backslash
+ * would give \\|, a form renderers read differently: marked counts the
+ * backslashes and splits the row there, while markdown-it does not. With an
+ * even number of backslashes before the pipe (a literal backslash, then a
+ * pipe) one more is added, so the run is odd and both read it as escaped.
+ */
 export function escapeCell(s: string): string {
-  return s
-    .trim()
-    .replace(/\r\n|\r|\n/g, BR_SOURCE)
-    .replace(/\|/g, "\\|");
+  const flat = s.trim().replace(/\r\n|\r|\n/g, BR_SOURCE);
+  let out = "";
+  let run = 0;
+  for (const ch of flat) {
+    out += ch === "|" && run % 2 === 0 ? "\\|" : ch;
+    run = ch === "\\" ? run + 1 : 0;
+  }
+  return out;
 }
 
 function delimiterCell(align: Align, width: number): string {
@@ -446,8 +460,8 @@ export function toHtml(table: Table, alignAs: "attribute" | "style"): string {
 }
 
 const WIDE =
-  /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦\u{1F300}-\u{1F64F}\u{1F900}-\u{1F9FF}\u{20000}-\u{3FFFD}]|\p{Extended_Pictographic}/u;
-const ZERO_WIDTH = /[\p{Mn}\p{Me}​-‏⁠️]/u;
+  /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA000-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6\u{1F300}-\u{1F64F}\u{1F900}-\u{1F9FF}\u{20000}-\u{3FFFD}]|\p{Extended_Pictographic}/u;
+const ZERO_WIDTH = /[\p{Mn}\p{Me}\u200B-\u200F\u2060\uFE0F]/u;
 
 /** Whether any cell holds characters a fixed-width font does not draw one column wide. */
 export function widthWarnings(table: Table): { wide: boolean; zeroWidth: boolean } {

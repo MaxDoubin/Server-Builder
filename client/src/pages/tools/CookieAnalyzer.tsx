@@ -114,7 +114,7 @@ function FindingList({ findings, testId }: { findings: Finding[]; testId?: strin
 function lifetimeText(r: CookieReport): string {
   const l = r.effective.lifetime;
   if (l.kind === "session") return "Session: until the browser session ends";
-  if (l.kind === "delete") return `Deletes the cookie (${l.source} in the past or zero)`;
+  if (l.kind === "delete") return `Deletes the cookie (${l.source === "Max-Age" ? "Max-Age is zero or negative" : "Expires is in the past"})`;
   return `${describeSeconds(l.seconds)}, until ${toImfFixdate(l.expiresMs)} (from ${l.source}${l.capped ? ", capped at 400 days" : ""})`;
 }
 
@@ -159,7 +159,9 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
         data-testid={`text-verdict-${report.line}`}
         className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : TONE_STYLE.ok}`}
       >
-        <div className="uppercase tracking-[0.24em]">{refused ? "Refused by the browser" : "Stored by the browser"}</div>
+        <div className="uppercase tracking-[0.24em]">
+          {refused ? "Refused by the browser" : report.effective.lifetime.kind === "delete" ? "Accepted as a deletion" : "Stored by the browser"}
+        </div>
         {refused ? (
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {report.rejections.map((reason) => (
@@ -168,14 +170,15 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
           </ul>
         ) : (
           <p className="mt-1 text-[hsl(var(--brand-bone-dim))]">
-            Nothing in RFC 6265bis makes a browser drop this line{host ? "" : ", as far as can be judged without the response URL"}.
+            Nothing in RFC 6265bis makes a browser drop this line{host ? "" : ", as far as can be judged without the response URL"}
+            {report.effective.lifetime.kind === "delete" ? ". Its lifetime has already ended, so it removes any stored cookie with the same name, Domain and Path instead of adding one." : "."}
           </p>
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="min-w-0">
-          <ToolResult label="Name" value={report.name || "(empty)"} />
+          <ToolResult label="Name" value={shownName || "(empty)"} />
           <ToolResult label="Value" value={shortValue(report.value)} />
           <ToolResult label="Lifetime" value={lifetimeText(report)} mono={false} />
           <ToolResult label="Sent to" value={scopeText(report, host)} mono={false} />

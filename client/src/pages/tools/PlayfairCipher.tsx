@@ -506,9 +506,9 @@ export function PlayfairCipher() {
                   <div className="mt-4">
                     <ToolResult label="Fillers removed (a guess)" value={ok.cleaned} testId="text-cleaned" />
                     <p className="mt-1 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                      Drops {fillerUpper} where it sits second in a pair between two equal letters, and at
-                      the very end. A real {fillerUpper} in those places goes too, so read it before
-                      trusting it.
+                      Drops {fillerUpper} where it sits second in a pair between two equal letters or
+                      ends the text{alt ? ` (${alt} instead when the letter before it is ${fillerUpper})` : ""}.
+                      A real letter in those places goes too, so read it before trusting it.
                     </p>
                   </div>
                 ) : null}

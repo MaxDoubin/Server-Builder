@@ -332,17 +332,32 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   // quietly meaning FIN plus AE.
   if (/^[FSRPUEWe.]+$/.test(text) && /[FSRPUEW.]/.test(text) && text.length <= 9) return fromLetters(text);
 
+  // A prefix with nothing valid after it ("0x", "0xg1", "0b102") would
+  // otherwise fall through to the name parser and be misreported as hex.
+  if (/^0x/i.test(text)) {
+    return { ok: false, error: "After 0x, use only hex digits (0 to 9, a to f), as in 0x12." };
+  }
+  if (/^0b/i.test(text)) {
+    return { ok: false, error: "After 0b, use only binary digits (0 and 1), as in 0b00010010." };
+  }
+
   const tokens = text
     .toLowerCase()
     .replace(/ecn[\s-]*echo/g, "ece")
-    .split(/[\s,+|/&-]+/)
+    // tcpdump's constants (tcp-syn, tcp-push) and Wireshark's field names
+    // (tcp.flags.syn, tcp.flags.reset) name the same bits.
+    .replace(/\btcp\.flags\./g, " ")
+    .replace(/\btcp-(?=[a-z])/g, " ")
+    .split(/[\s,+|/&()-]+/)
     .filter((t) => t !== "");
   // "Xmas scan" and "NULL scan" are how people name them; "scan" adds no bits.
   const named = tokens.length > 1 ? tokens.filter((t) => t !== "scan") : tokens;
   if (named.length === 0) return { ok: false, error: ACCEPTED };
   let value = 0;
   for (const token of named) {
-    const bit = NAME_BITS[token];
+    // Own properties only: a plain object lookup would find "constructor"
+    // and "__proto__" on Object.prototype and quietly read them as no flags.
+    const bit = Object.prototype.hasOwnProperty.call(NAME_BITS, token) ? NAME_BITS[token] : undefined;
     if (bit === undefined) {
       if (/^[0-9a-f]{1,4}$/.test(token)) {
         return { ok: false, error: `"${token}" looks like hex. Write it with a 0x prefix, as in 0x${token}.` };
@@ -374,7 +389,7 @@ export const COMBOS: Combo[] = [
     value: 0x002,
     name: "SYN",
     context: "handshake",
-    text: "The first segment of the three-way handshake. It carries the client's initial sequence number and its options: MSS, window scale, SACK permitted, timestamps. Nmap's SYN scan (-sS) sends exactly this and never completes the handshake. Many SYNs from many sources that never finish is the shape of a SYN flood.",
+    text: "The first segment of the three-way handshake. It carries the client's initial sequence number and its options: MSS, window scale, SACK permitted, timestamps. Nmap's SYN scan (-sS) sends exactly this and never completes the handshake. A SYN flood is a stream of these, often from spoofed addresses, that never complete the handshake and fill the server's queue of half-open connections.",
   },
   {
     value: 0x012,
@@ -410,7 +425,7 @@ export const COMBOS: Combo[] = [
     value: 0x004,
     name: "RST",
     context: "abort",
-    text: "Abort. The connection is gone at once, with no acknowledgment, and queued data is discarded. A reset without ACK is the reply to a segment that itself carried ACK: the reset takes its sequence number from that acknowledgment (RFC 9293 section 3.5.2). That is why an ACK scan provokes a bare RST.",
+    text: "Abort. The connection is gone at once, with no acknowledgment, and queued data is discarded. When a host has no connection for an incoming segment that carried ACK, its reset takes the sequence number from that acknowledgment and leaves ACK clear (RFC 9293 section 3.5.2). That is why an ACK scan provokes a bare RST.",
   },
   {
     value: 0x014,

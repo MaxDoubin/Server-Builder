@@ -5,8 +5,9 @@
  * render, so a half-typed value shows a precise message rather than a
  * wrong number. The arithmetic lives in lib/toolkit/iops-calculator so it
  * can be tested without React. The headline figure balances back-end disk
- * operations against the mix; the widely quoted shortcut formula is shown
- * beside it with the size of its overstatement.
+ * operations against the mix; the widely quoted functional IOPS formula is
+ * shown beside it, in the totals and in the sizing, with the size of its
+ * overstatement.
  */
 
 import { useMemo, useState } from "react";
@@ -21,6 +22,7 @@ import {
   breakdown,
   diskCountProblem,
   disksForTarget,
+  disksForTargetShortcut,
   formatBlock,
   formatIops,
   formatRate,
@@ -131,6 +133,14 @@ export function IopsCalculator() {
       ? disksForTarget(target, readPct, level, perDisk)
       : null;
 
+  const shortcutDisks =
+    target !== null && readPct !== null && perDisk !== null
+      ? disksForTargetShortcut(target, readPct, level, perDisk)
+      : null;
+  // What fraction of its own operations the shortcut's disk count would be asked for.
+  const shortcutLoad =
+    shortcutDisks !== null && sizing && perDisk !== null ? sizing.backend / (shortcutDisks * perDisk) : null;
+
   const levelRows = useMemo(
     () =>
       perDisk !== null && disks !== null && readPct !== null
@@ -176,7 +186,7 @@ export function IopsCalculator() {
           `  writes              ${formatIops(main.split.frontWrites)}`,
           `100% read IOPS        ${formatIops(main.maxRead)}`,
           `100% write IOPS       ${formatIops(main.maxWrite)}`,
-          `Shortcut formula      ${formatIops(main.shortcut)}  (R x r + R x w / P, overstates mixed loads)`,
+          `Common formula        ${formatIops(main.shortcut)}  (R x r + R x w / P, overstates mixed loads)`,
           ...(sizing && target !== null
             ? [
                 `Disks for ${formatIops(target)} IOPS  ${sizing.disks === null ? "not possible with RAID 1" : count(sizing.disks)}`,
@@ -376,7 +386,7 @@ export function IopsCalculator() {
               </div>
 
               <div className="mt-5">
-                <label htmlFor="iops-block" className={LABEL_CLASS}>
+                <label htmlFor="iops-block" className={`block ${LABEL_CLASS}`}>
                   Block size, for throughput
                 </label>
                 <select
@@ -433,14 +443,18 @@ export function IopsCalculator() {
                     value={throughput ? `${throughput.si} (${throughput.iec})` : "--"}
                     testId="text-iops-throughput"
                   />
-                  <ToolResult label="Shortcut formula" value={`${formatIops(main.shortcut)} IOPS`} testId="text-iops-shortcut" />
+                  <ToolResult
+                    label="Common formula"
+                    value={`${formatIops(main.shortcut)} IOPS`}
+                    testId="text-iops-shortcut"
+                  />
                 </div>
               ) : null}
 
               {main && readPct !== null && shortcutBackend !== null ? (
                 overstated > 0.0005 ? (
                   <p className="mt-4 break-words rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
-                    The widely quoted shortcut, R x r + R x w / P, gives {formatIops(main.shortcut)}. Serving that
+                    The widely quoted functional IOPS formula, R x r + R x w / P, gives {formatIops(main.shortcut)}. Serving that
                     many requests at {pct(readPct)} reads would take {formatIops(shortcutBackend)} disk operations
                     per second against the {formatIops(main.maxRead)} the disks have, so it overstates this mix by{" "}
                     {(overstated * 100).toFixed(1)} percent. The headline figure, R / (r + w x P), is the rate that keeps
@@ -449,8 +463,8 @@ export function IopsCalculator() {
                 ) : (
                   <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                     {info.penalty === 1
-                      ? "With no write penalty, the shortcut formula and the balanced one give the same answer."
-                      : "At 100 percent reads or writes, the shortcut formula and the balanced one give the same answer."}
+                      ? "With no write penalty, the common formula and the headline one give the same answer."
+                      : "At 100 percent reads or writes, the common formula and the headline one give the same answer."}
                   </p>
                 )
               ) : null}
@@ -549,12 +563,27 @@ export function IopsCalculator() {
                 {sizing.delivers !== null ? (
                   <ToolResult label="Those disks deliver" value={`${formatIops(sizing.delivers)} IOPS`} />
                 ) : null}
+                <ToolResult
+                  label="By the common formula"
+                  value={shortcutDisks === null ? "not possible" : count(shortcutDisks)}
+                  testId="text-iops-shortcut-disks"
+                />
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {formatIops(target)} x ({pct(readPct)} + {pct(100 - readPct)} x {info.penalty}) ={" "}
                   {formatIops(sizing.backend)} disk operations per second, then divided by {formatIops(perDisk)} and
                   rounded up.
                   {sizing.note ? ` ${sizing.note}` : ""}
                 </p>
+                {shortcutDisks !== null && shortcutLoad !== null && shortcutLoad > 1.0005 ? (
+                  <p
+                    data-testid="text-iops-shortcut-note"
+                    className="mt-2 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]"
+                  >
+                    The common formula stops at {count(shortcutDisks)} disks. Serving {formatIops(target)} requests at{" "}
+                    {pct(readPct)} reads would then ask each disk for {Math.round(shortcutLoad * 100).toLocaleString("en-US")}{" "}
+                    percent of the operations it can do.
+                  </p>
+                ) : null}
                 <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                   This sizes for IOPS alone, with no headroom. Capacity, rebuild time and growth usually add disks.
                 </p>
@@ -645,7 +674,7 @@ export function IopsCalculator() {
                       100% writes
                     </th>
                     <th scope="col" className={`${TH_CLASS} text-right`}>
-                      Shortcut
+                      Common formula
                     </th>
                     {target !== null ? (
                       <th scope="col" className={`${TH_CLASS} text-right`}>

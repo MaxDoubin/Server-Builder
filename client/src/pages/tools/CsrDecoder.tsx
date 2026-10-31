@@ -19,6 +19,7 @@ import {
   readBinary,
   readPemText,
   verifySignature,
+  visible,
   type DistinguishedName,
   type ExtensionView,
   type InputNotice,
@@ -443,11 +444,13 @@ export function CsrDecoder() {
   const read = useMemo<ReadResult>(() => (file ? file.result : readPemText(text)), [file, text]);
   const outcome = useMemo(() => decodeCsrs(read), [read]);
   const csrs = useMemo(() => outcome.entries.flatMap((e) => (e.ok ? [e.csr] : [])), [outcome]);
-  const failures = outcome.entries.filter((e): e is { ok: false; label: string; error: string } => !e.ok);
+  const failures = outcome.entries.flatMap((e, i) => (e.ok ? [] : [{ position: i + 1, label: e.label, error: e.error }]));
   const index = selected < csrs.length ? selected : 0;
   const csr = csrs[index];
   const findings = useMemo(() => (csr ? reviewCsr(csr) : []), [csr]);
   const sans = csr ? csrSans(csr) : [];
+  // Names come from the request, so invisible and bidirectional characters are shown escaped.
+  const shownCn = csr && csr.subject.commonNames.length > 0 ? visible(csr.subject.commonNames[0]).text : null;
 
   // The self-signature check is asynchronous. The result carries the request
   // it was computed for, so a slow check is never shown against input the
@@ -593,7 +596,12 @@ export function CsrDecoder() {
         {outcome.notices.length > 0 || failures.length > 0 ? (
           <div className="space-y-2">
             <FindingList findings={noticeFindings(outcome.notices)} testId="list-notices" />
-            <FindingList findings={failures.map((f, i) => ({ tone: "danger" as const, text: `Block ${i + 1} (${f.label}) did not decode: ${f.error}` }))} />
+            <FindingList
+              findings={failures.map((f) => ({
+                tone: "danger" as const,
+                text: `${outcome.entries.length > 1 ? `Entry ${f.position} of ${outcome.entries.length}` : "The entry"} (${f.label}) did not decode: ${f.error}`,
+              }))}
+            />
             {outcome.sawCertificate ? (
               <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                 <Link
@@ -623,7 +631,7 @@ export function CsrDecoder() {
                     : "border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.4)] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-signal)/0.5)]"
                 }`}
               >
-                {i + 1}. {c.subject.commonNames[0] ?? csrSans(c)[0]?.value ?? "(no name)"}
+                {i + 1}. {c.subject.commonNames.length > 0 ? visible(c.subject.commonNames[0]).text : (csrSans(c)[0]?.value ?? "(no name)")}
               </button>
             ))}
           </div>
@@ -633,7 +641,7 @@ export function CsrDecoder() {
           <div className="space-y-6" data-testid="output-csr">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ToolPanel title={csrs.length > 1 ? `Request ${index + 1} of ${csrs.length}` : "Summary"}>
-                <ToolResult label="Common name" value={csr.subject.commonNames[0] ?? "none"} testId="text-common-name" />
+                <ToolResult label="Common name" value={shownCn ?? "none"} testId="text-common-name" />
                 <ToolResult label="Names requested" value={sans.length ? `${sans.length} in the SAN` : "no SAN"} testId="text-san-count" />
                 <ToolResult label="Public key" value={csr.publicKey.summary} testId="text-key" />
                 <ToolResult label="Signature algorithm" value={csr.signatureAlgorithm.name} testId="text-signature-algorithm" />
@@ -653,7 +661,7 @@ export function CsrDecoder() {
               <ToolPanel title="Requested names">
                 {sans.length === 0 ? (
                   <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="text-no-sans">
-                    No subjectAltName extension is requested{csr.subject.commonNames.length ? `, only the common name ${csr.subject.commonNames[0]}` : ""}.
+                    No subjectAltName extension is requested{shownCn !== null ? `, only the common name ${shownCn}` : ""}.
                   </p>
                 ) : (
                   <div className="overflow-x-auto">

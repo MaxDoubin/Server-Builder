@@ -243,7 +243,8 @@ export function IocExtractor() {
               <p id="ioc-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {text.length.toLocaleString("en-US")} of {MAX_INPUT_CHARS.toLocaleString("en-US")} characters. Reads
                 hxxp, hxxps, fxp, [.], (.), {"{.}"}, [dot], \., [@], [at], [:] and [://]. Domains are ASCII or punycode
-                (xn--) names whose last label is a delegated TLD.
+                (xn--) names whose last label is a delegated TLD, so a name written with non-ASCII letters is not read
+                until it is converted. An address range such as 10.0.0.1-10.0.0.9 counts as two addresses.
               </p>
             )}
             <div className="mt-4 flex flex-wrap items-center gap-2">

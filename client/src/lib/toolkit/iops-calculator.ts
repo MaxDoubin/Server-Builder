@@ -353,6 +353,18 @@ export function disksForTarget(target: number, readPct: number, level: RaidLevel
 }
 
 /**
+ * Disks the shortcut formula would call for: it solves
+ * target = perDisk * n * (r + w / P) for n, then applies the level's own
+ * rules. Null when the level cannot hold that many disks.
+ */
+export function disksForTargetShortcut(target: number, readPct: number, level: RaidLevel, perDisk: number): number | null {
+  const info = raidInfo(level);
+  const perDiskFront = (perDisk * (readPct + (100 - readPct) / info.penalty)) / 100;
+  const byIops = Math.max(1, ceilSafe(target / perDiskFront));
+  return roundUpForLevel(level, byIops);
+}
+
+/**
  * Random IOPS of a hard disk from its mechanics: one average seek plus half
  * a revolution of rotational latency per operation. Transfer time for a
  * small block is a fraction of a millisecond and is left out.

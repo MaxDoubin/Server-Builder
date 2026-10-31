@@ -39,7 +39,7 @@ export interface LayoutInfo {
   maxDisks: number;
 }
 
-/** Hard cap on disks per vdev. zpool create accepts at most 255 in a RAIDZ vdev. */
+/** Calculator cap on disks per vdev. Real vdevs are far narrower; this only bounds the arithmetic. */
 export const MAX_DISKS_PER_VDEV = 255;
 /** Calculator cap on top-level vdevs. */
 export const MAX_VDEVS = 1000;
@@ -306,8 +306,13 @@ export function poolCapacity(input: PoolInput): PoolResult {
   const afterParity = vdevs * dataDisks(layout, disks) * diskBytes;
   const alloc = blockAlloc(layout, disks, ashift, recordsize);
   // Per vdev the data share is raw times the block's efficiency, so the
-  // pool's is too. Never above afterParity: parity is a ceiling of d/(n-p).
-  const afterPadding = Math.min(afterParity, raw * alloc.efficiency);
+  // pool's is too. Written as afterParity times efficiency over ideal, which
+  // is the same number, because that ratio is exactly 1 (two identical
+  // correctly rounded quotients) whenever nothing is lost to rounding, so a
+  // 3-way mirror does not show a few stray bytes of padding. It is never
+  // above 1: parity is a ceiling of d/(n-p).
+  const keep = alloc.ideal > 0 ? Math.min(1, alloc.efficiency / alloc.ideal) : 1;
+  const afterPadding = afterParity * keep;
   const slop = slopSpace(afterPadding);
   const usable = Math.max(0, afterPadding - slop);
   const fillLine = afterPadding * FILL_LINE;
@@ -435,10 +440,27 @@ export function zfsNicenum(num: number): string {
   if (index === 0 || whole % base === 0) return `${Math.floor(whole / base)}${u}`;
   let text = "";
   for (let digits = 2; digits >= 0; digits -= 1) {
-    text = `${(whole / base).toFixed(digits)}${u}`;
+    text = `${fixedLikeC(whole / base, digits)}${u}`;
     if (text.length <= 5) break;
   }
   return text;
+}
+
+/**
+ * printf("%.*f") rounds the exact binary value, and an exact tie goes to the
+ * even digit, where Number.toFixed rounds a tie up. A tie needs a value that
+ * is an odd multiple of 1 / 2^(digits + 1), which a double holds exactly, so
+ * ties are found by that test rather than by comparing decimals.
+ */
+function fixedLikeC(value: number, digits: number): string {
+  const t = value * 2 ** (digits + 1);
+  if (Number.isInteger(t) && Math.abs(t) % 2 === 1) {
+    const scale = 10 ** digits;
+    const lower = Math.floor(value * scale);
+    const even = lower % 2 === 0 ? lower : lower + 1;
+    return (even / scale).toFixed(digits);
+  }
+  return value.toFixed(digits);
 }
 
 export function formatPercent(fraction: number, digits = 1): string {

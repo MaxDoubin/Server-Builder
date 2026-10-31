@@ -315,6 +315,7 @@ export function parseConfig(input: string): ParsedConfig {
   let sawIndentedInBlock = false;
   let warnedIndent = false;
   let warnedTrailingComment = false;
+  let warnedUnicodeSpace = false;
   let directiveCount = 0;
 
   lines.forEach((rawLine, idx) => {
@@ -324,9 +325,33 @@ export function parseConfig(input: string): ParsedConfig {
     if (trimmed === "" || trimmed.startsWith("#")) return;
     const indented = trimmed.length !== line.length;
 
+    // sshd splits on spaces and tabs only. A no-break or other Unicode space,
+    // common in text copied from a web page, glues two words into one.
+    if (!warnedUnicodeSpace && /[\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/.test(trimmed)) {
+      warnedUnicodeSpace = true;
+      findings.push({
+        tone: "danger",
+        title: "Unicode space in a line",
+        detail: `Line ${lineNo} contains a no-break or other Unicode space, often picked up when copying from a web page. sshd only splits on spaces and tabs, so it reads the words on either side as one and refuses to start. Retype the spaces. The line is audited as if they were ordinary spaces.`,
+        line: lineNo,
+        scope: scopeLabel(current),
+        key: null,
+      });
+    }
+
     // Keyword, then whitespace or optional whitespace and one "=".
     const m = /^([^\s=]+)\s*(?:=\s*)?([\s\S]*)$/.exec(trimmed);
-    if (!m) return;
+    if (!m) {
+      findings.push({
+        tone: "danger",
+        title: "Line with no keyword",
+        detail: "The line starts with =, so sshd takes the next word as the keyword and refuses to start with Bad configuration option.",
+        line: lineNo,
+        scope: scopeLabel(current),
+        key: null,
+      });
+      return;
+    }
     const written = m[1];
     const lower = written.toLowerCase();
     const key = ALIASES[lower] ?? lower;
@@ -583,6 +608,23 @@ export interface AlgoResult {
   error: string | null;
 }
 
+/**
+ * Signature algorithms are validated with sshkey_names_valid2(..., allow_wildcard=1)
+ * in servconf.c, so HostKeyAlgorithms and PubkeyAcceptedAlgorithms accept
+ * wildcard patterns in every mode. Ciphers, MACs and KexAlgorithms are checked
+ * name by name and accept patterns only in a - list.
+ */
+const SIG_KEYS = new Set<AlgoKey>(["hostkeyalgorithms", "pubkeyacceptedalgorithms"]);
+/** Every signature algorithm name OpenSSH 9.9 implements, for expanding those patterns. */
+const SIG_UNIVERSE = [
+  ...HOSTKEY_DEFAULT,
+  "webauthn-sk-ecdsa-sha2-nistp256@openssh.com",
+  "ssh-rsa",
+  "ssh-rsa-cert-v01@openssh.com",
+  "ssh-dss",
+  "ssh-dss-cert-v01@openssh.com",
+];
+
 function globToRegExp(pattern: string): RegExp {
   const body = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
   return new RegExp(`^${body}$`, "i");
@@ -599,20 +641,39 @@ export function effectiveAlgorithms(key: AlgoKey, value: string | null): AlgoRes
   if (names.some((s) => s === "")) {
     return { list: [], mode, unknown: [], error: "The list has an empty entry, from a doubled or trailing comma." };
   }
-  const pattern = mode === "remove" ? /^[A-Za-z0-9@._*?+-]+$/ : /^[A-Za-z0-9@._+-]+$/;
+  const wildcards = mode === "remove" || SIG_KEYS.has(key);
+  const pattern = wildcards ? /^[A-Za-z0-9@._*?+-]+$/ : /^[A-Za-z0-9@._+-]+$/;
   const bad = names.find((s) => !pattern.test(s));
   if (bad) return { list: [], mode, unknown: [], error: `"${clip(bad)}" is not a valid algorithm name.` };
 
+  // Expand wildcard patterns in a signature algorithm list. A pattern that
+  // matches nothing known is kept as written and reported as unknown.
+  const unmatched: string[] = [];
+  const expand = (items: string[]): string[] =>
+    mode === "remove" || !SIG_KEYS.has(key)
+      ? items
+      : items.flatMap((n) => {
+          if (!/[*?]/.test(n)) return [n];
+          const re = globToRegExp(n);
+          const hits = SIG_UNIVERSE.filter((u) => re.test(u));
+          if (!hits.length) unmatched.push(n);
+          return hits.length ? hits : [n];
+        });
+
   let list: string[];
-  if (mode === "explicit") list = names;
-  else if (mode === "append") list = [...defaults, ...names.filter((n) => !defaults.includes(n))];
-  else if (mode === "prepend") list = [...names, ...defaults.filter((d) => !names.includes(d))];
-  else {
+  if (mode === "explicit") list = expand(names);
+  else if (mode === "append") {
+    const extra = expand(names);
+    list = [...defaults, ...extra.filter((n) => !defaults.includes(n))];
+  } else if (mode === "prepend") {
+    const front = expand(names);
+    list = [...front, ...defaults.filter((d) => !front.includes(d))];
+  } else {
     const res = names.map(globToRegExp);
     list = defaults.filter((d) => !res.some((re) => re.test(d)));
   }
   const unique = [...new Set(list)];
-  const unknown = unique.filter((n) => !KNOWN_GOOD[key].has(n) && classifyAlgorithm(key, n) === null);
+  const unknown = unique.filter((n) => unmatched.includes(n) || (!KNOWN_GOOD[key].has(n) && classifyAlgorithm(key, n) === null));
   return { list: unique, mode, unknown, error: null };
 }
 
@@ -710,6 +771,8 @@ interface CheckContext {
   /** Effective UsePAM and PasswordAuthentication, for the checks that depend on them. */
   usePam: boolean;
   passwordAuth: boolean;
+  /** Keyboard-interactive is on and UsePAM is yes, so PAM can still ask for a password. */
+  kbdPam: boolean;
 }
 
 const YES_NO = new Set(["yes", "no"]);
@@ -724,15 +787,19 @@ function flag(name: string, value: string): boolean | Verdict {
   return v === "yes";
 }
 
+/** Largest value sshd accepts for an integer or time option. */
+const INT_MAX = 2147483647;
+
 /** sshd time format: a bare number of seconds, or units s, m, h, d, w combined (1m30s). */
 export function parseSshdTime(value: string): number | null {
   const v = value.trim().toLowerCase();
-  if (/^\d+$/.test(v)) return Number(v);
+  if (/^\d+$/.test(v)) return Number(v) > INT_MAX ? null : Number(v);
   if (!/^(\d+[smhdw])+$/.test(v)) return null;
   const unit: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
   let total = 0;
   for (const [, n, u] of v.matchAll(/(\d+)([smhdw])/g)) total += Number(n) * unit[u];
-  return total;
+  // convtime() in misc.c rejects anything past INT_MAX seconds.
+  return total > INT_MAX ? null : total;
 }
 
 type Check = (value: string, ctx: CheckContext) => Verdict;
@@ -744,12 +811,19 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     check: (value, ctx) => {
       const v = value.toLowerCase();
       if (v === "yes") {
-        return ctx.passwordAuth
-          ? { tone: "danger", note: "root may log in with a password, so every guess goes straight at the one account that owns the machine." }
-          : {
-              tone: "warn",
-              note: "root may log in by any enabled method. Password logins are off, so this needs root's key, but logins should still go through named accounts and sudo so every action traces to a person.",
-            };
+        if (ctx.passwordAuth) {
+          return { tone: "danger", note: "root may log in with a password, so every guess goes straight at the one account that owns the machine." };
+        }
+        if (ctx.kbdPam) {
+          return {
+            tone: "danger",
+            note: "root may log in with a password. PasswordAuthentication is off, but keyboard-interactive is on with UsePAM yes, so PAM still asks for root's password.",
+          };
+        }
+        return {
+          tone: "warn",
+          note: "root may log in by any enabled method. Password and keyboard-interactive logins are off, so this needs root's key, but logins should still go through named accounts and sudo so every action traces to a person.",
+        };
       }
       if (v === "prohibit-password" || v === "without-password") {
         return {
@@ -803,7 +877,9 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
         tone: "danger",
         note: ctx.passwordAuth
           ? "Any account with an empty password logs in with no password at all."
-          : "Password logins are off for now, but this is one setting away from letting empty passwords in.",
+          : ctx.kbdPam
+            ? "Keyboard-interactive goes through PAM, and with this set sshd stops telling PAM to refuse empty passwords, so an account with none can log in wherever pam_unix has the nullok option."
+            : "Password and keyboard-interactive logins are off for now, but this is one setting away from letting empty passwords in.",
       };
     },
   },
@@ -831,6 +907,7 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     check: (value) => {
       if (!/^\d+$/.test(value)) return { tone: "danger", note: `"${clip(value)}" is not a whole number. sshd refuses to start.` };
       const n = Number(value);
+      if (n > INT_MAX) return { tone: "danger", note: `${clip(value)} is larger than sshd accepts for an integer option. sshd refuses to start.` };
       if (n > 6) return { tone: "warn", note: `${n} attempts per connection, more than the default of 6. Each connection gets that many guesses.` };
       if (n > 4) return { tone: "info", note: `${n} attempts per connection. CIS benchmarks ask for 4 or fewer.` };
       if (n < 3) {
@@ -1079,7 +1156,7 @@ function algoVerdict(key: AlgoKey, value: string | null): { verdict: Verdict; li
   if (tone === "ok" && res.unknown.length) tone = "info";
   if (!weak.length && !res.unknown.length) parts.push("Nothing weak in the list.");
   if (key === "kexalgorithms" && !res.list.some((n) => n.startsWith("mlkem") || n.startsWith("sntrup"))) {
-    parts.push("No post-quantum hybrid, so recorded sessions could be decrypted later by a quantum computer.");
+    parts.push("No post-quantum hybrid, so traffic recorded today could be decrypted if a large enough quantum computer is ever built.");
     if (tone === "ok") tone = "info";
   }
   return { verdict: { tone, note: parts.join(" ") }, list: res.list, weak };
@@ -1163,6 +1240,8 @@ export function auditConfig(input: string): AuditResult {
   const usePam = (pamRes.args?.[0] ?? CHECKS.usepam.def).toLowerCase() === "yes";
   const passwordAuth = (pwRes.args?.[0] ?? CHECKS.passwordauthentication.def).toLowerCase() === "yes";
   const disableForwarding = (resolved("disableforwarding").args?.[0] ?? "no").toLowerCase() === "yes";
+  const kbdOn = (resolved("kbdinteractiveauthentication").args?.[0] ?? CHECKS.kbdinteractiveauthentication.def).toLowerCase() === "yes";
+  const kbdPam = kbdOn && usePam;
 
   const rows: EffectiveRow[] = [];
   const algoWeak: Partial<Record<AlgoKey, { name: string; w: Weakness }[]>> = {};
@@ -1197,7 +1276,7 @@ export function auditConfig(input: string): AuditResult {
       const c = CHECKS[key];
       name = c.name;
       value = r.args ? r.args[0] : c.def;
-      verdict = withDisable(key, c.check(value, { isDefault, usePam, passwordAuth }), disableForwarding);
+      verdict = withDisable(key, c.check(value, { isDefault, usePam, passwordAuth, kbdPam }), disableForwarding);
     }
 
     rows.push({
@@ -1235,7 +1314,9 @@ export function auditConfig(input: string): AuditResult {
         const disabled = blockDisable ? blockDisable.args[0].toLowerCase() === "yes" : disableForwarding;
         const blockPw = firstDirective(block.directives, "passwordauthentication");
         const pw = blockPw ? blockPw.args[0].toLowerCase() === "yes" : passwordAuth;
-        v = withDisable(key, CHECKS[key].check(d.args[0], { isDefault: false, usePam, passwordAuth: pw }), disabled);
+        const blockKbd = firstDirective(block.directives, "kbdinteractiveauthentication");
+        const kbd = blockKbd ? blockKbd.args[0].toLowerCase() === "yes" : kbdOn;
+        v = withDisable(key, CHECKS[key].check(d.args[0], { isDefault: false, usePam, passwordAuth: pw, kbdPam: kbd && usePam }), disabled);
       } else continue;
       if (v.tone === "ok") continue;
       findings.push({
@@ -1316,7 +1397,7 @@ export function auditConfig(input: string): AuditResult {
     findings.push({
       tone: "info",
       title: "Terrapin (CVE-2023-48795)",
-      detail: "chacha20-poly1305 and the -etm MACs were exposed to the Terrapin prefix truncation attack until strict key exchange, added in OpenSSH 9.6, which works when both ends support it. Keep sshd patched rather than removing them.",
+      detail: "chacha20-poly1305, and the -etm MACs when paired with a CBC cipher, are open to the Terrapin prefix truncation attack unless both ends support strict key exchange, which OpenSSH added in 9.6. Keep sshd patched rather than removing them.",
       line: null,
       scope: "global",
       key: "ciphers",
@@ -1411,6 +1492,12 @@ export function hardenedSnippet(target: SnippetTarget, allowUsers: string[] = []
     "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com",
     `HostKeyAlgorithms ${hostKeyAlgs}`,
   ];
+  if (target !== "9.9") {
+    lines.push(
+      "# Releases before 9.6 need the Terrapin (CVE-2023-48795) fix, upstream",
+      "# or backported by the distribution, before chacha20-poly1305 is safe.",
+    );
+  }
   if (target === "7.4") {
     lines.push(
       "# Releases before 8.8 still accept ssh-rsa (SHA-1) signatures from",
