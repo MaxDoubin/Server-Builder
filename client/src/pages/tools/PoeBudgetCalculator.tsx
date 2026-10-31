@@ -285,7 +285,11 @@ export function PoeBudgetCalculator() {
         `${wattsText(result.actualMw)} drawn` +
         (budgetMw !== null
           ? `, against a ${wattsText(budgetMw)} budget. ${
-              result.actualOver ? "Over budget on measured draw." : result.allocOver ? "Over budget by class." : "Within budget."
+              result.actualOver && result.measuredDevices > 0
+                ? "Over budget even on measured draw."
+                : result.allocOver
+                  ? "Over budget by class."
+                  : "Within budget."
             }`
           : ".");
 
@@ -510,7 +514,7 @@ export function PoeBudgetCalculator() {
             <div className="space-y-5">
               <Bar label="Reserved by class" used={result.allocMw} budget={budgetMw} testId="text-poe-allocated" />
               <Bar
-                label={result.measuredDevices === result.devices ? "Measured draw" : "Draw, unmeasured at class"}
+                label={result.measuredDevices === result.devices ? "Measured draw" : "Draw, unmeasured at class maximum"}
                 used={result.actualMw}
                 budget={budgetMw}
                 testId="text-poe-actual"
@@ -808,7 +812,7 @@ export function PoeBudgetCalculator() {
                 {wattsText(cableClass.pseMw, 1)} from the PSE so that {wattsText(cableClass.pdMw, 2)} still arrives
                 over 100 m at {cableType.vMin} V and {cableType.loopOhms} ohm.
               </p>
-              {cable.pdW !== undefined && cable.pdW * 1000 > cableClass.pdMw ? (
+              {cable.pdW !== undefined && Math.round(cable.pdW * 1000) > cableClass.pdMw ? (
                 <div className="mt-3">
                   <FlagNote
                     flag={{

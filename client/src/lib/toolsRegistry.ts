@@ -701,6 +701,38 @@ export const TOOLS: ToolEntry[] = [
     category: "systems",
     keywords: ["sudo", "sudoers", "visudo", "nopasswd", "privilege escalation", "linux", "shell escape", "cmnd_alias"],
   },
+  {
+    slug: "firewall-rule-builder",
+    name: "Firewall rule builder",
+    blurb:
+      "Turn one host firewall rule into iptables, nftables, ufw and firewalld commands, with persistence steps and a deny-inbound baseline. Runs in your browser.",
+    category: "security",
+    keywords: ["iptables", "nftables", "ufw", "firewalld", "netfilter", "conntrack", "host firewall", "rich rule", "default deny"],
+  },
+  {
+    slug: "sshd-config-auditor",
+    name: "sshd_config auditor",
+    blurb:
+      "Paste an sshd_config to see the effective value of each security setting, weak algorithms and Match block overrides, plus a hardened snippet.",
+    category: "security",
+    keywords: ["ssh", "openssh", "sshd", "hardening", "permitrootlogin", "passwordauthentication", "ciphers", "kexalgorithms", "match block", "audit"],
+  },
+  {
+    slug: "byte-unit-converter",
+    name: "Byte unit converter",
+    blurb:
+      "Convert bits, bytes, SI units (kB, MB, GB) and IEC units (KiB, MiB, GiB) exactly, and see why a 1 TB drive holds 931 GiB.",
+    category: "systems",
+    keywords: ["bytes", "gib", "gigabyte", "gibibyte", "kib vs kb", "mbps", "disk size", "iec prefixes", "si prefixes", "unit conversion"],
+  },
+  {
+    slug: "umask-calculator",
+    name: "umask calculator",
+    blurb:
+      "Enter a umask in octal or symbolic form and see the modes new files and directories get, computed as AND NOT. Runs in your browser.",
+    category: "systems",
+    keywords: ["umask", "umask -s", "default permissions", "file mode", "chmod", "octal", "setgid", "default acl", "linux"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

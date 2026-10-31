@@ -503,6 +503,18 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const FirewallRuleBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/FirewallRuleBuilder").then((m) => ({ default: m.FirewallRuleBuilder })),
+);
+const SshdConfigAuditor = lazyWithRetry(() =>
+  import("@/pages/tools/SshdConfigAuditor").then((m) => ({ default: m.SshdConfigAuditor })),
+);
+const ByteUnitConverter = lazyWithRetry(() =>
+  import("@/pages/tools/ByteUnitConverter").then((m) => ({ default: m.ByteUnitConverter })),
+);
+const UmaskCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/UmaskCalculator").then((m) => ({ default: m.UmaskCalculator })),
+);
 const SshConfigBuilder = lazyWithRetry(() =>
   import("@/pages/tools/SshConfigBuilder").then((m) => ({ default: m.SshConfigBuilder })),
 );
@@ -1707,6 +1719,26 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/firewall-rule-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <FirewallRuleBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/sshd-config-auditor">
+            <Suspense fallback={<RouteLoading />}>
+              <SshdConfigAuditor />
+            </Suspense>
+          </Route>
+          <Route path="/tools/byte-unit-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <ByteUnitConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/umask-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <UmaskCalculator />
             </Suspense>
           </Route>
           <Route path="/tools/ssh-config-builder">

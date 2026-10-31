@@ -285,7 +285,7 @@ export function analyzeBudget(sw: SwitchInput, input: DeviceLineInput[]): Budget
     const allocText =
       `Reserved by class, these devices need ${wattsText(allocMw)}, ${wattsText(-(allocHeadroomMw as number))} over the ` +
       `${wattsText(budget)} budget. A switch that allocates by class refuses power to the ports that do not fit, ` +
-      `usually the lowest priority ones.`;
+      `lowest priority first where port priorities are set.`;
     if (measuredDevices === 0) {
       // With nothing measured the draw is the class figure, so the two totals
       // are the same number and there is no lower figure to compare.
@@ -311,7 +311,7 @@ export function analyzeBudget(sw: SwitchInput, input: DeviceLineInput[]): Budget
         text:
           `${allocText} The draw of ${wattsText(actualMw)}` +
           `${partial ? " (measured where known, class maximum elsewhere)" : " as measured"} would fit, ` +
-          `so a switch that allocates by measured draw or by LLDP request could power them all.`,
+          `so a switch that allocates by measured draw could power them all.`,
       });
     }
   }
