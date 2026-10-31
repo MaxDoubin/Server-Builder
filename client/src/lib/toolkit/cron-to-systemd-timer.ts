@@ -359,10 +359,14 @@ function isRepeat(values: number[], max: number): { start: number; step: number 
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");
 
-/** One numeric component: `*`, a repeat such as 00/15, or a list with .. ranges for runs of three or more. */
-export function renderNumbers(values: number[], min: number, max: number): string {
+/**
+ * One numeric component: `*`, a repeat such as 00/15, or a list with .. ranges
+ * for runs of three or more. Months are always listed, because a repeat there
+ * reads as 01/3-01 once it sits between the dashes of the date.
+ */
+export function renderNumbers(values: number[], min: number, max: number, allowRepeat = true): string {
   if (isFull(values, min, max)) return "*";
-  const repeat = isRepeat(values, max);
+  const repeat = allowRepeat ? isRepeat(values, max) : null;
   if (repeat) return `${pad2(repeat.start)}/${repeat.step}`;
   const parts: string[] = [];
   let i = 0;
@@ -394,7 +398,7 @@ export function renderWeekdays(values: number[]): string {
 
 export function renderCalendarLine(line: CalendarLine, timezone = ""): string {
   const weekday = line.weekdays === null || line.weekdays.length === 7 ? "" : `${renderWeekdays(line.weekdays)} `;
-  const month = line.months === null ? "*" : renderNumbers(line.months, 1, 12);
+  const month = line.months === null ? "*" : renderNumbers(line.months, 1, 12, false);
   const day = line.days === null ? "*" : renderNumbers(line.days, 1, 31);
   const hour = renderNumbers(line.hours, 0, 23);
   const minute = renderNumbers(line.minutes, 0, 59);

@@ -428,6 +428,7 @@ export function TimezoneConverter() {
                     <tr key={row.zone} className="border-b border-[hsl(var(--brand-iron)/0.5)] align-top">
                       <th scope="row" className="py-3 pr-4 text-left font-mono-tight text-sm font-normal text-[hsl(var(--brand-bone))]">
                         <span className="break-all">{row.zone}</span>
+                        {index === 0 ? " " : null}
                         {index === 0 ? (
                           <span className="ml-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
                             source
