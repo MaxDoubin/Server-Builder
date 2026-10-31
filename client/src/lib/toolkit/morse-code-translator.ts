@@ -94,7 +94,7 @@ const PROSIGNS: { letters: string; name: string; itu: boolean; aliases: string[]
   { letters: "SK", name: "end of contact", itu: true, aliases: ["VA"] },
   { letters: "KA", name: "starting signal", itu: true, aliases: ["CT"] },
   { letters: "VE", name: "understood", itu: true, aliases: ["SN"] },
-  { letters: "HH", name: "error, the last word follows again", itu: true, aliases: [] },
+  { letters: "HH", name: "error", itu: true, aliases: [] },
   { letters: "SOS", name: "distress", itu: false, aliases: [] },
   { letters: "CL", name: "closing down", itu: false, aliases: [] },
   { letters: "BK", name: "break in", itu: false, aliases: [] },
@@ -237,7 +237,9 @@ export function encodeText(input: string): EncodeResult {
     };
   }
 
-  let text = input;
+  // NFC first, so an e followed by a combining acute accent (U+0301) is the
+  // single letter \u00C9 rather than an E plus a skipped mark.
+  let text = input.normalize("NFC");
   const substitutions: string[] = [];
   for (const sub of TEXT_SUBSTITUTIONS) {
     const next = text.replace(sub.pattern, sub.replacement);

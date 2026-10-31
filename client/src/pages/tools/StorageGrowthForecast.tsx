@@ -99,7 +99,7 @@ function levelLabel(pct: number): string {
 /** "4.0 months, Feb 28, 2027", or the reason there is no date. */
 function crossingText(asOf: YMD, t: number | null): { main: string; date: string | null } {
   if (t === null) return { main: "Not reached at this rate", date: null };
-  if (t === 0) return { main: "Already above", date: null };
+  if (t === 0) return { main: "Already reached", date: null };
   if (t > MAX_DATE_MONTHS) return { main: "More than 100 years away", date: null };
   return { main: fmtMonths(t), date: formatDate(dateAtMonths(asOf, t)) };
 }
@@ -497,7 +497,7 @@ export function StorageGrowthForecast() {
     if (ratio > 1) return { text: "Over capacity", tone: "text-[hsl(var(--brand-danger))]" };
     if (ratio >= 1) return { text: "Full", tone: "text-[hsl(var(--brand-danger))]" };
     for (let i = levels.length - 2; i >= 0; i -= 1) {
-      if (ratio * 100 >= levels[i]) return { text: `Above ${levels[i]}%`, tone: "text-[hsl(var(--brand-amber))]" };
+      if (ratio * 100 >= levels[i]) return { text: `At or above ${levels[i]}%`, tone: "text-[hsl(var(--brand-amber))]" };
     }
     return { text: "", tone: "" };
   }

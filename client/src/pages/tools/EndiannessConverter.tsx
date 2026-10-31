@@ -122,7 +122,9 @@ export function EndiannessConverter() {
     [mode, text, width],
   );
   const bytes = useMemo(() => (parsed.kind === "ok" ? parsed.bytes : []), [parsed]);
-  const offset = Math.min(offsetChoice, Math.max(0, bytes.length - 1));
+  // The offset selector only appears for three or more bytes; below that, always read from 0
+  // so a stale choice cannot leave the reader stuck on a single byte with no way back.
+  const offset = bytes.length > 2 ? Math.min(offsetChoice, bytes.length - 1) : 0;
   const littleHost = useMemo(() => hostIsLittleEndian(), []);
 
   const intRows = useMemo(
@@ -159,9 +161,12 @@ export function EndiannessConverter() {
     if (parsed.kind === "ok") {
       if (next === "bytes") {
         setText(bytesToHex(parsed.bytes));
-      } else if ([2, 4, 8].includes(parsed.bytes.length)) {
+      } else {
+        // Read the bytes most significant first. Two, four or eight bytes keep that exact width;
+        // other lengths fall back to auto, and more than eight bytes gets a precise range error.
+        const n = parsed.bytes.length;
         setText(`0x${bytesToHex(parsed.bytes, "")}`);
-        setWidth((parsed.bytes.length * 8) as Width);
+        setWidth(n === 2 || n === 4 || n === 8 ? ((n * 8) as Width) : "auto");
       }
     }
     setMode(next);
@@ -522,7 +527,10 @@ export function EndiannessConverter() {
                 {network.length ? (
                   <ul className="space-y-4" data-testid="list-network">
                     {network.map((n) => (
-                      <li key={n.width} className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      <li
+                        key={n.width}
+                        className="break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                      >
                         <div className={LABEL}>
                           {n.width}-bit at offset {offset}
                         </div>

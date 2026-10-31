@@ -116,7 +116,15 @@ export type InputResult =
   | { ok: false; error: string };
 
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const B64_VALUE = new Map<string, number>(Array.from(B64, (c, i) => [c, i]));
+/** Base64 digit value by char code, or -1. A table keeps a 1 MiB paste fast. */
+const B64_TABLE = new Int8Array(128).fill(-1);
+for (let i = 0; i < B64.length; i++) B64_TABLE[B64.charCodeAt(i)] = i;
+
+function nibble(code: number): number {
+  if (code >= 48 && code <= 57) return code - 48;
+  if (code >= 97 && code <= 102) return code - 87;
+  return code - 55;
+}
 
 type Attempt = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 
@@ -135,8 +143,11 @@ function parseHex(text: string): Attempt {
   if (cleaned.length / 2 > MAX_INPUT_BYTES) {
     return { ok: false, error: `That is ${(cleaned.length / 2).toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.` };
   }
+  // Every character is now known to be a hex digit.
   const out = new Uint8Array(cleaned.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = parseInt(cleaned.slice(i * 2, i * 2 + 2), 16);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = (nibble(cleaned.charCodeAt(i * 2)) << 4) | nibble(cleaned.charCodeAt(i * 2 + 1));
+  }
   return { ok: true, bytes: out };
 }
 
@@ -144,9 +155,8 @@ function parseBase64(text: string): Attempt {
   const cleaned = text.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
   const body = cleaned.replace(/=+$/, "");
   if (cleaned.length - body.length > 2) return { ok: false, error: "Base64 has at most two padding characters." };
-  for (let i = 0; i < body.length; i++) {
-    if (!B64_VALUE.has(body[i])) return { ok: false, error: `"${body[i]}" is not a Base64 character.` };
-  }
+  const bad = body.search(/[^A-Za-z0-9+/]/);
+  if (bad >= 0) return { ok: false, error: `"${body[bad]}" is not a Base64 character.` };
   if (body.length % 4 === 1) return { ok: false, error: "The Base64 text is one character short of a whole byte." };
   const size = Math.floor((body.length * 3) / 4);
   if (size > MAX_INPUT_BYTES) {
@@ -157,7 +167,7 @@ function parseBase64(text: string): Attempt {
   let acc = 0;
   let bits = 0;
   for (let i = 0; i < body.length; i++) {
-    acc = ((acc << 6) | (B64_VALUE.get(body[i]) as number)) & 0xffffff;
+    acc = ((acc << 6) | B64_TABLE[body.charCodeAt(i)]) & 0xffffff;
     bits += 6;
     if (bits >= 8) {
       bits -= 8;
@@ -650,9 +660,11 @@ export function plausibleTimestamp(v: bigint): string | null {
  * C-style escaping in the manner of protoc --decode_raw, except that valid
  * UTF-8 is left readable instead of being written as octal escapes.
  */
-export function escapeBytes(bytes: Uint8Array, start: number, end: number): string {
+export function escapeBytes(bytes: Uint8Array, start: number, end: number, utf8?: boolean): string {
   const slice = bytes.subarray(start, end);
-  const str = decodeUtf8(slice);
+  // utf8 === false forces the byte-by-byte form, so a window cut from a
+  // payload that is not UTF-8 is escaped the same way the whole payload is.
+  const str = utf8 === false ? null : decodeUtf8(slice);
   let out = "";
   if (str !== null) {
     for (const ch of str) {
@@ -680,9 +692,43 @@ export function escapeBytes(bytes: Uint8Array, start: number, end: number): stri
   return out;
 }
 
+/**
+ * The first maxChars characters of escapeBytes, without escaping the rest of a
+ * large payload. utf8 says whether the whole payload is valid UTF-8; the cut
+ * then falls on a character boundary, so the window decodes the same way the
+ * whole payload does.
+ */
+export function escapePreview(
+  bytes: Uint8Array,
+  start: number,
+  end: number,
+  maxChars: number,
+  utf8: boolean,
+): { text: string; truncated: boolean } {
+  let stop = end;
+  // Every character takes at most four bytes, and every byte at least one
+  // output character, so this many bytes always yields enough text.
+  if (end - start > maxChars * 4) {
+    stop = start + maxChars * 4;
+    if (utf8) while (stop > start && (bytes[stop] & 0xc0) === 0x80) stop--;
+  }
+  let text = escapeBytes(bytes, start, stop, utf8);
+  let truncated = stop < end;
+  if (text.length > maxChars) {
+    let cut = maxChars;
+    const last = text.charCodeAt(cut - 1);
+    if (last >= 0xd800 && last <= 0xdbff) cut--;
+    text = text.slice(0, cut);
+    truncated = true;
+  }
+  return { text, truncated };
+}
+
+const HEX_TABLE = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
+
 export function hexBytes(bytes: Uint8Array, start: number, end: number, sep = " "): string {
-  const parts: string[] = [];
-  for (let i = start; i < end; i++) parts.push(bytes[i].toString(16).padStart(2, "0"));
+  const parts: string[] = new Array(Math.max(0, end - start));
+  for (let i = start; i < end; i++) parts[i - start] = HEX_TABLE[bytes[i]];
   return parts.join(sep);
 }
 

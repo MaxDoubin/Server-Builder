@@ -360,16 +360,20 @@ function RoundingBlock({ view }: { view: FormatView }) {
 
   let headline: string;
   let detail: ReactNode = null;
+  // Every error here has a power-of-two-times-power-of-five denominator, so it is never null;
+  // the fallback only keeps a future change from throwing into React.
+  const err: Decimal = report.error ?? { neg: false, digits: 0n, scale: 0 };
   switch (report.kind) {
     case "exact":
       headline = given
         ? "The input is this bit pattern, so nothing was rounded."
         : converted
-          ? `Exact. Every ${BINARY32.label} value is also a ${BINARY64.label} value, so widening loses nothing.`
+          ? f.width === 64
+            ? `Exact. Every ${BINARY32.label} value is also a ${BINARY64.label} value, so widening loses nothing.`
+            : `Exact. This ${BINARY64.label} value happens to fit in ${BINARY32.label}, so narrowing it loses nothing.`
           : `Exact. The input is representable in ${f.label}, so nothing was rounded.`;
       break;
     case "rounded": {
-      const err = report.error!;
       headline = `The stored value is ${err.neg ? "below" : "above"} the input by ${decimalShort({ ...err, neg: false })}.`;
       detail = (
         <>
@@ -382,7 +386,7 @@ function RoundingBlock({ view }: { view: FormatView }) {
     }
     case "underflow":
       headline = `Too small for ${f.label}: it rounds to ${zero}, so the error is the whole input, ${decimalShort({
-        ...report.error!,
+        ...err,
         neg: false,
       })}.`;
       break;
@@ -545,17 +549,30 @@ function readOperand(text: string): Operand {
   return { ok: true, value: p.value };
 }
 
-function explainSum(r: SumReport, literal: string): string {
+/** True when storing the operand in this format changed its value. Infinities are exact. */
+function wasRounded(input: Value, stored: Decoded): boolean {
+  const kind = roundingReport(input, stored).kind;
+  return kind !== "exact" && kind !== "infinity" && kind !== "nan";
+}
+
+function explainSum(r: SumReport, literal: string, aIn: Value, bIn: Value): string {
   const label = r.format.label;
   if (r.sum.cls === "nan" || r.direct.cls === "nan") {
     return "A NaN compares unequal to everything, itself included, so == is false.";
   }
+  const aRounded = wasRounded(aIn, r.a);
+  const bRounded = wasRounded(bIn, r.b);
+  const who =
+    aRounded && bRounded ? "Both operands were" : aRounded ? "Operand a was" : bRounded ? "Operand b was" : null;
   if (r.equal) {
-    return `Both operands were still rounded when stored, but in ${label} their errors land the sum on the same value the decimal ${literal} stores, so == is true.`;
+    if (who === null) {
+      return `Both operands are stored exactly in ${label}, so a + b rounds the true sum once, the same rounding that storing the decimal ${literal} does, and == is true.`;
+    }
+    return `${who} rounded when stored, but in ${label} the errors still land the sum on the same value the decimal ${literal} stores, so == is true.`;
   }
   const tie = roundingReport(r.exactSum, r.sum).tie;
   const steps = r.apart === null ? "" : `, ${r.apart} ${r.apart === 1n ? "step" : "steps"} away`;
-  return `Each operand was rounded when stored, and their exact sum ${
+  return `${who ?? "An operand was"} rounded when stored, and the exact sum of the stored values ${
     tie ? "fell exactly halfway between two neighbors, so ties to even picked" : "rounds to"
   } ${shortestDecimal(r.sum)}. Rounding the decimal ${literal} directly gives ${shortestDecimal(r.direct)}${steps}, so == is false.`;
 }
@@ -569,7 +586,7 @@ function SumPanel() {
   const data = useMemo(() => {
     if (!pa.ok || !pb.ok) return null;
     const literal = addValues(pa.value, pb.value);
-    return { literal, results: FORMATS.map((f) => addInFormat(pa.value, pb.value, f)) };
+    return { a: pa.value, b: pb.value, literal, results: FORMATS.map((f) => addInFormat(pa.value, pb.value, f)) };
   }, [pa, pb]);
 
   const literalText = data ? valueText(data.literal) : "";
@@ -652,7 +669,7 @@ function SumPanel() {
                   />
                 </div>
                 <p className="mt-3 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  {explainSum(r, literalShort)}
+                  {explainSum(r, literalShort, data.a, data.b)}
                 </p>
               </div>
             ))}

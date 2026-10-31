@@ -199,7 +199,10 @@ export function AsciiTable() {
   } else if (row.code >= 48 && row.code <= 57) {
     caseLine = `The low four bits are the digit's value: 0x${toHex(row.code)} AND 0x0F = ${row.code & 0x0f}.`;
   } else if (!upper && row.code >= 32 && row.code < 127 && column !== 1) {
-    caseLine = `Bit 5 is not a case bit here: XOR 0x20 turns ${String.fromCharCode(row.code)} into ${String.fromCharCode(row.code ^ 0x20)}.`;
+    // _ (95) flips to 127, which has no glyph, so name it instead of printing a raw DEL.
+    const flipped = row.code ^ 0x20;
+    const flippedText = flipped === 127 ? "DEL (127)" : String.fromCharCode(flipped);
+    caseLine = `Bit 5 is not a case bit here: XOR 0x20 turns ${String.fromCharCode(row.code)} into ${flippedText}.`;
   }
   let ctrlLine: string | null = null;
   if (!upper && row.code < 32) {

@@ -190,6 +190,25 @@ const ASCII_ENTITIES: Record<number, string[]> = {
   125: ["rcub", "rbrace"],
 };
 
+/**
+ * The other WHATWG names for characters in these tables, accepted by the
+ * search but not shown in the rows: the upper-case legacy forms (&AMP;,
+ * &COPY;) and the MathML-era synonyms (&midast;, &CloseCurlyQuote;). With
+ * the names in the rows, this is every single-character reference the
+ * WHATWG list has for ASCII, Latin-1 and the Windows-1252 extras.
+ */
+export const ENTITY_SYNONYMS = new Map<string, number>([
+  ["QUOT", 34], ["AMP", 38], ["midast", 42], ["LT", 60], ["GT", 62], ["UnderBar", 95],
+  ["DiacriticalGrave", 96], ["VerticalLine", 124], ["NonBreakingSpace", 0xa0], ["die", 0xa8],
+  ["Dot", 0xa8], ["DoubleDot", 0xa8], ["COPY", 0xa9], ["circledR", 0xae], ["REG", 0xae],
+  ["strns", 0xaf], ["PlusMinus", 0xb1], ["pm", 0xb1], ["DiacriticalAcute", 0xb4],
+  ["CenterDot", 0xb7], ["centerdot", 0xb7], ["Cedilla", 0xb8], ["half", 0xbd], ["angst", 0xc5],
+  ["div", 0xf7], ["lsquor", 0x201a], ["ldquor", 0x201e], ["mldr", 0x2026], ["ddagger", 0x2021],
+  ["OpenCurlyQuote", 0x2018], ["CloseCurlyQuote", 0x2019], ["rsquor", 0x2019],
+  ["OpenCurlyDoubleQuote", 0x201c], ["CloseCurlyDoubleQuote", 0x201d], ["rdquor", 0x201d],
+  ["bullet", 0x2022], ["DiacriticalTilde", 0x02dc], ["TRADE", 0x2122],
+]);
+
 /* ------------------------------------------------------------- C1 */
 
 /** C1 controls, 0x80 to 0x9F, in ISO/IEC 6429 order. */
@@ -706,8 +725,10 @@ const NUMBER_FORMS: { re: RegExp; radix: number; via: string; kind: NumberKind }
   { re: /^0b([01]+)$/i, radix: 2, via: "binary", kind: "byte" },
 ];
 
-const ESCAPE_TO_CODE: Record<string, number> = {};
-for (const [code, esc] of Object.entries(C_ESCAPES)) ESCAPE_TO_CODE[esc] = Number(code);
+// A Map, not an object: "constructor" or "__proto__" in a plain object would
+// find Object.prototype members and read as a C escape.
+const ESCAPE_TO_CODE = new Map<string, number>();
+for (const [code, esc] of Object.entries(C_ESCAPES)) ESCAPE_TO_CODE.set(esc, Number(code));
 
 /**
  * The byte that holds a Unicode code point in a charset, or null when the
@@ -887,17 +908,27 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   }
 
   // C escapes.
-  if (q in ESCAPE_TO_CODE) add(ESCAPE_TO_CODE[q], "C escape");
+  const escaped = ESCAPE_TO_CODE.get(q);
+  if (escaped !== undefined) add(escaped, "C escape");
 
-  // Named HTML references: exact first, then any case.
+  // Named HTML references: exact first, then any case. Names are case
+  // sensitive in HTML (&amp; and &AMP; exist, &Amp; does not), so a match
+  // that needed case folding says so.
   const entity = /^&([a-z][a-z0-9]*);?$/i.exec(q);
   const rows = rowsFor(charset);
   if (entity) {
     const name = entity[1];
     const exact = rows.find((r) => r.entities.includes(name));
-    const loose = exact ?? rows.find((r) => r.entities.some((e) => e.toLowerCase() === name.toLowerCase()));
-    if (loose) {
-      add(loose.code, "HTML named reference");
+    const synonym = ENTITY_SYNONYMS.get(name);
+    const loose = exact
+      ? undefined
+      : rows.find((r) => r.entities.some((e) => e.toLowerCase() === name.toLowerCase()));
+    if (exact) {
+      add(exact.code, "HTML named reference");
+    } else if (synonym !== undefined) {
+      addCodePoint(synonym, "HTML named reference", `&${name}; (${codePointLabel(synonym)})`);
+    } else if (loose) {
+      add(loose.code, "HTML named reference, ignoring case");
     } else {
       // Not in the rows showing: say where it is, if it is anywhere here.
       const other = [...LATIN1_ROWS, ...CP1252_ROWS].find((r) => r.entities.includes(name));

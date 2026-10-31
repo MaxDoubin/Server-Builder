@@ -152,16 +152,22 @@ export function parseInteger(raw: string, width: Width | "auto"): IntParse {
   const digits = m[3];
   const base = prefix === "0x" ? 16 : prefix === "0b" ? 2 : prefix === "0o" ? 8 : 10;
   const allowed = { 16: /^[0-9a-f]+$/i, 2: /^[01]+$/, 8: /^[0-7]+$/, 10: /^[0-9]+$/ }[base];
-  if (digits === "") return { kind: "error", message: "There are no digits after the prefix." };
+  if (digits === "") {
+    return {
+      kind: "error",
+      message: prefix ? `There are no digits after ${prefix}.` : "There are no digits, only a sign.",
+    };
+  }
   if (!allowed.test(digits)) {
+    // A decimal fraction or exponent (1.5, 1e5) is checked before hex letters, since e is both.
+    if (base === 10 && (digits.includes(".") || /^\d+(?:\.\d*)?e[+-]?\d+$/i.test(digits))) {
+      return { kind: "error", message: "Integers only here. For a floating point value, enter its bytes in hex." };
+    }
     if (base === 10 && /^[0-9a-f]+$/i.test(digits)) {
       return {
         kind: "error",
         message: "That has hex letters but no 0x prefix. Write 0xDEADBEEF, or switch to hex bytes.",
       };
-    }
-    if (base === 10 && /[.e]/i.test(digits)) {
-      return { kind: "error", message: "Integers only here. For a floating point value, enter its bytes in hex." };
     }
     const names = { 16: "hex", 2: "binary", 8: "octal", 10: "decimal" } as const;
     const bad = digits.split("").find((c) => !allowed.test(c)) ?? digits[0];

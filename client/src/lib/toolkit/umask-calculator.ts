@@ -168,6 +168,14 @@ export function parseUmask(raw: string, current: number = DEFAULT_UMASK): Parsed
   if (input === "") return error("Add a value after umask, for example 022 or u=rwx,g=rx,o=.");
 
   if (/^\d+$/.test(input)) return parseOctal(input);
+  // Starts like a number but is not one: 0o22, 02a, 0x12. Say so in octal
+  // terms rather than reporting a missing symbolic operator.
+  if (/^\d/.test(input)) {
+    const bad = input.match(/\D/)?.[0] ?? "";
+    return error(
+      `An octal umask is only the digits 0 to 7, with no prefix or suffix, so "${bad}" does not belong. Write 022, not 0o22.`,
+    );
+  }
   return parseSymbolic(input, current & PERMISSION_BITS);
 }
 
@@ -175,10 +183,13 @@ function parseOctal(input: string): Parsed<UmaskValue> {
   if (/[89]/.test(input)) {
     return error("A umask is octal, so the digits run from 0 to 7. There is no 8 or 9.");
   }
-  if (input.length > 8) {
-    return error("That is too many digits. A umask is three or four octal digits, such as 022 or 0027.");
+  // Leading zeros are harmless (bash reads 00022 as 022), so drop them before
+  // judging the length. What remains must fit in four octal digits.
+  const significant = input.replace(/^0+(?=\d)/, "");
+  if (significant.length > 4) {
+    return error("That is larger than 07777, the widest mode there is. A umask is usually three digits, such as 022.");
   }
-  const value = parseInt(input, 8);
+  const value = parseInt(significant, 8);
   if (value > MAX_OCTAL) {
     return error("That is larger than 07777, the widest mode there is. A umask is usually three digits, such as 022.");
   }
@@ -329,7 +340,7 @@ export function review(mask: number): Finding[] {
   } else if (file & 0o020) {
     findings.push({
       tone: "warn",
-      text: "New files are group-writable. That is the point on a shared project directory or with one private group per user, and a leak when your primary group is a broad one such as users or staff.",
+      text: "New files are group-writable. That is the point on a shared project directory or with one private group per user, and a risk when your primary group is a broad one such as users or staff, since every member can then change your files.",
     });
   }
 
@@ -356,18 +367,18 @@ export function review(mask: number): Finding[] {
   if ((file & 0o200) === 0 && (file & 0o400) !== 0) {
     findings.push({
       tone: "warn",
-      text: "The owner cannot write files they just created, so an editor saving in place will fail until a chmod.",
+      text: "New files are read-only even for their owner, so opening one again for writing fails until a chmod adds write back.",
     });
   }
   // Read without execute on a directory lists names but blocks every lookup
-  // inside it. A mask that does this was usually worked out by subtraction.
+  // inside it. Any mask that clears x but not r for a class does this.
   const listOnly: string[] = [];
   if ((dir & 0o040) !== 0 && (dir & 0o010) === 0) listOnly.push("the group");
   if ((dir & 0o004) !== 0 && (dir & 0o001) === 0) listOnly.push("others");
   if (listOnly.length) {
     findings.push({
       tone: "warn",
-      text: `New directories give ${listOnly.join(" and ")} read without execute, so they can list the names inside but cannot cd in or open anything. Masks that do this were usually worked out by subtracting digits.`,
+      text: `New directories give ${listOnly.join(" and ")} read without execute, so they can list the names inside but cannot cd in or open anything. A mask that clears execute but not read, such as 033, does this.`,
     });
   }
 

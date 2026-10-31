@@ -216,7 +216,7 @@ export function UmaskCalculator() {
 
   const trap = subtractDigits(FILE_BASE, 0o033);
   const mine = subtractDigits(FILE_BASE, mask);
-  const negativeClass = CLASSES.find((_, i) => mine.digits[i] < 0);
+  const negativeNames = CLASSES.filter((_, i) => mine.digits[i] < 0).map((cls) => cls.name);
 
   const gridRequested = gridKind === "file" ? FILE_BASE : DIR_BASE;
   const gridIdle = idleBits(gridRequested, mask);
@@ -331,8 +331,8 @@ export function UmaskCalculator() {
                 ) : null}
                 {ok && ok.dropped ? (
                   <p className="mt-4 break-words rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
-                    The leading digit asks for {octal4(ok.dropped)}, the setuid, setgid and sticky bits. umask(2) keeps
-                    only mask AND 0777, so those bits are dropped and the mask is {octal4(mask)}.
+                    The leading digit names special bits ({octal4(ok.dropped)}: setuid is 4, setgid 2, sticky 1).
+                    umask(2) keeps only mask AND 0777, so they are dropped and the mask is {octal4(mask)}.
                   </p>
                 ) : null}
                 <div className="mt-4">
@@ -519,7 +519,7 @@ export function UmaskCalculator() {
                   </pre>
                   <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {mine.text === null
-                      ? `The ${negativeClass?.name ?? "one"} digit goes negative, so subtraction does not produce a mode at all. AND NOT never can: a bit is either kept or cleared.`
+                      ? `The ${negativeNames.join(" and ")} ${negativeNames.length > 1 ? "digits go" : "digit goes"} negative, so subtraction does not produce a mode at all. AND NOT cannot go negative: each bit is either kept or cleared.`
                       : mine.wrong
                         ? `Subtraction is wrong here. The mask holds ${bitNames(idleBits(FILE_BASE, mask))}, which 0666 never asked for, and subtracting them borrows from read and write instead.`
                         : "The two agree here because every bit in this mask is also in 0666. Add an execute bit to the mask and they part ways."}
@@ -534,8 +534,8 @@ export function UmaskCalculator() {
                   <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">It cannot add bits</h3>
                   <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     It only clears. Files start from 0666, which has no execute bit, so no umask makes a new file
-                    executable, not even 000. A compiler gets an executable by asking for 0777, which is how a fresh
-                    binary comes out {octal4(dir)} under this mask.
+                    executable, not even 000. A linker gets an executable by asking for 0777, or by adding the execute
+                    bits the mask allows, which is how a fresh binary comes out {octal4(dir)} under this mask.
                   </p>
                 </div>
                 <div className="min-w-0 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.4)] p-4">

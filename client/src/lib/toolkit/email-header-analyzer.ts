@@ -1392,7 +1392,7 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
   } else if (otherIds.size > 0) {
     add(
       "info",
-      `Authentication-Results fields come from more than one authserv-id (${[primaryId ?? "(none)", ...otherIds].join(", ")}). The findings use the topmost one, ${primaryId ?? "which names none"}. Fields from other authserv-ids were added upstream, possibly by the sender, so trust them only as far as you trust whoever wrote them (RFC 8601 section 5).`,
+      `Authentication-Results fields come from more than one authserv-id (${[primaryId ?? "(none)", ...otherIds].join(", ")}). The findings use the topmost one, ${primaryId ?? "which names none"}. Fields from other authserv-ids were added upstream, possibly by the sender, so trust them only as far as you trust whoever wrote them (RFC 8601 sections 5 and 7.1).`,
     );
   }
 

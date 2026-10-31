@@ -22,7 +22,7 @@ import {
   decodeMessage,
   detectFraming,
   effectiveView,
-  escapeBytes,
+  escapePreview,
   fixed32Views,
   fixed64Views,
   hexBytes,
@@ -99,10 +99,6 @@ function count(n: number): string {
 
 function plural(n: number, one: string, many: string): string {
   return `${count(n)} ${n === 1 ? one : many}`;
-}
-
-function clip(s: string, max: number): string {
-  return s.length > max ? `${s.slice(0, max)}...` : s;
 }
 
 /** Follows an id path ("2.0.4") through groups and parsed payloads, whatever the current view. */
@@ -197,8 +193,10 @@ function summarize(field: PbField, bytes: Uint8Array, overrides: ReadonlyMap<str
   switch (view) {
     case "message":
       return `message · ${plural(len.message?.length ?? 0, "field", "fields")}`;
-    case "string":
-      return `"${clip(escapeBytes(bytes, field.valueOffset, end), ROW_TEXT)}" · ${plural(len.length, "byte", "bytes")}`;
+    case "string": {
+      const p = escapePreview(bytes, field.valueOffset, end, ROW_TEXT, len.utf8);
+      return `"${p.text}${p.truncated ? "..." : ""}" · ${plural(len.length, "byte", "bytes")}`;
+    }
     case "packed-varint": {
       const p = packedVarints(bytes, field.valueOffset, end);
       return `[${p.values.slice(0, 8).join(", ")}${p.count > 8 ? ", ..." : ""}] · ${plural(p.count, "varint", "varints")}`;
@@ -569,6 +567,9 @@ function FieldDetail({
 }) {
   const tagHex = hexBytes(bytes, field.offset, field.offset + field.tagLength);
   const recordLength = field.end - field.offset;
+  // Joined once per selection, not once per render: a field can be 1 MiB.
+  const recordHex = useMemo(() => hexBytes(bytes, field.offset, field.end, ""), [bytes, field.offset, field.end]);
+  const valueHex = useMemo(() => hexBytes(bytes, field.valueOffset, field.end, ""), [bytes, field.valueOffset, field.end]);
 
   return (
     <ToolPanel title="Selected field">
@@ -634,7 +635,7 @@ function FieldDetail({
 
         <div className="mt-4 flex flex-wrap gap-2">
           <CopyButton
-            value={hexBytes(bytes, field.offset, field.end, "")}
+            value={recordHex}
             label="Copy this record as hex"
             testId="button-copy-record-hex"
           >
@@ -642,7 +643,7 @@ function FieldDetail({
           </CopyButton>
           {field.end > field.valueOffset ? (
             <CopyButton
-              value={hexBytes(bytes, field.valueOffset, field.end, "")}
+              value={valueHex}
               label="Copy the value bytes as hex"
               testId="button-copy-value-hex"
             >
@@ -698,6 +699,10 @@ function LenDetail({
 }) {
   const len = field.len as NonNullable<PbField["len"]>;
   const packed = packedVarints(bytes, field.valueOffset, field.end);
+  const stringPreview = useMemo(
+    () => (view === "string" ? escapePreview(bytes, field.valueOffset, field.end, DETAIL_TEXT, len.utf8) : { text: "", truncated: false }),
+    [view, bytes, field.valueOffset, field.end, len.utf8],
+  );
   const options: { id: LenView; available: boolean; why?: string }[] = [
     {
       id: "message",
@@ -758,8 +763,14 @@ function LenDetail({
         ) : view === "string" ? (
           <>
             <pre className={PRE} data-testid="text-protobuf-string" tabIndex={0} aria-label="Payload as a string">
-              {clip(escapeBytes(bytes, field.valueOffset, field.end), DETAIL_TEXT)}
+              {stringPreview.text}
+              {stringPreview.truncated ? "..." : ""}
             </pre>
+            {stringPreview.truncated ? (
+              <p className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
+                First {count(DETAIL_TEXT)} characters of {count(len.length)} bytes. Use Copy as text for the whole string.
+              </p>
+            ) : null}
             {!len.utf8 ? (
               <p className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
                 Bytes that are not valid UTF-8 are written as octal escapes, the way protoc prints them.
