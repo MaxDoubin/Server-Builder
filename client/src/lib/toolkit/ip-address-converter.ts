@@ -483,7 +483,9 @@ export type Analysis =
     };
 
 export function analyze(raw: string): Analysis {
-  const input = raw.trim();
+  // ASCII whitespace only: String.prototype.trim would also drop Unicode
+  // spaces such as U+00A0, which a URL parser does not ignore.
+  const input = raw.replace(/^[ \t\n\v\f\r]+|[ \t\n\v\f\r]+$/g, "");
   if (input === "") return { kind: "empty" };
   if (input.length > MAX_INPUT_CHARS) {
     return { kind: "error", message: `That is ${input.length} characters. The limit is ${MAX_INPUT_CHARS}, and no real address comes close.` };
@@ -510,6 +512,8 @@ export function analyze(raw: string): Analysis {
       message = `"${ch}" belongs to a port number or an IPv6 address. Enter only an IPv4 host, without a port.`;
     } else if ("/?#@\\".includes(ch)) {
       message = `Enter only the host, without a scheme, path, query or user name. "${ch}" belongs to the URL around the host, not to the host.`;
+    } else if (ch.charCodeAt(0) < 0x20 || ch === "\x7f") {
+      message = "A control character is not part of any IPv4 notation.";
     } else {
       message = `"${ch}" is not part of any IPv4 notation.`;
     }

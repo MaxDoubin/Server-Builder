@@ -443,6 +443,8 @@ export interface CommandItem {
   role: ItemRole;
   word?: Word;
   redirect?: Redirect;
+  /** An operator inside [[ ]], such as && or <, which is part of the test. */
+  op?: string;
   /** argv index, for role "arg". */
   index?: number;
 }
@@ -452,8 +454,12 @@ export interface ParsedCommand {
   argv: Word[];
   /** The operator or newline that ended this command, or null at the end. */
   terminator: string | null;
-  /** "header" for for/case/select/function lines whose words are not argv. */
-  kind: "simple" | "header" | "conditional";
+  /**
+   * "header" for for/case/select/function lines whose words are not argv,
+   * "conditional" for [[ ]] and "arithmetic" for (( )), whose contents are
+   * not split into fields or globbed.
+   */
+  kind: "simple" | "header" | "conditional" | "arithmetic";
 }
 
 export interface SplitOk {
@@ -1136,6 +1142,19 @@ function splitInner(src: string): SplitResult {
       continue;
     }
 
+    if (c === "(" && src[i + 1] === "(" && !word) {
+      // (( expr )) at the start of a command is a bash arithmetic command.
+      const last = tokens[tokens.length - 1];
+      const atCommandStart = !last || last.type === "newline" || (last.type === "op" && !REDIRECT_OPS.has(last.op));
+      const j = atCommandStart ? findClose(src, i + 2, ")") : -1;
+      if (j >= 0 && src[j + 1] === ")") {
+        const source = src.slice(i, j + 2);
+        add(i, { kind: "arith", source, value: source, quoted: true });
+        i = j + 2;
+        continue;
+      }
+    }
+
     if (OP_START.has(c)) {
       const op = OPERATORS.find((o) => src.startsWith(o, i)) ?? c;
       let fd: string | null = null;
@@ -1250,6 +1269,7 @@ function assemble(tokens: Token[], warnings: string[], comments: string[], trunc
     seenCommandWord = false;
   };
   let prevOp: string | null = null;
+  let condOpen = false;
 
   for (const t of tokens) {
     if (t.type === "word") {
@@ -1281,6 +1301,13 @@ function assemble(tokens: Token[], warnings: string[], comments: string[], trunc
           current.kind = "conditional";
           current.items.push({ role: "keyword", word: w });
           seenCommandWord = true;
+          condOpen = true;
+          continue;
+        }
+        if (w.segments.length === 1 && w.segments[0].kind === "arith" && w.source.startsWith("((")) {
+          current.kind = "arithmetic";
+          current.items.push({ role: "keyword", word: w });
+          seenCommandWord = true;
           continue;
         }
         const first = w.segments[0];
@@ -1295,8 +1322,14 @@ function assemble(tokens: Token[], warnings: string[], comments: string[], trunc
         current.argv.push(w);
       } else {
         const closing = current.kind === "conditional" && bare && w.value === "]]";
+        if (closing) condOpen = false;
         current.items.push({ role: closing ? "keyword" : "arg", word: w });
       }
+      continue;
+    }
+    if (t.type === "op" && condOpen && current.kind === "conditional" && ["&&", "||", "(", ")", "<", ">"].includes(t.op)) {
+      // Inside [[ ]] these are test operators, not separators or redirections.
+      current.items.push({ role: "keyword", op: t.op });
       continue;
     }
     if (t.type === "op" && REDIRECT_OPS.has(t.op)) {
@@ -1322,6 +1355,7 @@ function assemble(tokens: Token[], warnings: string[], comments: string[], trunc
       extra.add(`${op} has no command before it, which bash rejects as a syntax error.`);
     }
     finish(op);
+    condOpen = false;
     prevOp = op;
     continue;
   }

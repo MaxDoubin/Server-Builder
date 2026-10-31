@@ -90,6 +90,11 @@ const TD_DIM = "py-2 pr-4 font-mono-tight text-xs text-[hsl(var(--brand-ash))]";
 const BIG =
   "font-display text-[clamp(2rem,6vw,3rem)] font-medium leading-none tracking-[-0.03em] text-[hsl(var(--brand-bone))]";
 
+/** "63 Hz" or "1 kHz" from a band's nominal label. */
+function bandName(label: string): string {
+  return label.endsWith("k") ? `${label.slice(0, -1)} kHz` : `${label} Hz`;
+}
+
 function errorOf<T>(parsed: Parsed<T>): string | null {
   return parsed.ok ? null : parsed.error;
 }
@@ -165,6 +170,7 @@ function UnitField<U extends string>({
   units,
   error,
   testId,
+  selectWidth = "w-[5.5rem]",
 }: {
   id: string;
   label: string;
@@ -175,6 +181,8 @@ function UnitField<U extends string>({
   units: { value: U; label: string }[];
   error?: string | null;
   testId?: string;
+  /** Tailwind width class for the unit select. */
+  selectWidth?: string;
 }) {
   const errorId = `${id}-error`;
   return (
@@ -201,7 +209,7 @@ function UnitField<U extends string>({
           onChange={(event) => onUnit(event.target.value as U)}
           aria-label={`${label}, unit`}
           data-testid={testId ? `${testId}-unit` : undefined}
-          className={`${SELECT} w-[5.5rem] shrink-0`}
+          className={`${SELECT} ${selectWidth} shrink-0`}
         >
           {units.map((u) => (
             <option key={u.value} value={u.value}>
@@ -290,7 +298,7 @@ function SoundView() {
   const bandParsed = useMemo(
     () =>
       bands.map((text, i) =>
-        text.trim() === "" ? null : parseDb(text, `the ${OCTAVE_BANDS[i].label} Hz band`),
+        text.trim() === "" ? null : parseDb(text, `the ${bandName(OCTAVE_BANDS[i].label)} band`),
       ),
     [bands],
   );
@@ -588,7 +596,7 @@ function SoundView() {
               <Field
                 key={band.label}
                 id={`db-band-${band.label}`}
-                label={`${band.label} Hz`}
+                label={bandName(band.label)}
                 value={bands[i]}
                 onChange={(value) => setBands((prev) => prev.map((v, j) => (j === i ? value : v)))}
                 error={parsed && !parsed.ok ? parsed.error : null}
@@ -620,7 +628,7 @@ function SoundView() {
                 <tbody>
                   {weighted.bands.map((b) => (
                     <tr key={b.band.label} className="border-b border-[hsl(var(--brand-iron)/0.5)]">
-                      <td className={TD_DIM}>{b.band.label} Hz</td>
+                      <td className={TD_DIM}>{bandName(b.band.label)}</td>
                       <td className={TD}>{formatDb(b.level, 1)}</td>
                       <td className={TD}>{formatSignedDb(aWeighting(b.band.hz), 1)}</td>
                       <td className={TD}>{formatDb(b.a, 1)}</td>
@@ -665,9 +673,9 @@ const DISTANCE_UNITS: { value: DistanceUnit; label: string }[] = [
 
 const FREQUENCY_EXAMPLES: { label: string; value: string; unit: FrequencyUnit }[] = [
   { label: "915 MHz", value: "915", unit: "MHz" },
-  { label: "2.4 GHz", value: "2.437", unit: "GHz" },
-  { label: "5 GHz", value: "5.5", unit: "GHz" },
-  { label: "6 GHz", value: "6.5", unit: "GHz" },
+  { label: "2.4 GHz", value: "2.4", unit: "GHz" },
+  { label: "5.8 GHz", value: "5.8", unit: "GHz" },
+  { label: "6 GHz", value: "6", unit: "GHz" },
 ];
 
 type PathMode = "fspl" | "manual";
@@ -676,7 +684,7 @@ function RfView() {
   const [powerText, setPowerText] = useState("20");
   const [powerUnit, setPowerUnit] = useState<PowerUnit>("dBm");
 
-  const [freqText, setFreqText] = useState("2.437");
+  const [freqText, setFreqText] = useState("2.4");
   const [freqUnit, setFreqUnit] = useState<FrequencyUnit>("GHz");
   const [distText, setDistText] = useState("1");
   const [distUnit, setDistUnit] = useState<DistanceUnit>("km");
@@ -789,8 +797,9 @@ function RfView() {
             <div className="mt-4" data-testid="output-power">
               <ToolResult label="dBm" value={`${formatDb(powerParsed.value.dbm)} dBm`} testId="text-dbm" />
               <ToolResult label="dBW" value={`${formatDb(powerParsed.value.dbw)} dBW`} />
-              <ToolResult label="Watts" value={formatSi(powerParsed.value.watts, "W")} testId="text-watts" />
-              <ToolResult label="Milliwatts" value={`${formatNumber(powerParsed.value.watts * 1e3, 5)} mW`} />
+              <ToolResult label="Watts" value={`${formatNumber(powerParsed.value.watts, 4)} W`} testId="text-watts" />
+              <ToolResult label="Milliwatts" value={`${formatNumber(powerParsed.value.watts * 1e3, 4)} mW`} />
+              <ToolResult label="With SI prefix" value={formatSi(powerParsed.value.watts, "W")} testId="text-watts-si" />
             </div>
           ) : null}
           <p className={HINT_TEXT}>
@@ -1031,8 +1040,8 @@ function RfView() {
 
 const RATIO_KINDS: { value: RatioKind; label: string }[] = [
   { value: "db", label: "dB" },
-  { value: "power", label: "power x" },
-  { value: "amplitude", label: "ampl. x" },
+  { value: "power", label: "power ratio" },
+  { value: "amplitude", label: "amplitude ratio" },
 ];
 
 function RatioView() {
@@ -1056,6 +1065,7 @@ function RatioView() {
           units={RATIO_KINDS}
           error={errorOf(parsed)}
           testId="input-ratio"
+          selectWidth="w-[9.5rem]"
         />
         {parsed.ok ? (
           <div className="mt-4" data-testid="output-ratio">

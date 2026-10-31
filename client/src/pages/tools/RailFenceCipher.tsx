@@ -15,6 +15,7 @@ import {
   BRUTE_TOP,
   BRUTE_WORK_BUDGET,
   MAX_CHARS,
+  MAX_RAILS,
   bruteForce,
   checkKey,
   cycleLength,
@@ -60,7 +61,7 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
   {
     id: "all",
     label: "Transpose everything",
-    hint: "Spaces and punctuation take a place on the fence like any letter. This is what CyberChef does, and what most CTF ciphertexts were made with.",
+    hint: "Spaces and punctuation take a place on the fence like any letter. This is what CyberChef does, and what many CTF ciphertexts were made with.",
   },
   {
     id: "strip",
@@ -277,7 +278,7 @@ export function RailFenceCipher() {
 
   function stepRails(by: number) {
     const current = key.rails >= 2 ? key.rails : 3;
-    setRailsText(String(Math.min(1000, Math.max(2, current + by))));
+    setRailsText(String(Math.min(MAX_RAILS, Math.max(2, current + by))));
   }
 
   function stepOffset(by: number) {
@@ -696,9 +697,9 @@ export function RailFenceCipher() {
               <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 Fitness is the sum of log10 probabilities of every letter pair and every run of four
                 letters, divided by the number of letters. Higher is more English. English prose usually
-                lands between about -6 and -7 on this scale, and the same letters scrambled score lower.
-                Short messages, under about fifteen letters, give the score too little to work with, so
-                read the top few rows.
+                scores between about -6 and -7 on this scale, short phrases of common words a little
+                higher, and the same letters scrambled score around -7.5. Short messages, under about
+                fifteen letters, give the score too little to work with, so read the top few rows.
                 {bruteOk.offsets
                   ? " With offsets on, a wrong offset often yields the right text rotated by a character or two, which scores almost as well."
                   : ""}

@@ -476,11 +476,13 @@ export function AffineCipher() {
             ) : (
               <>
                 <ol className="list-decimal space-y-2 pl-5 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  {solved.steps.map((step) => (
-                    <li key={step}>{step}</li>
+                  {solved.steps.map((step, i) => (
+                    <li key={i}>{step}</li>
                   ))}
                 </ol>
                 <p
+                  aria-live="polite"
+                  data-testid="text-solve-verdict"
                   className={`mt-4 rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${
                     solved.keys.length === 1
                       ? "border-[hsl(var(--brand-signal)/0.45)] bg-[hsl(var(--brand-signal)/0.07)] text-[hsl(var(--brand-signal))]"

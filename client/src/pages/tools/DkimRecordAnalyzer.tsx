@@ -28,7 +28,6 @@ import {
 
 const INPUT =
   "w-full resize-y break-all rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none";
-const LABEL = "font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
 const PILL =
   "inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]";
 const ERROR_BOX =
@@ -73,9 +72,9 @@ function FindingList({ findings, testId }: { findings: Finding[]; testId: string
   }
   return (
     <ul className="space-y-2" data-testid={testId}>
-      {findings.map((finding) => (
+      {findings.map((finding, i) => (
         <li
-          key={finding.text}
+          key={i}
           className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE[finding.tone]}`}
         >
           <span className="sr-only">{TONE_WORD[finding.tone]}: </span>
@@ -432,7 +431,7 @@ export function DkimRecordAnalyzer() {
             value={signature}
             onChange={setSignature}
             error={sigOutcome.kind === "error" ? sigOutcome.message : null}
-            hint="It names the domain and selector to query, and with a key above the two are checked against each other."
+            hint="The signature names the domain and selector whose key verifies it. With a key record pasted too, the two are checked against each other."
             placeholder="DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=example.com; s=s2026; ..."
             examples={EXAMPLE_SIGNATURES}
             testId="input-dkim-signature"
@@ -448,18 +447,22 @@ export function DkimRecordAnalyzer() {
           {summary}
         </p>
 
-        {key && sig ? (
-          <ToolPanel title="Key and signature together">
-            <FindingList findings={pair} testId="list-pair-findings" />
-            <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              Without the message itself, this checks only whether the key could have made the signature. Verification needs the
-              exact headers and body that were signed.
-            </p>
-          </ToolPanel>
-        ) : null}
+        {key || sig ? (
+          <div className="space-y-6" data-testid="output-dkim">
+            {key && sig ? (
+              <ToolPanel title="Key and signature together">
+                <FindingList findings={pair} testId="list-pair-findings" />
+                <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                  Without the message itself, this checks only whether the key could have made the signature. Verification needs
+                  the exact headers and body that were signed.
+                </p>
+              </ToolPanel>
+            ) : null}
 
-        {key ? <KeyResults record={key} /> : null}
-        {sig ? <SignatureResults sig={sig} /> : null}
+            {key ? <KeyResults record={key} /> : null}
+            {sig ? <SignatureResults sig={sig} /> : null}
+          </div>
+        ) : null}
       </div>
     </ToolShell>
   );

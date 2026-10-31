@@ -328,6 +328,11 @@ function SuggestedBlock({ audit }: { audit: HeaderAudit }) {
   );
 }
 
+/** Long values are cut for display; the analysis always reads them whole. */
+function clip(value: string): string {
+  return value.length > 600 ? `${value.slice(0, 600)}...` : value;
+}
+
 function HeaderTable({ audit }: { audit: HeaderAudit }) {
   return (
     <div className="overflow-x-auto">
@@ -354,7 +359,7 @@ function HeaderTable({ audit }: { audit: HeaderAudit }) {
                   {h.name}
                 </th>
                 <td className="break-all py-2.5 pr-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  {category === "cookie" ? maskCookie(h.value) : h.value.length > 600 ? `${h.value.slice(0, 600)}...` : h.value}
+                  {clip(category === "cookie" ? maskCookie(h.value) : h.value)}
                 </td>
                 <td className="whitespace-nowrap py-2.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
                   {CATEGORY_LABEL[category]}

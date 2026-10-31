@@ -236,7 +236,7 @@ interface Coordinate {
   text: string;
 }
 
-const KNOCK_MARKS = new Set([".", "•", "·", "∙", "*", "x", "X"]);
+const KNOCK_MARKS = new Set([".", "\u2022", "\u00b7", "\u2219", "*", "x", "X"]);
 
 function describe(ch: string): string {
   const cp = ch.codePointAt(0) ?? 0;
@@ -333,6 +333,10 @@ function scan(text: string, square: Square): { ok: true; words: Coordinate[][] }
   return { ok: true, words };
 }
 
+function count(n: number): string {
+  return `${n} ${n === 1 ? "coordinate" : "coordinates"}`;
+}
+
 export function decode(input: string, square: Square): DecodeResult {
   const { text, truncated } = capInput(input);
   const scanned = scan(text, square);
@@ -348,8 +352,8 @@ export function decode(input: string, square: Square): DecodeResult {
         ok: false,
         error:
           scanned.words.length > 1
-            ? `Word ${w + 1} has ${coords.length} coordinates, an odd number. Every letter takes two, row then column, so one is missing or extra. The unpaired one starts at position ${lastOne.at + 1}.`
-            : `There are ${coords.length} coordinates, an odd number. Every letter takes two, row then column, so one is missing or extra.`,
+            ? `Word ${w + 1} has ${count(coords.length)}, an odd number. Every letter takes two, row then column, so one is missing or extra. The last one is at position ${lastOne.at + 1}.`
+            : `There ${coords.length === 1 ? "is" : "are"} ${count(coords.length)}, an odd number. Every letter takes two, row then column, so one is missing or extra.`,
         at: lastOne.at,
       };
     }

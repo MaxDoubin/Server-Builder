@@ -164,7 +164,7 @@ export const DISK_PRESETS: DiskPreset[] = [
     id: "ssd-nvme",
     label: "NVMe SSD",
     iops: 100000,
-    note: "Typical steady-state mixed 4 KiB figure, deliberately conservative. Datasheet read peaks run to the hundreds of thousands.",
+    note: "Typical steady-state mixed 4 KiB figure, deliberately conservative. Datasheet read peaks run from several hundred thousand to over a million.",
     typical: true,
   },
 ];

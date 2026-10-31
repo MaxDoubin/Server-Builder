@@ -464,7 +464,7 @@ export function UpsRuntimeCalculator() {
                 value={efficiency}
                 onChange={setEfficiency}
                 parsed={efficiencyParsed}
-                hint="DC to AC. Often 85 to 95 near rated load, lower at light load."
+                hint="DC to AC. Often 80 to 95 near rated load, lower at light load."
                 placeholder="90"
                 testId="input-efficiency"
               />

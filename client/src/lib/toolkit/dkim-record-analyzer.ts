@@ -175,7 +175,11 @@ export function extractTxt(input: string): Result<TxtRecord> {
     const firstEq = text.indexOf("=");
     const txt = /(?:^|\s)TXT\s+/i.exec(text);
     if (txt && (firstEq < 0 || txt.index < firstEq)) text = text.slice(txt.index + txt[0].length);
-    text = text.replace(/^\(\s*/, "").replace(/\s*\)\s*$/, "").trim();
+    // String operations rather than /\s*\)\s*$/, which goes quadratic on a long run of spaces.
+    text = text.trim();
+    if (text.startsWith("(")) text = text.slice(1);
+    if (text.endsWith(")")) text = text.slice(0, -1);
+    text = text.trim();
     return ok({ text, strings: null, longest: utf8Length(text) });
   }
 
@@ -635,10 +639,10 @@ function readRsa(
 }
 
 /**
- * Reads the decoded p= bytes. RFC 6376 section 3.6.1 names an RSAPublicKey,
- * but the key generators in common use (and the RFC's own appendix C)
- * publish a SubjectPublicKeyInfo, and verifiers accept both, so both are
- * read here. An Ed25519 key is the bare 32 byte value (RFC 8463).
+ * Reads the decoded p= bytes. RFC 6376 describes the RSA key as an
+ * RSAPublicKey, but the key generators in common use (and the RFC's own
+ * appendix C) publish a SubjectPublicKeyInfo, and verifiers accept both, so
+ * both are read here. An Ed25519 key is the bare 32 byte value (RFC 8463).
  */
 export function decodePublicKey(bytes: Uint8Array, keyType: string): Result<PublicKeyInfo> {
   if (bytes.length === 0) return fail("The key is empty.");
@@ -942,7 +946,7 @@ export function analyzeKeyRecord(input: string): Outcome<KeyRecord> {
   if (testing) {
     findings.push({
       tone: "warn",
-      text: "t=y marks the domain as testing DKIM. RFC 6376 section 3.6.1 tells verifiers to treat its mail no worse than unsigned mail even when the signature fails. That is right during rollout and a gap afterward, so remove the flag once signing is stable.",
+      text: "t=y marks the domain as testing DKIM. RFC 6376 section 3.6.1 tells verifiers not to treat its mail differently from unsigned mail, even when a signature fails to verify. That is right during rollout and a gap afterward, so remove the flag once signing is stable.",
     });
   }
   if (strict) {
@@ -1284,7 +1288,7 @@ export function analyzeSignature(input: string, nowMs: number): Outcome<Signatur
     hash = "sha256";
     findings.push({
       tone: "info",
-      text: "a=ed25519-sha256 (RFC 8463). A receiver that does not support it treats this one signature as failed, which is why senders usually add an RSA signature beside it.",
+      text: "a=ed25519-sha256 (RFC 8463). A receiver that does not implement it cannot verify this signature and judges the message on its other signatures, which is why senders usually add an RSA signature beside it.",
     });
   } else if (algorithm !== null) {
     findings.push({ tone: "danger", text: `a=${clip(algorithm)} is not an algorithm DKIM defines, so no verifier can check it.` });
@@ -1571,7 +1575,7 @@ export function crossCheck(key: KeyRecord, sig: SignatureInfo): Finding[] {
     }
   }
   if (key.testing) {
-    findings.push({ tone: "info", text: "The key is in testing mode (t=y), so a failure here should not make a receiver treat the message worse than unsigned mail." });
+    findings.push({ tone: "info", text: "The key is in testing mode (t=y), so a receiver should treat the message no differently from unsigned mail whatever the result." });
   }
   return sortFindings(findings);
 }

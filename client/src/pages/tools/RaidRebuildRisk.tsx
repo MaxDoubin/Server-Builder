@@ -386,7 +386,7 @@ export function RaidRebuildRisk() {
             <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Every bit read is treated as an independent trial that fails at exactly the data sheet rate, and any URE
               on a degraded RAID 5 counts as a failed rebuild. Real drives usually do much better: the data sheet
-              figure is a ceiling the maker guarantees against, not a measured average; errors cluster on a few
+              figure is an upper limit the maker commits to, not a measured average; errors cluster on a few
               failing drives instead of spreading evenly; and regular scrubbing repairs weak sectors before a rebuild
               needs them. Read these numbers as a comparison between layouts and ratings, not a forecast for one
               array.
@@ -468,7 +468,7 @@ export function RaidRebuildRisk() {
               divides the expected error count by ten.
             </p>
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[560px] border-collapse text-left" data-testid="table-ure-ratings">
+              <table className="w-full min-w-[680px] border-collapse text-left" data-testid="table-ure-ratings">
                 <caption className="sr-only">Rebuild risk for the same data read under each URE rating</caption>
                 <thead>
                   <tr className="border-b border-[hsl(var(--brand-iron))]">
@@ -501,16 +501,14 @@ export function RaidRebuildRisk() {
                         </td>
                         <td className="py-3 pr-4 font-mono-tight text-sm">
                           {survivorCount !== null && survivorCount >= 2 ? (
-                            <span className={riskTone(row.any.fail)}>{formatPercent(row.any.fail, row.any.survive)}</span>
+                            <Chance fail={row.any.fail} survive={row.any.survive} />
                           ) : (
                             <span className="text-[hsl(var(--brand-ash))]">n/a</span>
                           )}
                         </td>
                         <td className="py-3 font-mono-tight text-sm">
                           {survivorCount !== null && survivorCount >= 3 ? (
-                            <span className={riskTone(row.pair.fail)}>
-                              {formatPercent(row.pair.fail, row.pair.survive)}
-                            </span>
+                            <Chance fail={row.pair.fail} survive={row.pair.survive} />
                           ) : (
                             <span className="text-[hsl(var(--brand-ash))]">n/a</span>
                           )}

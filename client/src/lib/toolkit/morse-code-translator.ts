@@ -267,9 +267,11 @@ export function encodeText(input: string): EncodeResult {
       const offset = window.indexOf(">");
       if (offset !== -1) {
         const close = i + 1 + offset;
-        const inner = window.slice(0, offset).join("").toUpperCase();
-        if (/^[A-Z0-9]{2,6}$/.test(inner)) {
-          const sym = prosignSymbol(inner);
+        const raw = window.slice(0, offset).join("");
+        // Test the letters before upper-casing: "\u00DF".toUpperCase() is "SS",
+        // which would otherwise turn <\u00DF> into the prosign <SS>.
+        if (/^[A-Za-z0-9]{2,6}$/.test(raw)) {
+          const sym = prosignSymbol(raw.toUpperCase());
           if (sym) {
             current.push(sym);
             i = close;

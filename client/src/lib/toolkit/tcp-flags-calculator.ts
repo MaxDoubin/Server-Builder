@@ -10,6 +10,9 @@
  *
  * Throughout this file a flags value is that 12-bit number.
  *
+ * tcpdump letters follow print-tcp.c: F S R P . U E W, and since tcpdump
+ * 4.99.7 a lowercase e for AE. Older tcpdump releases leave AE out.
+ *
  * Pure functions, no React and no DOM.
  */
 
@@ -41,7 +44,7 @@ export const FLAGS: FlagDef[] = [
     meaning:
       "Low bit of byte 12. Used by Accurate ECN negotiation and feedback. It was the ECN nonce (NS) bit until RFC 8311 retired that experiment.",
     tcpdumpName: null,
-    letter: null,
+    letter: "e",
     wiresharkField: null,
   },
   {
@@ -163,11 +166,13 @@ export function setFlags(value: number): FlagDef[] {
 }
 
 /**
- * tcpdump's bracket notation. Order follows tcpdump's own table: F, S, R,
- * P, then "." for ACK, U, E, W. No flags at all prints as [none].
+ * tcpdump's bracket notation. Order follows tcpdump's own table
+ * (tcp_flag_values in print-tcp.c): F, S, R, P, then "." for ACK, U, E, W,
+ * and e for AE (tcpdump 4.99.7 and later). No flags prints as [none].
+ * The reserved bits have no letter.
  */
 export function tcpdumpNotation(value: number): string {
-  const order: FlagKey[] = ["fin", "syn", "rst", "psh", "ack", "urg", "ece", "cwr"];
+  const order: FlagKey[] = ["fin", "syn", "rst", "psh", "ack", "urg", "ece", "cwr", "ae"];
   const letters = order
     .filter((k) => value & BY_KEY[k].bit)
     .map((k) => BY_KEY[k].letter)
@@ -211,6 +216,7 @@ const NAME_BITS: Record<string, number> = {
   pshack: 0x018,
 };
 
+/** Case matters for E: uppercase E is ECE and lowercase e is AE. */
 const LETTER_BITS: Record<string, number> = {
   F: 0x001,
   S: 0x002,
@@ -220,26 +226,53 @@ const LETTER_BITS: Record<string, number> = {
   U: 0x020,
   E: 0x040,
   W: 0x080,
+  e: 0x100,
 };
 
 const ACCEPTED =
   "Type a number (0x12, 18, 0b00010010), flag names (SYN ACK), or tcpdump's form ([S.]).";
 
 function fromLetters(letters: string): ParsedFlags {
-  if (letters.toLowerCase() === "none") return { ok: true, value: 0, dataOffset: null, source: "tcpdump notation" };
+  if (letters.trim().toLowerCase() === "none") return { ok: true, value: 0, dataOffset: null, source: "tcpdump notation" };
+  if (letters.trim() === "") {
+    return { ok: false, error: "The brackets are empty. tcpdump prints [none] when no flags are set." };
+  }
   let value = 0;
   for (const raw of letters) {
-    const char = raw === "." ? raw : raw.toUpperCase();
+    if (/\s/.test(raw)) continue;
+    // Lowercase f, s, r, p, u and w are accepted as their uppercase letter,
+    // since they mean nothing else. Lowercase e is AE, not ECE.
+    const char = raw === "e" || raw === "." ? raw : raw.toUpperCase();
     const bit = LETTER_BITS[char];
     if (bit === undefined) {
       return {
         ok: false,
-        error: `"${raw}" is not a tcpdump flag letter. tcpdump uses F, S, R, P, U, E, W, and a dot for ACK.`,
+        error: `${quoteChar(raw)} is not a tcpdump flag letter. tcpdump uses F, S, R, P, U, E, W, a dot for ACK, and a lowercase e for AE.`,
       };
     }
     value |= bit;
   }
   return { ok: true, value, dataOffset: null, source: "tcpdump notation" };
+}
+
+/** A character for an error message, with its code point when it would be invisible. */
+function quoteChar(char: string): string {
+  return /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(char)
+    ? `"${char}"`
+    : `U+${(char.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
+/**
+ * A token for an error message: cut short so a pasted paragraph stays
+ * readable, with invisible characters shown as code points.
+ */
+function quoteToken(token: string): string {
+  const chars = Array.from(token);
+  const shown = chars
+    .slice(0, 24)
+    .map((c) => (/^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c) ? c : `<${quoteChar(c)}>`))
+    .join("");
+  return `"${shown}${chars.length > 24 ? "..." : ""}"`;
 }
 
 const TOO_BIG: ParsedFlags = {
@@ -270,12 +303,15 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   const bracket = /^\[([^\]]*)\]$/.exec(text);
   if (bracket) return fromLetters(bracket[1]);
 
+  // Leading zeros are stripped before the length checks, so 0x00000012
+  // is 0x12 rather than "too big". The length caps keep parseInt exact.
   if (/^0x[0-9a-f]+$/i.test(text)) {
-    if (text.length > 10) return TOO_BIG;
-    return fromNumber(parseInt(text.slice(2), 16), "hex");
+    const digits = text.slice(2).replace(/^0+(?=.)/, "");
+    if (digits.length > 4) return TOO_BIG;
+    return fromNumber(parseInt(digits, 16), "hex");
   }
   if (/^0b[01][01_ ]*$/i.test(text)) {
-    const digits = text.slice(2).replace(/[_ ]/g, "");
+    const digits = text.slice(2).replace(/[_ ]/g, "").replace(/^0+(?=.)/, "");
     if (digits.length > 16) return TOO_BIG;
     return fromNumber(parseInt(digits, 2), "binary");
   }
@@ -283,32 +319,38 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   if (/^[01 _]+$/.test(text) && [8, 9, 12, 16].includes(bare.length)) {
     return fromNumber(parseInt(bare, 2), "binary");
   }
-  if (/^-\s*\d/.test(text)) return { ok: false, error: "Flags are bits, so the value is never negative." };
+  if (/^-\s*(\d|0x|0b)/i.test(text)) return { ok: false, error: "Flags are bits, so the value is never negative." };
   if (/^\d+$/.test(text)) {
-    if (text.length > 7) return TOO_BIG;
-    return fromNumber(Number(text), "decimal");
+    const digits = text.replace(/^0+(?=.)/, "");
+    if (digits.length > 5) return TOO_BIG;
+    return fromNumber(Number(digits), "decimal");
   }
 
-  // Bare tcpdump letters, such as S. or FPU. Uppercase only, as tcpdump
-  // prints them, so that a lowercase "fe" reads as forgotten hex rather
-  // than quietly meaning FIN plus ECE.
-  if (/^[FSRPUEW.]+$/.test(text) && text.length <= 9) return fromLetters(text);
+  // Bare tcpdump letters, such as S. or FPU or SEWe. Uppercase as tcpdump
+  // prints them (lowercase e is AE), and at least one uppercase letter or
+  // the dot, so that a lowercase "fe" reads as forgotten hex rather than
+  // quietly meaning FIN plus AE.
+  if (/^[FSRPUEWe.]+$/.test(text) && /[FSRPUEW.]/.test(text) && text.length <= 9) return fromLetters(text);
 
   const tokens = text
     .toLowerCase()
     .replace(/ecn[\s-]*echo/g, "ece")
     .split(/[\s,+|/&-]+/)
     .filter((t) => t !== "");
+  // "Xmas scan" and "NULL scan" are how people name them; "scan" adds no bits.
+  const named = tokens.length > 1 ? tokens.filter((t) => t !== "scan") : tokens;
+  if (named.length === 0) return { ok: false, error: ACCEPTED };
   let value = 0;
-  for (const token of tokens) {
+  for (const token of named) {
     const bit = NAME_BITS[token];
     if (bit === undefined) {
-      if (/^[0-9a-f]+$/.test(token)) {
+      if (/^[0-9a-f]{1,4}$/.test(token)) {
         return { ok: false, error: `"${token}" looks like hex. Write it with a 0x prefix, as in 0x${token}.` };
       }
+      if (/^[0-9a-f]+$/.test(token)) return TOO_BIG;
       return {
         ok: false,
-        error: `"${token}" is not a flag name. Use FIN, SYN, RST, PSH, ACK, URG, ECE, CWR or AE. ${ACCEPTED}`,
+        error: `${quoteToken(token)} is not a flag name. Use FIN, SYN, RST, PSH, ACK, URG, ECE, CWR or AE. ${ACCEPTED}`,
       };
     }
     value |= bit;
@@ -423,23 +465,41 @@ export const COMBOS: Combo[] = [
 export interface Explanation {
   name: string;
   combo: Combo | null;
-  /** Set when AE is on and the other eight bits match a known combination. */
+  /**
+   * Set when the value is a known combination plus bits outside it: the
+   * reserved bits, or AE on a combination that does not include AE.
+   */
   nearCombo: Combo | null;
+  /** Which extra bits nearCombo leaves out. */
+  nearExtra: "ae" | "reserved" | "ae+reserved" | null;
   warnings: string[];
 }
 
 export function explain(value: number): Explanation {
   const v = value & FLAGS_MASK;
   const low9 = v & 0x1ff;
-  const combo = (v & RESERVED_MASK) === 0 ? COMBOS.find((c) => c.value === low9) ?? null : null;
-  const nearCombo =
-    !combo && (v & 0x100) !== 0 ? COMBOS.find((c) => c.value === (v & 0xff)) ?? null : null;
+  const reserved = (v & RESERVED_MASK) !== 0;
+  const find = (bits: number) => COMBOS.find((c) => c.value === bits) ?? null;
+  const combo = reserved ? null : find(low9);
+  let nearCombo: Combo | null = null;
+  let nearExtra: Explanation["nearExtra"] = null;
+  if (!combo) {
+    const withAe = reserved ? find(low9) : null;
+    const withoutAe = (v & 0x100) !== 0 ? find(v & 0xff) : null;
+    if (withAe) {
+      nearCombo = withAe;
+      nearExtra = "reserved";
+    } else if (withoutAe) {
+      nearCombo = withoutAe;
+      nearExtra = reserved ? "ae+reserved" : "ae";
+    }
+  }
 
   const has = (key: FlagKey) => (v & BY_KEY[key].bit) !== 0;
   const warnings: string[] = [];
   if (v & RESERVED_MASK) {
     warnings.push(
-      "Reserved bits are set. RFC 9293 says they must be zero in generated segments and ignored on receipt, so a sender setting them is crafting packets or broken.",
+      "Reserved bits are set. RFC 9293 says they must be zero in generated segments and ignored by a receiver that implements no feature using them, so a sender setting them is crafting packets, broken, or running an experiment.",
     );
   }
   if (has("syn") && has("fin") && combo?.value !== 0x003) {
@@ -459,7 +519,7 @@ export function explain(value: number): Explanation {
     );
   }
 
-  return { name: combo ? combo.name : comboName(v), combo, nearCombo, warnings };
+  return { name: combo ? combo.name : comboName(v), combo, nearCombo, nearExtra, warnings };
 }
 
 /* -------------------------------------------------------------- filters */
@@ -482,10 +542,13 @@ export function tcpdumpFilters(value: number): Filter[] {
   const high = (v >> 8) & 0x0f;
   const out: Filter[] = [];
 
-  out.push({
-    label: "Exactly these flags",
-    filter: high ? `tcp[12:2] & 0x0fff == ${hex3(v)}` : `tcp[tcpflags] == ${hex2(low)}`,
-  });
+  // tcp[tcpflags] is byte 13 only, so the short form ignores AE and the
+  // reserved bits; tcp[12:2] & 0x0fff tests all twelve.
+  out.push(
+    high
+      ? { label: "Exactly these flags, all 12 bits", filter: `tcp[12:2] & 0x0fff == ${hex3(v)}` }
+      : { label: "Exactly these flags in byte 13", filter: `tcp[tcpflags] == ${hex2(low)}` },
+  );
   if (v === 0) return out;
 
   const names = FLAGS.filter((f) => f.tcpdumpName && low & f.bit)

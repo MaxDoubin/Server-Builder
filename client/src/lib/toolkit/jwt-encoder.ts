@@ -19,8 +19,6 @@ export const MAX_TOKEN_CHARS = 65_536;
 export const MAX_SECRET_BYTES = 4096;
 /** Longest PEM block accepted, in characters. */
 export const MAX_PEM_CHARS = 16_384;
-/** Deepest JSON nesting walked when looking for rounded numbers. */
-const MAX_WALK_DEPTH = 64;
 
 /* -------------------------------------------------------------- algorithms */
 
@@ -221,20 +219,33 @@ export function parseJsonObject(text: string, label: string): ParsedObject {
   return { ok: true, value: value as JsonObject };
 }
 
-/** Integers past 2^53 that JSON.parse has already rounded, as written in the source. */
-export function roundedIntegers(text: string, value: unknown): string[] {
+/**
+ * Integer literals in valid JSON text that JSON.parse cannot hold exactly
+ * (past 2^53), as the reader typed them. Strings are skipped, so a long
+ * numeric string is not reported.
+ */
+export function roundedIntegers(text: string): string[] {
   const found: string[] = [];
-  const walk = (v: unknown, depth: number) => {
-    if (depth > MAX_WALK_DEPTH || found.length >= 5) return;
-    if (typeof v === "number" && Number.isInteger(v) && !Number.isSafeInteger(v)) found.push(String(v));
-    else if (Array.isArray(v)) v.forEach((x) => walk(x, depth + 1));
-    else if (v && typeof v === "object") Object.values(v as JsonObject).forEach((x) => walk(x, depth + 1));
-  };
-  walk(value, 0);
-  if (found.length === 0) return [];
-  // Report the literals the reader typed, not the rounded values.
-  const literals = text.match(/-?\d{16,}/g) ?? [];
-  return literals.length ? [...new Set(literals)].slice(0, 5) : found;
+  let i = 0;
+  while (i < text.length && found.length < 5) {
+    const c = text[i];
+    if (c === '"') {
+      i++;
+      while (i < text.length && text[i] !== '"') i += text[i] === "\\" ? 2 : 1;
+      i++;
+      continue;
+    }
+    if (c === "-" || (c >= "0" && c <= "9")) {
+      const m = /^-?\d+(\.\d+)?([eE][+-]?\d+)?/.exec(text.slice(i, i + 400));
+      const literal = m ? m[0] : c;
+      const n = Number(literal);
+      if (Number.isInteger(n) && !Number.isSafeInteger(n)) found.push(literal);
+      i += literal.length;
+      continue;
+    }
+    i++;
+  }
+  return [...new Set(found)];
 }
 
 /** Set one claim to a NumericDate (RFC 7519 section 2) and pretty print the result. */
@@ -299,7 +310,7 @@ export function secretNotes(text: string, format: SecretFormat, bytes: Uint8Arra
   } else if (format === "text" && bytes.length >= alg.hashBytes && /^[\x20-\x7e]+$/.test(text) && !/^[A-Za-z0-9+/_-]{40,}={0,2}$/.test(text.trim())) {
     notes.push({
       tone: "info",
-      text: "A typed passphrase carries far fewer bits than its byte count suggests. A secret of random bytes, Base64 encoded, gives the full strength the length implies.",
+      text: "If a person chose this secret, it carries far fewer bits than its byte count suggests. Random bytes, Base64 encoded, give the full strength the length implies.",
     });
   }
   if (format === "text" && /^[A-Za-z0-9+/_-]{40,}={0,2}$/.test(text.trim())) {
@@ -510,8 +521,8 @@ function signParams(alg: AlgInfo): AlgorithmIdentifier | EcdsaParams {
   return { name: "HMAC" };
 }
 
-/** Copy into a fresh ArrayBuffer-backed view, which every WebCrypto typing accepts. */
-function buf(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+/** Copy into a fresh ArrayBuffer-backed view, so no caller's buffer is handed to WebCrypto. */
+function buf(bytes: Uint8Array): Uint8Array {
   const out = new Uint8Array(new ArrayBuffer(bytes.length));
   out.set(bytes);
   return out;
@@ -581,11 +592,14 @@ export async function publicPemFromPrivate(alg: AlgInfo, privateKey: CryptoKey):
 /** A fresh test key pair: RSA 2048 with exponent 65537, or P-256. Returned as PKCS#8 and SPKI PEM. */
 export async function generateKeyPair(alg: AlgInfo): Promise<{ privatePem: string; publicPem: string }> {
   const s = subtle();
-  const params =
+  const pair =
     alg.family === "rsa"
-      ? { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: alg.hash }
-      : { name: "ECDSA", namedCurve: "P-256" };
-  const pair = (await s.generateKey(params, true, ["sign", "verify"])) as CryptoKeyPair;
+      ? await s.generateKey(
+          { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: alg.hash },
+          true,
+          ["sign", "verify"],
+        )
+      : await s.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
   const pkcs8 = new Uint8Array(await s.exportKey("pkcs8", pair.privateKey));
   const spki = new Uint8Array(await s.exportKey("spki", pair.publicKey));
   return { privatePem: derToPem(pkcs8, "PRIVATE KEY"), publicPem: derToPem(spki, "PUBLIC KEY") };
@@ -636,8 +650,6 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
   const notes: Note[] = [];
   const header = parseJsonObject(input.headerText, "header");
   if (!header.ok) return { ok: false, error: header.error, notes };
-  const payload = parseJsonObject(input.payloadText, "payload");
-  if (!payload.ok) return { ok: false, error: payload.error, notes };
 
   const h = header.value;
   if (isNoneAlg(h.alg)) {
@@ -655,20 +667,22 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
       notes,
     };
   }
+  const payload = parseJsonObject(input.payloadText, "payload");
+  if (!payload.ok) return { ok: false, error: payload.error, notes };
   if ("crit" in h) {
     notes.push({
       tone: "warn",
       text: "The header has crit. RFC 7515 section 4.1.11 makes every verifier that does not understand the listed extensions reject the token.",
     });
   }
-  if (h.typ !== undefined && h.typ !== "JWT" && h.typ !== "at+jwt" && typeof h.typ === "string" && h.typ.toUpperCase() === "JWT") {
+  if (typeof h.typ === "string" && h.typ !== "JWT" && h.typ.toUpperCase() === "JWT") {
     notes.push({ tone: "info", text: `typ is "${h.typ}". RFC 7519 section 5.1 recommends the uppercase "JWT".` });
   }
-  for (const [label, text, value] of [
-    ["header", input.headerText, h],
-    ["payload", input.payloadText, payload.value],
+  for (const [label, text] of [
+    ["header", input.headerText],
+    ["payload", input.payloadText],
   ] as const) {
-    const rounded = roundedIntegers(text, value);
+    const rounded = roundedIntegers(text);
     if (rounded.length) {
       notes.push({
         tone: "warn",
@@ -676,7 +690,7 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
       });
     }
   }
-  notes.push(...claimNotes(payload.value, Math.floor(Date.now() / 1000), "build"));
+  notes.push(...checkClaims(payload.value, Math.floor(Date.now() / 1000), "build").notes);
 
   // The signed bytes are the compact serialization of what was typed.
   const headerSeg = base64urlEncode(utf8Bytes(JSON.stringify(h)));
@@ -742,14 +756,22 @@ function describeDelta(seconds: number): string {
   return unit(Math.round(abs / 31_557_600), "year");
 }
 
+export interface ClaimCheck {
+  notes: Note[];
+  /** Why a verifier must refuse the token on time grounds, or null. */
+  blocking: string | null;
+}
+
 /** NumericDate checks of RFC 7519 sections 4.1.4 to 4.1.6, with no leeway. */
-export function claimNotes(payload: JsonObject, now: number, mode: "build" | "verify"): Note[] {
+export function checkClaims(payload: JsonObject, now: number, mode: "build" | "verify"): ClaimCheck {
   const notes: Note[] = [];
+  let blocking: string | null = null;
   for (const claim of ["exp", "nbf", "iat"] as const) {
     const v = payload[claim];
     if (v === undefined) continue;
     if (typeof v !== "number" || !Number.isFinite(v)) {
       notes.push({ tone: "danger", text: `${claim} is ${JSON.stringify(v)}, not a number. RFC 7519 section 2 defines a NumericDate as seconds since 1970, so most libraries reject the token.` });
+      if (claim !== "iat") blocking ??= `${claim} is not a NumericDate`;
       continue;
     }
     if (v > 1e11) {
@@ -761,11 +783,15 @@ export function claimNotes(payload: JsonObject, now: number, mode: "build" | "ve
     }
     const delta = v - now;
     if (claim === "exp") {
-      if (delta <= 0) notes.push({ tone: mode === "verify" ? "danger" : "warn", text: `exp is ${formatUtc(v)}, ${describeDelta(delta)} ago. The token has expired, and section 4.1.4 says it must not be accepted.` });
-      else notes.push({ tone: "info", text: `exp is ${formatUtc(v)}, in ${describeDelta(delta)}.` });
+      if (delta <= 0) {
+        notes.push({ tone: mode === "verify" ? "danger" : "warn", text: `exp is ${formatUtc(v)}, ${describeDelta(delta)} ago. The token has expired, and section 4.1.4 says it must not be accepted.` });
+        blocking ??= "the token has expired";
+      } else notes.push({ tone: "info", text: `exp is ${formatUtc(v)}, in ${describeDelta(delta)}.` });
     } else if (claim === "nbf") {
-      if (delta > 0) notes.push({ tone: mode === "verify" ? "danger" : "warn", text: `nbf is ${formatUtc(v)}, ${describeDelta(delta)} from now. Section 4.1.5 says the token must not be accepted before then.` });
-      else notes.push({ tone: "info", text: `nbf is ${formatUtc(v)}, already passed.` });
+      if (delta > 0) {
+        notes.push({ tone: mode === "verify" ? "danger" : "warn", text: `nbf is ${formatUtc(v)}, ${describeDelta(delta)} from now. Section 4.1.5 says the token must not be accepted before then.` });
+        blocking ??= "the token is not valid yet (nbf)";
+      } else notes.push({ tone: "info", text: `nbf is ${formatUtc(v)}, already passed.` });
     } else if (delta > 60) {
       notes.push({ tone: "warn", text: `iat is ${formatUtc(v)}, ${describeDelta(delta)} in the future. Either the issuer's clock is wrong or the claim was edited.` });
     } else {
@@ -775,7 +801,7 @@ export function claimNotes(payload: JsonObject, now: number, mode: "build" | "ve
   if (mode === "build" && payload.exp === undefined) {
     notes.push({ tone: "warn", text: "There is no exp. A token without one is valid until the key changes, because a stateless token cannot be revoked on its own." });
   }
-  return notes;
+  return { notes, blocking };
 }
 
 /* ----------------------------------------------------------- verification */
@@ -962,14 +988,15 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
     return { ok: false, error: cryptoError(e, "The browser refused to run the verification.") };
   }
 
-  if (t.payload) notes.push(...claimNotes(t.payload, now, "verify"));
-  const timeProblem = notes.some((n) => n.tone === "danger" && /^(exp|nbf) /.test(n.text));
+  const claims = t.payload ? checkClaims(t.payload, now, "verify") : { notes: [], blocking: null };
+  notes.push(...claims.notes);
+  const timeProblem = claims.blocking;
   const critProblem = "crit" in t.header;
 
   let verdict: string;
   if (!valid) verdict = `Signature invalid: the ${known} signature does not match this key and these exact bytes.`;
   else if (critProblem) verdict = "Signature valid, but the token is rejected because of crit.";
-  else if (timeProblem) verdict = "Signature valid, but the token is outside its validity window.";
+  else if (timeProblem) verdict = `Signature valid, but the token is rejected: ${timeProblem}.`;
   else verdict = `Signature valid: ${known} with this key over these exact bytes.`;
-  return { ok: true, token: t, alg, signatureValid: valid, accepted: valid && !critProblem && !timeProblem, verdict, notes };
+  return { ok: true, token: t, alg, signatureValid: valid, accepted: valid && !critProblem && timeProblem === null, verdict, notes };
 }

@@ -738,8 +738,8 @@ export function UuidTool() {
               <ul className="mt-4 space-y-2" data-testid="list-batch-findings">
                 {batch.sharedNodes.map((n) => (
                   <li key={n.mac} className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE.warn}`}>
-                    {n.count} UUIDs share the node {n.mac}. Whatever generated them ran on the same machine, or
-                    at least the same network interface.
+                    {n.count} UUIDs share the node {n.mac}. A shared node ID usually means one machine, or one
+                    generator process that picked a random node once and reused it.
                   </li>
                 ))}
                 {batch.span ? (

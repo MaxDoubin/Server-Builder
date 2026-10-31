@@ -557,6 +557,23 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
         }
       }
     }
+    // Whether a URL parses depends only on its authority (RFC 3986 section
+    // 3.2), which ends at the first / ? or #. That is never past the "//" of
+    // the next "://", so these scans add up to one pass over the text, and a
+    // candidate that cannot parse is dropped before its body is read. Without
+    // this, a long run like "http://[http://[..." re-reads up to
+    // MAX_URL_CHARS characters for every candidate in it.
+    let authEnd = k + 3;
+    while (authEnd < e) {
+      const c = text.charCodeAt(authEnd);
+      if (c === 47 || c === 63 || c === 35) break;
+      authEnd++;
+    }
+    // Trimming the body can only reach into the authority when the whole
+    // path was trimmable, and then it yields trimUrlBody(authority), so
+    // checking both forms is exact.
+    const authority = text.slice(k + 3, authEnd);
+    if (!parseUrl(`${scheme}://${authority}`) && !parseUrl(`${scheme}://${trimUrlBody(authority)}`)) continue;
     const body = trimUrlBody(text.slice(k + 3, e));
     const parts = parseUrl(`${scheme}://${body}`);
     if (!parts) continue;
@@ -601,7 +618,9 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     // "from 2001:db8::5: refused" ends the address with a colon of punctuation.
     if (text.charAt(b - 1) === ":" && text.charAt(b - 2) !== ":") b--;
     const cand = text.slice(a, b);
-    if ((cand.match(/:/g) ?? []).length < 2 || !/[0-9A-Fa-f]/.test(cand)) continue;
+    // At least one decimal digit: scoped names in code (abc::def, a::b) are
+    // valid IPv6 text, while a real indicator with no digit at all is rare.
+    if ((cand.match(/:/g) ?? []).length < 2 || !/[0-9]/.test(cand)) continue;
     if (masked(a, b)) continue;
     const value = parseIPv6(cand);
     if (value === null) continue;
@@ -697,6 +716,20 @@ function atSign(style: DefangStyle): string {
   return style.at === "keep" ? "@" : style.at;
 }
 
+/** userinfo@host:port with the @, the host's dots, and an IPv6 literal's colons defanged. The port is kept. */
+function defangAuthority(authority: string, style: DefangStyle): string {
+  const at = authority.lastIndexOf("@");
+  const user = at === -1 ? "" : `${authority.slice(0, at)}${atSign(style)}`;
+  const hostPort = authority.slice(at + 1);
+  if (hostPort.startsWith("[")) {
+    const close = hostPort.indexOf("]");
+    if (close !== -1) return `${user}[${defangIPv6(hostPort.slice(1, close), style)}]${hostPort.slice(close + 1)}`;
+  }
+  const colon = hostPort.indexOf(":");
+  const host = colon === -1 ? hostPort : hostPort.slice(0, colon);
+  return `${user}${defangDots(host, style)}${colon === -1 ? "" : hostPort.slice(colon)}`;
+}
+
 /**
  * Defang one live indicator. `fanged` is the indicator as written, with any
  * earlier defanging already reversed, so re-defanging is idempotent and an
@@ -720,10 +753,11 @@ export function defangIndicator(type: NetType, fanged: string, style: DefangStyl
       const host =
         parts.hostKind === "ipv6" ? `[${defangIPv6(parts.host.slice(1, -1), style)}]` : defangDots(parts.host, style);
       // A URL in the query string (?next=http://...) would still be picked up
-      // by an autolinker on its own, so its scheme is broken too.
+      // by an autolinker on its own, so its scheme and host are broken too.
       const rest = parts.rest.replace(
-        /(^|[^A-Za-z0-9+.-])(https?|ftps?):\/\//gi,
-        (_m, lead: string, scheme: string) => `${lead}${defangScheme(scheme, style)}${colonSlashes(style)}`,
+        /(^|[^A-Za-z0-9+.-])(https?|ftps?):\/\/([^/?#&=\s]*)/gi,
+        (_m, lead: string, scheme: string, authority: string) =>
+          `${lead}${defangScheme(scheme, style)}${colonSlashes(style)}${defangAuthority(authority, style)}`,
       );
       return `${defangScheme(parts.scheme, style)}${colonSlashes(style)}${user}${host}${rest}`;
     }

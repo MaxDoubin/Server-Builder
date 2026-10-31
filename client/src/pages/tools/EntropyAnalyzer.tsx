@@ -622,9 +622,10 @@ export function EntropyAnalyzer() {
               sliding ? `, ${dec(regions.length)} ${pluralise(regions.length, "region")} at or above ${deferredThreshold.toFixed(2)}` : ""
             }.`;
 
-  // Measured on compressed text: gzip and Brotli output fails this test in
-  // nearly every 256 KiB sample but passes in most 4 KiB ones, and xz (LZMA)
-  // output passes even at several MiB. The wording follows those results.
+  // Measured on compressed source text: gzip and Brotli output failed this
+  // test in every 256 KiB sample and passed in most 4 KiB ones (gzip already
+  // fails most 64 KiB samples), while xz (LZMA) output passed even as a
+  // whole 3 MB file. The wording follows those results.
   let chiReading = "";
   if (stats && stats.size >= 1280) {
     if (stats.entropy >= 7.5 && stats.chiP < 0.01) {
@@ -632,7 +633,7 @@ export function EntropyAnalyzer() {
         "The chi-square test rejects a uniform distribution (p below 0.01). A sound cipher's output should pass it, so this leans toward compressed data, such as gzip, zip, bzip2 or Brotli output, or a structured format. It is a heuristic, not proof: uniform random data also fails at this level 1% of the time.";
     } else if (stats.entropy >= 7.5) {
       chiReading =
-        "The chi-square test is consistent with uniform random bytes. Ciphertext and random data look like this, but so does xz or 7-Zip (LZMA) output at any size, and gzip or Brotli output under a few hundred kilobytes, so a pass does not show encryption.";
+        "The chi-square test is consistent with uniform random bytes. Ciphertext and random data look like this, but so does xz or 7-Zip (LZMA) output at any size, and gzip or Brotli output of only a few kilobytes, so a pass does not show encryption.";
     }
   }
 
@@ -798,8 +799,8 @@ export function EntropyAnalyzer() {
                     value={
                       stats.serialCorrelation === null
                         ? stats.size < 2
-                          ? "undefined: needs at least 2 bytes"
-                          : "undefined: every byte is the same"
+                          ? "not defined: needs at least 2 bytes"
+                          : "not defined: every byte is the same"
                         : `${stats.serialCorrelation.toFixed(6)} (near 0 if uncorrelated)`
                     }
                   />

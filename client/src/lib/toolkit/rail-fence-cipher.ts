@@ -32,6 +32,8 @@ export const MAX_RAILS = 1000;
 export const MAX_OFFSET = 1000000;
 /** Characters accepted by the brute force. */
 export const BRUTE_MAX_CHARS = 5000;
+/** Raw input, in UTF-16 units, read by the brute force before it gives up without splitting. */
+export const BRUTE_MAX_INPUT = 100000;
 /** Total character placements the brute force may spend across all candidates. */
 export const BRUTE_WORK_BUDGET = 8000000;
 /** Candidates kept and shown, best first. */
@@ -205,10 +207,23 @@ export function checkKey(railsRaw: string, offsetRaw: string): KeyCheck {
   return { ok: true, message: "", rails, offset };
 }
 
+/**
+ * Cuts a huge paste down before it is split into code points. A code point
+ * is at most two UTF-16 units, so the first 2 * limit units always hold at
+ * least limit code points, and a surrogate pair broken by the cut lands
+ * past that point, where the caller's own slice drops it.
+ */
+function precut(text: string, limit: number): string {
+  return text.length > 2 * limit ? text.slice(0, 2 * limit) : text;
+}
+
 /** Drops trailing line breaks, which a paste nearly always adds and a fence never meant. */
 function trimTrailingBreaks(text: string): { text: string; trimmed: boolean } {
-  const trimmed = text.replace(/[\r\n]+$/, "");
-  return { text: trimmed, trimmed: trimmed.length !== text.length };
+  // A scan from the end rather than /[\r\n]+$/, which backtracks
+  // quadratically over a long run of line breaks followed by a letter.
+  let end = text.length;
+  while (end > 0 && (text[end - 1] === "\n" || text[end - 1] === "\r")) end -= 1;
+  return { text: text.slice(0, end), trimmed: end !== text.length };
 }
 
 export function runRailFence(options: {
@@ -241,8 +256,9 @@ export function runRailFence(options: {
     text = t.text;
     if (t.trimmed) notices.push("A trailing line break was ignored.");
   }
-  let chars = Array.from(text);
-  if (chars.length > MAX_CHARS) {
+  const cut = precut(text, MAX_CHARS);
+  let chars = Array.from(cut);
+  if (cut.length !== text.length || chars.length > MAX_CHARS) {
     chars = chars.slice(0, MAX_CHARS);
     text = chars.join("");
     notices.push(`Only the first ${MAX_CHARS.toLocaleString("en-US")} characters were processed.`);
@@ -582,6 +598,12 @@ interface Ranked {
 export function bruteForce(textRaw: string, options: { mode: Mode; offsets: boolean }): BruteOutcome {
   const { mode, offsets } = options;
   if (textRaw.trim() === "") return { kind: "empty" };
+  if (textRaw.length > BRUTE_MAX_INPUT) {
+    return {
+      kind: "error",
+      message: `The brute force accepts up to ${BRUTE_MAX_CHARS.toLocaleString("en-US")} characters on the fence, and this text is far longer than that. It cannot work on a slice, because the rail boundaries depend on the full length.`,
+    };
+  }
   const notices: string[] = [];
   let text = textRaw;
   if (mode === "all") {

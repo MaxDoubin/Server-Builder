@@ -297,7 +297,7 @@ export type QpDecodeResult = QpDecodeSuccess | { ok: false; error: string };
  * RFC 2045 section 6.7, receiving side.
  *
  * Rule 1: "=" and two hex digits is one octet. Uppercase is required of a
- * sender; lowercase is accepted, as the RFC allows a robust decoder to do.
+ * sender; lowercase is accepted, which the RFC permits on receipt.
  * Rule 3: whitespace at the end of an encoded line was added in transit and
  * is deleted. Rule 5: "=" at the end of a line (after any such padding) is a
  * soft break and produces nothing. Any other "=" is malformed; the RFC's

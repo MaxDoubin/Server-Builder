@@ -134,7 +134,8 @@ const PRODUCT_NOTES: Record<string, string> = {
   HeadlessChrome: "Chrome running in headless mode, the usual way automation drives it.",
   Safari:
     "Compatibility token. Chrome and other Blink browsers send it too, mirroring the WebKit number; in real Safari the browser version is the Version token.",
-  Version: "The browser's own version in Safari, old Android browsers, Android WebView and Presto Opera.",
+  Version:
+    "The browser's own version in Safari, the old Android stock browser and Presto Opera. Android WebView sends a fixed Version/4.0.",
   Gecko: "Gecko marker. Desktop Firefox sends the fixed placeholder date 20100101 here rather than a build date.",
   Firefox: "Firefox version.",
   Edg: "Chromium-based Microsoft Edge and its real version.",

@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
   MAX_CHARS,
+  MAX_DECODE_CHARS,
   MAX_PREVIEW_CHARS,
   STYLE_IDS,
   STYLE_LABELS,
@@ -171,8 +172,8 @@ function PatternView({ pattern, showPad }: { pattern: Segments; showPad: boolean
   );
 }
 
-function tooLongMessage(name: string, length: number): string {
-  return `The ${name} is ${length.toLocaleString("en-US")} characters long. This tool stops at ${MAX_CHARS.toLocaleString(
+function tooLongMessage(name: string, length: number, limit: number): string {
+  return `The ${name} is ${length.toLocaleString("en-US")} characters long. This tool stops at ${limit.toLocaleString(
     "en-US",
   )} so the page stays responsive.`;
 }
@@ -240,7 +241,7 @@ export function BaconCipher() {
   );
 
   const decoded = useMemo(() => {
-    if (mode !== "decode" || !symbols.ok || code.length > MAX_CHARS) return null;
+    if (mode !== "decode" || !symbols.ok || code.length > MAX_DECODE_CHARS) return null;
     const x = extractBits(code, symbols.symbols);
     return {
       x,
@@ -276,7 +277,7 @@ export function BaconCipher() {
   // copy in the output panel is shown without a second alert.
   let errorAnnounced = false;
   if (mode === "encode") {
-    if (message.length > MAX_CHARS) error = tooLongMessage("message", message.length);
+    if (message.length > MAX_CHARS) error = tooLongMessage("message", message.length, MAX_CHARS);
     else if (!symbols.ok) {
       error = symbols.error;
       errorAnnounced = true;
@@ -284,7 +285,7 @@ export function BaconCipher() {
       error = "The message has no letters from A to Z to encode.";
     else if (encoded) output = renderBits(encoded.bits, symbols.symbols, spaced);
   } else if (mode === "decode") {
-    if (code.length > MAX_CHARS) error = tooLongMessage("text", code.length);
+    if (code.length > MAX_DECODE_CHARS) error = tooLongMessage("text", code.length, MAX_DECODE_CHARS);
     else if (!symbols.ok) {
       error = symbols.error;
       errorAnnounced = true;
@@ -292,11 +293,12 @@ export function BaconCipher() {
       error = `There is no ${display.a} or ${display.b} anywhere in the text, so there is nothing to decode.`;
     else if (decoded) output = decoded.main.text;
   } else if (mode === "hide" && hidden) {
+    // An empty message is a blank form, not a mistake, so it gets no alert.
     if (hidden.ok) output = hidden.text;
-    else error = hidden.error;
+    else if (message.trim() !== "") error = hidden.error;
   } else if (mode === "reveal" && revealed) {
     if (revealed.ok) output = revealed.main.text;
-    else error = revealed.error;
+    else if (stego.trim() !== "") error = revealed.error;
   }
 
   const sharedLetters = alphabet === 24 ? " In the 24 letter table I also stands for J, and U for V." : "";

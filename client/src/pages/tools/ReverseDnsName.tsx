@@ -75,22 +75,28 @@ export function ReverseDnsName() {
   const [raw, setRaw] = useState("192.0.2.65");
   // null means "follow the input": a typed /prefix, the zone's own length, or the default.
   const [prefixDraft, setPrefixDraft] = useState<string | null>(null);
-  const [style, setStyle] = useState<LabelStyle>("/");
+  // null means "as typed": a dash if the input used a dash-style RFC 2317 label, else a slash.
+  const [styleChoice, setStyleChoice] = useState<LabelStyle | null>(null);
   const [nsText, setNsText] = useState("ns1.customer.example, ns2.customer.example");
 
   const parsed = useMemo(() => (raw.trim() === "" ? null : parseReverseInput(raw)), [raw]);
   const input = parsed && parsed.ok ? parsed.value : null;
   const error = parsed && !parsed.ok ? parsed.error : null;
+  const style: LabelStyle =
+    styleChoice ?? (input?.kind === "ptr" && input.classless?.label.includes("-") ? "-" : "/");
 
   const view = useMemo(() => {
     if (!input) return null;
     const { family, value } = input;
     const bits = familyBits(family);
     const isAddress = input.kind === "address" || input.prefix === bits;
+    // A single address, typed either way, defaults to the usual /24 or /64
+    // zone. A zone name or an RFC 2317 name defaults to its own block.
+    const defaultPrefix = family === 4 ? 24 : 64;
     const derivedPrefix =
       input.kind === "address"
-        ? (input.prefix ?? (family === 4 ? 24 : 64))
-        : (input.classless?.prefix ?? input.prefix);
+        ? (input.prefix ?? defaultPrefix)
+        : (input.classless?.prefix ?? (isAddress ? defaultPrefix : input.prefix));
     const notes: string[] = [];
 
     let zone = "";
@@ -168,6 +174,7 @@ export function ReverseDnsName() {
   function load(value: string) {
     setRaw(value);
     setPrefixDraft(null);
+    setStyleChoice(null);
   }
 
   const summary = view
@@ -433,7 +440,7 @@ export function ReverseDnsName() {
                             key={s}
                             type="button"
                             aria-pressed={style === s}
-                            onClick={() => setStyle(s)}
+                            onClick={() => setStyleChoice(s)}
                             data-testid={`button-style-${s === "/" ? "slash" : "dash"}`}
                             className={`${PILL} text-xs ${style === s ? PILL_ON : PILL_IDLE}`}
                           >

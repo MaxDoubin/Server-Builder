@@ -677,28 +677,105 @@ export interface SearchResult {
   interpretations: Interpretation[];
   /** Codes whose name, nickname, abbreviation or entity contains the query. */
   nameMatches: number[];
-  /** Readings that fell outside one byte, explained. */
+  /** Readings that do not land on a row of the charset showing, each explained. */
   outOfRange: string[];
   error: string | null;
 }
 
-const NUMBER_FORMS: { re: RegExp; radix: number; via: string }[] = [
-  { re: /^&#x([0-9a-f]+);?$/i, radix: 16, via: "HTML hex reference" },
-  { re: /^&#([0-9]+);?$/, radix: 10, via: "HTML decimal reference" },
-  { re: /^(?:u\+|\\u)([0-9a-f]{1,6})$/i, radix: 16, via: "Unicode code point" },
-  { re: /^\\u\{([0-9a-f]{1,6})\}$/i, radix: 16, via: "Unicode code point" },
-  { re: /^(?:0x|\\x|\$)([0-9a-f]+)$/i, radix: 16, via: "hex" },
+/**
+ * How a prefixed number names a character. A byte value ("0x41", "%41",
+ * "\\101") is a row number in whatever charset is showing. A code point
+ * ("U+0041", "\\u0041") is a Unicode character, which Windows-1252 may keep at
+ * a different byte. An HTML reference is a code point after the HTML
+ * parser's own substitutions.
+ */
+type NumberKind = "byte" | "codepoint" | "html";
+
+const NUMBER_FORMS: { re: RegExp; radix: number; via: string; kind: NumberKind }[] = [
+  { re: /^&#x([0-9a-f]+);?$/i, radix: 16, via: "HTML hex reference", kind: "html" },
+  { re: /^&#([0-9]+);?$/, radix: 10, via: "HTML decimal reference", kind: "html" },
+  { re: /^(?:u\+|\\u)([0-9a-f]{1,6})$/i, radix: 16, via: "Unicode code point", kind: "codepoint" },
+  { re: /^\\u\{([0-9a-f]{1,6})\}$/i, radix: 16, via: "Unicode code point", kind: "codepoint" },
+  { re: /^(?:0x|\\x|\$)([0-9a-f]+)$/i, radix: 16, via: "hex", kind: "byte" },
   // Assembler suffix form. MASM requires a leading digit (0FFh), which also
   // keeps a word like "ah" from reading as hex.
-  { re: /^([0-9][0-9a-f]*)h$/i, radix: 16, via: "hex" },
-  { re: /^%([0-9a-f]{2})$/i, radix: 16, via: "URL percent-encoding" },
-  { re: /^0o([0-7]+)$/i, radix: 8, via: "octal" },
-  { re: /^\\([0-7]{1,3})$/, radix: 8, via: "C octal escape" },
-  { re: /^0b([01]+)$/i, radix: 2, via: "binary" },
+  { re: /^([0-9][0-9a-f]*)h$/i, radix: 16, via: "hex", kind: "byte" },
+  { re: /^%([0-9a-f]{2})$/i, radix: 16, via: "URL percent-encoding", kind: "byte" },
+  { re: /^0o([0-7]+)$/i, radix: 8, via: "octal", kind: "byte" },
+  { re: /^\\([0-7]{1,3})$/, radix: 8, via: "C octal escape", kind: "byte" },
+  { re: /^0b([01]+)$/i, radix: 2, via: "binary", kind: "byte" },
 ];
 
 const ESCAPE_TO_CODE: Record<string, number> = {};
 for (const [code, esc] of Object.entries(C_ESCAPES)) ESCAPE_TO_CODE[esc] = Number(code);
+
+/**
+ * The byte that holds a Unicode code point in a charset, or null when the
+ * charset has no such character. Windows-1252 keeps 27 characters at 0x80 to
+ * 0x9F, so the C1 controls those bytes would mean in Latin-1 do not exist in
+ * it. Its five unassigned bytes decode, per the WHATWG index, to the C1
+ * control with the same number.
+ */
+export function byteForCodePoint(cp: number, charset: Charset): number | null {
+  if (!Number.isInteger(cp) || cp < 0) return null;
+  if (cp <= 0x7f) return cp;
+  if (charset === "ascii") return null;
+  if (charset === "latin1") return cp <= 0xff ? cp : null;
+  if (cp <= 0x9f) return CP1252[cp - 0x80] ? null : cp;
+  if (cp <= 0xff) return cp;
+  return CP1252_REVERSE.get(cp) ?? null;
+}
+
+/**
+ * The code point an HTML numeric character reference produces (WHATWG HTML,
+ * "numeric character reference end state"): zero, surrogates and anything
+ * past U+10FFFF become U+FFFD, and 0x80 to 0x9F go through the
+ * Windows-1252 table where it assigns a character.
+ */
+export function htmlReferenceCodePoint(n: number): number {
+  if (!Number.isFinite(n) || n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) return 0xfffd;
+  if (n >= 0x80 && n <= 0x9f) {
+    const entry = CP1252[n - 0x80];
+    if (entry) return entry[0];
+  }
+  return n;
+}
+
+/** Why a code point has no row in the charset showing, and where it does live. Null when it has a row. */
+function explainCodePoint(cp: number, charset: Charset, subject: string): { line: string; upper: boolean } | null {
+  if (byteForCodePoint(cp, charset) !== null) return null;
+  if (cp > 0x10ffff) return { line: `${subject} is past U+10FFFF, the last Unicode code point.`, upper: false };
+  if (cp >= 0x80 && cp <= 0x9f) {
+    const abbr = C1[cp - 0x80].abbr;
+    const entry = CP1252[cp - 0x80];
+    if (charset === "cp1252" && entry) {
+      return {
+        line: `${subject} is the C1 control ${abbr}. Windows-1252 has no such character; its byte 0x${hex(cp)} is ${codePointLabel(entry[0])}. Show Latin-1 to see the control.`,
+        upper: true,
+      };
+    }
+    return {
+      line: entry
+        ? `${subject} is the C1 control ${abbr}, byte 0x${hex(cp)} in Latin-1. Windows-1252 has no such character. Show Latin-1 to see it.`
+        : `${subject} is the C1 control ${abbr}, byte 0x${hex(cp)} in Latin-1, a byte Windows-1252 leaves unassigned. Show Latin-1 to see it.`,
+      upper: true,
+    };
+  }
+  if (cp <= 0xff) {
+    return {
+      line: `${subject} is byte 0x${hex(cp)} in Latin-1 and Windows-1252, outside 7-bit ASCII. Show either to see it.`,
+      upper: true,
+    };
+  }
+  const byte = CP1252_REVERSE.get(cp);
+  if (byte !== undefined) {
+    return {
+      line: `${subject} is not in Latin-1; it is byte 0x${hex(byte)} in Windows-1252. Show Windows-1252 to see it.`,
+      upper: true,
+    };
+  }
+  return { line: `${subject} is not in ASCII, Latin-1 or Windows-1252.`, upper: false };
+}
 
 /** Parse digits that have already matched a radix pattern; anything over 0x10FFFF is simply "too big". */
 function parseDigits(digits: string, radix: number): number {
@@ -741,34 +818,52 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
     else if (value <= 255) upperHalf.push(`${shown} as ${via} is ${value}, in the upper half. Show Latin-1 or Windows-1252 to see it.`);
     else beyond.push(`${shown} as ${via} is ${Number.isFinite(value) ? value.toLocaleString("en-US") : "far"}, beyond one byte.`);
   };
+  /** A Unicode character, named by itself or by its number: find the byte that holds it here. */
+  const addCodePoint = (cp: number, via: string, subject: string) => {
+    const byte = byteForCodePoint(cp, charset);
+    if (byte !== null) {
+      add(byte, via);
+      return;
+    }
+    const why = explainCodePoint(cp, charset, subject);
+    if (why) (why.upper ? upperHalf : beyond).push(why.line);
+  };
 
   const chars = Array.from(q);
 
   // One character: the character itself.
   if (chars.length === 1) {
     const cp = q.codePointAt(0) as number;
-    const label = codePointLabel(cp);
-    const c1In1252 = cp >= 0x80 && cp <= 0x9f ? CP1252[cp - 0x80] : null;
-    if (charset === "cp1252" && c1In1252) {
-      // A raw C1 control. Windows-1252 spends that byte on a printable character instead.
-      upperHalf.push(`${label} is a C1 control. Windows-1252 has no such character; its byte 0x${hex(cp)} is ${codePointLabel(c1In1252[0])}.`);
-    } else if (cp <= maxCode) {
-      add(cp, "character");
-    } else if (charset === "cp1252" && CP1252_REVERSE.has(cp)) {
-      add(CP1252_REVERSE.get(cp) as number, "Windows-1252 character");
-    } else if (cp <= 255) {
-      upperHalf.push(`${label} is byte 0x${hex(cp)} in Latin-1 and Windows-1252, outside 7-bit ASCII. Show either to see it.`);
-    } else if (CP1252_REVERSE.has(cp)) {
-      upperHalf.push(`${label} is not in Latin-1; it is byte 0x${hex(CP1252_REVERSE.get(cp) as number)} in Windows-1252. Show Windows-1252 to see it.`);
-    } else {
-      beyond.push(`${label} is not in ASCII, Latin-1 or Windows-1252.`);
-    }
+    const byte = byteForCodePoint(cp, charset);
+    addCodePoint(cp, byte !== null && byte !== cp ? "Windows-1252 character" : "character", codePointLabel(cp));
   }
 
   // Prefixed and suffixed numbers.
   for (const form of NUMBER_FORMS) {
     const m = form.re.exec(q);
-    if (m) addNumber(parseDigits(m[1], form.radix), form.via, q);
+    if (!m) continue;
+    const value = parseDigits(m[1], form.radix);
+    if (form.kind === "byte") {
+      addNumber(value, form.via, q);
+      continue;
+    }
+    if (!Number.isFinite(value) || value > 0x10ffff) {
+      beyond.push(`${q} is past U+10FFFF, the last Unicode code point${form.kind === "html" ? ", so HTML parsers replace it with U+FFFD" : ""}.`);
+      continue;
+    }
+    if (form.kind === "codepoint") {
+      const label = codePointLabel(value);
+      addCodePoint(value, form.via, q.toUpperCase() === label ? label : `${q} (${label})`);
+      continue;
+    }
+    // An HTML reference names whatever the parser substitutes for it.
+    const cp = htmlReferenceCodePoint(value);
+    if (cp === 0xfffd && value !== 0xfffd) {
+      upperHalf.push(`HTML parsers replace ${q} with U+FFFD, the replacement character, so no reference produces ${value === 0 ? "NUL" : "this code point"}.`);
+      continue;
+    }
+    const subject = cp !== value ? `${q}, which HTML maps to ${codePointLabel(cp)},` : `${q} (${codePointLabel(cp)})`;
+    addCodePoint(cp, cp !== value ? `${form.via}, mapped through Windows-1252` : form.via, subject);
   }
 
   // Bare digits: every base they are valid in. Letters a to f alone count as
@@ -783,7 +878,10 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   // Caret notation: ^A is 1, ^? is DEL. Lower case letters work as Ctrl does.
   const caret = /^\^(.)$/.exec(q);
   if (caret) {
-    const c = caret[1].toUpperCase().charCodeAt(0);
+    const raw = caret[1].charCodeAt(0);
+    // Only ASCII a to z fold to capitals. toUpperCase() would also map the
+    // sharp s, the long s and the dotless i onto S and I.
+    const c = raw >= 97 && raw <= 122 ? raw - 32 : raw;
     if (c === 63) add(127, "caret notation");
     else if (c >= 64 && c <= 95) add(c ^ 0x40, "caret notation");
   }
@@ -798,7 +896,13 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
     const name = entity[1];
     const exact = rows.find((r) => r.entities.includes(name));
     const loose = exact ?? rows.find((r) => r.entities.some((e) => e.toLowerCase() === name.toLowerCase()));
-    if (loose) add(loose.code, "HTML named reference");
+    if (loose) {
+      add(loose.code, "HTML named reference");
+    } else {
+      // Not in the rows showing: say where it is, if it is anywhere here.
+      const other = [...LATIN1_ROWS, ...CP1252_ROWS].find((r) => r.entities.includes(name));
+      if (other && other.codePoint !== null) addCodePoint(other.codePoint, "HTML named reference", `&${name}; (${codePointLabel(other.codePoint)})`);
+    }
   }
 
   // Names, from two characters up; one letter would match nearly everything.

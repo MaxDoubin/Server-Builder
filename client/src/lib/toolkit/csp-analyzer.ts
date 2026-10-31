@@ -828,7 +828,20 @@ export interface ListFacts {
   reportSample: boolean;
 }
 
+// One analysis asks for the facts of the same directive many times (once per
+// effective-policy row, once per check), so they are computed once per token
+// array. Callers treat the result as read-only.
+const factsCache = new WeakMap<string[], ListFacts>();
+
 export function listFacts(tokens: string[]): ListFacts {
+  const cached = factsCache.get(tokens);
+  if (cached) return cached;
+  const facts = computeListFacts(tokens);
+  factsCache.set(tokens, facts);
+  return facts;
+}
+
+function computeListFacts(tokens: string[]): ListFacts {
   const sources = tokens.map(classifySource);
   const has = (kw: string) => sources.some((s) => s.kind === "keyword" && s.keyword === kw);
   const effective = sources.filter(
@@ -1968,7 +1981,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         "report-only-silent",
         "low",
         "Report-only with nowhere to report",
-        "A report-only policy blocks nothing and, without report-uri or report-to, sends no reports either. Its only effect is console messages in each visitor's own browser.",
+        "A report-only policy blocks nothing and, without report-uri or report-to, sends no reports either. Violations surface only as console messages and securitypolicyviolation events inside each visitor's own browser.",
       );
     }
     if (byName.has("sandbox")) {

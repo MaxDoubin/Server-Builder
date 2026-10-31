@@ -1149,7 +1149,7 @@ const REASONS: Record<number, string> = {
   205: "Reset Content", 206: "Partial Content",
   300: "Multiple Choices", 301: "Moved Permanently", 302: "Found", 303: "See Other", 304: "Not Modified",
   307: "Temporary Redirect", 308: "Permanent Redirect",
-  400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found", 405: "Method Not Allowed",
+  400: "Bad Request", 401: "Unauthorized", 402: "Payment Required", 403: "Forbidden", 404: "Not Found", 405: "Method Not Allowed",
   406: "Not Acceptable", 407: "Proxy Authentication Required", 408: "Request Timeout", 409: "Conflict",
   410: "Gone", 411: "Length Required", 412: "Precondition Failed", 413: "Content Too Large",
   414: "URI Too Long", 415: "Unsupported Media Type", 416: "Range Not Satisfiable", 417: "Expectation Failed",
@@ -1159,7 +1159,7 @@ const REASONS: Record<number, string> = {
   495: "SSL Certificate Error (nginx)", 496: "SSL Certificate Required (nginx)",
   497: "HTTP Request Sent to HTTPS Port (nginx)", 499: "Client Closed Request (nginx)",
   500: "Internal Server Error", 501: "Not Implemented", 502: "Bad Gateway", 503: "Service Unavailable",
-  504: "Gateway Timeout", 505: "HTTP Version Not Supported",
+  504: "Gateway Timeout", 505: "HTTP Version Not Supported", 511: "Network Authentication Required",
 };
 
 export function reasonPhrase(status: number): string {

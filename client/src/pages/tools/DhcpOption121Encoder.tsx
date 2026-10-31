@@ -437,8 +437,8 @@ export function DhcpOption121Encoder() {
               <ToolPanel title="Checks">
                 {warnings.length ? (
                   <ul className="space-y-2" data-testid="list-warnings">
-                    {warnings.map((w) => (
-                      <li key={w} className={WARN_BOX}>
+                    {warnings.map((w, i) => (
+                      <li key={i} className={WARN_BOX}>
                         {w}
                       </li>
                     ))}
@@ -605,29 +605,36 @@ export function DhcpOption121Encoder() {
               ) : null}
               {decoded.result.warnings.length ? (
                 <ul className="space-y-2">
-                  {decoded.result.warnings.map((w) => (
-                    <li key={w} className={WARN_BOX}>
+                  {decoded.result.warnings.map((w, i) => (
+                    <li key={i} className={WARN_BOX}>
                       {w}
                     </li>
                   ))}
                 </ul>
               ) : null}
               {decoded.result.routes.length && !decoded.result.error ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    load(
-                      (decoded.result?.routes ?? []).map((r) => ({
-                        dest: cidrString(r.network, r.prefix),
-                        router: formatIPv4(r.router),
-                      })),
-                    )
-                  }
-                  data-testid="button-edit-decoded"
-                  className={CHIP}
-                >
-                  Edit these routes above
-                </button>
+                decoded.result.routes.length <= MAX_ROUTES ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      load(
+                        (decoded.result?.routes ?? []).map((r) => ({
+                          dest: cidrString(r.network, r.prefix),
+                          router: formatIPv4(r.router),
+                        })),
+                      )
+                    }
+                    data-testid="button-edit-decoded"
+                    className={CHIP}
+                  >
+                    Edit these routes above
+                  </button>
+                ) : (
+                  <p data-testid="text-edit-decoded-cap" className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                    {decoded.result.routes.length} routes is more than the {MAX_ROUTES} the builder holds, so they cannot be
+                    loaded for editing without dropping some.
+                  </p>
+                )
               ) : null}
             </div>
           ) : null}

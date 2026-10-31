@@ -120,7 +120,7 @@ export interface LevelEntry {
 /**
  * A list of levels. Entries are separated by new lines, commas or
  * semicolons, and plain spaces also separate bare numbers. A unit suffix
- * such as dB or dBA is ignored, and "12 x 55" means twelve sources at 55 dB.
+ * such as dB, dBA or dB(A) is ignored, and "12 x 55" means twelve sources at 55 dB.
  */
 export function parseLevelList(text: string): Parsed<LevelEntry[]> {
   if (text.length > MAX_LIST_CHARS) {
@@ -132,9 +132,10 @@ export function parseLevelList(text: string): Parsed<LevelEntry[]> {
   const entries: LevelEntry[] = [];
   const pieces = text.split(/[\n\r,;]+/);
   for (const piece of pieces) {
+    // Drop unit suffixes: 45dB, 45 dBA, 45 dB(A).
     const stripped = piece
-      .replace(/(\d)db[a-z]*\b/gi, "$1 ")
-      .replace(/\bdb[a-z]*\b/gi, " ")
+      .replace(/(\d)\s*db[a-z]*(\([a-z]\))?/gi, "$1 ")
+      .replace(/\bdb[a-z]*(\([a-z]\))?/gi, " ")
       .trim();
     if (stripped === "") continue;
     const counted = /^(\d+)\s*[x×*]\s*(\S+)$/i.exec(stripped);

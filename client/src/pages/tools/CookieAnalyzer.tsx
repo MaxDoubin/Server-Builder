@@ -148,12 +148,13 @@ function shortValue(value: string): string {
 
 function CookieCard({ report, host }: { report: CookieReport; host: string | null }) {
   const refused = report.rejections.length > 0;
-  // The panel heading does not wrap long tokens, so a 4 KB name is shortened here.
-  const shownName = report.name.length > 40 ? `${report.name.slice(0, 40)}...` : report.name;
-  const title = `Line ${report.line}: ${shownName || "(no name)"}`;
   const rows = report.attributes.slice(0, MAX_ATTRIBUTE_ROWS);
+  // The panel heading is uppercase and letter-spaced and cannot wrap, so the
+  // name, which can be 4 KB, gets its own heading that breaks anywhere.
+  const shownName = report.name.length > 200 ? `${report.name.slice(0, 200)}...` : report.name;
   return (
-    <ToolPanel title={title}>
+    <ToolPanel title={`Line ${report.line}`}>
+      <h3 className="mb-3 break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">{shownName || "(no name)"}</h3>
       <div
         data-testid={`text-verdict-${report.line}`}
         className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : TONE_STYLE.ok}`}
@@ -349,7 +350,7 @@ export function CookieAnalyzer() {
             />
             <p
               id="cookie-url-hint"
-              className={`mt-2 font-mono-tight text-xs leading-relaxed ${urlParsed && !urlParsed.ok ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-ash))]"}`}
+              className={`mt-2 break-all font-mono-tight text-xs leading-relaxed ${urlParsed && !urlParsed.ok ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-ash))]"}`}
               data-testid="text-url-status"
             >
               {urlParsed && !urlParsed.ok

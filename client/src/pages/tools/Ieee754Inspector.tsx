@@ -122,7 +122,7 @@ const SPECIALS: { name: string; f32: bigint; f64: bigint; note: string }[] = [
     name: "Quiet NaN",
     f32: 0x7fc00000n,
     f64: 0x7ff8000000000000n,
-    note: "Exponent all ones and the top fraction bit, the quiet bit, set. 0 / 0, Infinity - Infinity and sqrt(-1) produce it, and it propagates through most arithmetic without signaling again.",
+    note: "Exponent all ones and the top fraction bit, the quiet bit, set. 0 / 0, Infinity - Infinity and sqrt(-1) produce it, and it propagates through most arithmetic without signaling again. The fraction bits below the quiet bit are the payload, which IEEE 754 recommends operations carry through.",
   },
   {
     name: "Signaling NaN",
@@ -468,7 +468,7 @@ function FormatPanel({
             type="button"
             onClick={() => onSetBits(down, f)}
             disabled={d.cls === "nan" || down === d.bits}
-            aria-label={`Step to the next ${f.label} value down`}
+            aria-label={`Next down, to the largest ${f.label} value below this one`}
             data-testid={`button-next-down-${f.width}`}
             className={ACTION_CLASS}
           >
@@ -478,7 +478,7 @@ function FormatPanel({
             type="button"
             onClick={() => onSetBits(up, f)}
             disabled={d.cls === "nan" || up === d.bits}
-            aria-label={`Step to the next ${f.label} value up`}
+            aria-label={`Next up, to the smallest ${f.label} value above this one`}
             data-testid={`button-next-up-${f.width}`}
             className={ACTION_CLASS}
           >
@@ -487,7 +487,7 @@ function FormatPanel({
           <button
             type="button"
             onClick={() => onSetBits(negateBits(d.bits, f), f)}
-            aria-label={`Flip the ${f.label} sign bit`}
+            aria-label={`Negate, flipping the ${f.label} sign bit`}
             data-testid={`button-negate-${f.width}`}
             className={ACTION_CLASS}
           >
@@ -601,7 +601,7 @@ function SumPanel() {
               autoCorrect="off"
               onChange={(event) => op.set(event.target.value)}
               aria-invalid={!op.parsed.ok}
-              aria-describedby={`${op.id}-message`}
+              aria-describedby={op.parsed.ok ? undefined : `${op.id}-message`}
               data-testid={`input-sum-${op.name}`}
               className={INPUT_CLASS}
             />
@@ -613,11 +613,7 @@ function SumPanel() {
               >
                 {op.parsed.message}
               </p>
-            ) : (
-              <p id={`${op.id}-message`} className="sr-only">
-                Valid
-              </p>
-            )}
+            ) : null}
           </div>
         ))}
       </div>
@@ -819,7 +815,7 @@ export function Ieee754Inspector() {
                       key={f.key}
                       type="button"
                       onClick={() => loadSpecial(bits, f)}
-                      aria-label={`Inspect ${s.name.toLowerCase()} as ${f.label}, ${bitsHex(bits, f)}`}
+                      aria-label={`Inspect ${s.name.toLowerCase()} as ${f.label} ${bitsHex(bits, f)}`}
                       className={`${ACTION_CLASS} break-all text-left`}
                     >
                       {f.label} {bitsHex(bits, f)}

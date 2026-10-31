@@ -140,7 +140,7 @@ export function parseNonNegative(text: string, what: string): Parsed<number> {
     return { ok: false, error: `"${text.trim().slice(0, 24)}" is not a number. Use digits and at most one decimal point.` };
   }
   const value = Number(cleaned);
-  if (!Number.isFinite(value)) return { ok: false, error: `That ${what} is too large to be useful.` };
+  if (!Number.isFinite(value)) return { ok: false, error: "That number is too large to work with." };
   return { ok: true, value };
 }
 

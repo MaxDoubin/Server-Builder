@@ -57,6 +57,19 @@ function clip(text: string, max = 48): string {
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
+/**
+ * Strips characters in `set` from both ends. A loop rather than a regular
+ * expression such as /[.-]+$/, which retries from every position of a long
+ * run and turns quadratic on hostile input.
+ */
+export function trimSet(text: string, set: string, start = true, end = true): string {
+  let a = 0;
+  let b = text.length;
+  if (start) while (a < b && set.includes(text[a])) a++;
+  if (end) while (b > a && set.includes(text[b - 1])) b--;
+  return text.slice(a, b);
+}
+
 /* ------------------------------------------------------------- splitting */
 
 export interface HeaderField {
@@ -97,8 +110,11 @@ export function splitHeaders(raw: string): SplitHeaders {
   // right. Remove the indent all non-empty lines share, keeping folds relative.
   const nonEmpty = lines.filter((l) => l.trim() !== "");
   if (nonEmpty.length && nonEmpty.every((l) => /^[ \t]/.test(l))) {
-    const indent = Math.min(...nonEmpty.map((l) => (/^[ \t]*/.exec(l) as RegExpExecArray)[0].length));
-    lines = lines.map((l) => l.slice(Math.min(indent, l.length - l.trimStart().length)));
+    // A loop, not Math.min(...array): spreading a hundred thousand lines
+    // into one call overflows the stack.
+    let indent = Infinity;
+    for (const l of nonEmpty) indent = Math.min(indent, l.length - trimSet(l, " \t", true, false).length);
+    lines = lines.map((l) => l.slice(Math.min(indent, l.length - trimSet(l, " \t", true, false).length)));
   }
 
   const fields: HeaderField[] = [];
@@ -266,6 +282,7 @@ export function parseRfc5322Date(input: string): Result<ParsedDate> {
   if (!m) return fail(`"${clip(input.trim(), 40)}" is not in the day month year hh:mm:ss zone form`);
 
   const day = Number(m[1]);
+  if (m[3].length === 4 && Number(m[3]) < 1900) return fail(`year ${m[3]} is before 1900, which RFC 5322 section 3.3 does not allow`);
   const monthName = m[2].toLowerCase();
   const month = MONTHS.indexOf(monthName.slice(0, 3));
   if (month < 0 || (monthName.length > 3 && !"january february march april may june july august september october november december".split(" ").includes(monthName))) {
@@ -408,6 +425,8 @@ export function classifyIPv6(v: bigint): IpKind {
   if (v === 0n) return "unspecified";
   if (v === 1n) return "loopback";
   if (inV6(v, "::ffff:0:0", 96)) return classifyIPv4(Number(v & 0xffffffffn));
+  // RFC 6052 NAT64 well-known prefix: the low 32 bits are the IPv4 host.
+  if (inV6(v, "64:ff9b::", 96)) return classifyIPv4(Number(v & 0xffffffffn));
   if (inV6(v, "fe80::", 10)) return "link-local";
   if (inV6(v, "fc00::", 7)) return "unique-local";
   if (inV6(v, "ff00::", 8)) return "multicast";
@@ -447,7 +466,9 @@ export function extractIps(text: string): IpInfo[] {
     const before = src[m.index - 1] ?? " ";
     const after = src[m.index + token.length] ?? " ";
     if (/[G-Zg-z_-]/.test(before) || /[G-Zg-z_-]/.test(after)) continue;
-    token = token.replace(/\.+$/, "").replace(/^:(?!:)/, "");
+    token = trimSet(token, ".", false, true).replace(/^:(?!:)/, "");
+    // The longest IPv6 text form is 45 characters; anything longer is not one address.
+    if (token.length > 45) continue;
     if (token.length < 3) continue;
     const colons = (token.match(/:/g) ?? []).length;
     let info: IpInfo | null = null;
@@ -474,7 +495,8 @@ export function extractHostnames(text: string): string[] {
     const after = text[m.index + m[0].length] ?? " ";
     // Either side of an @ is a mailbox, not a host on the path.
     if (before === "@" || before === "_" || after === "@" || after === "_") continue;
-    const name = m[0].replace(/^[.-]+|[.-]+$/g, "").toLowerCase();
+    if (m[0].length > 300) continue;
+    const name = trimSet(m[0], ".-").toLowerCase();
     if (name === "localhost" && !out.includes(name)) {
       out.push(name);
       continue;
@@ -501,7 +523,16 @@ export interface ReceivedHop {
   protocol: string | null;
   id: string | null;
   recipient: string | null;
+  /** Every address in the from clause. */
   fromIps: IpInfo[];
+  /**
+   * The address the receiving server saw the connection come from. Postfix,
+   * Sendmail, Gmail and Exchange write it inside the from clause's comment,
+   * after the name the client gave in HELO; Exim writes a bare [address].
+   */
+  peerIp: IpInfo | null;
+  /** An address literal the client gave as its HELO name, when it differs from the peer. */
+  heloIp: IpInfo | null;
   byIps: IpInfo[];
   fromHosts: string[];
   tls: boolean | null;
@@ -619,8 +650,13 @@ export function parseReceived(value: string): Omit<ReceivedHop, "index" | "delay
     dateError = "there is no semicolon and date at the end of the line";
   }
 
-  const fromComment = from ? stripComments(from).comments.join("; ") || null : null;
+  const fromParts = from ? stripComments(from) : null;
+  const fromComment = fromParts ? fromParts.comments.join("; ") || null : null;
   const fromName = from ? firstToken(from) : null;
+  const commentIps = fromParts ? extractIps(fromParts.comments.join(" ")) : [];
+  const bareIps = fromParts ? extractIps(fromParts.text) : [];
+  const peerIp = commentIps[0] ?? bareIps[0] ?? null;
+  const heloIp = bareIps.find((ip) => ip.address !== peerIp?.address) ?? null;
   const fromHosts = from ? extractHostnames(from) : [];
   const protocol = withClause ? firstToken(withClause) : null;
   const idClause = clauses.get("id");
@@ -635,6 +671,8 @@ export function parseReceived(value: string): Omit<ReceivedHop, "index" | "delay
     id: idClause ? firstToken(idClause) : null,
     recipient: forClause ? stripComments(forClause).text || null : null,
     fromIps: from ? extractIps(from) : [],
+    peerIp,
+    heloIp,
     byIps: by ? extractIps(by) : [],
     fromHosts,
     tls: hopUsedTls(protocol, `${from ?? ""} ${withClause ?? ""}`),
@@ -736,6 +774,12 @@ function tokenizeAuth(value: string): { segments: AuthToken[][]; comments: strin
       segments[seg].push({ t: "quoted", v: buf });
       continue;
     }
+    // A stray ")" outside any comment is not a token; skip it, or the loop
+    // below would make no progress and run forever.
+    if (c === ")") {
+      i++;
+      continue;
+    }
     let j = i;
     while (j < value.length && !/[\s=;"()]/.test(value[j])) j++;
     segments[seg].push({ t: "word", v: value.slice(i, j) });
@@ -807,7 +851,7 @@ export function authIdentity(r: AuthResult): string | null {
 export function domainOf(identity: string | null): string | null {
   if (!identity) return null;
   const at = identity.lastIndexOf("@");
-  const d = (at >= 0 ? identity.slice(at + 1) : identity).trim().replace(/[>.\s]+$/, "").toLowerCase();
+  const d = trimSet(at >= 0 ? identity.slice(at + 1) : identity, "<>. \t\r\n").toLowerCase();
   return d === "" ? null : d;
 }
 
@@ -822,7 +866,9 @@ export function parseReceivedSpf(value: string): ReceivedSpf {
   const { text, comments } = stripComments(value);
   const result = (text.split(/\s+/)[0] ?? "").toLowerCase();
   const pairs: Record<string, string> = {};
-  const re = /([A-Za-z-]+)\s*=\s*("(?:[^"\\]|\\.)*"|[^;\s]+)/g;
+  // The lookbehind pins each key to the start of its word, so a long run of
+  // letters with no = is tried once rather than from every position.
+  const re = /(?<![A-Za-z-])([A-Za-z-]+)\s*=\s*("(?:[^"\\]|\\.)*"|[^;\s]+)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) pairs[m[1].toLowerCase()] = m[2].replace(/^"|"$/g, "");
   return { result, comment: comments[0] ?? null, pairs };
@@ -1000,8 +1046,11 @@ export function parseAddressList(value: string): Mailbox[] {
   let body = value.trim();
   if (body === "<>") return [{ display: null, address: "", domain: null, nullPath: true }];
   // group = display-name ":" [group-list] ";" (RFC 5322 section 3.4), as in undisclosed-recipients:;
-  const group = /^[^"<>@,:;()]*:([\s\S]*?);?\s*$/.exec(body);
-  if (group) body = group[1];
+  const group = /^[^"<>@,:;()]*:/.exec(body);
+  if (group) {
+    body = body.slice(group[0].length).trim();
+    if (body.endsWith(";")) body = body.slice(0, -1);
+  }
   for (let part of splitTopLevel(body, ",").slice(0, 200)) {
     part = part.trim();
     if (part === "") continue;
@@ -1010,7 +1059,12 @@ export function parseAddressList(value: string): Mailbox[] {
     let address: string;
     let display: string | null;
     if (lt >= 0 && gt > lt) {
-      address = part.slice(lt + 1, gt).trim().replace(/^(?:@[^,:]+,?)+:/, "");
+      address = part.slice(lt + 1, gt).trim();
+      // obs-route (RFC 5322 section 4.4): "@relay1,@relay2:" before the address is dropped.
+      if (address.startsWith("@")) {
+        const colon = address.indexOf(":");
+        if (colon > 0) address = address.slice(colon + 1).trim();
+      }
       display = stripComments(part.slice(0, lt)).text;
       display = display ? unquote(display) : null;
       if (address === "") {
@@ -1145,6 +1199,8 @@ export interface AuthRow {
   comment: string | null;
   /** True when the field came from the topmost authserv-id. */
   primary: boolean;
+  /** True for an ARC-Authentication-Results field (RFC 8617), recorded by an intermediary. */
+  arc: boolean;
 }
 
 export interface XHeader {
@@ -1280,24 +1336,28 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
         );
       }
     }
-    for (const ip of hop.fromIps.slice(0, 1)) {
-      if (isInternal(ip.kind)) {
-        if (i === 0) {
-          add(
-            "info",
-            `Hop 1 came from ${ip.address}, a ${ip.kind} address: the sender's own machine submitting through its server. It reveals a little about the sender's internal network.`,
-          );
-        } else if (seenPublic) {
-          add(
-            "warn",
-            `Hop ${hop.index} was handed over from ${ip.address}, a ${ip.kind} address, after the message had already crossed a public one. That is normal inside a receiving organization's own relays, and suspicious when the servers on either side belong to unrelated organizations, because a sender can write fake Received lines of its own.`,
-          );
-        }
+    const peer = hop.peerIp;
+    if (peer && isInternal(peer.kind)) {
+      if (i === 0) {
+        add(
+          "info",
+          `Hop 1 was submitted from ${peer.address}, a ${peer.kind} address: the sender's own machine or an internal server handing the message to its outbound relay. It reveals a little about the sender's internal network.`,
+        );
+      } else if (seenPublic) {
+        add(
+          "warn",
+          `Hop ${hop.index} was handed over from ${peer.address}, a ${peer.kind} address, after the message had already crossed a public one. That is normal inside a receiving organization's own relays, and suspicious when the servers on either side belong to unrelated organizations, because a sender can write fake Received lines of its own.`,
+        );
       }
+    } else if (i === 0 && peer && hop.heloIp && isInternal(hop.heloIp.kind)) {
+      add(
+        "info",
+        `Hop 1's client introduced itself as [${hop.heloIp.address}], a ${hop.heloIp.kind} address, and connected from ${peer.address}. It is most likely behind NAT, and the line records its address on the internal network.`,
+      );
     }
     // Documentation ranges stand in for public addresses in samples and in
     // sanitized headers, so they count as having left a private network.
-    if (hop.fromIps.some((ip) => ip.kind === "public" || ip.kind === "documentation")) seenPublic = true;
+    if (peer && (peer.kind === "public" || peer.kind === "documentation")) seenPublic = true;
   });
 
   /* Authentication-Results. */
@@ -1318,6 +1378,7 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
         reason: r.reason,
         comment: r.comments.join("; ") || null,
         primary,
+        arc: /^arc-/i.test(f.field),
       });
     }
   }
@@ -1341,11 +1402,19 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
     pass: ["ok", "the sending server is authorized for that domain"],
     fail: ["danger", "an explicit statement from the domain that this server may not send for it (RFC 7208 section 2.6.4)"],
     softfail: ["warn", "the domain says this server is probably not authorized, a weaker statement than fail (RFC 7208 section 2.6.5)"],
-    neutral: ["warn", "the domain declines to say whether this server is authorized (RFC 7208 section 2.6.3)"],
+    neutral: ["warn", "the domain declines to say whether this server is authorized (RFC 7208 section 2.6.2)"],
     none: ["warn", "the domain publishes no SPF record, or no domain could be checked (RFC 7208 section 2.6.1)"],
     temperror: ["warn", "a transient DNS error stopped the check (RFC 7208 section 2.6.6)"],
     permerror: ["warn", "the domain's SPF record is broken and could not be evaluated (RFC 7208 section 2.6.7)"],
   };
+  // With no Authentication-Results, the topmost Received-SPF (RFC 7208
+  // section 9.1) is the only verdict the receiver wrote down.
+  const topSpf = receivedSpf[0];
+  if (plain.length === 0 && topSpf && spfText[topSpf.result]) {
+    const [tone, text] = spfText[topSpf.result];
+    const envelope = topSpf.pairs["envelope-from"] ?? null;
+    add(tone, `Received-SPF ${topSpf.result}${envelope ? ` for ${envelope}` : ""}: ${text}.`);
+  }
   const dmarcPassed = primaryResults.some((r) => r.method === "dmarc" && r.result === "pass");
   for (const r of primaryResults) {
     const who = r.identity ? ` for ${r.identity}` : "";
@@ -1406,7 +1475,7 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
   if (fromList.length > 1) add("info", "From names more than one mailbox, which RFC 5322 allows only together with a Sender field.");
 
   if (from?.display && from.domain) {
-    const inner = /[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/.exec(from.display);
+    const inner = /(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/.exec(from.display);
     if (inner && !relaxedAligned(inner[1], from.domain)) {
       add(
         "danger",

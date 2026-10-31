@@ -345,9 +345,10 @@ function PolicyReport({ policy, index, total }: { policy: PolicyAnalysis; index:
                 <CopyButton value={policy.hardened.replace(/;\n/g, "; ")} label="Copy the policy with missing directives added" />
               </div>
               <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                These directives have no fallback, so adding them never loosens anything. Use base-uri
-                &apos;self&apos; instead if the page has a base element. Script rules are left alone: fixing
-                them depends on how the page loads its code.
+                object-src &apos;none&apos; is the strictest value, and base-uri and frame-ancestors have no
+                fallback, so these additions only tighten the policy. Use base-uri &apos;self&apos; instead if
+                the page has a base element. Script rules are left alone: fixing them depends on how the page
+                loads its code.
               </p>
             </>
           ) : (

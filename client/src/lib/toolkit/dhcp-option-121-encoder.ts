@@ -211,6 +211,9 @@ export interface DecodeResult {
 
 const hex2 = (n: number) => n.toString(16).padStart(2, "0");
 
+/** Echo a pasted token in an error message without echoing a whole megabyte. */
+const clip = (s: string) => (s.length > 16 ? `${s.slice(0, 16)}...` : s);
+
 /**
  * Walk the option data route by route, validating each length as RFC 3442
  * section 2 lays it out. A leading 121 or 249 can never be a width (widths
@@ -326,7 +329,7 @@ export function parseHexBytes(text: string): Parsed<number[]> {
   for (const raw of tokens) {
     const token = raw.replace(/^0x/i, "");
     if (token === "") return { ok: false, error: `"${raw}" has a 0x prefix and no digits after it.` };
-    const bad = token.match(/[^0-9a-f]/i);
+    const bad = token.match(/[^0-9a-f]/iu);
     if (bad) {
       return {
         ok: false,
@@ -338,7 +341,7 @@ export function parseHexBytes(text: string): Parsed<number[]> {
     } else if (token.length % 2 === 1) {
       return {
         ok: false,
-        error: `"${raw}" has an odd number of hex digits (${token.length}), so the last byte is incomplete.`,
+        error: `"${clip(raw)}" has an odd number of hex digits (${token.length}), so the last byte is incomplete.`,
       };
     } else {
       for (let k = 0; k < token.length; k += 2) out.push(parseInt(token.slice(k, k + 2), 16));
@@ -371,11 +374,17 @@ export function parseDecimalBytes(text: string): Parsed<number[]> {
     if (!/^\d+$/.test(token)) {
       return {
         ok: false,
-        error: `"${token}" is not a decimal number. Switch to hex if the data is hexadecimal.`,
+        error: `"${clip(token)}" is not a decimal number. Switch to hex if the data is hexadecimal.`,
+      };
+    }
+    if (token.length > 3) {
+      return {
+        ok: false,
+        error: `"${clip(token)}" has ${token.length} digits. A decimal octet has at most three, and runs from 0 to 255.`,
       };
     }
     const n = Number(token);
-    if (token.length > 3 || n > 255) return { ok: false, error: `${token} is larger than 255, the most one octet can hold.` };
+    if (n > 255) return { ok: false, error: `${token} is larger than 255, the most one octet can hold.` };
     out.push(n);
     if (out.length > MAX_DECODE_BYTES) {
       return { ok: false, error: `That is more than ${MAX_DECODE_BYTES} octets, the most this decoder reads.` };
@@ -481,11 +490,11 @@ export function routeWarnings(routes: Route[]): string[] {
     const first = r.router >>> 24;
     if (r.router === 0) {
       out.push(
-        `${cidrString(r.network, r.prefix)} uses router 0.0.0.0, which RFC 3442 defines as on-link: the client reaches that subnet directly on this interface, with no gateway.`,
+        `${cidrString(r.network, r.prefix)} uses router 0.0.0.0, which RFC 3442 reserves for a subnet on the same link: the client reaches it directly on this interface, with no gateway. A client whose stack cannot install such a route must ignore it.`,
       );
-    } else if (first === 127 || first >= 224) {
+    } else if (first === 0 || first === 127 || first >= 224) {
       out.push(
-        `${formatIPv4(r.router)} cannot be a next hop: it is ${first === 127 ? "a loopback address" : first >= 240 ? "in the reserved or broadcast range" : "a multicast address"}.`,
+        `${formatIPv4(r.router)} cannot be a next hop: it is ${first === 0 ? "in 0.0.0.0/8, which identifies \"this network\" and is never assigned to a router" : first === 127 ? "a loopback address" : first >= 240 ? "in the reserved or broadcast range" : "a multicast address"}.`,
       );
     }
   }

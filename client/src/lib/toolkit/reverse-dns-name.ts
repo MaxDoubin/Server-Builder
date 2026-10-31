@@ -14,6 +14,7 @@ import {
   formatIp,
   networkOf,
   parseIp,
+  strayCharacter,
   type Family,
   type Result,
 } from "./ip-address-classifier";
@@ -147,9 +148,16 @@ export function parseNameservers(text: string): Result<string[]> {
   for (const item of items) {
     const name = item.toLowerCase().replace(/\.$/, "");
     if (name.length > 253) return fail(`"${quote(item)}" is longer than the 253 characters a DNS name allows.`);
+    const stray = strayCharacter(name);
+    if (stray) return fail(`In "${quote(item)}": ${stray}`);
     const labels = name.split(".");
     if (labels.length < 2) {
       return fail(`"${quote(item)}" is a single label. A name server needs a fully qualified name, such as ns1.customer.example.`);
+    }
+    // RFC 1123 section 2.1: a host name never has the dotted-decimal form,
+    // because its top-level label is alphabetic. NS records name a host.
+    if (/^\d+$/.test(labels[labels.length - 1])) {
+      return fail(`"${quote(item)}" ends in a numeric label, so it is an address or not a host name. An NS record names a name server by host name, such as ns1.customer.example.`);
     }
     for (const label of labels) {
       // RFC 1123 section 2.1 host name syntax: letters, digits, hyphens, no hyphen at either end.
@@ -356,6 +364,7 @@ function parseIp6Arpa(labels: string[], name: string): Result<ReverseInput> {
 }
 
 function parsePtrName(text: string): Result<ReverseInput> {
+  if (text.endsWith("..")) return fail("The name ends in two dots. A fully qualified name ends in at most one.");
   const name = text.toLowerCase().replace(/\.$/, "");
   if (name.length > 253) return fail("That name is longer than the 253 characters DNS allows.");
   if (name.endsWith("ip6.int")) {
@@ -379,7 +388,9 @@ export function parseReverseInput(raw: string): Result<ReverseInput> {
   if (text.length > MAX_INPUT_LENGTH) {
     return fail(`That is ${text.length} characters. The longest reverse name is 73, so input past ${MAX_INPUT_LENGTH} characters is not read.`);
   }
-  if (/arpa\.?$/i.test(text) || /ip6\.int\.?$/i.test(text)) return parsePtrName(text);
+  const stray = strayCharacter(text);
+  if (stray) return fail(stray);
+  if (/arpa\.*$/i.test(text) || /ip6\.int\.*$/i.test(text)) return parsePtrName(text);
 
   let addressText = text;
   let prefix: number | null = null;
@@ -394,7 +405,7 @@ export function parseReverseInput(raw: string): Result<ReverseInput> {
   }
   const parsed = parseIp(addressText);
   if (!parsed.ok) {
-    if (/[g-z]/i.test(addressText) && !addressText.includes(":")) {
+    if (/[g-z]/i.test(addressText) && !addressText.includes(":") && !addressText.includes("%")) {
       return fail("That looks like a host name. Enter an IP address, or a reverse name ending in in-addr.arpa or ip6.arpa.");
     }
     return parsed;

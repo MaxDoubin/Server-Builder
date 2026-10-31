@@ -9,7 +9,7 @@
  * the tab, which matters because headers carry addresses and internal names.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ToolShell, ToolPanel, ToolResult } from "./ToolShell";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
@@ -91,7 +91,7 @@ function clip(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max)} ... (${text.length} chars)` : text;
 }
 
-function Chip({ children, tone }: { children: React.ReactNode; tone: string }) {
+function Chip({ children, tone }: { children: ReactNode; tone: string }) {
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono-tight text-xs ${tone}`}>{children}</span>
   );
@@ -120,9 +120,9 @@ function FindingList({ findings }: { findings: Finding[] }) {
   }
   return (
     <ul className="space-y-2" data-testid="list-findings">
-      {findings.map((finding) => (
+      {findings.map((finding, i) => (
         <li
-          key={finding.text}
+          key={i}
           className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE[finding.tone]}`}
         >
           <span className="sr-only">{TONE_WORD[finding.tone]}: </span>
@@ -133,7 +133,7 @@ function FindingList({ findings }: { findings: Finding[] }) {
   );
 }
 
-function Detail({ label, children }: { label: string; children: React.ReactNode }) {
+function Detail({ label, children }: { label: string; children: ReactNode }) {
   return (
     <>
       <dt className={`${LABEL} pt-0.5`}>{label}</dt>
@@ -153,6 +153,7 @@ function delayLabel(hop: ReceivedHop): { text: string; tone: string } {
 function HopCard({ hop }: { hop: ReceivedHop }) {
   const delay = delayLabel(hop);
   const otherHosts = hop.fromHosts.filter((h) => h !== (hop.fromName ?? "").toLowerCase().replace(/\.$/, ""));
+  const extraIps = hop.fromIps.filter((ip) => ip.address !== hop.peerIp?.address && ip.address !== hop.heloIp?.address);
   return (
     <li className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.4)] p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -166,9 +167,19 @@ function HopCard({ hop }: { hop: ReceivedHop }) {
       </div>
       <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
         <Detail label="From">{hop.fromName ?? <span className="text-[hsl(var(--brand-ash))]">not stated</span>}</Detail>
-        {hop.fromIps.length ? (
-          <Detail label="From address">
-            <IpChips ips={hop.fromIps} />
+        {hop.peerIp ? (
+          <Detail label="Connected from">
+            <IpChips ips={[hop.peerIp]} />
+          </Detail>
+        ) : null}
+        {hop.heloIp ? (
+          <Detail label="HELO address">
+            <IpChips ips={[hop.heloIp]} />
+          </Detail>
+        ) : null}
+        {extraIps.length ? (
+          <Detail label="Other addresses">
+            <IpChips ips={extraIps} />
           </Detail>
         ) : null}
         {otherHosts.length ? <Detail label="Other names">{otherHosts.join(", ")}</Detail> : null}
@@ -220,10 +231,7 @@ function AuthTable({ rows }: { rows: AuthRow[] }) {
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr
-              key={`${r.method}-${i}`}
-              className={`border-b border-[hsl(var(--brand-iron)/0.5)] align-top ${r.primary ? "" : "opacity-70"}`}
-            >
+            <tr key={`${r.method}-${i}`} className="border-b border-[hsl(var(--brand-iron)/0.5)] align-top">
               <th scope="row" className={`${TD} font-normal uppercase`}>
                 {r.method}
               </th>
@@ -239,7 +247,7 @@ function AuthTable({ rows }: { rows: AuthRow[] }) {
               </td>
               <td className={`${TD} break-all pr-0 text-xs text-[hsl(var(--brand-bone-dim))]`}>
                 {r.authservId ?? "no authserv-id"}
-                {r.primary ? "" : " (upstream)"}
+                {r.primary || r.arc ? null : <span className="mt-1 block text-[hsl(var(--brand-amber))]">upstream</span>}
               </td>
             </tr>
           ))}
@@ -324,7 +332,7 @@ function Results({ a }: { a: EmailAnalysis }) {
             </div>
           ) : null}
           <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            Only results written by your own receiving server mean anything. Dimmed rows came from another authserv-id.
+            Only results written by your own receiving server mean anything. Rows marked upstream came from another authserv-id.
           </p>
         </ToolPanel>
       </div>
@@ -543,7 +551,11 @@ export function EmailHeaderAnalyzer() {
           {summary}
         </p>
 
-        {a ? <Results a={a} /> : null}
+        {a ? (
+          <div className="space-y-6" data-testid="output-email-headers">
+            <Results a={a} />
+          </div>
+        ) : null}
       </div>
     </ToolShell>
   );

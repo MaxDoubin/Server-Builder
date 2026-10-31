@@ -154,10 +154,40 @@ function parseQuotedLine(line: string, lineNo: number): TxtRecord {
 }
 
 /**
- * Split a paste into TXT records, one per line. Bare lines are taken as the
- * record text. Lines with quotes are read as presentation format, and their
- * strings are joined with no separator, which is what section 3.3 of RFC
- * 7208 tells receivers to do. Comment lines (dig's ";;") are skipped.
+ * How far a line opens (positive) or closes (negative) zone file
+ * parentheses, ignoring anything inside quotes and after a comment. RFC 1035
+ * section 5.1 lets "(" and ")" carry one record across several lines.
+ */
+function parenDepthChange(line: string): number {
+  return scanZoneLine(line).depth;
+}
+
+/** Depth change and the line with any trailing zone file comment removed. */
+function scanZoneLine(line: string): { depth: number; code: string } {
+  let depth = 0;
+  let inQuote = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const c = line[i];
+    if (inQuote) {
+      if (c === "\\") i += 1;
+      else if (c === '"') inQuote = false;
+      continue;
+    }
+    if (c === '"') inQuote = true;
+    else if (c === ";") return { depth, code: line.slice(0, i) };
+    else if (c === "(") depth += 1;
+    else if (c === ")") depth -= 1;
+  }
+  return { depth, code: line };
+}
+
+/**
+ * Split a paste into TXT records, one per line, except that a record whose
+ * parentheses stay open continues onto the following lines. Bare lines are
+ * taken as the record text. Lines with quotes are read as presentation
+ * format, and their strings are joined with no separator, which is what
+ * section 3.3 of RFC 7208 tells receivers to do. Comment lines (dig's ";;")
+ * are skipped.
  */
 export function extractTxtRecords(input: string): TxtExtraction {
   if (input.length > MAX_INPUT_CHARS) {
@@ -170,16 +200,33 @@ export function extractTxtRecords(input: string): TxtExtraction {
   const records: TxtRecord[] = [];
   let skipped = 0;
   const lines = input.split(/\r\n|\r|\n/);
-  lines.forEach((rawLine, idx) => {
+  for (let idx = 0; idx < lines.length; idx += 1) {
+    let rawLine = lines[idx];
+    const lineNo = idx + 1;
     const trimmed = rawLine.trim();
-    if (trimmed === "" || trimmed.startsWith(";")) return;
+    if (trimmed === "" || trimmed.startsWith(";")) continue;
     if (records.length >= MAX_TXT_LINES) {
       skipped += 1;
-      return;
+      continue;
     }
-    if (trimmed.includes('"')) records.push(parseQuotedLine(rawLine, idx + 1));
-    else records.push({ line: idx + 1, text: trimmed, chunks: null, owner: null, error: null });
-  });
+    if (!trimmed.includes('"')) {
+      records.push({ line: lineNo, text: trimmed, chunks: null, owner: null, error: null });
+      continue;
+    }
+    // Join continuation lines while a "(" is still open, dropping their
+    // comments, so a multi-line zone file record reads as one record.
+    let depth = parenDepthChange(rawLine);
+    if (depth > 0) {
+      rawLine = scanZoneLine(rawLine).code;
+      while (depth > 0 && idx + 1 < lines.length) {
+        idx += 1;
+        const next = scanZoneLine(lines[idx]);
+        depth += next.depth;
+        rawLine += ` ${next.code}`;
+      }
+    }
+    records.push(parseQuotedLine(rawLine, lineNo));
+  }
   return { records, error: null, skipped };
 }
 
@@ -206,7 +253,8 @@ export function chunkFindings(txt: TxtRecord): Finding[] {
     for (let i = 1; i < txt.chunks.length; i += 1) {
       const prev = txt.chunks[i - 1];
       const next = txt.chunks[i];
-      if (prev !== "" && next !== "" && !/\s$/.test(prev) && !/^\s/.test(next)) {
+      // A split right after a separator (a DMARC ";" or a list ",") fuses nothing.
+      if (prev !== "" && next !== "" && !/[\s;,]$/.test(prev) && !/^[\s;,]/.test(next)) {
         const tail = prev.split(/\s+/).pop() ?? "";
         const head = next.split(/\s+/)[0] ?? "";
         out.push({

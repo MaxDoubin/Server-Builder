@@ -349,14 +349,16 @@ export function extractIocs(input: string, options: ExtractOptions): ExtractResu
     }
   }
 
-  // CVE IDs: CVE-YYYY-NNNN, four or more sequence digits (the 2014 syntax),
-  // and no year before 1999, when the list began.
+  // CVE IDs: CVE-YYYY-NNNN with four or more sequence digits (the 2014 ID
+  // syntax change), leading zeros only in a four digit sequence, and no year
+  // before 1999, when the list began.
   const cve = /CVE-(\d{4})-(\d{4,})/gi;
   for (let m = cve.exec(text); m !== null; m = cve.exec(text)) {
     const before = text.charAt(m.index - 1);
     const after = text.charAt(m.index + m[0].length);
     if (/[A-Za-z0-9]/.test(before) || /[A-Za-z]/.test(after)) continue;
     if (Number(m[1]) < 1999) continue;
+    if (m[2].length > 4 && m[2].charAt(0) === "0") continue;
     add("cve", `CVE-${m[1]}-${m[2]}`, starts[m.index], false, null);
   }
 

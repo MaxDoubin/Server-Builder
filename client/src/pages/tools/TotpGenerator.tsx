@@ -777,8 +777,8 @@ export function TotpGenerator() {
                 ) : checkCode === "" ? (
                   <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                     {mode === "totp"
-                      ? `Searches ${windowDraft.trim() || "0"} step(s) before and after now, the way a server tolerates clock drift (RFC 6238 section 5.2). The most is ${MAX_TOTP_WINDOW}.`
-                      : `Searches the current counter and up to ${lookaheadDraft.trim() || "0"} ahead, the resynchronization window of RFC 4226 section 7.4. The most is ${MAX_HOTP_LOOKAHEAD}.`}
+                      ? `Searches the ${live ? "current" : "selected"} step and ${plural(windowParsed.value, "step")} either side of it, the way a server tolerates clock drift and network delay (RFC 6238 sections 5.2 and 6). The most is ${MAX_TOTP_WINDOW}.`
+                      : `Searches the current counter and up to ${windowParsed.value} ahead, the look-ahead window of RFC 4226 section 7.4. The most is ${MAX_HOTP_LOOKAHEAD}.`}
                   </p>
                 ) : !/^\d+$/.test(checkCode) ? (
                   <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]">A code is digits only.</p>

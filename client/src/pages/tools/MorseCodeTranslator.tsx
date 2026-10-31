@@ -100,10 +100,10 @@ function prefersReducedMotion(): boolean {
 
 function formatSeconds(seconds: number): string {
   if (seconds < 1) return `${Math.round(seconds * 1000)} ms`;
-  if (seconds < 60) return `${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.round(seconds - minutes * 60);
-  return `${minutes} min ${rest} s`;
+  if (seconds < 59.95) return `${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
+  // Round once, then split, so 119.6 s reads 2 min 0 s rather than 1 min 60 s.
+  const total = Math.round(seconds);
+  return `${Math.floor(total / 60)} min ${total % 60} s`;
 }
 
 /** A character as the reader can see it, with its code point so invisible ones are identifiable. */
@@ -329,8 +329,11 @@ export function MorseCodeTranslator() {
   }
 
   function onCharWpm(value: number) {
+    // While the two speeds are equal (standard timing), keep them together,
+    // so raising the character speed does not quietly switch on Farnsworth
+    // spacing. Once they differ, only pull the effective speed down to fit.
+    if (effWpm >= charWpm || effWpm > value) setEffWpm(value);
     setCharWpm(value);
-    if (effWpm > value) setEffWpm(value);
   }
 
   const mainPlaying = playing?.source === "main";
@@ -747,7 +750,7 @@ export function MorseCodeTranslator() {
                       onClick={() => (active ? stop() : void play([[{ text: sym.text, code: sym.code }]], source))}
                       disabled={!sound && !light}
                       aria-label={`Play ${sym.text}${sym.name ? `, ${sym.name}` : ""}: ${toSpoken(sym.code)}`}
-                      data-testid={`button-ref-${sym.code}`}
+                      data-testid={`button-ref-${sym.kind}-${sym.code}`}
                       className={`flex min-h-[44px] min-w-0 flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS} ${
                         active
                           ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.1)]"

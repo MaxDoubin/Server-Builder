@@ -179,8 +179,8 @@ export function TcpFlagsCalculator() {
               <p id="tcp-flags-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {draftSource ? `Read as ${draftSource}. ` : ""}
                 Hex needs 0x, binary needs 0b or 8 digits, plain digits are decimal. Names (SYN ACK), tcpdump
-                letters ([S.]) and a whole tcpdump line work too. A 16-bit value such as 0x5012 is read as bytes 12
-                and 13.
+                letters ([S.], with a lowercase e for AE) and a whole tcpdump line work too. A 16-bit value such as
+                0x5012 is read as bytes 12 and 13.
               </p>
             )}
             {value & RESERVED_MASK ? (
@@ -222,7 +222,12 @@ export function TcpFlagsCalculator() {
             ) : null}
             {ae ? (
               <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                tcpdump's bracket form covers the eight bits of byte 13, so AE is not in it.
+                tcpdump 4.99.7 and later print AE as a lowercase e. Older releases leave it out of the brackets.
+              </p>
+            ) : null}
+            {value & RESERVED_MASK ? (
+              <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                tcpdump has no letter for the reserved bits, so they never appear in the brackets.
               </p>
             ) : null}
           </ToolPanel>
@@ -250,8 +255,11 @@ export function TcpFlagsCalculator() {
               </p>
             ) : explanation.nearCombo ? (
               <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]" data-testid="text-combo-text">
-                Byte 13 alone is {explanation.nearCombo.name}, with AE set as well. On a SYN or SYN-ACK, AE takes
-                part in Accurate ECN negotiation; after the handshake it carries congestion feedback.
+                {explanation.nearExtra === "reserved"
+                  ? `Without the reserved bits this is ${explanation.nearCombo.name}. Those bits are reserved and must be zero when sent, so a segment that sets them is crafted, broken, or using an experiment.`
+                  : `Byte 13 alone is ${explanation.nearCombo.name}, with AE set as well${
+                      explanation.nearExtra === "ae+reserved" ? " and reserved bits on" : ""
+                    }. In a SYN or SYN-ACK, AE takes part in Accurate ECN negotiation; after the handshake, AE, CWR and ECE together carry Accurate ECN's congestion feedback counter.`}
               </p>
             ) : (
               <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]" data-testid="text-combo-text">
@@ -293,9 +301,10 @@ export function TcpFlagsCalculator() {
               <h3 className="mb-4 font-display text-lg font-medium text-[hsl(var(--brand-bone))]">tcpdump (BPF)</h3>
               <FilterRows filters={tcpdump} prefix="tcpdump" />
               <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                tcp[tcpflags] is byte 13 of the TCP header. Put the filter in single quotes in the shell, since
-                brackets and | mean something to it. If your libpcap rejects tcp-ece or tcp-cwr, write 0x40 and
-                0x80 instead.
+                tcp[tcpflags] is byte 13 of the TCP header, so a test on it ignores AE and the reserved bits;
+                tcp[12:2] & 0x0fff covers all twelve. Put the filter in single quotes in the shell, since brackets
+                and | mean something to it. If your libpcap rejects tcp-ece or tcp-cwr, write 0x40 and 0x80
+                instead.
               </p>
             </div>
             <div>

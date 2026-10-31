@@ -230,6 +230,8 @@ export function PlayfairCipher() {
   const output = ok ? groupLetters(ok.output, grouping) : "";
   const fillerUpper = filler.toUpperCase();
   const alt = /^[A-Z]$/.test(fillerUpper) ? alternateFiller(fillerUpper, variant) : null;
+  const fillerError = !run.ok && run.field === "filler" ? run.error : null;
+  const textError = !run.ok && run.field === "text" ? run.error : null;
 
   function load(example: Example) {
     setKeyword(example.keyword);
@@ -346,14 +348,22 @@ export function PlayfairCipher() {
                 spellCheck={false}
                 autoComplete="off"
                 autoCapitalize="characters"
+                aria-invalid={fillerError !== null}
+                aria-describedby={fillerError ? "playfair-filler-error" : "playfair-filler-hint"}
                 data-testid="input-filler"
                 className={`mt-2 w-24 text-center uppercase ${INPUT}`}
               />
-              <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                {alt
-                  ? `Goes between doubled letters and pads an odd length. ${alt} stands in where the filler itself is doubled or comes last.`
-                  : "One letter that is in the square."}
-              </p>
+              {fillerError ? (
+                <p id="playfair-filler-error" role="alert" data-testid="text-filler-error" className={`mt-2 ${ERROR_BOX}`}>
+                  {fillerError}
+                </p>
+              ) : (
+                <p id="playfair-filler-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                  {alt
+                    ? `Goes between doubled letters and pads an odd length. ${alt} stands in where the filler itself is doubled or comes last.`
+                    : "One letter that is in the square."}
+                </p>
+              )}
             </div>
           </div>
 
@@ -373,15 +383,15 @@ export function PlayfairCipher() {
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
-              aria-invalid={!run.ok}
-              aria-describedby={!run.ok ? "playfair-error" : "playfair-text-hint"}
+              aria-invalid={textError !== null}
+              aria-describedby={textError ? "playfair-error" : "playfair-text-hint"}
               placeholder={direction === "encrypt" ? "Hide the gold in the tree stump" : "BMODZBXDNABEKUDMUIXMMOUVIF"}
               data-testid="input-text"
               className={`mt-2 resize-y break-all leading-relaxed ${INPUT}`}
             />
-            {!run.ok ? (
+            {textError ? (
               <p id="playfair-error" role="alert" data-testid="text-error" className={`mt-2 ${ERROR_BOX}`}>
-                {run.error}
+                {textError}
               </p>
             ) : (
               <p id="playfair-text-hint" className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
@@ -508,7 +518,7 @@ export function PlayfairCipher() {
               </>
             ) : (
               <p className="font-mono-tight text-sm text-[hsl(var(--brand-ash))]">
-                Nothing to show until the text above is valid.
+                {fillerError ? "Nothing to show until the filler is a letter in the square." : "Nothing to show until the text above is valid."}
               </p>
             )}
           </ToolPanel>

@@ -484,7 +484,7 @@ export function encodeEntities(input: string, options: EncodeOptions): EncodeRes
       // anyway, so write the replacement character honestly.
       loneSurrogates += 1;
       cp = 0xfffd;
-      out = "�";
+      out = "\ufffd";
     }
     const wanted =
       options.scope === "all" || MARKUP.has(cp) || (options.scope === "nonascii" && cp >= 0x80);

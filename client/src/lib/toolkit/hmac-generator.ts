@@ -35,7 +35,10 @@ export type ByteFormat = "text" | "hex" | "base64";
 export const MAX_MESSAGE_BYTES = 1_048_576;
 /** Largest key accepted, after decoding. Anything over the block size is hashed down anyway. */
 export const MAX_KEY_BYTES = 65_536;
-/** The mismatch diagnosis recomputes the MAC a dozen times, so it only runs on messages up to this size. */
+/**
+ * The mismatch diagnosis recomputes the MAC up to 27 times (3 key readings,
+ * 3 message variants, 3 hashes at most), so it only runs on messages up to this size.
+ */
 export const MAX_DIAGNOSE_BYTES = 65_536;
 
 export type BytesResult = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
@@ -207,6 +210,14 @@ export function parseBytes(input: string, format: ByteFormat, maxBytes: number, 
   if (format !== "text" && input.length > limitChars) {
     return { ok: false, error: `The ${what} is longer than the ${formatBytes(maxBytes)} this tool will hash.` };
   }
+  // Every UTF-16 code unit becomes at least one UTF-8 byte, so text longer
+  // than the cap in code units is over it in bytes too, without encoding it.
+  if (format === "text" && input.length > maxBytes) {
+    return {
+      ok: false,
+      error: `The ${what} is at least ${formatBytes(input.length)} as UTF-8, over the ${formatBytes(maxBytes)} this tool will hash.`,
+    };
+  }
   let result: BytesResult;
   if (format === "text") result = { ok: true, bytes: utf8Encode(input) };
   else if (format === "hex") result = parseHex(input);
@@ -267,6 +278,7 @@ export function parseExpectedMac(input: string, format: ExpectedFormat): Expecte
     text = text.slice(labelled[0].length);
   }
   if (text === "") return { ok: false, error: "There is nothing after the label to compare." };
+  if (/^0x\s*$/i.test(text)) return { ok: false, error: "There is nothing after the 0x to compare." };
   let chosen: "hex" | "base64";
   if (format === "auto") {
     const hexDigits = text.replace(/^0x/i, "").replace(/[\s:]/g, "");
@@ -284,6 +296,13 @@ export function parseExpectedMac(input: string, format: ExpectedFormat): Expecte
     };
   }
   return { ok: true, bytes: parsed.bytes, format: chosen, prefix };
+}
+
+/** The algorithm a "sha256=" style label names, or null for no label. */
+export function labelAlg(prefix: string | null): HmacAlg | null {
+  if (prefix === null) return null;
+  const bits = prefix.toLowerCase().replace(/^sha-?/, "");
+  return HMAC_ALGS.find((a) => a.id === `SHA-${bits}`)?.id ?? null;
 }
 
 export type VerifyOutcome =
@@ -429,7 +448,9 @@ function keyVariants(raw: string, format: ByteFormat): Variant[] {
 function messageVariants(raw: string, format: ByteFormat): Variant[] {
   const out: Variant[] = [];
   const original = parseBytes(raw, format, MAX_DIAGNOSE_BYTES, "message");
-  if (original.ok) out.push({ bytes: original.bytes, note: null });
+  // Over the cap (or unreadable) means no search at all, variants included.
+  if (!original.ok) return out;
+  out.push({ bytes: original.bytes, note: null });
   if (format === "text") {
     if (raw.endsWith("\r\n")) {
       out.push({ bytes: utf8Encode(raw.slice(0, -2)), note: "the message without its trailing CRLF" });
@@ -455,8 +476,10 @@ function messageVariants(raw: string, format: ByteFormat): Variant[] {
  * When a provided MAC does not match, try the mistakes that cause most
  * mismatches in practice: the wrong algorithm, a key used as text when it
  * was meant as hex or the other way round, and a trailing newline. Only
- * algorithms whose output length fits the provided MAC are tried, and only
- * on messages up to MAX_DIAGNOSE_BYTES, so this is at most a dozen HMACs.
+ * algorithms whose output length fits the provided MAC are tried (never
+ * more than 3), with at most 3 readings of the key and 3 variants of the
+ * message, so this is at most 27 HMACs. The page calls it only for
+ * messages up to MAX_DIAGNOSE_BYTES, and the variants are capped here too.
  */
 export async function diagnoseMismatch(
   provided: Uint8Array,

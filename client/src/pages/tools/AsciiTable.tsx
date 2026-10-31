@@ -73,8 +73,12 @@ const EXAMPLES = ["A", "65", "0x1B", "^M", "\\n", "%20", "&amp;", "tab", "100000
 
 /** What bits 6 and 5 select, for the lower and the upper half. */
 const COLUMN_LOW = ["control characters", "space, digits and punctuation", "@, capitals and [\\]^_", "`, small letters, {|}~ and DEL"];
-const COLUMN_HIGH_LATIN1 = ["C1 control characters", "no-break space and symbols", "accented capitals and the multiplication sign", "accented small letters and the division sign"];
-const COLUMN_HIGH_1252 = ["Windows-1252 punctuation and letters", "no-break space and symbols", "accented capitals and the multiplication sign", "accented small letters and the division sign"];
+const COLUMN_HIGH_LATIN1 = ["C1 control characters", "no-break space and symbols", "capital letters, the multiplication sign and sharp s", "small letters and the division sign"];
+const COLUMN_HIGH_1252 = ["Windows-1252 punctuation and letters", "no-break space and symbols", "capital letters, the multiplication sign and sharp s", "small letters and the division sign"];
+/** Short column headings for the chart. */
+const CHART_HEAD_LOW = ["controls", "digits, punctuation", "capitals", "small letters"];
+const CHART_HEAD_LATIN1 = ["C1 controls", "symbols", "capitals", "small letters"];
+const CHART_HEAD_1252 = ["1252 extras", "symbols", "capitals", "small letters"];
 
 /** Copy with the same fallback the shared CopyButton uses, for browsers that refuse the async clipboard. */
 async function writeClipboard(text: string): Promise<boolean> {
@@ -132,13 +136,15 @@ export function AsciiTable() {
   const [selected, setSelected] = useState(65);
   const [status, setStatus] = useState("");
   const statusTimer = useRef<number | null>(null);
+  const mounted = useRef(true);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
       if (statusTimer.current !== null) window.clearTimeout(statusTimer.current);
-    },
-    [],
-  );
+    };
+  }, []);
 
   const rows = useMemo(() => rowsFor(charset), [charset]);
   const search = useMemo(() => searchCodes(query, charset), [query, charset]);
@@ -152,12 +158,16 @@ export function AsciiTable() {
     setSelected(target.code);
     const value = copyValue(target, format);
     const ok = await writeClipboard(value);
+    // The clipboard call can outlive the page; do not start a timer after unmount.
+    if (!mounted.current) return;
     const what = `${shortLabel(target)} (${target.code}, 0x${toHex(target.code)})`;
     setStatus(
       ok
         ? format === "char" && target.control
           ? `Copied ${what} as the raw control character. Many apps strip or act on it; copy as hex or C escape for a visible form.`
-          : `Copied ${what} as ${formatLabel}: ${value}`
+          : format === "html" && target.control && target.htmlNote
+            ? `Copied ${what} as ${formatLabel}: ${value}. ${target.htmlNote}`
+            : `Copied ${what} as ${formatLabel}: ${value}`
         : `Could not reach the clipboard. ${what} is selected above.`,
     );
     if (statusTimer.current !== null) window.clearTimeout(statusTimer.current);
@@ -457,7 +467,11 @@ export function AsciiTable() {
               />
               <ToolResult label="Percent-encoded byte" value={`%${toHex(row.code)}`} />
               {bytes && upper ? (
-                <ToolResult label="UTF-8 bytes" value={bytes.map((b) => toHex(b)).join(" ")} />
+                <>
+                  <ToolResult label="UTF-8 bytes" value={bytes.map((b) => toHex(b)).join(" ")} />
+                  {/* URLs percent-encode UTF-8 (WHATWG URL), so this, not the single byte, is what a browser sends. */}
+                  <ToolResult label="Percent-encoded as UTF-8" value={bytes.map((b) => `%${toHex(b)}`).join("")} />
+                </>
               ) : null}
               {garbled ? <ToolResult label="UTF-8 misread as Windows-1252" value={garbled} /> : null}
             </div>
@@ -580,7 +594,7 @@ export function AsciiTable() {
                           <th key={c} scope="col" className={CHART_TH}>
                             <span className="text-[hsl(var(--brand-cyan))]">{c.toString(2).padStart(2, "0")}</span>{" "}
                             <span className="font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
-                              {(offset === 0 ? COLUMN_LOW : charset === "cp1252" ? COLUMN_HIGH_1252 : COLUMN_HIGH_LATIN1)[c].split(",")[0]}
+                              {(offset === 0 ? CHART_HEAD_LOW : charset === "cp1252" ? CHART_HEAD_1252 : CHART_HEAD_LATIN1)[c]}
                             </span>
                           </th>
                         ))}

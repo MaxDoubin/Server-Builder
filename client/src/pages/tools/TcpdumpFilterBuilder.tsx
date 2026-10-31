@@ -408,6 +408,7 @@ export function TcpdumpFilterBuilder() {
                         type="checkbox"
                         checked={row.negate}
                         onChange={(e) => update(row.id, { negate: e.target.checked })}
+                        aria-label={`Negate clause ${index + 1} (not)`}
                         data-testid={`checkbox-negate-${index}`}
                         className={CHECKBOX}
                       />

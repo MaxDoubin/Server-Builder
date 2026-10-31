@@ -27,10 +27,50 @@ export const MAX_LISTED_WORDS = 256;
 
 export type HexParse = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 
+/** An offset ending in a colon: "0x0010:" from tcpdump -x, "00000010:" from xxd. */
+const COLON_OFFSET = /^\s*(?:0x)?[0-9a-fA-F]{4,8}:\s+/;
+
+/** An offset with no colon, as in Wireshark's Copy as Hex Dump: "0010   c0 a8". */
+const BARE_OFFSET = /^\s*([0-9a-fA-F]{4,8})\s+(\S.*)$/;
+
+/**
+ * Removes dump offsets so they are not read as data. Colon offsets are
+ * unambiguous. Offsets with no colon look like data, so they are removed
+ * only when there are at least two lines, every line is an offset followed
+ * by two-digit bytes, and each offset equals the number of bytes on the
+ * lines before it (0000, 0010, 0020 and so on).
+ */
+function stripOffsets(lines: string[]): string[] {
+  const out = lines.map((line) => line.replace(COLON_OFFSET, ""));
+  const nonEmpty = out.filter((line) => line.trim() !== "");
+  if (nonEmpty.length < 2) return out;
+  const rests: string[] = [];
+  let count = 0;
+  for (const line of nonEmpty) {
+    const match = BARE_OFFSET.exec(line);
+    if (!match || parseInt(match[1], 16) !== count) return out;
+    const bytes = match[2].trim().split(/\s+/);
+    if (!bytes.every((b) => /^[0-9a-fA-F]{2}$/.test(b))) return out;
+    count += bytes.length;
+    rests.push(match[2]);
+  }
+  return rests;
+}
+
+/** A character for an error message, as a code point when it would be invisible. */
+function describeChar(text: string, index: number): string {
+  const cp = text.codePointAt(index) ?? 0;
+  const char = String.fromCodePoint(cp);
+  return /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(char)
+    ? `"${char}"`
+    : `The character U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
 /**
  * Reads hex in the forms people actually paste: a plain stream
  * (4500003c...), spaced bytes or words, colon or dash separated bytes,
- * 0x and \x prefixes, and tcpdump -x output with its 0x0000: offsets.
+ * 0x and \x prefixes, and dumps with offsets: tcpdump -x (0x0010:),
+ * xxd (00000010:) and Wireshark's Copy as Hex Dump (0010 followed by bytes).
  */
 export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
   if (raw.length > MAX_INPUT_CHARS) {
@@ -41,9 +81,8 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
   }
 
   const tokens: string[] = [];
-  for (const rawLine of raw.split(/\r?\n/)) {
-    // tcpdump -x and -xx prefix each line with an offset such as 0x0010:
-    const line = rawLine.replace(/^\s*0x[0-9a-fA-F]{4,8}:\s+/, "").replace(/\\x/g, " ");
+  for (const rawLine of stripOffsets(raw.split(/\r?\n/))) {
+    const line = rawLine.replace(/\\x/g, " ");
     for (const token of line.split(/[\s,:;\-]+/)) {
       if (token === "") continue;
       tokens.push(token.replace(/^0x/i, ""));
@@ -55,13 +94,12 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
 
   const bad = digits.search(/[^0-9a-fA-F]/);
   if (bad !== -1) {
-    const char = digits[bad];
-    const hint = /[g-zG-Z.]/.test(char)
+    const hint = /[g-zG-Z.]/.test(digits[bad])
       ? " If this came from tcpdump -X or a hex dump, leave out the ASCII column."
       : "";
     return {
       ok: false,
-      error: `"${char}" is not a hex digit (0 to 9, a to f).${hint}`,
+      error: `${describeChar(digits, bad)} is not a hex digit (0 to 9, a to f).${hint}`,
     };
   }
   if (digits.length % 2 !== 0) {
@@ -366,9 +404,14 @@ export function analyzeIpv4Header(bytes: Uint8Array): Ipv4HeaderOutcome {
     };
   }
   if (version !== 4) {
+    // A whole Ethernet frame starts with two MAC addresses, then the
+    // EtherType at bytes 12 and 13 (0x0800 for IPv4).
+    const ethernet = bytes.length >= 34 && bytes[12] === 0x08 && bytes[13] === 0x00 && bytes[14] >> 4 === 4;
     return {
       ok: false,
-      error: `The first nibble is ${version}, not 4, so this is not an IPv4 header. It should start with 4, usually 45.`,
+      error: ethernet
+        ? "This looks like a whole Ethernet frame: bytes 12 and 13 are 0800, the IPv4 EtherType. Remove the first 14 bytes (the two MAC addresses and the EtherType) so the input starts at the IPv4 header."
+        : `The first nibble is ${version}, not 4, so this is not an IPv4 header. It should start with 4, usually 45.`,
     };
   }
   const ihl = bytes[0] & 0x0f;

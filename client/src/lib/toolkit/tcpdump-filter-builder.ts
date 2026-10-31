@@ -143,12 +143,34 @@ type Address =
   | { family: 6; text: string }
   | { family: "name"; text: string };
 
-/** Words the pcap lexer reads as syntax, so they cannot stand as a hostname. */
-const PCAP_KEYWORDS = new Set([
-  "and", "or", "not", "host", "net", "port", "portrange", "src", "dst", "ether", "ip", "ip6", "arp", "rarp",
-  "tcp", "udp", "sctp", "icmp", "icmp6", "proto", "vlan", "mpls", "less", "greater", "len", "broadcast",
-  "multicast", "gateway", "mask", "inbound", "outbound", "link", "igmp", "pim",
-]);
+/**
+ * Words the pcap lexer (libpcap scanner.l) reads as syntax or as a named
+ * constant, so they cannot stand as a hostname: "host len" is a syntax
+ * error and "host tcp-syn" is read as "host 2".
+ */
+const PCAP_KEYWORDS = new Set(
+  (
+    "and or not aarp action addr1 addr2 addr3 addr4 address1 address2 address3 address4 ah arp atalk bcc " +
+    "broadcast byte carp clnp connectmsg csnp decnet dir direction dpc dst es-is esis esp ether fddi fisu " +
+    "gateway geneve greater hdpc hfisu hlssu hmsu hopc host hsio hsls icmp icmp6 icmp6code icmp6type icmpcode " +
+    "icmptype ifindex ifname igmp igrp iih ilmic inbound ip ip6 ipx is-is isis iso l1 l2 lane lat len length " +
+    "less link llc lsp lssu lsu mask metac metaconnect mopdl moprc mpls msu multicast net netbeui oam oamf4 " +
+    "oamf4ec oamf4sc on opc outbound pim port portrange ppp pppoed pppoes proto protochain psnp ra radio rarp " +
+    "reason rnr rset rulenum ruleset sc sca sctp sio slip sls snp src srnr stp subrulenum subtype ta tcp " +
+    "tcpflags tr type udp vci vlan vpi vrrp vxlan wlan"
+  ).split(" "),
+);
+
+/** Named constants such as tcp-syn, icmp-echo and icmp6-neighborsolicit. */
+const PCAP_CONSTANT = /^(tcp|icmp|icmp6)-[a-z0-9]+$/;
+
+/**
+ * Text the pcap lexer matches as a number, a dotted number or a MAC address
+ * before it would consider a hostname: 0x1a, 0x0a.1, aabb.ccdd.eeff,
+ * aa-bb-cc-dd-ee-ff and twelve bare hex digits.
+ */
+const PCAP_NOT_A_NAME =
+  /^((0x[0-9a-f]+|\d+)(\.(0x[0-9a-f]+|\d+)){0,3}|[0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4}|[0-9a-f]{12}|([0-9a-f]{1,2}\.){5}[0-9a-f]{1,2}|([0-9a-f]{1,2}-){5}[0-9a-f]{1,2})$/;
 
 export function parseAddress(text: string): Parsed<Address> {
   const s = text.trim();
@@ -173,8 +195,14 @@ export function parseAddress(text: string): Parsed<Address> {
       };
     }
   }
-  if (PCAP_KEYWORDS.has(name)) {
+  if (PCAP_KEYWORDS.has(name) || PCAP_CONSTANT.test(name)) {
     return { ok: false, error: `"${name}" is a filter keyword, so tcpdump would read it as syntax rather than a hostname.` };
+  }
+  if (PCAP_NOT_A_NAME.test(name)) {
+    return {
+      ok: false,
+      error: `tcpdump would read "${name}" as a number or a MAC address rather than a hostname. Write an IPv4 address in dotted decimal.`,
+    };
   }
   return { ok: true, value: { family: "name", text: name } };
 }
@@ -421,7 +449,8 @@ function compileBare(c: Clause): Parsed<Omit<Compiled, "text"> & { phrase: strin
           relational: false,
           phrase: `${who} with ${DIR_WORDS[c.dir]} ${what}`,
           detail,
-          caveats: [],
+          // pcap-filter(7), port: over IPv6 "the packet does not use any extension headers".
+          caveats: ["Over IPv6, tcpdump's port tests only match packets with no extension headers; Wireshark's port fields match either way."],
         },
       };
     }
@@ -449,12 +478,19 @@ function compileBare(c: Clause): Parsed<Omit<Compiled, "text"> & { phrase: strin
           },
         };
       }
+      let detail = "";
       if (c.proto === "tcp" || c.proto === "udp") {
         caveats.push(
           `Wireshark's ${meta.ws} also matches the ${c.proto.toUpperCase()} header quoted inside an ICMP error message; tcpdump checks only the packet's own protocol field.`,
         );
       }
-      return { ok: true, value: { bpf: c.proto, ws: meta.ws, wsCompound: false, relational: false, phrase: meta.phrase, detail: "", caveats } };
+      if (c.proto === "icmp6") {
+        // pcap-filter(7): ip6 proto "does not chase the protocol header chain".
+        detail =
+          "libpcap does not walk the IPv6 extension header chain, so ICMPv6 behind a Hop-by-Hop Options header, such as MLD reports, is missed.";
+        caveats.push("Wireshark's icmpv6 matches ICMPv6 behind any extension headers; tcpdump's icmp6 misses it behind a Hop-by-Hop header, as in MLD.");
+      }
+      return { ok: true, value: { bpf: c.proto, ws: meta.ws, wsCompound: false, relational: false, phrase: meta.phrase, detail, caveats } };
     }
     case "flags": {
       const set = TCP_FLAGS.filter((f) => c.flags[f.key] === "set");
@@ -691,7 +727,7 @@ export function buildCommand(o: CommandOptions, filter: string): CommandResult {
         token: `-i ${iface}`,
         text:
           iface === "any"
-            ? "Capture on every interface at once (Linux). The any device uses a cooked link-layer header and does not put interfaces in promiscuous mode."
+            ? "Capture on every interface at once (Linux, and recent macOS and Solaris). On Linux the any device records a cooked link-layer header, and it never puts interfaces in promiscuous mode."
             : `Capture on ${iface}. tcpdump -D lists the interface names this host accepts.`,
       });
     }

@@ -21,6 +21,14 @@ export type BaconAlphabet = 24 | 26;
 /** Longest text accepted in any field, in UTF-16 code units. */
 export const MAX_CHARS = 20_000;
 
+/**
+ * Longest text accepted for decoding, in UTF-16 code units. The groups for a
+ * MAX_CHARS letter message, written with astral symbols such as emoji and
+ * spaced in fives, come to just under this, so anything the encoder writes
+ * can be decoded again.
+ */
+export const MAX_DECODE_CHARS = 12 * MAX_CHARS;
+
 /** Characters of a cover text drawn in the highlighted pattern view. */
 export const MAX_PREVIEW_CHARS = 4_000;
 
@@ -291,13 +299,21 @@ function buildSegments(chars: string[], kinds: SegmentKind[]): Segments {
  * out digits, punctuation, the Mathematical Alphanumeric letters (which
  * have no case mapping), titlecase digraphs, and letters such as the German
  * sharp s whose uppercase is two characters.
+ *
+ * Both of its forms must pass the same test, so that changing a carrier's
+ * case never produces a character the reader would skip. Capital sharp s
+ * (U+1E9E) fails here: it lowercases to ß, whose uppercase is "SS".
  */
-export function isCaseCarrier(ch: string): boolean {
+function hasSimpleCase(ch: string): boolean {
   const up = ch.toUpperCase();
   const low = ch.toLowerCase();
   if (up === low) return false;
   if (Array.from(up).length !== 1 || Array.from(low).length !== 1) return false;
   return ch === up || ch === low;
+}
+
+export function isCaseCarrier(ch: string): boolean {
+  return hasSimpleCase(ch) && hasSimpleCase(ch.toUpperCase()) && hasSimpleCase(ch.toLowerCase());
 }
 
 export type HideResult =
@@ -326,6 +342,24 @@ function tooLong(name: string, length: number): string {
   return `The ${name} is ${length.toLocaleString("en-US")} characters long. This tool stops at ${MAX_CHARS.toLocaleString(
     "en-US",
   )} so the page stays responsive.`;
+}
+
+/**
+ * The characters of a text that may hold styled letters, or null when there
+ * are more than MAX_CHARS of them. A Mathematical Alphanumeric letter is two
+ * UTF-16 code units, so these limits count code points: a styled cover the
+ * tool wrote can always be read back or restyled.
+ */
+function styledChars(text: string): string[] | null {
+  if (text.length > 2 * MAX_CHARS) return null;
+  const chars = Array.from(text);
+  return chars.length > MAX_CHARS ? null : chars;
+}
+
+function tooLongStyled(name: string): string {
+  return `The ${name} is longer than ${MAX_CHARS.toLocaleString(
+    "en-US",
+  )} characters, counting each styled letter as one. This tool stops there so the page stays responsive.`;
 }
 
 /**
@@ -537,13 +571,13 @@ export function hideInStyles(
   styleB: StyleId,
 ): HideResult {
   if (message.length > MAX_CHARS) return { ok: false, error: tooLong("message", message.length) };
-  if (cover.length > MAX_CHARS) return { ok: false, error: tooLong("cover text", cover.length) };
+  const chars = styledChars(cover);
+  if (chars === null) return { ok: false, error: tooLongStyled("cover text") };
   if (styleA === styleB) return { ok: false, error: "The two styles are the same, so the letters could not be told apart." };
   const encoded = encodeLetters(message, alphabet);
   if (encoded.letters.length === 0) {
     return { ok: false, error: "The message has no letters from A to Z, so there is nothing to hide." };
   }
-  const chars = Array.from(cover);
   let carriers = 0;
   for (const ch of chars) if (classifyLetter(ch)) carriers += 1;
   const need = encoded.bits.length;
@@ -584,8 +618,8 @@ export function hideInStyles(
  * style seen first is A. flip swaps the two.
  */
 export function readStyles(text: string, flip: boolean): ReadResult {
-  if (text.length > MAX_CHARS) return { ok: false, error: tooLong("text", text.length) };
-  const chars = Array.from(text);
+  const chars = styledChars(text);
+  if (chars === null) return { ok: false, error: tooLongStyled("text") };
   const infos = chars.map(classifyLetter);
   const seen: StyleId[] = [];
   for (const info of infos) if (info && !seen.includes(info.style)) seen.push(info.style);

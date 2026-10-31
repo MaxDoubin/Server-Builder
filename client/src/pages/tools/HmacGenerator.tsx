@@ -22,6 +22,7 @@ import {
   HMAC_ALGS,
   HMAC_EXAMPLES,
   hmacSteps,
+  labelAlg,
   matchExample,
   MAX_DIAGNOSE_BYTES,
   MAX_KEY_BYTES,
@@ -183,6 +184,7 @@ export function HmacGenerator() {
   const needsDiagnosis = outcome !== null && (outcome.kind === "mismatch" || outcome.kind === "length");
   const messageTooBigToDiagnose = (messageBytes?.length ?? 0) > MAX_DIAGNOSE_BYTES;
   const providedHex = expectedParsed && expectedParsed.ok ? bytesToHex(expectedParsed.bytes) : "";
+  const labelled = expectedParsed && expectedParsed.ok ? labelAlg(expectedParsed.prefix) : null;
 
   const diagToken = useMemo(
     () => ({ providedHex, key, keyFormat, message, messageFormat, alg }),
@@ -517,6 +519,11 @@ export function HmacGenerator() {
                       Read as {expectedParsed.format === "hex" ? "hex" : "Base64"}, {expectedParsed.bytes.length} bytes
                       {expectedParsed.prefix ? `, with the ${expectedParsed.prefix}= label removed` : ""}.
                     </p>
+                    {labelled && labelled !== alg ? (
+                      <p className={WARN_BOX} data-testid="text-label-mismatch">
+                        The label names {labelled}, but HMAC-{alg} is selected.
+                      </p>
+                    ) : null}
                     {outcome?.kind === "match" ? (
                       <p className={OK_BOX}>Match. The MAC equals HMAC-{alg} of this message under this key.</p>
                     ) : outcome?.kind === "truncated-match" ? (
@@ -626,8 +633,9 @@ export function HmacGenerator() {
               </table>
             </div>
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              The output length alone identifies the hash: 20, 32, 48 or 64 bytes. A MAC that matches none of these
-              rows under any hash came from different key or message bytes.
+              Among these four, the output length tells the hash apart: 20, 32, 48 or 64 bytes. Other hashes share
+              some of those lengths (HMAC-SHA3-256 is also 32 bytes), so a MAC that matches no row came from different
+              key or message bytes or from a hash not listed here.
             </p>
           </ToolPanel>
         ) : null}

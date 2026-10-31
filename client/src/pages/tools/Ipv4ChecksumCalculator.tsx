@@ -21,6 +21,7 @@ import {
   analyzeTransport,
   hex16,
   parseHex,
+  parseIpv4,
   protocolName,
   toHexWords,
   transportFromPacket,
@@ -321,6 +322,9 @@ export function Ipv4ChecksumCalculator() {
     });
   }, [segmentText, source, destination, protocol, lengthOverride]);
 
+  const sourceOk = useMemo(() => parseIpv4(source, "source").ok, [source]);
+  const destinationOk = useMemo(() => parseIpv4(destination, "destination").ok, [destination]);
+
   const generic = useMemo(() => {
     const parsed = parseHex(genericText);
     if (!parsed.ok) return parsed;
@@ -411,8 +415,8 @@ export function Ipv4ChecksumCalculator() {
                   />
                   {header.ok ? (
                     <p id="checksum-header-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                      Spaces, colons, 0x prefixes and tcpdump -x offsets are ignored. Up to{" "}
-                      {MAX_BYTES.toLocaleString("en-US")} bytes.
+                      Spaces, colons, 0x prefixes and the offsets in tcpdump -x, xxd and Wireshark hex dumps are
+                      ignored. Up to {MAX_BYTES.toLocaleString("en-US")} bytes.
                     </p>
                   ) : (
                     <p id="checksum-header-error" role="alert" data-testid="text-header-error" className={ERROR_BOX}>
@@ -426,7 +430,11 @@ export function Ipv4ChecksumCalculator() {
                   <ToolPanel title="Result">
                     <Status valid={header.valid} testId="text-header-status">
                       {header.valid
-                        ? `Valid. The checksum field holds ${h(header.existing)}, which is what the header sums to.`
+                        ? `Valid. The checksum field holds ${h(header.existing)}, and the header sums to 0xffff with it in place.${
+                            header.existing !== header.computed
+                              ? ` The usual value is ${h(header.computed)}; 0x0000 and 0xffff are both zero in ones' complement, so either verifies.`
+                              : ""
+                          }`
                         : `Does not match. The field holds ${h(header.existing)} but the header needs ${h(header.computed)}.`}
                     </Status>
                     <div className="mt-4">
@@ -503,6 +511,8 @@ export function Ipv4ChecksumCalculator() {
                         spellCheck={false}
                         autoComplete="off"
                         inputMode="decimal"
+                        aria-invalid={!sourceOk}
+                        aria-describedby={sourceOk ? undefined : "checksum-transport-error"}
                         data-testid="input-source"
                         placeholder="192.0.2.10"
                         className={INPUT}
@@ -519,6 +529,8 @@ export function Ipv4ChecksumCalculator() {
                         spellCheck={false}
                         autoComplete="off"
                         inputMode="decimal"
+                        aria-invalid={!destinationOk}
+                        aria-describedby={destinationOk ? undefined : "checksum-transport-error"}
                         data-testid="input-destination"
                         placeholder="198.51.100.20"
                         className={INPUT}
@@ -560,7 +572,7 @@ export function Ipv4ChecksumCalculator() {
                         autoComplete="off"
                         inputMode="numeric"
                         aria-invalid={!lengthOverride.ok}
-                        aria-describedby="checksum-length-hint"
+                        aria-describedby={lengthOverride.ok ? "checksum-length-hint" : "checksum-length-hint checksum-transport-error"}
                         data-testid="input-length"
                         placeholder="blank: segment length"
                         className={INPUT}
@@ -624,7 +636,11 @@ export function Ipv4ChecksumCalculator() {
                     ) : (
                       <Status valid={transport.valid} testId="text-transport-status">
                         {transport.valid
-                          ? `Valid. The checksum field holds ${h(transport.existing)}, which is what the pseudo-header and segment sum to.`
+                          ? `Valid. The checksum field holds ${h(transport.existing)}, and the pseudo-header and segment sum to 0xffff with it in place.${
+                              transport.existing !== transport.transmitted
+                                ? ` The usual value is ${h(transport.transmitted)}; 0x0000 and 0xffff are both zero in ones' complement, so either verifies.`
+                                : ""
+                            }`
                           : `Does not match. The field holds ${h(transport.existing)} but the segment needs ${h(transport.transmitted)}.`}
                       </Status>
                     )}

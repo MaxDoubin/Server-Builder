@@ -57,6 +57,9 @@ function fold(text: string, variant: Variant): { letters: string; folded: number
   let dropped = 0;
   let ignored = 0;
   for (const ch of text) {
+    // One letter past the cap is enough to know the text was cut, so a
+    // pasted book is never scanned to the end.
+    if (letters.length > MAX_LETTERS) break;
     // ASCII test on the original character: "ı".toUpperCase() is "I" and
     // "ß".toUpperCase() is "SS", and neither belongs in the square.
     if (!/^[A-Za-z]$/.test(ch)) {
@@ -199,6 +202,7 @@ export function prepareCiphertext(text: string, variant: Variant): CipherPrepare
   let ignored = 0;
   let qCount = 0;
   for (const ch of text) {
+    if (letters.length > MAX_LETTERS) break;
     // ASCII test on the original character: "ı".toUpperCase() is "I" and
     // "ß".toUpperCase() is "SS", and neither belongs in the square.
     if (!/^[A-Za-z]$/.test(ch)) {
@@ -340,7 +344,10 @@ export interface RunResult {
   cleaned: string | null;
 }
 
-export type Run = RunResult | { ok: false; error: string; square: KeySquare };
+/** Which input an error is about, so the page can show it beside that field. */
+export type ErrorField = "filler" | "text";
+
+export type Run = RunResult | { ok: false; error: string; field: ErrorField; square: KeySquare };
 
 /** One call for the page: build the square, prepare the text, transform it. */
 export function runPlayfair(options: {
@@ -354,12 +361,13 @@ export function runPlayfair(options: {
   const square = buildKeySquare(keyword, variant);
   const filler = options.filler.toUpperCase();
   if (!/^[A-Z]$/.test(filler)) {
-    return { ok: false, square, error: "The filler must be a single letter, A to Z." };
+    return { ok: false, square, field: "filler", error: "The filler must be a single letter, A to Z." };
   }
   if (!(filler in square.pos)) {
     return {
       ok: false,
       square,
+      field: "filler",
       error: `${filler} is not in this square, so it cannot be the filler. Pick another letter; X is the usual choice.`,
     };
   }
@@ -368,7 +376,7 @@ export function runPlayfair(options: {
   if (direction === "encrypt") {
     const prep = preparePlaintext(text, variant, filler);
     if (prep.letters.length === 0) {
-      return { ok: false, square, error: "There are no letters to encrypt. Playfair works on A to Z only." };
+      return { ok: false, square, field: "text", error: "There are no letters to encrypt. Playfair works on A to Z only." };
     }
     if (prep.truncated) notices.push(`Only the first ${MAX_LETTERS.toLocaleString("en-US")} letters were processed.`);
     if (prep.folded) notices.push(`${prep.folded} J ${prep.folded === 1 ? "was" : "were"} written as I, since the square has no J.`);
@@ -389,9 +397,9 @@ export function runPlayfair(options: {
   }
 
   const prep = prepareCiphertext(text, variant);
-  if (!prep.ok) return { ok: false, square, error: prep.error };
+  if (!prep.ok) return { ok: false, square, field: "text", error: prep.error };
   if (prep.letters.length === 0) {
-    return { ok: false, square, error: "There are no letters to decrypt. Playfair ciphertext is A to Z only." };
+    return { ok: false, square, field: "text", error: "There are no letters to decrypt. Playfair ciphertext is A to Z only." };
   }
   if (prep.truncated) notices.push(`Only the first ${MAX_LETTERS.toLocaleString("en-US")} letters were processed.`);
   if (prep.folded) notices.push(`${prep.folded} J ${prep.folded === 1 ? "was" : "were"} read as I. An I/J square never outputs J, so check where the text came from.`);

@@ -349,6 +349,262 @@ export const TOOLS: ToolEntry[] = [
     category: "networking",
     keywords: ["ipv6", "prefix", "rfc 5952", "compress", "expand", "subnet", "link-local", "ula", "multicast", "reverse dns"],
   },
+  {
+    slug: "asn-converter",
+    name: "AS number converter",
+    blurb:
+      "Convert 32-bit AS numbers between asplain and asdot, classify private, documentation and reserved ranges, and paste a whole list at once.",
+    category: "networking",
+    keywords: ["asn", "autonomous system", "asdot", "asplain", "bgp", "4-byte asn", "as_trans", "private asn", "rfc 5396", "rfc 6793"],
+  },
+  {
+    slug: "bandwidth-delay-product",
+    name: "Bandwidth-delay product",
+    blurb:
+      "Computes the bandwidth-delay product, the TCP window and scale factor a path needs, window-limited throughput and a Mathis loss estimate. Runs in your browser.",
+    category: "networking",
+    keywords: ["bdp", "tcp window", "window scaling", "rfc 7323", "rtt", "latency", "throughput", "mathis", "long fat network", "rwnd"],
+  },
+  {
+    slug: "bgp-community-decoder",
+    name: "BGP community decoder",
+    blurb:
+      "Decode standard, large and extended BGP communities, convert ASN:value to the 32-bit integer and back, and flag well-known values and private ASNs.",
+    category: "networking",
+    keywords: ["bgp", "community", "no-export", "blackhole", "large community", "extended community", "route target", "rfc 1997", "rfc 8092", "rfc 4360"],
+  },
+  {
+    slug: "ip-range-to-cidr",
+    name: "IP range to CIDR",
+    blurb:
+      "Turn a start and end IPv4 address into the fewest CIDR blocks that cover it exactly, or merge a list of blocks into sorted ranges. Runs in your browser.",
+    category: "networking",
+    keywords: ["cidr", "ip range", "ipv4", "aggregation", "summarize", "merge", "prefix", "supernet", "allowlist"],
+  },
+  {
+    slug: "iperf3-command-builder",
+    name: "iperf3 command builder",
+    blurb:
+      "Builds iperf3 TCP and UDP throughput commands for server and client, and reads bitrate and retransmits from a pasted result. Runs in your browser.",
+    category: "networking",
+    keywords: ["iperf3", "throughput", "bandwidth", "tcp", "udp", "network test", "jitter", "retransmits"],
+  },
+  {
+    slug: "ip-address-converter",
+    name: "IPv4 address converter",
+    blurb:
+      "Converts an IPv4 address between dotted decimal, integer, hex, octal and binary, and shows how inet_aton and browsers read forms like 127.1.",
+    category: "networking",
+    keywords: ["ipv4", "integer", "hex", "octal", "binary", "dotted decimal", "inet_aton", "ssrf", "url parsing"],
+  },
+  {
+    slug: "mtu-mss-calculator",
+    name: "MTU and MSS calculator",
+    blurb:
+      "Stack PPPoE, GRE, VXLAN, WireGuard, IPsec and VLAN headers on a link MTU to get the inner MTU, TCP MSS and clamp commands. Runs in your browser.",
+    category: "networking",
+    keywords: ["mtu", "mss", "mss clamping", "tunnel overhead", "pppoe", "wireguard", "ipsec", "vxlan", "gre", "path mtu"],
+  },
+  {
+    slug: "multicast-mac-mapper",
+    name: "Multicast MAC mapper",
+    blurb:
+      "Maps IPv4 and IPv6 multicast groups to Ethernet MAC addresses and back, and lists the 32 IPv4 groups that share each MAC. Runs in your browser.",
+    category: "networking",
+    keywords: ["multicast", "mac address", "igmp", "01:00:5e", "33:33", "ipv6", "solicited-node", "ospf", "mdns", "rfc 1112"],
+  },
+  {
+    slug: "ospf-cost-calculator",
+    name: "OSPF cost calculator",
+    blurb:
+      "Computes OSPF interface costs from a reference bandwidth, compares two paths hop by hop, and writes the IOS and FRR configuration. Runs in your browser.",
+    category: "networking",
+    keywords: ["ospf", "cost", "reference bandwidth", "auto-cost", "routing", "metric", "spf", "ccna", "frr", "cisco ios"],
+  },
+  {
+    slug: "propagation-delay-calculator",
+    name: "Propagation delay calculator",
+    blurb:
+      "One-way and round-trip propagation delay over fiber, copper, radio or a satellite hop, with city distances and serialization delay. Runs in your browser.",
+    category: "networking",
+    keywords: ["latency", "propagation delay", "rtt", "speed of light", "fiber", "serialization delay", "haversine", "great circle", "satellite", "bandwidth-delay product"],
+  },
+  {
+    slug: "route-summarizer",
+    name: "Route summarizer",
+    blurb:
+      "Paste IPv4 prefixes to get the exact aggregate and the tightest single summary route, with the extra addresses that summary would claim.",
+    category: "networking",
+    keywords: ["route summarization", "aggregation", "supernet", "cidr", "ospf", "eigrp", "bgp", "prefix list", "ipv4"],
+  },
+  {
+    slug: "transfer-time-calculator",
+    name: "Transfer time calculator",
+    blurb:
+      "Works out how long data takes to cross a link, or the speed needed to meet a deadline, keeping bits, bytes, SI and IEC units apart. Runs in your browser.",
+    category: "networking",
+    keywords: ["transfer time", "download time", "bandwidth", "mbps", "throughput", "gib vs gb", "bits vs bytes", "file transfer", "goodput"],
+  },
+  {
+    slug: "vlan-tag-decoder",
+    name: "VLAN tag decoder",
+    blurb:
+      "Decode or build 802.1Q and QinQ tags: TPID, priority code point, DEI and VLAN ID, with reserved VIDs and unusual tag stacks flagged. Runs in your browser.",
+    category: "networking",
+    keywords: ["802.1q", "vlan", "qinq", "802.1ad", "pcp", "dei", "vlan id", "tpid", "class of service", "trunk"],
+  },
+  {
+    slug: "wifi-channel-reference",
+    name: "Wi-Fi channel reference",
+    blurb:
+      "Interactive 2.4, 5 and 6 GHz channel chart with center frequencies, overlap, DFS and bonding groups, and US regulatory notes. Runs in your browser.",
+    category: "networking",
+    keywords: ["wifi", "wireless", "802.11", "dfs", "unii", "6 ghz", "channel width", "psc", "frequency", "wlan"],
+  },
+  {
+    slug: "wildcard-mask-calculator",
+    name: "Wildcard mask calculator",
+    blurb:
+      "Convert subnet masks and prefixes to Cisco wildcard masks and back, build ACL and OSPF lines, and test an address against a pattern bit by bit.",
+    category: "networking",
+    keywords: ["wildcard", "cisco", "acl", "access-list", "ospf", "inverse mask", "ios", "ccna", "netmask"],
+  },
+  {
+    slug: "cvss-calculator",
+    name: "CVSS calculator",
+    blurb:
+      "Scores CVSS v3.1 base, temporal and environmental metrics to the FIRST specification, parses vector strings and shows the arithmetic. Runs in your browser.",
+    category: "security",
+    keywords: ["cvss", "vulnerability", "severity", "cve", "nvd", "vector string", "base score", "first", "risk"],
+  },
+  {
+    slug: "dmarc-record-analyzer",
+    name: "DMARC record analyzer",
+    blurb:
+      "Parses a v=DMARC1 record, explains its policy and alignment, checks report destinations, and builds a valid record from a form. Runs in your browser.",
+    category: "security",
+    keywords: ["dmarc", "rfc 7489", "rfc 9989", "email authentication", "alignment", "rua", "dkim", "spf", "dmarc policy", "email spoofing"],
+  },
+  {
+    slug: "file-hash-checker",
+    name: "File hash checker",
+    blurb:
+      "Compute MD5, SHA-1, SHA-256, SHA-384 and SHA-512 of a file or text and check them against a pasted checksum or checksum file. Runs in your browser.",
+    category: "security",
+    keywords: ["md5", "sha-256", "checksum", "hash", "sha-1", "integrity", "sha-512", "sha256sum"],
+  },
+  {
+    slug: "nmap-command-builder",
+    name: "Nmap command builder",
+    blurb:
+      "Builds an Nmap command from scan type, ports, timing and scripts, flags which options need root, and explains what it does. Runs in your browser.",
+    category: "security",
+    keywords: ["nmap", "port scan", "syn scan", "nse", "service detection", "os detection", "reconnaissance", "security"],
+  },
+  {
+    slug: "ntlm-hash-generator",
+    name: "NTLM hash generator",
+    blurb:
+      "Generate the NT hash (MD4 of the UTF-16LE password) with the hashcat, John and pwdump line formats. Runs in your browser.",
+    category: "security",
+    keywords: ["ntlm", "nt hash", "md4", "hashcat", "john", "pass-the-hash", "windows", "password"],
+  },
+  {
+    slug: "password-generator",
+    name: "Password generator",
+    blurb:
+      "Generates passwords and grouped PIN codes with crypto.getRandomValues and rejection sampling, and shows the exact entropy. Runs in your browser.",
+    category: "security",
+    keywords: ["password", "random", "csprng", "entropy", "pin", "modulo bias", "rejection sampling", "getrandomvalues", "crockford"],
+  },
+  {
+    slug: "spf-record-analyzer",
+    name: "SPF record analyzer",
+    blurb:
+      "Parses a v=spf1 record, explains each term in evaluation order, counts DNS lookups against the limit of 10, and flags risky settings. Runs in your browser.",
+    category: "security",
+    keywords: ["spf", "rfc 7208", "email authentication", "dns lookup limit", "txt record", "include", "softfail", "permerror", "email spoofing", "mail server"],
+  },
+  {
+    slug: "user-agent-parser",
+    name: "User-Agent parser",
+    blurb:
+      "Identifies the browser, engine, OS, device type and known bots or scanners in User-Agent strings, header blocks or access log lines. Runs in your browser.",
+    category: "security",
+    keywords: ["user agent", "ua string", "browser detection", "client hints", "sec-ch-ua", "bot detection", "googlebot", "access log", "spoofing", "fingerprinting"],
+  },
+  {
+    slug: "luhn-checker",
+    name: "Luhn checker",
+    blurb:
+      "Validate a Luhn check digit or compute one step by step, with card brand detection from IIN ranges and IMEI support. Runs in your browser.",
+    category: "encoding",
+    keywords: ["luhn", "mod 10", "check digit", "credit card", "card validation", "iin", "bin", "imei", "checksum"],
+  },
+  {
+    slug: "snowflake-decoder",
+    name: "Snowflake ID decoder",
+    blurb:
+      "Decode X/Twitter and Discord snowflake IDs into creation time and machine fields, sort a batch by time, or build the ID range for a date. Runs in your browser.",
+    category: "encoding",
+    keywords: ["snowflake", "twitter id", "discord id", "osint", "tweet date", "account creation", "timestamp", "epoch", "bigint"],
+  },
+  {
+    slug: "uuid-tool",
+    name: "UUID generator and decoder",
+    blurb:
+      "Generates v4 and v7 UUIDs in bulk or v3 and v5 from a name, and decodes any UUID's version, variant, timestamp, clock sequence and node. Runs in your browser.",
+    category: "encoding",
+    keywords: ["uuid", "guid", "uuidv7", "uuidv4", "uuidv1", "rfc 9562", "mac address", "timestamp", "forensics", "osint"],
+  },
+  {
+    slug: "access-log-analyzer",
+    name: "Access log analyzer",
+    blurb:
+      "Parses Apache and nginx access logs, summarizes traffic by IP, path, status and time, and flags scanners, injection attempts and probes. Runs in your browser.",
+    category: "security",
+    keywords: ["apache", "nginx", "access log", "combined log format", "web server logs", "sqlmap", "log4shell", "incident response", "threat hunting"],
+  },
+  {
+    slug: "affine-cipher",
+    name: "Affine cipher",
+    blurb:
+      "Encrypt and decrypt with E(x) = (ax + b) mod 26, rank all 312 keys by English letter frequency, or solve for the key from two known letter pairs.",
+    category: "security",
+    keywords: ["affine", "modular inverse", "caesar", "atbash", "brute force", "chi-squared", "known plaintext", "cipher", "ctf"],
+  },
+  {
+    slug: "bacon-cipher",
+    name: "Bacon cipher",
+    blurb:
+      "Encode and decode Bacon's cipher in groups of five with the 24 or 26 letter table, or hide a message in a cover text's case or typeface. Runs in your browser.",
+    category: "security",
+    keywords: ["bacon", "baconian", "biliteral", "steganography", "letter case", "francis bacon", "ctf", "cipher"],
+  },
+  {
+    slug: "csp-analyzer",
+    name: "CSP analyzer",
+    blurb:
+      "Parses a Content-Security-Policy, shows which directive governs each request type after fallback, and grades each weakness by severity. Runs in your browser.",
+    category: "security",
+    keywords: ["content security policy", "csp", "xss", "nonce", "strict-dynamic", "unsafe-inline", "default-src", "frame-ancestors", "csp evaluator"],
+  },
+  {
+    slug: "entropy-analyzer",
+    name: "Entropy analyzer",
+    blurb:
+      "Measures Shannon entropy in bits per byte, plots it across a file with a sliding window, and lists high-entropy regions by offset. Runs in your browser.",
+    category: "security",
+    keywords: ["shannon entropy", "bits per byte", "packed malware", "encryption", "compression", "byte histogram", "chi-square", "firmware", "binwalk", "forensics"],
+  },
+  {
+    slug: "security-headers-analyzer",
+    name: "Security headers analyzer",
+    blurb:
+      "Audits pasted response headers: HSTS, CSP, framing, nosniff, cookies and version leaks, then suggests a header block. Runs in your browser.",
+    category: "security",
+    keywords: ["security headers", "hsts", "http headers", "x-frame-options", "referrer-policy", "permissions-policy", "set-cookie", "clickjacking", "curl", "coop"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

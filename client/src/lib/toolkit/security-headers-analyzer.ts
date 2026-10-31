@@ -607,6 +607,19 @@ function checkFraming(r: ParsedResponse, csp: CspSummary | null, add: Adder): st
     return raw;
   }
 
+  // A CSP header that carries text but produced no summary was too long to
+  // analyze, so whether it sets frame-ancestors is unknown.
+  const cspUnread = csp === null && r.headers.some((h) => h.lower === "content-security-policy" && h.value.trim() !== "");
+  if (raw === null && cspUnread) {
+    add(
+      "framing-unknown",
+      "info",
+      H,
+      "Framing protection could not be checked",
+      "There is no X-Frame-Options header, and the Content-Security-Policy was too long to read, so this cannot tell whether frame-ancestors is set.",
+    );
+    return raw;
+  }
   if (raw === null) {
     add(
       "framing-missing",
@@ -1492,10 +1505,14 @@ function suggest(
       why: "The report-only policy, enforced, once its reports are clean.",
     });
   } else {
+    const present = original("content-security-policy");
+    const unread = present !== undefined && present.value.trim() !== "";
     lines.push({
       text: `Content-Security-Policy: ${STARTER_CSP}`,
-      status: "add",
-      why: "A starting point. Trial it as Content-Security-Policy-Report-Only first, since it blocks inline script and third-party resources.",
+      status: present ? "change" : "add",
+      why: unread
+        ? "The current policy was too long to analyze here, so this is only a reference for the directives a policy needs, not a drop-in replacement."
+        : "A starting point. Trial it as Content-Security-Policy-Report-Only first, since it blocks inline script and third-party resources.",
     });
   }
 

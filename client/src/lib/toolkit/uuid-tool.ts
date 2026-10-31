@@ -490,7 +490,7 @@ function nodeFindings(node: NodeInfo, findings: Finding[]): void {
   } else if (node.local) {
     findings.push({
       tone: "warn",
-      text: `The node ${node.mac} is a unicast, locally administered address: assigned by software, a hypervisor or MAC randomization rather than burned in. It is still usually stable per host, so it links every UUID this machine made.`,
+      text: `The node ${node.mac} is a unicast, locally administered address: assigned by software, a hypervisor or MAC randomization rather than burned in. It is often stable per host, and while it lasts it links every UUID that machine made.`,
     });
   } else {
     findings.push({

@@ -53,33 +53,56 @@ const MISREAD: Record<string, string> = {
   "9": "9 is not in the Base32 alphabet",
 };
 
+function describeChar(ch: string): string {
+  const cp = ch.codePointAt(0) ?? 0;
+  if (cp < 0x20 || (cp >= 0x7f && cp < 0xa0)) {
+    return `control character U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+  }
+  return `"${ch}"`;
+}
+
 /**
  * Decode Base32 as RFC 4648 section 6 defines it, tolerating the ways a
  * secret arrives in practice: lowercase, grouped with spaces or hyphens,
  * and without its = padding (the key URI format says to omit it).
+ *
+ * Case is folded for ASCII letters only. String.prototype.toUpperCase maps
+ * the sharp s (U+00DF) to "SS", the dotless i (U+0131) to "I" and the ff
+ * ligature (U+FB00) to "FF", which would quietly turn text that is not
+ * Base32 into a valid secret.
  */
 export function decodeBase32(input: string): Base32Result {
   if (input.length > MAX_SECRET_CHARS * 2) {
     return { ok: false, error: `The secret is longer than ${MAX_SECRET_CHARS} characters, which is far past any real key.` };
   }
-  const cleaned = input.replace(/[\s-]/g, "").toUpperCase();
-  const firstPad = cleaned.indexOf("=");
-  const body = firstPad === -1 ? cleaned : cleaned.slice(0, firstPad);
-  if (firstPad !== -1 && !/^=+$/.test(cleaned.slice(firstPad))) {
-    return { ok: false, error: "Padding (=) can only come at the end of a Base32 secret." };
+  let body = "";
+  let padding = 0;
+  let position = 0;
+  // Iterating the string walks code points, so positions match what the
+  // reader typed (spaces included) and an emoji is reported whole.
+  for (const ch of input) {
+    position++;
+    if (ch === "-" || /^\s$/.test(ch)) continue;
+    if (ch === "=") {
+      padding++;
+      continue;
+    }
+    if (padding > 0) {
+      return { ok: false, error: "Padding (=) can only come at the end of a Base32 secret." };
+    }
+    const code = ch.charCodeAt(0);
+    const upper = ch.length === 1 && code >= 0x61 && code <= 0x7a ? String.fromCharCode(code - 0x20) : ch;
+    if (upper.length !== 1 || B32.indexOf(upper) === -1) {
+      const hint = MISREAD[ch] ?? `Base32 uses only A to Z and 2 to 7, so ${describeChar(ch)} cannot appear`;
+      return { ok: false, error: `Character ${position} of the secret: ${hint}.` };
+    }
+    body += upper;
   }
-  if (firstPad !== -1 && cleaned.length - firstPad > 6) {
+  if (padding > 6) {
     return { ok: false, error: "Base32 never needs more than six = signs of padding." };
   }
   if (body.length > MAX_SECRET_CHARS) {
     return { ok: false, error: `The secret is ${body.length} characters. This tool reads up to ${MAX_SECRET_CHARS}.` };
-  }
-  for (let i = 0; i < body.length; i++) {
-    const ch = body[i];
-    if (B32.indexOf(ch) === -1) {
-      const hint = MISREAD[ch] ?? `Base32 uses only A to Z and 2 to 7, so "${ch}" cannot appear`;
-      return { ok: false, error: `Character ${i + 1} of the secret: ${hint}.` };
-    }
   }
   // 8 characters carry 5 bytes. A trailing group of 1, 3 or 6 characters
   // would hold a fractional byte, so no encoder ever emits one.
@@ -352,9 +375,15 @@ export function parseOtpauthUri(input: string): OtpauthResult {
   const params = new URLSearchParams(m[3] ?? "");
   const warnings: string[] = [];
   const seen = new Set<string>();
+  const repeated = new Set<string>();
   for (const k of params.keys()) {
     const lower = k.toLowerCase();
-    if (seen.has(lower)) warnings.push(`The ${lower} parameter appears more than once; the first one is used.`);
+    // One warning per name, however often it repeats: the page keys its
+    // warning list by text.
+    if (seen.has(lower) && !repeated.has(lower)) {
+      repeated.add(lower);
+      warnings.push(`The ${lower} parameter appears more than once; the first one is used.`);
+    }
     seen.add(lower);
   }
   const get = (name: string): string | null => {
@@ -416,15 +445,18 @@ export function parseOtpauthUri(input: string): OtpauthResult {
   const colon = label.indexOf(":");
   const labelIssuer = colon === -1 ? null : label.slice(0, colon).trim();
   const account = (colon === -1 ? label : label.slice(colon + 1)).trim();
-  const issuerParam = get("issuer");
-  const issuer = issuerParam !== null && issuerParam.trim() !== "" ? issuerParam.trim() : labelIssuer || null;
-  if (issuerParam !== null && labelIssuer && issuerParam.trim() !== labelIssuer) {
+  const rawIssuer = get("issuer");
+  const issuerParam = rawIssuer === null ? null : rawIssuer.trim();
+  const issuer = issuerParam ? issuerParam : labelIssuer || null;
+  if (issuerParam && labelIssuer && issuerParam !== labelIssuer) {
     warnings.push(
-      `The label says the issuer is "${labelIssuer}" but the issuer parameter says "${issuerParam.trim()}". Apps differ on which one they show.`,
+      `The label says the issuer is "${labelIssuer}" but the issuer parameter says "${issuerParam}". The format says the two should be equal, and apps differ on which one they show.`,
     );
   }
   if (issuerParam === null) {
     warnings.push("There is no issuer parameter. The format strongly recommends one, so the entry can be told apart from others.");
+  } else if (issuerParam === "") {
+    warnings.push("The issuer parameter is empty. The format strongly recommends naming the issuer there.");
   }
   if (secret.bytes.length < MIN_SECRET_BYTES) {
     warnings.push(

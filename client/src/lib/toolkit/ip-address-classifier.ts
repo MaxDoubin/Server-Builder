@@ -45,6 +45,28 @@ export function familyBits(family: Family): number {
 /* ------------------------------------------------------------- parsing */
 
 /**
+ * Find the first character that cannot be part of an address or a DNS name
+ * as typed: anything outside printable ASCII. Zero-width spaces, non-breaking
+ * spaces and look-alike digits often arrive with text copied from a web page,
+ * and quoting them back as-is would show the reader nothing.
+ */
+export function strayCharacter(text: string): string | null {
+  let position = 0;
+  for (const ch of text) {
+    position++;
+    const code = ch.codePointAt(0) ?? 0;
+    if (code === 0x20 || code === 0x09) {
+      return `Character ${position} is a ${code === 0x20 ? "space" : "tab"}. Addresses and DNS names have no spaces inside them.`;
+    }
+    if (code < 0x21 || code > 0x7e) {
+      const hexCode = code.toString(16).toUpperCase().padStart(4, "0");
+      return `Character ${position} is U+${hexCode}, which cannot appear here. Invisible or look-alike characters often come along when text is copied from a web page or document; retype the value.`;
+    }
+  }
+  return null;
+}
+
+/**
  * Strict dotted-quad: four decimal octets, 0 to 255, no leading zeros.
  *
  * inet_aton also accepts 127.1, 0x7f.0.0.1, 0177.0.0.1 and 2130706433 for
@@ -173,6 +195,11 @@ export function parseIp(raw: string): Result<IpAddress> {
     return fail(
       `That is ${text.length} characters. No IP address is longer than 45, so input past ${MAX_INPUT_LENGTH} characters is not read.`,
     );
+  }
+  const stray = strayCharacter(text);
+  if (stray) return fail(stray);
+  if (/^\d{1,3}(\.\d{1,3}){3}:\d*$/.test(text) || /^\[[^\][]*\]:\d*$/.test(text)) {
+    return fail("That looks like an address followed by a port. Enter the address alone, without the colon and port number.");
   }
   if (text.startsWith("[") || text.endsWith("]")) {
     const m = /^\[([^\][]*)\]$/.exec(text);
@@ -396,7 +423,7 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-this-network", ["0.0.0.0/8"], "\"This network\"", ["RFC 791 section 3.2"], [T, F, F, F, T],
     "Names a host on this network. RFC 1122 allows it only as a source, while a host is starting up and does not yet know its network number. It is never a valid destination, and routers do not forward it."),
   entry(4, "v4-this-host", ["0.0.0.0/32"], "\"This host on this network\"", ["RFC 1122 section 3.2.1.3"], [T, F, F, F, T],
-    "The unspecified address. A host with no address yet sends from it, as in a DHCP DISCOVER. Binding a listening socket to 0.0.0.0 means every local address, which is a sockets API convention rather than an address on the wire."),
+    "The all-zeros address. A host with no address yet sends from it, as in a DHCP DISCOVER. Binding a listening socket to 0.0.0.0 means every local address, which is a sockets API convention rather than an address on the wire."),
   entry(4, "v4-private-10", ["10.0.0.0/8"], "Private-Use", ["RFC 1918"], [T, T, T, F, F],
     "RFC 1918 private space. Any network may use it without asking anyone and route it internally, but it is not globally reachable: it has to be translated by NAT to reach the internet, and the same addresses are reused by countless networks."),
   entry(4, "v4-shared", ["100.64.0.0/10"], "Shared Address Space", ["RFC 6598"], [T, T, T, F, F],
@@ -422,13 +449,13 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-nat64-discovery", ["192.0.0.170/32", "192.0.0.171/32"], "NAT64/DNS64 Discovery", ["RFC 8880", "RFC 7050 section 2.2"], [F, F, F, F, T],
     "The addresses ipv4only.arpa resolves to. A host behind DNS64 asks for the AAAA record of that name, and the synthesized answer reveals the NAT64 prefix in use. They are a marker, not a destination."),
   entry(4, "v4-test-net-1", ["192.0.2.0/24"], "Documentation (TEST-NET-1)", ["RFC 5737"], [F, F, F, F, F],
-    "Reserved for examples in documentation. It is never routed, so an example cannot point at someone's real host. Seeing it in live traffic means a sample configuration was copied without being edited."),
+    "Reserved for examples in documentation. It is not routed on the internet, so an example cannot point at someone's real host. Seeing it in live traffic usually means a sample configuration was deployed without being edited."),
   entry(4, "v4-as112-dname", ["192.31.196.0/24"], "AS112-v4", ["RFC 7535"], [T, T, T, T, F],
     "Anycast block for the AS112 DNAME redirection service, which absorbs reverse lookups for private and other non-unique space that leaked out of networks that should have answered them locally."),
   entry(4, "v4-amt", ["192.52.193.0/24"], "AMT", ["RFC 7450"], [T, T, T, T, F],
     "Relay discovery for Automatic Multicast Tunneling, which lets hosts on unicast-only networks receive multicast."),
   entry(4, "v4-6to4-relay", ["192.88.99.0/24"], "Deprecated (6to4 Relay Anycast)", ["RFC 7526"], NONE,
-    "Formerly the anycast address of 6to4 relays. RFC 7526 deprecated anycast 6to4 after experience showed it unsuitable for widespread use, and the registry no longer gives this block attributes.",
+    "Formerly the anycast prefix of 6to4 relays, which answered at 192.88.99.1 (RFC 3068). RFC 7526 deprecated anycast 6to4 after experience showed it unsuitable for widespread use, and the registry no longer gives this block attributes.",
     { deprecated: true }),
   entry(4, "v4-6a44", ["192.88.99.2/32"], "6a44-relay anycast address", ["RFC 6751"], [T, T, T, F, F],
     "Anycast address of 6a44 relays, a mechanism that gives IPv6 to hosts sitting behind an IPv4 NAT."),
@@ -439,9 +466,9 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-benchmarking", ["198.18.0.0/15"], "Benchmarking", ["RFC 2544"], [T, T, T, F, F],
     "For testing network devices in a lab. Not globally reachable. It spans 198.18.0.0 to 198.19.255.255, and it is sometimes borrowed for internal addressing because it rarely collides with anything, which is outside its purpose."),
   entry(4, "v4-test-net-2", ["198.51.100.0/24"], "Documentation (TEST-NET-2)", ["RFC 5737"], [F, F, F, F, F],
-    "Reserved for examples in documentation, alongside 192.0.2.0/24 and 203.0.113.0/24. Never routed."),
+    "Reserved for examples in documentation, alongside 192.0.2.0/24 and 203.0.113.0/24. Not routed on the internet."),
   entry(4, "v4-test-net-3", ["203.0.113.0/24"], "Documentation (TEST-NET-3)", ["RFC 5737"], [F, F, F, F, F],
-    "Reserved for examples in documentation, alongside 192.0.2.0/24 and 198.51.100.0/24. Never routed."),
+    "Reserved for examples in documentation, alongside 192.0.2.0/24 and 198.51.100.0/24. Not routed on the internet."),
   entry(4, "v4-reserved", ["240.0.0.0/4"], "Reserved", ["RFC 1112 section 4"], [F, F, F, F, T],
     "The former class E space, reserved for future addressing modes by RFC 1112. Support for using it is inconsistent across operating systems and network equipment, and it has never been reassigned."),
   entry(4, "v4-limited-broadcast", ["255.255.255.255/32"], "Limited Broadcast", ["RFC 8190", "RFC 919 section 7"], [F, T, F, F, T],
@@ -507,7 +534,7 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
   entry(6, "v6-det", ["2001:30::/28"], "Drone Remote ID Protocol Entity Tags (DETs) Prefix", ["RFC 9374"], [T, T, T, T, F],
     "Identifiers for unmanned aircraft under the Drone Remote ID Protocol, built on the ORCHIDv2 format."),
   entry(6, "v6-documentation", ["2001:db8::/32"], "Documentation", ["RFC 3849"], [F, F, F, F, F],
-    "Reserved for examples in documentation. Never routed."),
+    "Reserved for examples in documentation. Not routed on the internet."),
   entry(6, "v6-6to4", ["2002::/16"], "6to4", ["RFC 3056"], [T, T, T, NA, F],
     "Automatic tunneling of IPv6 over IPv4. The 32 bits after 2002: are the site's public IPv4 address. Its anycast relay mode was deprecated by RFC 7526.",
     { footnote: "Globally reachable is N/A in the registry; see RFC 3056." }),
@@ -688,7 +715,7 @@ export function classify(ip: IpAddress): Classification {
     result.fallback = global
       ? {
           title: "Global unicast (2000::/3)",
-          text: "Not in any special-purpose block. IANA allocates 2000::/3 to the regional internet registries; whether this particular address is allocated and routed is not something the registry can tell you.",
+          text: "Not in any special-purpose block. IANA allocates blocks from 2000::/3 to the regional internet registries; whether this particular address is allocated and routed is not something the registry can tell you.",
         }
       : {
           title: "Reserved by the IETF",
@@ -698,6 +725,13 @@ export function classify(ip: IpAddress): Classification {
 
   if (has("v6-mapped")) {
     result.embedded.push(embeddedV4("IPv4-mapped address", value & 0xffffffffn));
+  }
+  // ::/96 apart from :: and ::1 is the old IPv4-compatible format.
+  if (value > 1n && value <= 0xffffffffn) {
+    result.embedded.push(embeddedV4("IPv4-compatible address (deprecated)", value));
+    result.notes.push(
+      `This is in ::/96, the IPv4-compatible format (::${formatIPv4(value)}) that RFC 4291 section 2.5.5.1 deprecated. No current transition mechanism uses it, and implementations are not required to support it. For an IPv4 address inside IPv6 sockets, the IPv4-mapped form ::ffff:${formatIPv4(value)} is the one in use.`,
+    );
   }
   if (has("v6-nat64-wkp")) {
     const e = embeddedV4("Translated IPv4 address (RFC 6052, /96)", value & 0xffffffffn);
@@ -748,8 +782,17 @@ export function classify(ip: IpAddress): Classification {
   }
   if (ip.zoneId !== null) {
     result.details.push({ label: "Zone ID", value: `%${ip.zoneId}` });
-    if (!has("v6-link-local") && !has("v6-multicast")) {
-      result.notes.push("A zone ID only means something for non-global scopes such as link-local; it is ignored for this address.");
+    // RFC 4007: zones exist for every scope except global. The loopback
+    // address counts as link-local scope (section 4), and a multicast
+    // address carries its scope in the fourth hex digit.
+    const mcastScope = Number((value >> 112n) & 0xfn);
+    const scoped =
+      has("v6-link-local") ||
+      has("v6-loopback") ||
+      has("v6-site-local") ||
+      (has("v6-multicast") && mcastScope !== 0xe);
+    if (!scoped) {
+      result.notes.push("A zone ID only means something for an address whose scope is smaller than global, such as link-local, so it is ignored for this address.");
     }
   }
   if (has("v6-multicast")) {
@@ -779,7 +822,7 @@ export function attributeSentences(attrs: Attributes): string[] {
   };
   s(attrs.source, "Valid as a source address.", "Not valid as a source address.");
   s(attrs.destination, "Valid as a destination address.", "Not valid as a destination address.");
-  s(attrs.forwardable, "Routers may forward packets addressed to it.", "Routers must not forward packets addressed to it.");
+  s(attrs.forwardable, "Routers may forward packets addressed to it.", "Not forwardable: a router should not forward packets addressed to it.");
   s(
     attrs.globallyReachable,
     "Globally reachable: packets to it may leave the network they started in.",

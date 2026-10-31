@@ -106,6 +106,16 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
     return c >= 0xe000 ? c - 0x800 : c + 0x2000;
   }
 
+  /** True when the string holds a code unit at or above D800, where UTF-16 and code point order part. */
+  function hasHigh(s: string): boolean {
+    return /[\uD800-\uFFFF]/.test(s);
+  }
+
+  /** cmpRaw for two strings known to have no code unit at or above D800: plain UTF-16 order is right. */
+  function cmpLow(a: string, b: string): number {
+    return a === b ? 0 : a < b ? -1 : 1;
+  }
+
   /** memcmp on the UTF-8 bytes, which is what sort does in the C locale. */
   function cmpRaw(a: string, b: string): number {
     var n = a.length < b.length ? a.length : b.length;
@@ -128,7 +138,6 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
     neg: boolean;
     int: string;
     frac: string;
-    digits: boolean;
     end: number;
   }
 
@@ -159,7 +168,7 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
     }
     var int = intDigits.replace(/^0+/, "");
     var frac = fracDigits.replace(/0+$/, "");
-    return { neg: neg, int: int, frac: frac, digits: intDigits.length + fracDigits.length > 0, end: i };
+    return { neg: neg, int: int, frac: frac, end: i };
   }
 
   function cmpNumKey(a: NumKey, b: NumKey): number {
@@ -179,10 +188,11 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
    * sort -h: the suffix decides first, then the number. Order follows
    * coreutils' unit_order table (k and K, M, G, T, P, E, Z, Y, R, Q), so 1M
    * sorts after 2048K whatever the values. A suffix only counts directly
-   * after at least one digit, and a minus sign negates the order.
+   * after a number that is not zero (find_unit_order tracks a nonzero
+   * digit), and a minus sign negates the order.
    */
   function unitRank(s: string, key: NumKey): number {
-    if (!key.digits) return 0;
+    if (key.int === "" && key.frac === "") return 0;
     var ch = s[key.end];
     var units = "KMGTPEZYRQ";
     var rank = ch === "k" ? 1 : ch !== undefined && ch.length === 1 ? units.indexOf(ch) + 1 : 0;
@@ -245,7 +255,7 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
     return prefix;
   }
 
-  function filevercmp(a: string, b: string): number {
+  function filevercmpPre(a: string, ap: number, b: string, bp: number): number {
     if (a === "") return b === "" ? 0 : -1;
     if (b === "") return 1;
     if (a[0] === ".") {
@@ -257,8 +267,6 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
     } else if (b[0] === ".") {
       return 1;
     }
-    var ap = filePrefixLen(a);
-    var bp = filePrefixLen(b);
     var onePass = ap === a.length && bp === b.length;
     var result = verrevcmp(a, ap, b, bp);
     return result || onePass ? result : verrevcmp(a, a.length, b, b.length);
@@ -270,25 +278,47 @@ export function runLines(text: string, steps: readonly Step[], options: RunOptio
    * included, so the reversed output is exactly the ascending output backward.
    */
   function sortLines(input: string[], mode: string, reverse: boolean, ignoreCase: boolean): string[] {
+    // Everything a comparison needs is computed once per line, not once per
+    // comparison: the folded text, the parsed number, the suffix rank, the
+    // version prefix length, and whether the fast string order is safe.
     var items = input.map(function (line) {
       var view = ignoreCase ? foldUpper(line) : line;
       var key: NumKey | null = null;
       var rank = 0;
+      var prefix = 0;
       if (mode === "numeric" || mode === "human") {
         key = numKey(view);
         if (mode === "human") rank = unitRank(view, key);
+      } else if (mode === "natural") {
+        prefix = filePrefixLen(view);
       }
-      return { line: line, view: view, key: key, rank: rank };
+      return { line: line, view: view, key: key, rank: rank, prefix: prefix, high: hasHigh(line) };
     });
-    items.sort(function (x, y) {
-      var d = 0;
-      if (mode === "numeric") d = cmpNumKey(x.key as NumKey, y.key as NumKey);
-      else if (mode === "human") d = x.rank !== y.rank ? x.rank - y.rank : cmpNumKey(x.key as NumKey, y.key as NumKey);
-      else if (mode === "natural") d = filevercmp(x.view, y.view);
-      else d = ignoreCase ? cmpRaw(x.view, y.view) : 0;
-      if (d === 0) d = cmpRaw(x.line, y.line);
-      return reverse ? -d : d;
-    });
+    var sign = reverse ? -1 : 1;
+    function tie(x: { line: string; high: boolean }, y: { line: string; high: boolean }): number {
+      return x.high || y.high ? cmpRaw(x.line, y.line) : cmpLow(x.line, y.line);
+    }
+    if (mode === "numeric") {
+      items.sort(function (x, y) {
+        return sign * (cmpNumKey(x.key as NumKey, y.key as NumKey) || tie(x, y));
+      });
+    } else if (mode === "human") {
+      items.sort(function (x, y) {
+        return sign * ((x.rank - y.rank) || cmpNumKey(x.key as NumKey, y.key as NumKey) || tie(x, y));
+      });
+    } else if (mode === "natural") {
+      items.sort(function (x, y) {
+        return sign * (filevercmpPre(x.view, x.prefix, y.view, y.prefix) || tie(x, y));
+      });
+    } else if (ignoreCase) {
+      items.sort(function (x, y) {
+        return sign * ((x.high || y.high ? cmpRaw(x.view, y.view) : cmpLow(x.view, y.view)) || tie(x, y));
+      });
+    } else {
+      items.sort(function (x, y) {
+        return sign * tie(x, y);
+      });
+    }
     return items.map(function (item) {
       return item.line;
     });
