@@ -2,8 +2,9 @@
  * Playfair cipher: key square, digraph preparation, encryption and
  * decryption, with every step recorded so the page can show its working.
  *
- * The rules are the ones Wheatstone described and the military manuals
- * repeated (for example US Army FM 34-40-2, Basic Cryptanalysis, chapter 7):
+ * The rules are Wheatstone's, as textbooks teach them (W. Stallings,
+ * Cryptography and Network Security, whose MONARCHY examples are among the
+ * unit test vectors, alongside the PLAYFAIR EXAMPLE square on Wikipedia):
  *
  *   1. The key square is the keyword's letters, first occurrence only,
  *      followed by the rest of the alphabet. Twenty six letters do not fit
@@ -352,11 +353,14 @@ export function runPlayfair(options: {
   const { keyword, text, variant, direction } = options;
   const square = buildKeySquare(keyword, variant);
   const filler = options.filler.toUpperCase();
-  if (!/^[A-Z]$/.test(filler) || !(filler in square.pos)) {
+  if (!/^[A-Z]$/.test(filler)) {
+    return { ok: false, square, error: "The filler must be a single letter, A to Z." };
+  }
+  if (!(filler in square.pos)) {
     return {
       ok: false,
       square,
-      error: `The filler must be one letter that is in the square. ${omittedLetter(variant)} is not in this square.`,
+      error: `${filler} is not in this square, so it cannot be the filler. Pick another letter; X is the usual choice.`,
     };
   }
   const notices: string[] = [];

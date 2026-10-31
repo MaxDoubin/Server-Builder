@@ -549,7 +549,7 @@ export function UuidTool() {
             </fieldset>
             <fieldset>
               <legend className={LABEL}>Layout</legend>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-4">
                 {LAYOUTS.map((l) => (
                   <label key={l.key} className={optionClass(layout === l.key, false)}>
                     <input
@@ -577,6 +577,7 @@ export function UuidTool() {
             <div className="mt-5">
               <pre
                 data-testid="output-uuids"
+                role="region"
                 aria-label="Generated UUIDs"
                 tabIndex={0}
                 className="max-h-80 overflow-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-signal))]"

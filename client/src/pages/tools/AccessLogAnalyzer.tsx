@@ -194,6 +194,7 @@ function TimelineChart({ timeline }: { timeline: Timeline }) {
           aria-label={`Requests per ${stepLabel(timeline.bucketMs)}, ${n} ${pluralise(n, "bar")}. Use the arrow keys to read each bar.`}
           aria-describedby="timeline-readout"
           onPointerMove={onPointer}
+          onPointerDown={onPointer}
           onPointerLeave={() => setActive(null)}
           onKeyDown={onKey}
           onFocus={() => setActive((a) => a ?? n - 1)}
@@ -799,8 +800,8 @@ export function AccessLogAnalyzer() {
                   {summary.discovery.map((r) => (
                     <li key={r.ip} className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       <span className="break-all text-[hsl(var(--brand-signal))]">{r.ip}</span>: {r.notFound.toLocaleString("en-US")}{" "}
-                      of {r.requests.toLocaleString("en-US")} requests returned 404, the shape of a wordlist run by gobuster, ffuf
-                      or dirb.
+                      of {r.requests.toLocaleString("en-US")} requests returned 404, the pattern a wordlist tool such as gobuster,
+                      ffuf or dirb leaves.
                     </li>
                   ))}
                 </ul>

@@ -24,7 +24,7 @@ export const MAX_TONE_HZ = 1200;
 export const DEFAULT_TONE_HZ = 600;
 
 /** Shown for a token that could not be read as a character. U+FFFD, the Unicode replacement character. */
-export const UNKNOWN_MARK = "�";
+export const UNKNOWN_MARK = "\uFFFD";
 
 export type SymbolKind = "letter" | "figure" | "punctuation" | "prosign";
 
@@ -49,7 +49,7 @@ const LETTERS: [string, string][] = [
   ["K", "-.-"], ["L", ".-.."], ["M", "--"], ["N", "-."], ["O", "---"],
   ["P", ".--."], ["Q", "--.-"], ["R", ".-."], ["S", "..."], ["T", "-"],
   ["U", "..-"], ["V", "...-"], ["W", ".--"], ["X", "-..-"], ["Y", "-.--"],
-  ["Z", "--.."], ["É", "..-.."],
+  ["Z", "--.."], ["\u00C9", "..-.."],
 ];
 
 // ITU-R M.1677-1, Part I, 1.1.2 (figures).
@@ -104,13 +104,13 @@ const ENCODE = new Map<string, string>();
 for (const [ch, code] of [...LETTERS, ...FIGURES]) ENCODE.set(ch, code);
 for (const [ch, code] of PUNCTUATION) ENCODE.set(ch, code);
 // ITU lists the multiplication sign as the letter X. Encode-only: -..- still decodes to X.
-ENCODE.set("×", "-..-");
+ENCODE.set("\u00D7", "-..-");
 
 function concatCodes(letters: string): string | null {
   let code = "";
   for (const ch of letters) {
     const part = ENCODE.get(ch);
-    if (part === undefined || ch === "×") return null;
+    if (part === undefined || ch === "\u00D7") return null;
     code += part;
   }
   return code;
@@ -122,7 +122,7 @@ export const ALPHABET: MorseSymbol[] = [
     text,
     code,
     kind: "letter",
-    name: text === "É" ? "accented e" : null,
+    name: text === "\u00C9" ? "accented e" : null,
     itu: true,
   })),
   ...FIGURES.map(([text, code]): MorseSymbol => ({ text, code, kind: "figure", name: null, itu: true })),
@@ -199,23 +199,23 @@ export type EncodeResult =
  */
 const TEXT_SUBSTITUTIONS: { pattern: RegExp; replacement: string; note: string }[] = [
   {
-    pattern: /[‘’‛′]/g,
+    pattern: /[\u2018\u2019\u201B\u2032]/g,
     replacement: "'",
     note: "Curly apostrophes were sent as the apostrophe, .----.",
   },
   {
-    pattern: /[“”‟″]/g,
+    pattern: /[\u201C\u201D\u201F\u2033]/g,
     replacement: '"',
     note: "Curly quotation marks were sent as the quotation mark, .-..-.",
   },
   {
-    pattern: /…/g,
+    pattern: /\u2026/g,
     replacement: "...",
     note: "An ellipsis character was sent as three full stops.",
   },
   {
     // U+2010 to U+2015 covers every hyphen and dash Unicode has in that block.
-    pattern: /[‐-―−]/g,
+    pattern: /[\u2010-\u2015\u2212]/g,
     replacement: "-",
     note: "Typographic dashes and the minus sign were sent as the hyphen, -....-, which ITU defines as hyphen or dash.",
   },
@@ -329,10 +329,10 @@ export type DecodeResult =
  */
 export function normalizeMorse(input: string): string {
   return input
-    .replace(/…/g, "...")
-    .replace(/—/g, "--")
-    .replace(/[‐-–―−_]/g, "-")
-    .replace(/[·•∙⋅]/g, ".");
+    .replace(/\u2026/g, "...")
+    .replace(/\u2014/g, "--")
+    .replace(/[\u2010-\u2013\u2015\u2212_]/g, "-")
+    .replace(/[\u00B7\u2022\u2219\u22C5]/g, ".");
 }
 
 const DITDAH = /(dah|dit|di)-?/y;

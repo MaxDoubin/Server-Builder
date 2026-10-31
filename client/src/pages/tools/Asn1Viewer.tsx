@@ -516,7 +516,11 @@ export function Asn1Viewer() {
                   Collapse all
                 </button>
               </div>
-              <div className="max-h-[40rem] overflow-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] py-2">
+              <div
+                role="region"
+                aria-label="Element tree"
+                className="max-h-[40rem] overflow-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] py-2"
+              >
                 <ul data-testid="list-asn1-tree" className="min-w-max font-mono-tight text-xs">
                   {rows.map(({ node, open }) => {
                     const isSelected = selected?.id === node.id;
@@ -662,6 +666,9 @@ export function Asn1Viewer() {
                   <span className="text-[hsl(var(--brand-ash))]">Other bytes</span>
                 </div>
                 <div
+                  role="region"
+                  aria-label="Hex dump with the selected element highlighted"
+                  tabIndex={0}
                   data-testid="panel-asn1-hex"
                   className="max-h-[28rem] overflow-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-3 font-mono-tight text-[0.6875rem] leading-5"
                 >

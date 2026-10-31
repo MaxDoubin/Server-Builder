@@ -1008,7 +1008,7 @@ export function summarize(entries: LogEntry[], topN = TOP_N): Summary {
     if (first === null || e.time < first) first = e.time;
     if (last === null || e.time > last) last = e.time;
     statuses.set(e.status, (statuses.get(e.status) ?? 0) + 1);
-    const method = e.method || "(malformed)";
+    const method = e.method || (e.request === "-" || e.request === "" ? "(no request)" : "(malformed)");
     methods.set(method, (methods.get(method) ?? 0) + 1);
 
     const isClient = e.status >= 400 && e.status < 500;

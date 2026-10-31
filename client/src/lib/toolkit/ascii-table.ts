@@ -507,7 +507,7 @@ function latin1Row(code: number): CodeRow {
     htmlNote: null,
     note: invisible
       ? code === 0xa0
-        ? "Looks like a space but does not match \\x20, so it slips past naive whitespace checks."
+        ? "Renders like a space but is not 0x20. A test for the space character misses it, though JavaScript's \\s and Python's str.split() treat it as whitespace."
         : "Invisible unless a line breaks at it. It can split a keyword without changing how it looks."
       : null,
     aliases: aliases ?? [],
@@ -614,6 +614,38 @@ export function copyValue(row: CodeRow, format: CopyFormat): string {
   }
 }
 
+/* ------------------------------------------------------------- UTF-8 */
+
+/** UTF-8 encoding of one code point (RFC 3629, section 3). */
+export function utf8Bytes(cp: number): number[] {
+  if (cp < 0x80) return [cp];
+  if (cp < 0x800) return [0xc0 | (cp >> 6), 0x80 | (cp & 0x3f)];
+  if (cp < 0x10000) return [0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f)];
+  return [0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f)];
+}
+
+/**
+ * What a character's UTF-8 bytes look like when a program decodes them as
+ * Windows-1252, the most common mojibake there is. A byte with no
+ * Windows-1252 character is shown as <81> rather than as an invisible
+ * control. Returns null for ASCII, which survives the trip unchanged.
+ */
+export function mojibake(cp: number): string | null {
+  if (cp < 0x80) return null;
+  return utf8Bytes(cp)
+    .map((b) => {
+      if (b < 0x80) return String.fromCharCode(b);
+      if (b <= 0x9f) {
+        const entry = CP1252[b - 0x80];
+        return entry ? String.fromCodePoint(entry[0]) : `<${hex(b)}>`;
+      }
+      if (b === 0xa0) return "<A0>";
+      if (b === 0xad) return "<AD>";
+      return String.fromCharCode(b);
+    })
+    .join("");
+}
+
 /* ------------------------------------------------------------- the case bit */
 
 export function isAsciiLetter(code: number): boolean {
@@ -654,8 +686,10 @@ const NUMBER_FORMS: { re: RegExp; radix: number; via: string }[] = [
   { re: /^&#([0-9]+);?$/, radix: 10, via: "HTML decimal reference" },
   { re: /^(?:u\+|\\u)([0-9a-f]{1,6})$/i, radix: 16, via: "Unicode code point" },
   { re: /^\\u\{([0-9a-f]{1,6})\}$/i, radix: 16, via: "Unicode code point" },
-  { re: /^(?:0x|\\x|#x|\$)([0-9a-f]+)$/i, radix: 16, via: "hex" },
-  { re: /^([0-9a-f]+)h$/i, radix: 16, via: "hex" },
+  { re: /^(?:0x|\\x|\$)([0-9a-f]+)$/i, radix: 16, via: "hex" },
+  // Assembler suffix form. MASM requires a leading digit (0FFh), which also
+  // keeps a word like "ah" from reading as hex.
+  { re: /^([0-9][0-9a-f]*)h$/i, radix: 16, via: "hex" },
   { re: /^%([0-9a-f]{2})$/i, radix: 16, via: "URL percent-encoding" },
   { re: /^0o([0-7]+)$/i, radix: 8, via: "octal" },
   { re: /^\\([0-7]{1,3})$/, radix: 8, via: "C octal escape" },
@@ -697,11 +731,14 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
       result.interpretations.push({ code, via: [via] });
     }
   };
-  const tooBig: string[] = [];
+  // Readings in the upper half are worth saying even when something else
+  // matched; readings past one byte only when nothing did.
+  const upperHalf: string[] = [];
+  const beyond: string[] = [];
   const addNumber = (value: number, via: string, shown: string) => {
     if (value <= maxCode) add(value, via);
-    else if (value <= 255) tooBig.push(`${shown} as ${via} is ${value}, in the upper half: switch to Latin-1 or Windows-1252 to see it.`);
-    else tooBig.push(`${shown} as ${via} is ${Number.isFinite(value) ? value.toLocaleString("en-US") : "far"} beyond one byte.`);
+    else if (value <= 255) upperHalf.push(`${shown} as ${via} is ${value}, in the upper half. Show Latin-1 or Windows-1252 to see it.`);
+    else beyond.push(`${shown} as ${via} is ${Number.isFinite(value) ? value.toLocaleString("en-US") : "far"}, beyond one byte.`);
   };
 
   const chars = Array.from(q);
@@ -709,15 +746,21 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   // One character: the character itself.
   if (chars.length === 1) {
     const cp = q.codePointAt(0) as number;
-    if (cp <= maxCode) {
+    const label = codePointLabel(cp);
+    const c1In1252 = cp >= 0x80 && cp <= 0x9f ? CP1252[cp - 0x80] : null;
+    if (charset === "cp1252" && c1In1252) {
+      // A raw C1 control. Windows-1252 spends that byte on a printable character instead.
+      upperHalf.push(`${label} is a C1 control. Windows-1252 has no such character; its byte 0x${hex(cp)} is ${codePointLabel(c1In1252[0])}.`);
+    } else if (cp <= maxCode) {
       add(cp, "character");
     } else if (charset === "cp1252" && CP1252_REVERSE.has(cp)) {
       add(CP1252_REVERSE.get(cp) as number, "Windows-1252 character");
-    } else if (cp <= 255 || CP1252_REVERSE.has(cp)) {
-      const where = cp <= 255 ? "Latin-1 and Windows-1252" : "Windows-1252";
-      tooBig.push(`${codePointLabel(cp)} is in ${where}, not in 7-bit ASCII: switch the table to see it.`);
+    } else if (cp <= 255) {
+      upperHalf.push(`${label} is byte 0x${hex(cp)} in Latin-1 and Windows-1252, outside 7-bit ASCII. Show either to see it.`);
+    } else if (CP1252_REVERSE.has(cp)) {
+      upperHalf.push(`${label} is not in Latin-1; it is byte 0x${hex(CP1252_REVERSE.get(cp) as number)} in Windows-1252. Show Windows-1252 to see it.`);
     } else {
-      tooBig.push(`${codePointLabel(cp)} is not in ASCII, Latin-1 or Windows-1252.`);
+      beyond.push(`${label} is not in ASCII, Latin-1 or Windows-1252.`);
     }
   }
 
@@ -761,16 +804,14 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   if (chars.length >= 2) {
     const needle = q.toLowerCase();
     for (const row of rows) {
-      const hay = [row.name, row.abbr ?? "", row.caret ?? "", row.cEscape ?? "", ...row.aliases, ...row.entities]
-        .join("\n")
-        .toLowerCase();
-      if (hay.includes(needle)) result.nameMatches.push(row.code);
+      const fields = [row.name, row.abbr, row.caret, row.cEscape, ...row.aliases, ...row.entities];
+      if (fields.some((f) => f !== null && f.toLowerCase().includes(needle))) result.nameMatches.push(row.code);
     }
   }
 
-  // Only explain a too-big reading when nothing else matched, so "1000001"
-  // shows binary 65 without three lines about the other bases.
-  if (result.interpretations.length === 0 && result.nameMatches.length === 0) result.outOfRange = tooBig;
+  // "1000001" shows binary 65 without three lines about the other bases.
+  const nothing = result.interpretations.length === 0 && result.nameMatches.length === 0;
+  result.outOfRange = nothing ? [...upperHalf, ...beyond] : upperHalf;
   return result;
 }
 

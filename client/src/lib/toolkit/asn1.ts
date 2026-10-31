@@ -211,11 +211,20 @@ function parseElement(buf: Uint8Array, pos: number, limit: number, depth: number
 
 /* ----------------------------------------------------------- accessors */
 
-export function isUniversal(node: DerNode | undefined, tag: number): node is DerNode {
+/*
+  Overloaded so that a node already known to exist is not narrowed away in
+  the false branch (a tag test is not a type distinction), while a possibly
+  missing node is narrowed to DerNode in the true branch.
+*/
+export function isUniversal(node: DerNode, tag: number): boolean;
+export function isUniversal(node: DerNode | undefined, tag: number): node is DerNode;
+export function isUniversal(node: DerNode | undefined, tag: number): boolean {
   return node !== undefined && node.cls === 0 && node.tag === tag;
 }
 
-export function isContext(node: DerNode | undefined, tag: number): node is DerNode {
+export function isContext(node: DerNode, tag: number): boolean;
+export function isContext(node: DerNode | undefined, tag: number): node is DerNode;
+export function isContext(node: DerNode | undefined, tag: number): boolean {
   return node !== undefined && node.cls === 2 && node.tag === tag;
 }
 
@@ -1963,4 +1972,35 @@ export async function verifySignature(
   } catch {
     return { status: "error", detail: "The browser refused to import the key or run the check, so no verdict was reached." };
   }
+}
+
+/* --------------------------------------------------------------- sniffing */
+
+export type DerKind = "certificate" | "csr" | "pkcs7" | "unknown";
+
+/**
+ * Guesses what a DER object is from its shape alone, so each decoder can
+ * point a reader at the right tool. A TBSCertificate has at least six
+ * fields; a CertificationRequestInfo has exactly four, ending in [0].
+ */
+export function sniffDer(der: Uint8Array): DerKind {
+  try {
+    const root = parseDer(der, 0, der.length);
+    if (!isUniversal(root, TAG.SEQUENCE)) return "unknown";
+    const [first, second] = root.children;
+    if (isUniversal(first, TAG.OID) && isContext(second, 0)) return pkcs7Certificates(der) ? "pkcs7" : "unknown";
+    if (root.children.length !== 3 || !isUniversal(first, TAG.SEQUENCE)) return "unknown";
+    const fields = first.children;
+    if (fields.length === 4 && isUniversal(fields[0], TAG.INTEGER) && isContext(fields[3], 0)) return "csr";
+    if (fields.length >= 6) return "certificate";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+/** RFC 7468 PEM armor with 64 character lines. */
+export function toPem(der: Uint8Array, label: string): string {
+  const lines = toBase64(der).match(/.{1,64}/g) ?? [];
+  return `-----BEGIN ${label}-----\n${lines.join("\n")}\n-----END ${label}-----\n`;
 }

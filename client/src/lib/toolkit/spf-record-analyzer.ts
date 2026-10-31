@@ -711,7 +711,9 @@ function parseIpTerm(t: SpfTerm, family: 4 | 6, value: string): void {
   if (special) {
     t.notes.push({
       tone: "info",
-      text: `Term ${t.position}: ${t.network} is ${special}. Mail from the public internet never arrives from it, so the term matches nothing at a receiver.`,
+      text: special.includes("documentation")
+        ? `Term ${t.position}: ${t.network} is ${special}. Fine in an example; in a published record it matches nothing, because no real mail comes from it.`
+        : `Term ${t.position}: ${t.network} is ${special}. Mail from the public internet never arrives from it, so the term matches nothing at a receiver.`,
     });
   }
 }

@@ -29,6 +29,11 @@ export const MAX_LINES = 5_000;
 
 const TONE_RANK: Record<Tone, number> = { danger: 3, warn: 2, info: 1, ok: 0 };
 
+/** Echo at most 40 characters of user input back in a message. */
+function clip(text: string): string {
+  return text.length > 40 ? `${text.slice(0, 40)}...` : text;
+}
+
 export function worstTone(tones: Tone[]): Tone {
   return tones.reduce<Tone>((a, b) => (TONE_RANK[b] > TONE_RANK[a] ? b : a), "ok");
 }
@@ -327,7 +332,7 @@ export function parseConfig(input: string): ParsedConfig {
     const scope = scopeLabel(current);
 
     if (!split.ok) {
-      findings.push({ tone: "danger", title: `${written}: unbalanced quotes`, detail: `${split.error} sshd -t rejects this line.`, line: lineNo, scope, key });
+      findings.push({ tone: "danger", title: `${clip(written)}: unbalanced quotes`, detail: `${split.error} sshd -t rejects this line.`, line: lineNo, scope, key });
       return;
     }
     if (split.comment && split.args.length > 0 && !warnedTrailingComment) {
@@ -392,7 +397,7 @@ export function parseConfig(input: string): ParsedConfig {
     if (!info) {
       findings.push({
         tone: "info",
-        title: `Unknown keyword ${written}`,
+        title: `Unknown keyword ${clip(written)}`,
         detail: "Not a keyword this auditor knows. If it is a typo, sshd refuses to start with Bad configuration option; run sshd -t to check.",
         line: lineNo,
         scope,
@@ -402,7 +407,7 @@ export function parseConfig(input: string): ParsedConfig {
       if (ALIASES[lower]) {
         findings.push({
           tone: "info",
-          title: `${written} is an old name`,
+          title: `${clip(written)} is an old name`,
           detail: `It still works as ${info.name}, which is the name current documentation uses.`,
           line: lineNo,
           scope,
@@ -588,7 +593,7 @@ export function effectiveAlgorithms(key: AlgoKey, value: string | null): AlgoRes
   }
   const pattern = mode === "remove" ? /^[A-Za-z0-9@._*?+-]+$/ : /^[A-Za-z0-9@._+-]+$/;
   const bad = names.find((s) => !pattern.test(s));
-  if (bad) return { list: [], mode, unknown: [], error: `"${bad}" is not a valid algorithm name.` };
+  if (bad) return { list: [], mode, unknown: [], error: `"${clip(bad)}" is not a valid algorithm name.` };
 
   let list: string[];
   if (mode === "explicit") list = names;
@@ -700,7 +705,7 @@ interface CheckContext {
 const YES_NO = new Set(["yes", "no"]);
 
 function invalid(name: string, value: string, allowed: string[]): Verdict {
-  return { tone: "danger", note: `"${value}" is not a value ${name} accepts (${allowed.join(", ")}). sshd refuses to start.` };
+  return { tone: "danger", note: `"${clip(value)}" is not a value ${name} accepts (${allowed.join(", ")}). sshd refuses to start.` };
 }
 
 function flag(name: string, value: string): boolean | Verdict {
@@ -807,7 +812,7 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     name: "MaxAuthTries",
     def: "6",
     check: (value) => {
-      if (!/^\d+$/.test(value)) return { tone: "danger", note: `"${value}" is not a whole number. sshd refuses to start.` };
+      if (!/^\d+$/.test(value)) return { tone: "danger", note: `"${clip(value)}" is not a whole number. sshd refuses to start.` };
       const n = Number(value);
       if (n > 6) return { tone: "warn", note: `${n} attempts per connection, more than the default of 6. Each connection gets that many guesses.` };
       if (n > 4) return { tone: "info", note: `${n} attempts per connection. CIS benchmarks ask for 4 or fewer.` };
@@ -956,7 +961,7 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     def: "120",
     check: (value) => {
       const s = parseSshdTime(value);
-      if (s === null) return { tone: "danger", note: `"${value}" is not an sshd time value such as 30, 30s or 1m. sshd refuses to start.` };
+      if (s === null) return { tone: "danger", note: `"${clip(value)}" is not an sshd time value such as 30, 30s or 1m. sshd refuses to start.` };
       if (s === 0) return { tone: "warn", note: "No limit. An unauthenticated connection can hold one of the MaxStartups slots indefinitely." };
       if (s > 60) return { tone: "info", note: `${s} seconds to authenticate. 30 to 60 is plenty for a person and shortens how long half-open logins hold a slot.` };
       return { tone: "ok", note: `${s} seconds to authenticate.` };
@@ -1061,7 +1066,7 @@ export function auditConfig(input: string): AuditResult {
         findings.push({
           tone: "warn",
           title: `${info.name} on line ${d.line} has no effect`,
-          detail: `Line ${prev.line} already set ${prev.written} ${prev.args.join(" ")}, and sshd keeps the first value it reads. Line ${d.line} (${d.args.join(" ")}) is ignored.`,
+          detail: `Line ${prev.line} already set ${prev.written} ${clip(prev.args.join(" "))}, and sshd keeps the first value it reads. Line ${d.line} (${clip(d.args.join(" "))}) is ignored.`,
           line: d.line,
           scope: label,
           key: d.key,
@@ -1076,7 +1081,7 @@ export function auditConfig(input: string): AuditResult {
     findings.push({
       tone: "warn",
       title: "Included files are not audited",
-      detail: `${d.args.join(" ")} is read at line ${d.line}. Because the first value wins, anything those files set overrides every later line here. On Debian and Ubuntu this line comes first, so a drop-in such as a cloud-init file with PasswordAuthentication yes beats a later no. Paste the files in at this position, or check the result with sshd -T.`,
+      detail: `${clip(d.args.join(" "))} is read at line ${d.line}. Because the first value wins, anything those files set overrides every later line here. On Debian and Ubuntu this line comes first, so a drop-in such as a cloud-init file with PasswordAuthentication yes beats a later no. Paste the files in at this position, or check the result with sshd -T.`,
       line: d.line,
       scope: d.block === -1 ? "global" : scopeLabel(parsed.blocks[d.block]),
       key: "include",
@@ -1091,7 +1096,7 @@ export function auditConfig(input: string): AuditResult {
       findings.push({
         tone: "danger",
         title: "DSA host key",
-        detail: `${path} is a DSA key: 1024 bits with SHA-1 signatures. Remove the line and the key; OpenSSH 10.0 no longer supports DSA at all.`,
+        detail: `${clip(path)} is a DSA key: 1024 bits with SHA-1 signatures. Remove the line and the key; OpenSSH 10.0 no longer supports DSA at all.`,
         line: d.line,
         scope: "global",
         key: "hostkey",
@@ -1172,7 +1177,7 @@ export function auditConfig(input: string): AuditResult {
       if (v.tone === "ok") continue;
       findings.push({
         tone: v.tone,
-        title: `${CHECKS[key]?.name ?? name} ${d.args[0]}`,
+        title: `${CHECKS[key]?.name ?? name} ${clip(d.args[0])}`,
         detail: `For connections matching ${block.criteria}: ${v.note}`,
         line: d.line,
         scope: scopeLabel(block),

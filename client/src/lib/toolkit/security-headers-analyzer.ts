@@ -501,6 +501,53 @@ function checkCsp(r: ParsedResponse, add: Adder): CspSummary | null {
       add("csp-strong", "pass", H, "The CSP restricts scripts well", `${report.combined!.text}${tail}`);
     }
   }
+  // report-to names an endpoint that the Reporting-Endpoints header must
+  // define (Reporting API). A name with no endpoint sends nothing.
+  const names = [
+    ...new Set(
+      report.policies
+        .map((p) => p.directives.find((d) => d.name === "report-to")?.tokens[0])
+        .filter((n): n is string => !!n && !/^[a-z][a-z0-9+.\-]*:\/\//i.test(n) && !n.startsWith("/")),
+    ),
+  ];
+  if (names.length > 0 && fields(r, "report-to").length === 0) {
+    const endpointsRaw = combined(r, "reporting-endpoints");
+    const parsed = endpointsRaw === null ? null : parseSfDictionary(endpointsRaw);
+    // An endpoint URL must be a string item; a bare token is ignored.
+    const entries = parsed && parsed.ok ? [...parsed.entries] : [];
+    const defined = entries.filter(([, m]) => m.item?.type === "string").map(([k]) => k);
+    const unquoted = entries.filter(([k, m]) => m.item?.type !== "string" && names.includes(k)).map(([k]) => k);
+    const missing = names.filter((n) => !defined.includes(n) && !unquoted.includes(n));
+    if (unquoted.length > 0) {
+      add(
+        "reporting-endpoint-unquoted",
+        "low",
+        "Reporting-Endpoints",
+        `The URL for ${list(unquoted.map((n) => `"${n}"`))} is not a quoted string`,
+        `Reporting-Endpoints is a structured field, and each endpoint URL must be in double quotes: ${unquoted[0]}="https://example.com/csp-reports". Unquoted, the entry is skipped and those reports go nowhere.`,
+      );
+    }
+    if (endpointsRaw === null) {
+      add(
+        "csp-no-endpoints",
+        "low",
+        H,
+        "report-to names an endpoint the response never defines",
+        `The policy sends reports to ${list(names.map((n) => `"${n}"`))}, but there is no Reporting-Endpoints header, so no reports are sent. Add Reporting-Endpoints: ${names[0]}="https://example.com/csp-reports".`,
+      );
+    } else if (parsed && !parsed.ok) {
+      add("reporting-endpoints-invalid", "low", "Reporting-Endpoints", "Reporting-Endpoints is malformed", `It does not parse as a structured field dictionary (${parsed.error}), so browsers ignore it and no reports are sent. The form is name="https://...".`);
+    } else if (missing.length > 0) {
+      add(
+        "csp-endpoint-missing",
+        "low",
+        H,
+        `Endpoint ${list(missing.map((n) => `"${n}"`))} is not defined`,
+        `Reporting-Endpoints defines ${defined.length ? list(defined.map((n) => `"${n}"`)) : "nothing"}, but the policy reports to ${list(missing.map((n) => `"${n}"`))}. Names must match exactly, so those reports go nowhere.`,
+      );
+    }
+  }
+
   return {
     report,
     enforced: enforcedPolicies.length,
@@ -665,6 +712,9 @@ function checkReferrer(r: ParsedResponse, add: Adder): string | null {
     return null;
   }
   const { policy, ignored } = effectiveReferrerPolicy(raw);
+  if (policy === null && ignored.length === 0) {
+    add("referrer-empty", "low", H, "Referrer-Policy is empty", "An empty value is ignored and the browser default, strict-origin-when-cross-origin, applies. Set a value or drop the header.");
+  }
   if (ignored.length > 0) {
     add(
       "referrer-ignored",
@@ -990,7 +1040,7 @@ function checkPermissions(r: ParsedResponse, add: Adder): FeatureRule[] | null {
       "info",
       H,
       "interest-cohort is no longer needed",
-      "It opted out of FLoC, a Chrome experiment that was abandoned before it shipped. Browsers now log it as an unrecognized feature; it is harmless but can go.",
+      "It opted out of FLoC, a Chrome advertising experiment that was dropped and replaced by the Topics API. Browsers now log it as an unrecognized feature; it is harmless but can go.",
     );
   }
   const otherUnknown = unknown.filter((f) => f !== "interest-cohort");
@@ -1071,7 +1121,7 @@ function checkCrossOrigin(r: ParsedResponse, add: Adder): { coop: string | null;
     }
   }
   if (coop === "same-origin" && (coep === "require-corp" || coep === "credentialless")) {
-    add("isolated", "pass", COEP, "The page is cross-origin isolated", `COOP same-origin with COEP ${coep} unlocks SharedArrayBuffer and full-resolution timers, and keeps cross-origin resources out of the page's process unless they opt in.`);
+    add("isolated", "pass", COEP, "The page is cross-origin isolated", `COOP same-origin with COEP ${coep} unlocks SharedArrayBuffer and finer-grained timers, and keeps cross-origin resources out of the page's process unless they opt in.`);
   } else if (coep === null) {
     add("coep-missing", "info", COEP, "No Cross-Origin-Embedder-Policy", "COEP is only needed for cross-origin isolation, which pages use for SharedArrayBuffer and precise timers. Most sites can leave it out.");
   }
@@ -1235,7 +1285,7 @@ function checkLegacyAndLeaks(r: ParsedResponse, add: Adder): void {
         "low",
         "X-XSS-Protection",
         `X-XSS-Protection: ${xss.trim()} should be 0 or absent`,
-        "The XSS filter it controls was removed from Chrome in version 78 and from Edge, and Firefox never had one. In the browsers that still honor it, the filter itself was a source of cross-site leaks and could be tricked into disabling legitimate scripts. Send 0 or nothing, and rely on CSP.",
+        "The XSS filter it controls was removed from Chrome in version 78 and from Edge, and Firefox never had one. Where it was implemented, the filter itself became a source of cross-site leaks and could be tricked into disabling legitimate scripts. Send 0 or nothing, and rely on CSP.",
       );
     }
   }

@@ -615,7 +615,7 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
     if (spTag && sp) {
       findings.push({
         tone: "info",
-        text: "sp only takes effect when this record sits at the organizational domain. A receiver asks for _dmarc at the exact From domain first, so a subdomain's own record is used as is, and its sp is ignored (section 6.3).",
+        text: "sp is only read from the record at the organizational domain. If this record is published at a subdomain instead, receivers use its p for mail from exactly that subdomain and never read its sp (section 6.3).",
       });
     }
   }

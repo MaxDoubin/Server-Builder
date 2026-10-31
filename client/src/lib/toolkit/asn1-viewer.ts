@@ -147,7 +147,7 @@ const UNIVERSAL_NAMES: Record<number, string> = {
 
 /** X.690 8.2, 8.3, 8.4, 8.5, 8.8, 8.19, 8.20: these are always primitive. */
 const ALWAYS_PRIMITIVE = new Set([1, 2, 5, 6, 9, 10, 13]);
-/** X.690 8.9, 8.11, 8.18, 8.21.5: these are always constructed. */
+/** SEQUENCE, SET, EXTERNAL, EMBEDDED PDV and CHARACTER STRING: X.690 requires the constructed form. */
 const ALWAYS_CONSTRUCTED = new Set([8, 11, 16, 17, 29]);
 /** Strings that BER may split into constructed segments and DER may not (X.690 10.2). */
 const STRING_TAGS = new Set([3, 4, 7, 12, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30]);
@@ -582,7 +582,10 @@ function readHeader(buf: Uint8Array, pos: number, end: number, strict: boolean):
       if ((b & 0x80) === 0) break;
     }
     if (tagNumber < 31) {
-      issues.push({ level: "der", text: `Tag number ${tagNumber} uses the long tag form, but numbers below 31 must use the single octet form.` });
+      issues.push({
+        level: "invalid",
+        text: `Tag number ${tagNumber} uses the high tag number form, but X.690 8.1.2.3 requires the single octet form for numbers 0 to 30.`,
+      });
     }
   }
 
@@ -1278,7 +1281,8 @@ function decodePrimitive(ctx: Ctx, node: Asn1Node, depth: number): void {
  */
 function annotate(node: Asn1Node): void {
   for (const child of node.children) annotate(child);
-  const kids = node.children;
+  // End-of-contents markers are framing, not components.
+  const kids = node.children.filter((k) => !(k.tagClass === "universal" && k.tagNumber === 0));
   if (!(node.tagClass === "universal" && node.tagNumber === 16 && node.constructed) || kids.length === 0) return;
   const head = kids[0];
   if (head.oid === null || head.tagNumber !== 6 || head.tagClass !== "universal") return;

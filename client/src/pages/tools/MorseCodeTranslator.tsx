@@ -218,7 +218,13 @@ export function MorseCodeTranslator() {
       halt();
       const gen = genRef.current;
       const plan = planPlayback(seq, timing);
-      if (plan.downs.length === 0 || (!sound && !light)) return;
+      if (plan.downs.length === 0 || (!sound && !light)) {
+        // halt() above may have ended an earlier run; make the view agree.
+        setPlaying(null);
+        setLamp(false);
+        setCursor(-1);
+        return;
+      }
       setAudioNote(null);
 
       let clock: (() => number) | null = null;

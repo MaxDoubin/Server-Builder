@@ -471,28 +471,41 @@ const LOCAL_CHAR = /[A-Za-z0-9._%+-]/;
 const HOST_CHAR = /[A-Za-z0-9_.-]/;
 const WORDISH = /[A-Za-z0-9_]/;
 
-/** Drop trailing sentence punctuation and closing brackets the URL did not open. */
+/** Longest URL accepted. Longer runs are not treated as URLs, which bounds the work per candidate. */
+export const MAX_URL_CHARS = 4096;
+
+/** URLs inside one URL's query string that are looked for, at most. */
+const MAX_NESTED_PER_URL = 8;
+
+const CLOSERS: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
+
+/**
+ * Drop trailing sentence punctuation, and closing brackets the URL did not
+ * open, so "(see http://example.com/a_(b))." keeps the inner pair. Counts
+ * once and adjusts as it trims, so a body ending in a thousand ")" stays linear.
+ */
 function trimUrlBody(body: string): string {
-  let out = body;
-  for (;;) {
-    const last = out.charAt(out.length - 1);
-    if (last === "") return out;
+  const count: Record<string, number> = { "(": 0, ")": 0, "[": 0, "]": 0, "{": 0, "}": 0 };
+  for (let i = 0; i < body.length; i++) {
+    const c = body.charAt(i);
+    if (c in count) count[c]++;
+  }
+  let end = body.length;
+  while (end > 0) {
+    const last = body.charAt(end - 1);
     if (".,;:!?*".includes(last)) {
-      out = out.slice(0, -1);
+      end--;
       continue;
     }
-    const pairs: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
-    const opener = pairs[last];
-    if (opener) {
-      const opens = out.split(opener).length - 1;
-      const closes = out.split(last).length - 1;
-      if (closes > opens) {
-        out = out.slice(0, -1);
-        continue;
-      }
+    const opener = CLOSERS[last];
+    if (opener && count[last] > count[opener]) {
+      count[last]--;
+      end--;
+      continue;
     }
-    return out;
+    break;
   }
+  return body.slice(0, end);
 }
 
 export function findNetworkIndicators(original: string, options: FindOptions = {}): FindResult {
@@ -517,16 +530,33 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
   const cover = (a: number, b: number) => mask.fill(1, a, b);
 
   // 1. URLs. Every "://" is a candidate; one inside an earlier URL is a nested URL.
+  // nextStop[i] is the first offset at or after i where a URL body must end,
+  // so finding the end of a candidate costs nothing however long the line is.
+  const nextStop = new Int32Array(text.length + 1);
+  nextStop[text.length] = text.length;
+  for (let i = text.length - 1; i >= 0; i--) nextStop[i] = URL_BODY_STOP.test(text.charAt(i)) ? i : nextStop[i + 1];
   let outerEnd = -1;
+  let nestedSeen = 0;
   for (let k = text.indexOf("://"); k !== -1; k = text.indexOf("://", k + 3)) {
+    // The longest allowed scheme is five letters, so a longer run of scheme
+    // characters before "://" (xhttp, foo.https) is not one of them.
     let s = k;
-    while (s > 0 && SCHEME_CHAR.test(text.charAt(s - 1))) s--;
+    while (s > 0 && k - s <= 6 && SCHEME_CHAR.test(text.charAt(s - 1))) s--;
     const scheme = text.slice(s, k);
     if (!URL_SCHEMES.has(scheme.toLowerCase())) continue;
     const nested = s < outerEnd;
-    let e = k + 3;
-    const limit = nested ? outerEnd : text.length;
-    while (e < limit && !URL_BODY_STOP.test(text.charAt(e)) && !(nested && text.charAt(e) === "&")) e++;
+    if (nested && ++nestedSeen > MAX_NESTED_PER_URL) continue;
+    let e = Math.min(nextStop[k + 3], nested ? outerEnd : text.length);
+    if (e - (k + 3) > MAX_URL_CHARS) continue;
+    if (nested) {
+      // Inside a query string, the next parameter starts at "&".
+      for (let i = k + 3; i < e; i++) {
+        if (text.charCodeAt(i) === 38) {
+          e = i;
+          break;
+        }
+      }
+    }
     const body = trimUrlBody(text.slice(k + 3, e));
     const parts = parseUrl(`${scheme}://${body}`);
     if (!parts) continue;
@@ -537,6 +567,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     if (!nested) {
       cover(s, b);
       outerEnd = b;
+      nestedSeen = 0;
     }
   }
 

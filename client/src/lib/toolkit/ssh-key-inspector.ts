@@ -30,6 +30,8 @@ export const OPENSSH_MAX_RSA_BITS = 16_384;
 export const OPENSSH_MIN_RSA_BITS = 1_024;
 /** NIST SP 800-131A floor for RSA. */
 export const RECOMMENDED_RSA_BITS = 2_048;
+/** Options read from one line. Real lines carry a handful; this bounds hostile ones. */
+export const MAX_OPTIONS = 100;
 
 /* ------------------------------------------------------------- SHA-256 */
 
@@ -804,9 +806,14 @@ export type OptionsParse = { ok: true; options: AuthOption[] } | { ok: false; er
  */
 export function parseOptions(field: string, nowMs: number): OptionsParse {
   const options: AuthOption[] = [];
+  const NAME = /[A-Za-z0-9-]+/y;
   let i = 0;
   while (i < field.length) {
-    const nameMatch = /^[A-Za-z0-9-]+/.exec(field.slice(i));
+    if (options.length >= MAX_OPTIONS) {
+      return { ok: false, error: `More than ${MAX_OPTIONS} options on one line. This inspector stops reading there.`, options };
+    }
+    NAME.lastIndex = i;
+    const nameMatch = NAME.exec(field);
     if (!nameMatch) {
       return { ok: false, error: `Unexpected "${field[i]}" at character ${i + 1} of the options.`, options };
     }
@@ -1161,7 +1168,7 @@ function keyFindings(line: KeyLine, key: DecodedKey, nowMs: number): void {
     case "dsa":
       f.push({
         tone: "danger",
-        text: "DSA (ssh-dss) has been disabled by default since OpenSSH 7.0, and OpenSSH 10.0 removed it entirely. ssh-keygen only ever generated 1024 bit DSA keys. Replace this key.",
+        text: "DSA (ssh-dss) has been disabled by default since OpenSSH 7.0, and OpenSSH 10.0 removed it entirely. ssh-keygen limited DSA keys to 1024 bits. Replace this key.",
       });
       break;
     case "rsa": {
@@ -1222,6 +1229,11 @@ function keyFindings(line: KeyLine, key: DecodedKey, nowMs: number): void {
   }
 }
 
+function joinList(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
 function optionFindings(line: KeyLine): void {
   const f = line.findings;
   const opts = line.options;
@@ -1241,7 +1253,7 @@ function optionFindings(line: KeyLine): void {
     const open = [eff.portForwarding && "port forwarding", eff.agentForwarding && "agent forwarding", eff.x11Forwarding && "X11 forwarding"].filter(Boolean);
     f.push({
       tone: "warn",
-      text: `command= is set but ${open.join(", ")} ${open.length === 1 ? "is" : "are"} still allowed. A forced command does not stop forwarding, so a key meant for one job can still open tunnels. Add restrict.`,
+      text: `command= is set but ${joinList(open as string[])} ${open.length === 1 ? "is" : "are"} still allowed. A forced command does not stop forwarding, so a key meant for one job can still open tunnels. Add restrict.`,
     });
   }
   if (has("principals") && !has("cert-authority")) {
@@ -1298,6 +1310,9 @@ function parseRfc4716(block: string[], startLine: number, nowMs: number): KeyLin
     return line;
   }
   finishKey(line, decoded.key.type, toBase64(b64.bytes), nowMs);
+  // ssh-keygen -l reads the one line form, so there is no direct equivalent to show.
+  line.keygen = null;
+  line.keygenMd5 = null;
   line.findings.unshift({
     tone: "info",
     text: `An RFC 4716 SSH2 public key block. sshd does not read this format; ssh-keygen -i -f file converts it to the one line form: ${decoded.key.type} ${data.slice(0, 16)}...`,

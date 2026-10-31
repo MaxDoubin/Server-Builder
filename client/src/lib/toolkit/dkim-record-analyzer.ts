@@ -1575,3 +1575,58 @@ export function crossCheck(key: KeyRecord, sig: SignatureInfo): Finding[] {
   }
   return sortFindings(findings);
 }
+
+/* ------------------------------------------------------------- examples */
+
+/**
+ * Sample records and signatures. The RSA keys are throwaway keys generated
+ * for these examples, and the rsa-sha256 signature is a real one made with
+ * the private half of the 2048 bit key over a sample message, so the two
+ * cross-check. The Ed25519 key is the one in RFC 8463 appendix A.
+ */
+export const EXAMPLE_KEY_RECORDS: { label: string; text: string }[] = [
+  {
+    label: "RSA 2048",
+    text: `s2026._domainkey.example.com. 3600 IN TXT ( "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlqjYkvom4uwD7lpHN+9jE0tQW/fCfwb5fXVREkC7ZHG4FWanUohljsCiJbJ0tjxkHVO5JdVBrrf3C4QIx5TJOyQ80ZUf0MKRsf63bidQEJByHMocCxSrGEVkUfj/G+r+9jal1B8TGJTnli5ByCurD/lWx79B/2L5hYLH/jZNGPsd615euBpIPQaNnhGOVKv2Q"
+  "S1C9huJvroY1Df97AzlEHa1fjf/PLSJWFN9/ZZ6gNRRTWheismOEm7e/XAbFASgilfvAqCzHnfoth+NEkU+GBnlFkj7sHziUw6TZo6PA9T70IUuwh4rZuyBJhW/EpUH6mHLFfP96j9Ajp2fFeBeMQIDAQAB" )`,
+  },
+  {
+    label: "RSA 1024, testing",
+    text: "v=DKIM1; k=rsa; t=y; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDtJU8aAc/kDNGr3TS40m7kLt3oLBfCmtRgT3L8vxeDqeNPK15ozFynlKRdxg5/2TdNh9iT+ZMsy46BvH4NZiPZskkM+um9auW8uuyuCtB2O3y1sfNbB6YRfzPUxr1iDWNKVudY0yaXV4tfcbLJ1Ku1FTU6Nxlpb+XWxt1lO+mfJwIDAQAB",
+  },
+  {
+    label: "RSA 512, sha1",
+    text: "k=rsa; h=sha1; p=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKYwTpMpVPuMYdXmv82iLeq/mMia3X3J97c7/wZNVGOBoh5pcliQHt6vDKKAefR1doMuXzgo0DxCkpjTd73l8wMCAwEAAQ==",
+  },
+  {
+    label: "Ed25519",
+    text: "v=DKIM1; k=ed25519; p=11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
+  },
+  {
+    label: "Revoked",
+    text: "v=DKIM1; k=rsa; p=",
+  },
+];
+
+export const EXAMPLE_SIGNATURES: { label: string; text: string }[] = [
+  {
+    label: "rsa-sha256",
+    text: `DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=example.com; s=s2026;
+        t=1791908043; h=from:to:subject:date:message-id:from;
+        bh=SoxCEfhuTtVzZJ1GLYaoau2VLtGWqggh/mlmLvF2LRc=;
+        b=N8KqlcKdbMRosuDErJnhP3GglQSW6VBART89quJcTmlzXrquIoCiEAKlBXcqwNbvk327J+AQ
+         vgZsOIzWHjFvgzSOk92h+uqS0Pn8NCkXHwHjSHGYccZ0cXt01mnp0OExnRcBvmV8JcOLl3n0d4XR
+         g+wyE+hUniBfaty9muX4jnyx8KbobwgmhOvn25vPFWWpL07qSEladUAqilBPmhlZzl6RuniNZbnm
+         44VJRJgHnzVtSlCPjKf1T9OAC4zQXVVK9YsxB+3gnWGWINI2Lw9JeoVblleNjy10zNZpyJuOytcp
+         GH1/GCjH4uBxH6IvMdpGgBKgOuZ/cP86u5Cb9BC2tQ==`,
+  },
+  {
+    label: "Flawed",
+    text: `DKIM-Signature: v=1; a=rsa-sha1; c=simple; d=example.net; s=old;
+        i=@mail.example.org; h=to:subject; l=120; t=1700000000; x=1690000000;
+        bh=hqq3KViJ84NMKaMCaFJvQkV8EMk=;
+        b=Mot9Xe9BNaeCB8ibg2yZ/6XxMbF9EHfIBaxBiCQF5BjJW6MpHK8iGZhHBrR6A6FWFLSvVTWjJ6i9
+         UB/zxMJkcNeeubT2hEmAHbVLWGEJHq/ZkdOjF1f19FyJLxG2WDyrx1Hv7+BZglC+o8tQzzODhC/X
+         01tbo25HhNeYgt/rH+E=`,
+  },
+];

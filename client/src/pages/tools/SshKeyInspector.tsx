@@ -165,11 +165,15 @@ function LinePanel({ line }: { line: KeyLine }) {
 
         {line.keygen ? (
           <div className="mt-4">
-            <p className={LABEL}>What ssh-keygen -lf prints</p>
-            <pre className="mt-2 overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs text-[hsl(var(--brand-signal))]">
+            <p className={LABEL}>What ssh-keygen prints for this line</p>
+            <pre className="mt-2 overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-signal))]">
+              <span className="text-[hsl(var(--brand-ash))]">$ ssh-keygen -lf file</span>
+              {"\n"}
               {line.keygen}
               {"\n"}
-              <span className="text-[hsl(var(--brand-ash))]">{line.keygenMd5}</span>
+              <span className="text-[hsl(var(--brand-ash))]">$ ssh-keygen -E md5 -lf file</span>
+              {"\n"}
+              {line.keygenMd5}
             </pre>
           </div>
         ) : null}
@@ -234,7 +238,13 @@ function LinePanel({ line }: { line: KeyLine }) {
                         {o.canonical ?? o.name}
                       </th>
                       <td className="max-w-[240px] break-all py-3 pr-4 font-mono-tight text-xs text-[hsl(var(--brand-bone))]">
-                        {o.value ?? <span className="text-[hsl(var(--brand-ash))]">flag</span>}
+                        {o.value === null ? (
+                          <span className="text-[hsl(var(--brand-ash))]">flag</span>
+                        ) : o.value.length > 2000 ? (
+                          `${o.value.slice(0, 2000)}... (${o.value.length.toLocaleString("en-US")} characters)`
+                        ) : (
+                          o.value
+                        )}
                       </td>
                       <td className="py-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                         {o.explanation}

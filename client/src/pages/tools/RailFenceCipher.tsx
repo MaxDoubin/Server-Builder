@@ -33,7 +33,7 @@ const INPUT =
 const FOCUS =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]";
 const PILL = `inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] ${FOCUS}`;
-const STEP_BUTTON = `inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-[hsl(var(--brand-iron))] font-mono-tight text-sm text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] disabled:opacity-40 ${FOCUS}`;
+const STEP_BTN = `inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-[hsl(var(--brand-iron))] font-mono-tight text-sm text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] disabled:opacity-40 ${FOCUS}`;
 const ERROR_BOX =
   "rounded-lg border border-[hsl(var(--brand-danger)/0.5)] bg-[hsl(var(--brand-danger)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]";
 const TH =
@@ -155,7 +155,7 @@ function ZigzagGrid({ stream, pattern, rails }: { stream: string[]; pattern: Uin
             </div>
           ))}
         </div>
-        <div className="min-w-0 flex-1 overflow-x-auto pb-2">
+        <div className="relative min-w-0 flex-1 overflow-x-auto pb-2">
           <div
             role="img"
             aria-label={`Zigzag of the first ${cols} characters across ${rails} rails. The rail list gives the same characters as text.`}
@@ -287,6 +287,13 @@ export function RailFenceCipher() {
     setOffsetText(String((current + by + cycle) % cycle));
   }
 
+  /** Moves the current ciphertext into the input and attacks it. */
+  function breakOutput(ciphertext: string) {
+    setText(ciphertext);
+    setDirection("decrypt");
+    setBruteRequest({ text: ciphertext, mode, offsets: tryOffsets });
+  }
+
   function applyCandidate(rails: number, offset: number, candidateMode: Mode) {
     setDirection("decrypt");
     setRailsText(String(rails));
@@ -355,7 +362,7 @@ export function RailFenceCipher() {
                 Rails
               </label>
               <div className="mt-2 flex gap-2">
-                <button type="button" onClick={() => stepRails(-1)} aria-label="One rail fewer" className={STEP_BUTTON}>
+                <button type="button" onClick={() => stepRails(-1)} aria-label="One rail fewer" className={STEP_BTN}>
                   -
                 </button>
                 <input
@@ -370,7 +377,7 @@ export function RailFenceCipher() {
                   data-testid="input-rails"
                   className={`min-w-0 flex-1 text-center ${INPUT}`}
                 />
-                <button type="button" onClick={() => stepRails(1)} aria-label="One rail more" className={STEP_BUTTON}>
+                <button type="button" onClick={() => stepRails(1)} aria-label="One rail more" className={STEP_BTN}>
                   +
                 </button>
               </div>
@@ -381,7 +388,7 @@ export function RailFenceCipher() {
                 Offset{cycle ? ` (0 to ${cycle - 1})` : ""}
               </label>
               <div className="mt-2 flex gap-2">
-                <button type="button" onClick={() => stepOffset(-1)} aria-label="Offset down by one" className={STEP_BUTTON}>
+                <button type="button" onClick={() => stepOffset(-1)} aria-label="Offset down by one" className={STEP_BTN}>
                   -
                 </button>
                 <input
@@ -396,7 +403,7 @@ export function RailFenceCipher() {
                   data-testid="input-offset"
                   className={`min-w-0 flex-1 text-center ${INPUT}`}
                 />
-                <button type="button" onClick={() => stepOffset(1)} aria-label="Offset up by one" className={STEP_BUTTON}>
+                <button type="button" onClick={() => stepOffset(1)} aria-label="Offset up by one" className={STEP_BTN}>
                   +
                 </button>
               </div>
@@ -560,7 +567,7 @@ export function RailFenceCipher() {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <label
-              className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.18em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${toggleClass(
+              className={`relative inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.18em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${toggleClass(
                 tryOffsets,
               )}`}
             >
@@ -583,7 +590,25 @@ export function RailFenceCipher() {
             >
               {bruteRequest ? "Working" : "Try every rail count"}
             </button>
+            {direction === "encrypt" && result ? (
+              <button
+                type="button"
+                onClick={() => breakOutput(result.output)}
+                disabled={bruteRequest !== null}
+                data-testid="button-break-output"
+                className={`${PILL} disabled:opacity-60`}
+              >
+                Break the ciphertext instead
+              </button>
+            ) : null}
           </div>
+          {direction === "encrypt" ? (
+            <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]" data-testid="text-brute-encrypt-note">
+              The direction is Encrypt, so the text above is plaintext. Run against it, the keys that
+              barely move anything (rail counts close to the length) win, because the input already
+              reads as English.
+            </p>
+          ) : null}
           <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
             Uses the spaces and punctuation setting above. Accepts up to{" "}
             {BRUTE_MAX_CHARS.toLocaleString("en-US")} characters and stops after{" "}
@@ -622,7 +647,9 @@ export function RailFenceCipher() {
                   {notice}
                 </p>
               ))}
-              <div className="mt-4 overflow-x-auto">
+              {/* relative: the sr-only header label is absolutely positioned and
+                  would otherwise escape this scroller and widen the page. */}
+              <div className="relative mt-4 overflow-x-auto">
                 <table className="w-full min-w-[640px] border-collapse text-left" data-testid="table-candidates">
                   <thead>
                     <tr className="border-b border-[hsl(var(--brand-iron))]">

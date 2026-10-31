@@ -966,6 +966,10 @@ function tokenNotes(type: RowType, key: string, governedBy: string, f: ListFacts
     if (s.kind === "invalid") return { token: s.token, note: `invalid, ignored: ${s.problem}` };
     if (s.kind === "none") return { token: s.token, note: f.noneMixed ? "ignored: other sources are listed" : null };
     if (s.unquoted) return { token: s.token, note: `a host named "${s.unquoted}", not the keyword` };
+    const asName = asciiLower(s.token).replace(/:$/, "");
+    if (asName in DIRECTIVES || asName in OBSOLETE) {
+      return { token: s.token, note: "a directive name read as a host: a semicolon is missing before it" };
+    }
     const hostLike = s.kind === "host" || s.kind === "scheme" || s.kind === "wildcard";
 
     if (type === "script" || type === "worker") {
@@ -1273,7 +1277,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         name === "frame-ancestors" ? "medium" : "low",
         `${name} is ignored in a meta element`,
         name === "frame-ancestors"
-          ? "HTML removes frame-ancestors from a policy delivered by meta, because the tag is parsed only after the browser has already decided whether to render the page in a frame. This gives no clickjacking protection; send it as an HTTP header."
+          ? "HTML removes frame-ancestors from a policy delivered by meta, so here it gives no clickjacking protection at all. Send it in the Content-Security-Policy header instead."
           : `HTML removes ${name} from a policy delivered by meta. Send it in the Content-Security-Policy header if it is needed.`,
         name,
       );
@@ -1715,7 +1719,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         "object-allows",
         "low",
         "object-src allows sources",
-        `object-src permits ${quoteList(obj.tokens)}. Unless the page embeds plugin content on purpose, 'none' is the safer value.`,
+        `object-src permits ${quoteList(obj.tokens.filter((t) => asciiLower(t) !== "'none'"))}. Unless the page embeds plugin content on purpose, 'none' alone is the safer value.`,
         "object-src",
       );
     }
@@ -1993,7 +1997,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         "trusted-types-on",
         "pass",
         "Trusted Types are enforced",
-        "DOM XSS sinks such as innerHTML and eval only accept values produced by a named Trusted Types policy, so a string from an attacker cannot reach them by accident.",
+        "DOM XSS sinks such as innerHTML, document.write and a script element's src only accept values produced by a named Trusted Types policy, so a plain string from an attacker cannot reach them.",
         "require-trusted-types-for",
       );
     } else {

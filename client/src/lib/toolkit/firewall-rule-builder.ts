@@ -150,15 +150,20 @@ export interface Address {
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
+/** Echo at most 40 characters of user input back in a message. */
+function clip(text: string): string {
+  return text.length > 40 ? `${text.slice(0, 40)}...` : text;
+}
+
 function parseV4(text: string): Parsed<number> {
   const parts = text.split(".");
   if (parts.length !== 4) {
-    return { ok: false, error: `An IPv4 address has four dot separated numbers; "${text}" has ${parts.length}.` };
+    return { ok: false, error: `An IPv4 address has four dot separated numbers; "${clip(text)}" has ${parts.length}.` };
   }
   let value = 0;
   for (const part of parts) {
     if (!/^\d{1,3}$/.test(part) || Number(part) > 255) {
-      return { ok: false, error: `"${part}" is not a number from 0 to 255.` };
+      return { ok: false, error: `"${clip(part)}" is not a number from 0 to 255.` };
     }
     if (part.length > 1 && part.startsWith("0")) {
       return { ok: false, error: `"${part}" has a leading zero, which some parsers read as octal. Write it without one.` };
@@ -197,7 +202,7 @@ function parseV6(text: string): Parsed<bigint> {
         if (!v4.ok) return `The IPv4 part is not valid: ${v4.error}`;
         out.push(Math.floor(v4.value / 65536), v4.value % 65536);
       } else {
-        if (!/^[0-9a-fA-F]{1,4}$/.test(item)) return `"${item}" is not a group of one to four hex digits.`;
+        if (!/^[0-9a-fA-F]{1,4}$/.test(item)) return `"${clip(item)}" is not a group of one to four hex digits.`;
         out.push(parseInt(item, 16));
       }
     }
@@ -341,7 +346,7 @@ export function parsePorts(raw: string): Parsed<PortList | null> {
     const item = piece.trim();
     if (item === "") return { ok: false, error: "There is an empty entry between two commas." };
     const m = /^(\d{1,5})(?:\s*[-:]\s*(\d{1,5}))?$/.exec(item);
-    if (!m) return { ok: false, error: `"${item}" is not a port (443) or a range (6000-6010).` };
+    if (!m) return { ok: false, error: `"${clip(item)}" is not a port (443) or a range (6000-6010).` };
     const lo = Number(m[1]);
     const hi = m[2] === undefined ? lo : Number(m[2]);
     for (const n of [lo, hi]) {

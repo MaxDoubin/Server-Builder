@@ -252,6 +252,7 @@ function EntropyPlot({
           aria-label={`Sliding window entropy across ${formatBytes(size)}: ${dec(sliding.count)} ${pluralise(sliding.count, "window")}, ${dec(regions.length)} ${pluralise(regions.length, "region")} at or above ${threshold.toFixed(2)} bits per byte. Use the arrow keys to read each point.`}
           aria-describedby="plot-readout"
           onPointerMove={onPointer}
+          onPointerDown={onPointer}
           onPointerLeave={() => setActive(null)}
           onKeyDown={onKey}
           onFocus={() => setActive((a) => a ?? 0)}
@@ -409,6 +410,7 @@ function ByteHistogram({ histogram, size }: { histogram: Uint32Array; size: numb
         aria-label={`Byte value histogram, 256 bins, ${log ? "logarithmic" : "linear"} scale. Use the arrow keys to read each value.`}
         aria-describedby="histogram-readout"
         onPointerMove={onPointer}
+        onPointerDown={onPointer}
         onPointerLeave={() => setActive(null)}
         onKeyDown={onKey}
         onFocus={() => setActive((a) => a ?? 0)}

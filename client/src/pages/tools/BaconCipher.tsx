@@ -365,7 +365,7 @@ export function BaconCipher() {
               autoComplete="off"
               aria-invalid={!symbols.ok}
               data-testid="input-symbol-a"
-              className={`${FIELD} text-center`}
+              className={`${FIELD} min-w-0 text-center`}
             />
           </div>
         </div>
@@ -385,7 +385,7 @@ export function BaconCipher() {
               autoComplete="off"
               aria-invalid={!symbols.ok}
               data-testid="input-symbol-b"
-              className={`${FIELD} text-center`}
+              className={`${FIELD} min-w-0 text-center`}
             />
           </div>
         </div>
