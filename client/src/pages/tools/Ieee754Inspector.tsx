@@ -566,15 +566,15 @@ function explainSum(r: SumReport, literal: string, aIn: Value, bIn: Value): stri
     aRounded && bRounded ? "Both operands were" : aRounded ? "Operand a was" : bRounded ? "Operand b was" : null;
   if (r.equal) {
     if (who === null) {
-      return `Both operands are stored exactly in ${label}, so a + b rounds the true sum once, the same rounding that storing the decimal ${literal} does, and == is true.`;
+      return `Both operands are stored exactly in ${label}, so a + b rounds the true sum once, the same rounding that storing ${literal} does, and == is true.`;
     }
-    return `${who} rounded when stored, but in ${label} the errors still land the sum on the same value the decimal ${literal} stores, so == is true.`;
+    return `${who} rounded when stored, but in ${label} the errors still land the sum on the same value that ${literal} stores, so == is true.`;
   }
   const tie = roundingReport(r.exactSum, r.sum).tie;
   const steps = r.apart === null ? "" : `, ${r.apart} ${r.apart === 1n ? "step" : "steps"} away`;
   return `${who ?? "An operand was"} rounded when stored, and the exact sum of the stored values ${
     tie ? "fell exactly halfway between two neighbors, so ties to even picked" : "rounds to"
-  } ${shortestDecimal(r.sum)}. Rounding the decimal ${literal} directly gives ${shortestDecimal(r.direct)}${steps}, so == is false.`;
+  } ${shortestDecimal(r.sum)}. Rounding ${literal} directly gives ${shortestDecimal(r.direct)}${steps}, so == is false.`;
 }
 
 function SumPanel() {
@@ -590,10 +590,17 @@ function SumPanel() {
   }, [pa, pb]);
 
   const literalText = data ? valueText(data.literal) : "";
-  const literalShort =
-    data && data.literal.kind === "finite" && literalText.length > 24
-      ? decimalShort(valueDecimal(data.literal) ?? { neg: false, digits: 0n, scale: 0 }, 6)
-      : literalText;
+  // A long exact sum is too wide for the headline; it is printed in full above, and the
+  // headline and explanation then refer to it by name rather than by a rounded stand-in.
+  const literalLong = data !== null && data.literal.kind === "finite" && literalText.length > 24;
+  const literalHeadline = literalLong ? "the decimal sum" : literalText;
+  const literalPhrase = !data
+    ? ""
+    : literalLong
+      ? "the exact decimal sum"
+      : data.literal.kind === "finite"
+        ? `the decimal ${literalText}`
+        : `the literal ${literalText}`;
 
   return (
     <ToolPanel title="Why 0.1 + 0.2 != 0.3">
@@ -646,7 +653,7 @@ function SumPanel() {
               <div key={r.format.key} className={BLOCK_CLASS} data-testid={`sum-${r.format.width}`}>
                 <div className={LABEL_CLASS}>{r.format.label}</div>
                 <p className="mt-2 break-all font-display text-lg font-medium text-[hsl(var(--brand-bone))]">
-                  a + b == {literalShort}{" "}
+                  a + b == {literalHeadline}{" "}
                   <span
                     className={r.equal ? "text-[hsl(var(--brand-signal))]" : "text-[hsl(var(--brand-amber))]"}
                     data-testid={`text-sum-equal-${r.format.width}`}
@@ -669,7 +676,7 @@ function SumPanel() {
                   />
                 </div>
                 <p className="mt-3 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  {explainSum(r, literalShort, data.a, data.b)}
+                  {explainSum(r, literalPhrase, data.a, data.b)}
                 </p>
               </div>
             ))}

@@ -719,7 +719,13 @@ export function MorseCodeTranslator() {
             <ToolResult label="Gap between words" value={formatSeconds(timing.wordGap)} testId="text-word-gap" />
             <ToolResult
               label="This message"
-              value={count > 0 ? formatSeconds(mainPlan.duration) : "nothing to send"}
+              value={
+                count === 0
+                  ? "nothing to send"
+                  : mainPlan.truncated
+                    ? `${formatSeconds(mainPlan.duration)} for the first ${MAX_PLAY_SYMBOLS.toLocaleString("en-US")} characters`
+                    : formatSeconds(mainPlan.duration)
+              }
               testId="text-duration"
             />
             <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">

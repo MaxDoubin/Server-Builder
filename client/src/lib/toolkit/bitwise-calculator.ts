@@ -553,3 +553,159 @@ export function explain(
   }
   return out;
 }
+
+/* ------------------------------------------------------- worked examples */
+
+export interface Recipe {
+  id: string;
+  /** Which bit idiom this teaches, shown as the card's tag. */
+  idiom: string;
+  title: string;
+  blurb: string;
+  op: OpId;
+  width: Width;
+  signed: boolean;
+  a: { base: Base; text: string };
+  b?: { base: Base; text: string };
+  count?: number;
+}
+
+/**
+ * Real values for the four bit idioms (test, set, clear, toggle) and for the
+ * places they turn up: Unix modes, the x86 flags register, ASCII, subnet
+ * masks. The page loads one into the calculator on click.
+ */
+export const RECIPES: Recipe[] = [
+  {
+    id: "flag-test",
+    idiom: "Test a flag",
+    title: "Zero flag in x86 FLAGS",
+    blurb:
+      "0x0246 has the interrupt, zero and parity flags set. ANDing with a mask for bit 6 leaves 0x0040 when the zero flag is set and 0 when it is clear.",
+    op: "and",
+    width: 16,
+    signed: false,
+    a: { base: "hex", text: "0x0246" },
+    b: { base: "hex", text: "0x0040" },
+  },
+  {
+    id: "set-bit",
+    idiom: "Set bits",
+    title: "chmod a+x",
+    blurb:
+      "Mode 0644 ORed with 0111 sets the execute bit for owner, group and others and leaves the read and write bits alone, giving 0755.",
+    op: "or",
+    width: 16,
+    signed: false,
+    a: { base: "oct", text: "0o644" },
+    b: { base: "oct", text: "0o111" },
+  },
+  {
+    id: "clear-bit",
+    idiom: "Clear bits",
+    title: "Apply umask 022",
+    blurb:
+      "A new file starts from 0666 and the umask is removed with AND NOT. That clears the group and other write bits and gives 0644.",
+    op: "andn",
+    width: 16,
+    signed: false,
+    a: { base: "oct", text: "0o666" },
+    b: { base: "oct", text: "0o022" },
+  },
+  {
+    id: "toggle-bit",
+    idiom: "Toggle bits",
+    title: "Flip ASCII case",
+    blurb:
+      "Upper and lower case letters in ASCII differ only in bit 5, which is 0x20. XOR with 0x20 turns a into A, and applying it again turns A back into a.",
+    op: "xor",
+    width: 8,
+    signed: false,
+    a: { base: "hex", text: "0x61" },
+    b: { base: "hex", text: "0x20" },
+  },
+  {
+    id: "network",
+    idiom: "Subnet mask",
+    title: "Network address",
+    blurb:
+      "10.1.77.201 ANDed with the /20 mask 255.255.240.0 keeps the 20 network bits and zeroes the 12 host bits, giving 10.1.64.0.",
+    op: "and",
+    width: 32,
+    signed: false,
+    a: { base: "hex", text: "0x0A014DC9" },
+    b: { base: "hex", text: "0xFFFFF000" },
+  },
+  {
+    id: "host-part",
+    idiom: "Subnet mask",
+    title: "Host part",
+    blurb:
+      "The same address with AND NOT keeps only the 12 host bits and gives 0.0.13.201. The network part and the host part together are the whole address.",
+    op: "andn",
+    width: 32,
+    signed: false,
+    a: { base: "hex", text: "0x0A014DC9" },
+    b: { base: "hex", text: "0xFFFFF000" },
+  },
+  {
+    id: "prefix-mask",
+    idiom: "Shift left",
+    title: "Mask from a prefix length",
+    blurb:
+      "All ones shifted left by 32 minus the prefix length is the mask. For /20 that is a shift by 12, which leaves 255.255.240.0.",
+    op: "shl",
+    width: 32,
+    signed: false,
+    a: { base: "hex", text: "0xFFFFFFFF" },
+    count: 12,
+  },
+  {
+    id: "arith-shift",
+    idiom: "Shift right",
+    title: "Arithmetic shift of a negative",
+    blurb:
+      "-8 as an 8 bit signed value is 0xF8. An arithmetic shift right by 1 copies the sign bit in at the top and gives -4, which is 0xFC.",
+    op: "sar",
+    width: 8,
+    signed: true,
+    a: { base: "dec", text: "-8" },
+    count: 1,
+  },
+  {
+    id: "logical-shift",
+    idiom: "Shift right",
+    title: "Logical shift of the same value",
+    blurb:
+      "The same 0xF8 shifted right logically brings a zero in at the top and gives 0x7C, which is 124. The value is no longer negative.",
+    op: "shr",
+    width: 8,
+    signed: true,
+    a: { base: "dec", text: "-8" },
+    count: 1,
+  },
+  {
+    id: "rotate",
+    idiom: "Rotate",
+    title: "Rotate left by 1",
+    blurb:
+      "0x81 is 1000 0001. Rotating left by 1 carries the top bit around to the bottom and gives 0x03. A shift would have lost that bit.",
+    op: "rol",
+    width: 8,
+    signed: false,
+    a: { base: "hex", text: "0x81" },
+    count: 1,
+  },
+  {
+    id: "lowest-bit",
+    idiom: "Isolate a bit",
+    title: "Lowest set bit",
+    blurb:
+      "In two's complement, -x flips every bit above the lowest set bit and keeps that bit. So x AND -x isolates it: 88 AND -88 is 8.",
+    op: "and",
+    width: 8,
+    signed: true,
+    a: { base: "dec", text: "88" },
+    b: { base: "dec", text: "-88" },
+  },
+];

@@ -293,6 +293,13 @@ function readUnit(token: string, rate: boolean): UnitRead {
   // Symbols: B, b, bit, KiB, kB, KB, Mbit, Gb, GiB, MiBit.
   const symbol = /^([kKmMgGtTpPeE])?([iI])?(B|b|bit|bits|Bit|Bits|BIT|BITS|byte|bytes|Byte|Bytes|BYTE|BYTES)$/.exec(token);
   if (!symbol) {
+    const bare = /^([kKmMgGtTpPeE])([iI]?)$/.exec(token);
+    if (bare) {
+      const up = bare[1].toUpperCase();
+      return {
+        error: `"${token}" has no B or bit after it. df -h and ls -lh print ${up} for powers of 1024, while Kubernetes reads ${up} as a power of 1000, so write ${up}iB or ${up === "K" ? "k" : up}B, or ${up}bit for bits.`,
+      };
+    }
     if (/^[ZYRQ]i?(B|b|bit|bits|byte|bytes)$/i.test(token)) {
       return {
         error: `"${token}" uses a prefix above exa, which this page does not list. Enter the value in EB or EiB instead (1 ZB is 1,000 EB).`,
@@ -362,7 +369,7 @@ export function parseQuantity(raw: string): Parsed<Quantity> {
   if (input.length > MAX_INPUT_LENGTH) {
     return error(`That is longer than ${MAX_INPUT_LENGTH} characters. Enter a number and a unit, such as 1.5 GiB.`);
   }
-  if (input.startsWith("-")) {
+  if (input.startsWith("-") || input.startsWith("\u2212")) {
     return error("Enter a size of zero or more. A negative number of bytes has no meaning.");
   }
 
@@ -491,11 +498,47 @@ export const DRIVE_LABELS: DriveLabel[] = [
 
 /**
  * IDEMA LBA1-03: the sector count a drive of a given decimal capacity in GB
- * should report, in 512-byte sectors, for capacities of 50 GB and up.
+ * should report, in 512-byte sectors, for capacities of 50 GB and up. Very
+ * large modern drives do not all follow it, which is why the labels above
+ * stop at 8 TB.
  * LBA = 97,696,368 + 1,953,504 * (GB - 50).
  */
 export function idemaSectors(gigabytes: bigint): bigint {
   return 97_696_368n + 1_953_504n * (gigabytes - 50n);
+}
+
+/**
+ * A size cut (not rounded) to three significant digits, the way Windows
+ * Explorer shows it: 931.32 GiB as 931, 1.8189 TiB as 1.81, 14.55 TiB as 14.5.
+ */
+export function explorerFigure(input: Rational): string {
+  const r = reduce(input);
+  const whole = r.num / r.den;
+  const places = Math.max(0, 3 - whole.toString().length);
+  return truncatedFixed(r, places);
+}
+
+/**
+ * The size lsblk prints, following util-linux size_to_human_string: the
+ * largest power of 1024 the value reaches, one decimal rounded half up, the
+ * decimal dropped when it rounds to zero, and a single letter with no i.
+ */
+export function lsblkFigure(bytes: bigint): string {
+  if (bytes < 0n) return "0B";
+  const letters = "BKMGTPE";
+  let exp = 0;
+  while (exp < 60 && bytes >= 1n << BigInt(exp + 10)) exp += 10;
+  const unit = 1n << BigInt(exp);
+  let whole = bytes / unit;
+  // Three digits of the fraction, truncated, then rounded to one (util-linux).
+  const thousandths = ((bytes % unit) * 1000n) / unit;
+  let tenth = (thousandths + 50n) / 100n;
+  if (tenth === 10n) {
+    whole += 1n;
+    tenth = 0n;
+  }
+  const letter = letters[exp / 10];
+  return tenth === 0n ? `${whole}${letter}` : `${whole}.${tenth}${letter}`;
 }
 
 /* ------------------------------------------------------------------ links */
@@ -545,7 +588,7 @@ export const TOOL_UNITS: ToolUnits[] = [
   { tool: "macOS Finder (10.6 and later)", base: "1000", detail: "Matches the label, so a 1 TB drive reads as about 1 TB." },
   { tool: "Windows Explorer", base: "1024", detail: "Divides by 1024 but prints KB, MB, GB, so 1 TB reads as 931 GB." },
   { tool: "df -h, du -h, ls -lh", base: "1024", detail: "GNU coreutils. Prints K, M, G, T with no i." },
-  { tool: "df -H, du --si, ls -l --si", base: "1000", detail: "The same tools with SI units, same single letters." },
+  { tool: "df -H, du --si, ls -l --si", base: "1000", detail: "The same tools in powers of 1000. Still single letters, with k for kilo: 4.1k, 1.1G." },
   { tool: "lsblk", base: "1024", detail: "A 1,000,204,886,016 byte disk shows as 931.5G." },
   { tool: "free -h", base: "1024", detail: "procps-ng prints Mi and Gi, so the unit is unambiguous." },
   { tool: "dd bs=", base: "both", detail: "GNU dd: 1M and 1MiB are 1,048,576 bytes, 1MB is 1,000,000." },
