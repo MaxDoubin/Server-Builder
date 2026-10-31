@@ -61,7 +61,10 @@ export interface WellKnown {
   aliases: string[];
 }
 
-/** IANA "BGP Well-known Communities" entries that are in an RFC. */
+/**
+ * A selection of the IANA "BGP Well-known Communities" registry: the RFC 1997
+ * values and the RFC-defined ones most likely to be seen. IANA lists others.
+ */
 export const WELL_KNOWN: WellKnown[] = [
   {
     value: 0xffff0000,
@@ -182,7 +185,7 @@ function bigFromBytes(bytes: Uint8Array): bigint {
   return n;
 }
 
-/** Reads up to 18 decimal digits without losing precision. */
+/** Unsigned decimal of up to 30 digits as a BigInt, so nothing is rounded. Null otherwise. */
 function decimal(text: string): bigint | null {
   if (!/^\d+$/.test(text) || text.length > 30) return null;
   return BigInt(text);
@@ -375,8 +378,8 @@ const EXT_SUBTYPES: Record<number, { name: string; source: string; layout?: Type
   0x8008: { name: "Flow spec redirect to VRF (2-octet AS)", source: "RFC 8955", layout: "as2" },
   0x8009: { name: "Flow spec traffic-marking", source: "RFC 8955" },
   0x800c: { name: "Flow spec traffic-rate-packets", source: "RFC 8955", layout: "as2" },
-  0x8108: { name: "Flow spec redirect to VRF (IPv4)", source: "RFC 7674", layout: "ipv4" },
-  0x8208: { name: "Flow spec redirect to VRF (4-octet AS)", source: "RFC 7674", layout: "as4" },
+  0x8108: { name: "Flow spec redirect to VRF (IPv4)", source: "RFC 8955", layout: "ipv4" },
+  0x8208: { name: "Flow spec redirect to VRF (4-octet AS)", source: "RFC 8955", layout: "as4" },
 };
 
 const RT_PREFIX: Record<number, string> = { 0x02: "rt", 0x03: "soo" };
@@ -423,6 +426,15 @@ export function decodeExtended(bytes: Uint8Array, input: string, note: string | 
     const la = readUint(bytes, 4, 4);
     fields.push({ label: "Global admin, 2-octet ASN", value: String(ga) });
     fields.push({ label: "Local admin, 32 bits", value: String(la) });
+    if (type === 0x40 && sub === 0x04) {
+      // Link Bandwidth (draft-ietf-idr-link-bandwidth): the local
+      // administrator field is an IEEE 754 single, in bytes per second.
+      const bw = new DataView(bytes.buffer, bytes.byteOffset + 4, 4).getFloat32(0, false);
+      fields.push({
+        label: "Bandwidth (IEEE 754 float)",
+        value: Number.isFinite(bw) ? `${bw} bytes per second` : String(bw),
+      });
+    }
     if (prefix) canonical = `${prefix}:${ga}:${la}`;
     flags.push(...asnFlags(ga, "The global administrator"));
   } else if (layout === "as4") {
@@ -519,19 +531,20 @@ function fromHex(hex: string, input: string, note: string | null): CommunityResu
   );
 }
 
-const EXT_KEYWORDS: Record<string, 0x02 | 0x03> = {
-  rt: 0x02,
-  target: 0x02,
-  routetarget: 0x02,
-  soo: 0x03,
-  ro: 0x03,
-  origin: 0x03,
-  routeorigin: 0x03,
-  siteoforigin: 0x03,
-};
+// A Map rather than an object literal: a lookup such as "constructor" must
+// not find an inherited Object.prototype member.
+const EXT_KEYWORDS = new Map<string, 0x02 | 0x03>([
+  ["rt", 0x02],
+  ["target", 0x02],
+  ["routetarget", 0x02],
+  ["soo", 0x03],
+  ["ro", 0x03],
+  ["origin", 0x03],
+  ["routeorigin", 0x03],
+  ["siteoforigin", 0x03],
+]);
 
-function parseExtendedText(keyword: string, gaText: string, laText: string, input: string): CommunityResult {
-  const sub = EXT_KEYWORDS[keyword];
+function parseExtendedText(sub: 0x02 | 0x03, gaText: string, laText: string, input: string): CommunityResult {
   const what = sub === 0x02 ? "route target" : "route origin";
   const laBig = decimal(laText);
   if (laBig === null) return err(input, `The local administrator part, ${shortNumber(laText)}, must be a whole number.`);
@@ -607,14 +620,25 @@ export function parseCommunity(raw: string): CommunityResult {
     return err(input, `${shortNumber(input)} is wider than 32 bits. As an integer, a standard community runs 0 to 4294967295.`);
   }
 
-  // Bare hex with at least one letter: deadbeef, 0002fde800000064.
-  if (/^[0-9a-f]+$/i.test(input) && /[a-f]/i.test(input)) return fromHex(input, input, "Read as hexadecimal.");
+  // Bare hex with at least one letter: deadbeef, 0002fde800000064. Only at
+  // the three exact community widths, so a stray word such as "add" or
+  // "face" in a pasted config line is not quietly decoded as a number.
+  if (/^[0-9a-f]+$/i.test(input) && /[a-f]/i.test(input)) {
+    if (input.length === 8 || input.length === 16 || input.length === 24) {
+      return fromHex(input, input, "Read as hexadecimal.");
+    }
+    return err(
+      input,
+      `Hex without a 0x prefix is read only at 8, 16 or 24 digits, the sizes of a standard, extended and large community. ${input.length < 8 ? `For a shorter value write 0x${input}.` : `This one has ${input.length}.`}`,
+    );
+  }
 
   // Extended: rt:64496:100, target:192.0.2.1:7, soo:4200000000:1, rt:65000L:5.
   const ext = input.match(/^([a-z-]+):(.+):([^:]+)$/i);
   if (ext) {
     const keyword = ext[1].toLowerCase().replace(/-/g, "");
-    if (keyword in EXT_KEYWORDS) return parseExtendedText(keyword, ext[2], ext[3], input);
+    const sub = EXT_KEYWORDS.get(keyword);
+    if (sub !== undefined) return parseExtendedText(sub, ext[2], ext[3], input);
     if (keyword !== "large") {
       return err(input, `Unknown prefix "${ext[1]}". Extended communities here start with rt, target, soo or origin, and large ones may start with large.`);
     }

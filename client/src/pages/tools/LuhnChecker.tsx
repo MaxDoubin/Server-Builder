@@ -460,8 +460,8 @@ export function LuhnChecker() {
               <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                 Luhn was built to catch keying and transcription mistakes. Anyone can compute a valid
                 check digit for any prefix, so a passing number says nothing about whether an account
-                exists, is open, or belongs to the person typing it. Only the issuer can answer that,
-                through an authorization.
+                exists or is open, which only the issuer can answer through an authorization, or
+                whether it belongs to the person typing it.
               </p>
             </div>
           </div>

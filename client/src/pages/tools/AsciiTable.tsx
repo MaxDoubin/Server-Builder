@@ -194,7 +194,8 @@ export function AsciiTable() {
   let ctrlLine: string | null = null;
   if (!upper && row.code < 32) {
     ctrlLine = `Typed as Ctrl+${String.fromCharCode(row.code | 0x40)}: Ctrl keeps only the low five bits of the key's code.`;
-  } else if (!upper && row.code >= 64 && row.code < 127) {
+  } else if (!upper && ((row.code >= 64 && row.code <= 95) || (row.code >= 97 && row.code <= 122))) {
+    // Column 10, and the small letters, which a terminal treats as their capitals under Ctrl.
     const target = rows[row.code & 0x1f];
     ctrlLine = `Ctrl+${String.fromCharCode(row.code & ~0x20)} sends ${row.code & 0x1f} (${target.abbr}): clear bits 6 and 5 and what is left is a control.`;
   }
@@ -218,7 +219,7 @@ export function AsciiTable() {
               autoCorrect="off"
               aria-invalid={search.error !== null}
               aria-describedby={search.error ? "ascii-search-error" : "ascii-search-hint"}
-              placeholder="A, 65, 0x41, 101o, ^A, \n, &amp;, line feed"
+              placeholder={"A, 65, 0x41, 0o101, ^A, \\n, &amp;, line feed"}
               data-testid="input-ascii-search"
               className={INPUT}
             />

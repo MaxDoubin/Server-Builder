@@ -574,7 +574,7 @@ export function SnowflakeDecoder() {
               <button type="button" onClick={() => setZone("utc")} aria-pressed={zone === "utc"} data-testid="button-zone-utc" className={pillClass(zone === "utc")}>
                 UTC
               </button>
-              <button type="button" onClick={() => setZone("local")} aria-pressed={zone === "local"} data-testid="button-zone-local" className={pillClass(zone === "local")}>
+              <button type="button" onClick={() => setZone("local")} aria-pressed={zone === "local"} data-testid="button-zone-local" className={`${pillClass(zone === "local")} max-w-full break-all text-left`}>
                 {localZone}
               </button>
             </div>

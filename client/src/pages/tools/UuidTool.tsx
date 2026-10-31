@@ -640,7 +640,8 @@ export function UuidTool() {
             />
             <span>
               Input is raw bytes in Windows GUID order (from a hex dump or a .NET ToByteArray): swap the
-              first three fields from little-endian before decoding.
+              first three fields from little-endian before decoding. Spaces or colons between bytes are
+              ignored.
             </span>
           </label>
 

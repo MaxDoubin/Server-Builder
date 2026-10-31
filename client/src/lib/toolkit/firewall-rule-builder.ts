@@ -763,8 +763,21 @@ function buildFirewalld(r: Ready): ToolOutput {
   }
   const anyMatch = r.src || r.dst || r.sports || r.dports || spec.protocol !== "any";
   if (!anyMatch) {
+    const verdict = spec.action === "accept" ? "ACCEPT" : spec.action === "drop" ? "DROP" : "REJECT";
+    if (spec.direction === "input") {
+      // Zone targets spell reject as %%REJECT%% (firewalld.zone(5)).
+      const zoneTarget = verdict === "REJECT" ? "%%REJECT%%" : verdict;
+      const scope = r.inIface ? `everything arriving on ${r.inIface}` : "everything";
+      const assign = r.inIface ? `firewall-cmd --permanent --zone=${r.zone} --change-interface=${r.inIface}, then ` : "";
+      return unsupported(
+        `A rule that matches ${scope} is a zone target in firewalld, not a rich rule: ${assign}firewall-cmd --permanent --zone=${r.zone} --set-target=${zoneTarget}`,
+      );
+    }
+    // Policy targets are CONTINUE, ACCEPT, DROP and REJECT (firewalld.policy(5)).
+    const policy = spec.direction === "output" ? "host-egress" : "forward-any";
+    const ifaces = [r.inIface, r.outIface].filter(Boolean).join(" and ");
     return unsupported(
-      `A rule that matches everything is a default policy, and firewalld expresses that as the zone target: firewall-cmd --permanent --zone=${r.zone} --set-target=${spec.action === "accept" ? "ACCEPT" : spec.action === "drop" ? "DROP" : "%%REJECT%%"}`,
+      `A rule that matches everything is a policy target in firewalld, not a rich rule: firewall-cmd --permanent --policy=${policy} --set-target=${verdict}${ifaces ? `. To limit it to ${ifaces}, put each interface in its own zone and name those zones as the policy's ingress and egress zones.` : ""}`,
     );
   }
 

@@ -15,6 +15,7 @@ import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 import {
   analyzePaste,
   describeSeconds,
+  MAX_ATTRIBUTE_ROWS,
   MAX_COOKIES,
   MAX_INPUT_CHARS,
   parseRequestUrl,
@@ -101,7 +102,7 @@ function FindingList({ findings, testId }: { findings: Finding[]; testId?: strin
   return (
     <ul className="space-y-2" data-testid={testId}>
       {sorted.map((f, i) => (
-        <li key={`${i}-${f.text}`} className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE[f.tone]}`}>
+        <li key={`${i}-${f.text}`} className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE[f.tone]}`}>
           <span className="font-normal uppercase tracking-[0.2em]">{TONE_LABEL[f.tone]}: </span>
           {f.text}
         </li>
@@ -147,12 +148,15 @@ function shortValue(value: string): string {
 
 function CookieCard({ report, host }: { report: CookieReport; host: string | null }) {
   const refused = report.rejections.length > 0;
-  const title = `Line ${report.line}: ${report.name || "(no name)"}`;
+  // The panel heading does not wrap long tokens, so a 4 KB name is shortened here.
+  const shownName = report.name.length > 40 ? `${report.name.slice(0, 40)}...` : report.name;
+  const title = `Line ${report.line}: ${shownName || "(no name)"}`;
+  const rows = report.attributes.slice(0, MAX_ATTRIBUTE_ROWS);
   return (
     <ToolPanel title={title}>
       <div
         data-testid={`text-verdict-${report.line}`}
-        className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : TONE_STYLE.ok}`}
+        className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : TONE_STYLE.ok}`}
       >
         <div className="uppercase tracking-[0.24em]">{refused ? "Refused by the browser" : "Stored by the browser"}</div>
         {refused ? (
@@ -207,9 +211,9 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
                 </tr>
               </thead>
               <tbody>
-                {report.attributes.map((attr, i) => (
+                {rows.map((attr, i) => (
                   <tr key={`${i}-${attr.name}`} className="border-b border-[hsl(var(--brand-iron)/0.5)] align-top">
-                    <th scope="row" className="py-2.5 pr-4 font-mono-tight text-sm font-normal text-[hsl(var(--brand-signal))]">
+                    <th scope="row" className="max-w-[180px] break-all py-2.5 pr-4 font-mono-tight text-sm font-normal text-[hsl(var(--brand-signal))]">
                       {attr.name}
                     </th>
                     <td className="max-w-[220px] break-all py-2.5 pr-4 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -232,6 +236,11 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
               </tbody>
             </table>
           </div>
+          {report.attributes.length > rows.length ? (
+            <p className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
+              Showing the first {MAX_ATTRIBUTE_ROWS} of {report.attributes.length.toLocaleString("en-US")} attributes. All of them were parsed.
+            </p>
+          ) : null}
         </div>
       ) : null}
 

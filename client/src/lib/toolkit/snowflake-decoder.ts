@@ -243,6 +243,23 @@ function shorten(token: string): string {
   return token.length > 48 ? `${token.slice(0, 45)}...` : token;
 }
 
+const LEADING_WRAP = new Set(['"', "'", "(", "["]);
+const TRAILING_WRAP = new Set(['"', "'", ")", "]", "."]);
+
+/**
+ * Drop quotes, brackets and a trailing period around a token. A plain loop
+ * rather than a regex: an alternation such as /["')\].]+$/g retries from
+ * every position in a long run of those characters, which is quadratic and
+ * froze the page for seconds on 100,000 periods.
+ */
+function stripWrapping(raw: string): string {
+  let start = 0;
+  let end = raw.length;
+  while (start < end && LEADING_WRAP.has(raw[start])) start++;
+  while (end > start && TRAILING_WRAP.has(raw[end - 1])) end--;
+  return raw.slice(start, end);
+}
+
 /**
  * Pull every ID out of free text. Tokens split on whitespace, commas and
  * semicolons. A token is a bare number, a Discord mention or custom emoji
@@ -255,7 +272,7 @@ export function extractCandidates(text: string): Candidate[] {
   const out: Candidate[] = [];
   for (const raw of text.split(/[\s,;]+/)) {
     if (raw === "") continue;
-    const token = raw.replace(/^["'([]+|["')\].]+$/g, "");
+    const token = stripWrapping(raw);
     if (token === "") continue;
 
     if (/^\d+$/.test(token)) {
@@ -283,7 +300,10 @@ export function extractCandidates(text: string): Candidate[] {
       continue;
     }
     if (token.includes("/")) {
-      const path = token.split(/[?#]/)[0];
+      // Discord users wrap links in <...> to suppress the embed; without
+      // dropping the > the last path segment, the message ID, is lost.
+      const link = token.startsWith("<") && token.endsWith(">") ? token.slice(1, -1) : token;
+      const path = link.split(/[?#]/)[0];
       const found = path.split("/").filter((seg) => /^\d+$/.test(seg) && seg.length >= MIN_LINK_DIGITS);
       if (found.length === 0) {
         out.push({ source: shorten(token), error: "is a link with no numeric ID in its path." });

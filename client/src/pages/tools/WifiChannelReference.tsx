@@ -61,7 +61,7 @@ const BAND_SUMMARY: Record<Band, string> = {
   "2.4":
     "Channels 1 to 13 are 5 MHz apart, from 2412 to 2472 MHz; channel 14 sits alone at 2484 MHz. A 20 MHz signal spans four channel steps, so neighbors overlap. US equipment uses 1 to 11.",
   "5": "28 channels at 20 MHz in the US: 25 in UNII-1 to UNII-3 and 3 in UNII-4. 16 of them need DFS. 5350 to 5470 MHz (UNII-2B) has no Wi-Fi channels.",
-  "6": `59 channels at 20 MHz from 5925 to 7125 MHz, with no DFS. ${PSC.length} preferred scanning channels: 5, 21, 37 and every sixteenth channel after. Wi-Fi Alliance certification requires WPA3 or Enhanced Open in this band. 802.11ax also defines a lone channel 2 at 5935 MHz, not shown.`,
+  "6": `59 channels at 20 MHz, 5945 to 7125 MHz, with no DFS. ${PSC.length} preferred scanning channels: 5, 21, 37 and every sixteenth channel after. Wi-Fi Alliance certification requires WPA3 or Enhanced Open in this band. 802.11ax also defines a lone channel 2 at 5935 MHz, not shown.`,
 };
 
 /**
@@ -89,8 +89,13 @@ const pillClass = (active: boolean) => `inline-flex min-h-[44px] items-center ro
 
 type CellState = "selected" | "member" | "overlap" | "plain";
 
+/**
+ * Shared cell look. Position is left to the caller: Tailwind emits .relative
+ * after .absolute, so a cell that also carried "relative" could never be
+ * absolutely positioned.
+ */
 function cellClass(state: CellState, opts: { dfs?: boolean; unii4?: boolean; offPlan?: boolean }): string {
-  const border = opts.dfs ? "border-dashed" : opts.unii4 || opts.offPlan ? "border-dotted" : "border-solid";
+  const border = opts.dfs || opts.offPlan ? "border-dashed" : opts.unii4 ? "border-dotted" : "border-solid";
   const tone =
     state === "selected"
       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.3)] text-[hsl(var(--brand-bone))]"
@@ -101,7 +106,7 @@ function cellClass(state: CellState, opts: { dfs?: boolean; unii4?: boolean; off
           : opts.dfs
             ? "border-[hsl(var(--brand-amber)/0.7)] bg-[hsl(var(--brand-obsidian)/0.6)] text-[hsl(var(--brand-amber))] hover:border-[hsl(var(--brand-signal)/0.6)]"
             : "border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.6)]";
-  return `relative flex items-center justify-center rounded-[4px] border font-mono-tight text-[0.625rem] leading-none transition-colors ${FOCUS} ${border} ${tone}`;
+  return `flex items-center justify-center rounded-[4px] border font-mono-tight text-[0.625rem] leading-none transition-colors ${FOCUS} ${border} ${tone}`;
 }
 
 /* ------------------------------------------------------- 2.4 GHz drawing */
@@ -362,7 +367,7 @@ function GridChart({
             aria-label={`Channel ${ch.channel}, ${ch.centerMHz} MHz${ch.dfs ? ", DFS" : ""}${ch.psc ? ", preferred scanning channel" : ""}${ch.unii4 ? ", UNII-4" : ""}`}
             data-testid={`button-channel-${band}-${ch.channel}`}
             style={{ gridColumn: colOf.get(ch.channel), gridRow: 2 }}
-            className={`min-h-[44px] w-full ${cellClass(state, { dfs: ch.dfs, unii4: ch.unii4 })}`}
+            className={`relative min-h-[44px] w-full ${cellClass(state, { dfs: ch.dfs, unii4: ch.unii4 })}`}
           >
             {ch.channel}
             {ch.psc ? (
@@ -424,7 +429,7 @@ function RowCells({
             aria-label={`${b.width} MHz channel ${b.channel}, ${b.centerMHz} MHz, channels ${b.members[0]} to ${b.members[b.members.length - 1]}${b.dfs ? ", includes DFS" : ""}${b.unii4 ? ", needs UNII-4" : ""}`}
             data-testid={`button-bonded-${band}-${b.width}-${b.channel}`}
             style={{ gridColumn: `${start} / ${end + 1}`, gridRow: rowIndex }}
-            className={`min-h-[36px] w-full ${cellClass(active ? "selected" : "plain", { dfs: b.dfs, unii4: b.unii4 })}`}
+            className={`relative min-h-[36px] w-full ${cellClass(active ? "selected" : "plain", { dfs: b.dfs, unii4: b.unii4 })}`}
           >
             {clippedLeft ? <span aria-hidden>{"\u2039 "}</span> : null}
             {b.channel}
@@ -612,7 +617,7 @@ function Details({
               <ToolResult label="DFS" value={bonded.dfs ? `Yes, on ${bonded.dfsMembers.join(", ")}` : "No"} testId="text-dfs" />
             ) : (
               <>
-                <ToolResult label="Standard power" value={bonded.standardPower ? "Allowed with AFC" : "No, low power indoor only"} />
+                <ToolResult label="Standard power" value={bonded.standardPower ? "Allowed with AFC" : "Not allowed"} />
                 <ToolResult label="PSC inside" value={listText(bonded.pscMembers)} />
               </>
             )}
@@ -656,7 +661,7 @@ function Details({
               <ToolResult label="Preferred scanning" value={c.psc ? "Yes" : "No"} testId="text-psc" />
               <ToolResult
                 label="Standard power"
-                value={c.subband === "UNII-5" || c.subband === "UNII-7" ? "Allowed with AFC" : "No, low power indoor only"}
+                value={c.subband === "UNII-5" || c.subband === "UNII-7" ? "Allowed with AFC" : "Not allowed"}
               />
             </>
           ) : null}

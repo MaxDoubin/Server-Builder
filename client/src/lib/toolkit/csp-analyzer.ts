@@ -56,6 +56,8 @@ export const MAX_POLICIES = 16;
 export const MAX_DIRECTIVES = 200;
 /** Example tokens quoted inside one finding before "and N more". */
 export const MAX_QUOTED = 6;
+/** Findings listed per policy, most severe first; the rest are counted. */
+export const MAX_FINDINGS = 80;
 
 /* ----------------------------------------------------------- whitespace */
 
@@ -400,12 +402,12 @@ export function parseSerializedPolicy(text: string): ParsedPolicy {
   for (const piece of text.split(";")) {
     const token = stripAsciiWs(piece);
     if (token === "") continue;
-    if (NON_ASCII.test(token)) {
-      nonAscii.push(token);
+    if (directives.length + duplicates.length + nonAscii.length >= MAX_DIRECTIVES) {
+      truncated += 1;
       continue;
     }
-    if (directives.length + duplicates.length >= MAX_DIRECTIVES) {
-      truncated += 1;
+    if (NON_ASCII.test(token)) {
+      nonAscii.push(token);
       continue;
     }
     const rawName = /^[^\t\n\f\r ]+/.exec(token)![0];
@@ -571,20 +573,46 @@ export function extractPolicies(input: string): Extraction {
 
   if (/<meta\b/i.test(text)) return fromMeta(text);
 
-  const lines = text.split(/\r\n|\r|\n/).map((line) => line.replace(/^<\s/, ""));
+  let lines = text.split(/\r\n|\r|\n/).map((line) => line.replace(/^<\s/, ""));
+
+  // curl -L prints every response in a redirect chain, each with its own
+  // headers. Each response carries its own policy, and the page the browser
+  // renders is governed by the last one, so only that block is read.
+  const preNotes: Finding[] = [];
+  let statusLines = 0;
+  let lastStatus = -1;
+  lines.forEach((line, i) => {
+    if (/^HTTP\/\d/i.test(line)) {
+      statusLines += 1;
+      lastStatus = i;
+    }
+  });
+  if (statusLines > 1) {
+    lines = lines.slice(lastStatus);
+    preNotes.push({
+      id: "earlier-responses",
+      severity: "info",
+      title: `Only the last of ${statusLines} responses was read`,
+      detail:
+        "The paste holds several responses, as curl -L prints for a redirect chain. A policy applies only to the response that carries it, and the page the browser renders is the last one, so the earlier responses were skipped. Paste one on its own to check it.",
+    });
+  }
+
   const names = lines.map((line) => {
     const m = HEADER_LINE.exec(line);
     return m ? asciiLower(m[1]) : null;
   });
   if (names.some((n) => n !== null && (n in CSP_HEADERS || n in PREFIXED_HEADERS))) {
-    return fromHeaders(lines);
+    return fromHeaders(lines, preNotes);
   }
-  if (lines.some((line) => /^HTTP\/\d/i.test(line)) || names.some((n) => n !== null && COMMON_HEADERS.has(n))) {
+  if (statusLines > 0 || names.some((n) => n !== null && COMMON_HEADERS.has(n))) {
     return {
       policies: [],
-      notes: [],
+      notes: preNotes,
       error:
-        "These look like HTTP response headers, but none of them is Content-Security-Policy or Content-Security-Policy-Report-Only. The response sets no policy.",
+        statusLines > 1
+          ? "The last response in the paste has no Content-Security-Policy or Content-Security-Policy-Report-Only header, so the page it delivers has no policy."
+          : "These look like HTTP response headers, but none of them is Content-Security-Policy or Content-Security-Policy-Report-Only. The response sets no policy.",
       mode: "header",
     };
   }
@@ -614,7 +642,7 @@ function noteCommaSplit(parts: string[], notes: Finding[]): void {
     return first !== "" && !(first in DIRECTIVES) && !(first in OBSOLETE);
   });
   notes.push({
-    id: "comma-split",
+    id: `comma-split-${notes.length}`,
     severity: suspicious.length > 0 ? "medium" : "info",
     title:
       suspicious.length > 0
@@ -643,8 +671,8 @@ function fromValue(text: string): Extraction {
   return { policies: capPolicies(policies, notes), notes, error: null, mode: "value" };
 }
 
-function fromHeaders(lines: string[]): Extraction {
-  const notes: Finding[] = [];
+function fromHeaders(lines: string[], preNotes: Finding[] = []): Extraction {
+  const notes: Finding[] = [...preNotes];
   const headers: { canonical: string; disposition: Disposition; value: string; prefixed: boolean }[] = [];
   let current: (typeof headers)[number] | null = null;
 
@@ -983,7 +1011,7 @@ function tokenNotes(type: RowType, key: string, governedBy: string, f: ListFacts
       if ((kw === "unsafe-eval" || kw === "wasm-unsafe-eval") && key !== "eval") {
         return {
           token: s.token,
-          note: governedBy === "script-src-elem" || governedBy === "worker-src" ? `no effect: eval follows script-src` : "applies to eval",
+          note: governedBy === "script-src" || governedBy === "default-src" ? "applies to eval" : "no effect: eval follows script-src, then default-src",
         };
       }
       if (kw === "unsafe-hashes") return { token: s.token, note: "applies to event handlers" };
@@ -1404,6 +1432,17 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
             `${s.token.length > 60 ? s.token.slice(0, 57) + "...'" : s.token} decodes to ${bytes === null ? "an impossible base64 length" : `${bytes} bytes`}, but a ${s.hashAlg} digest is ${want} bytes (${Math.ceil(want / 3) * 4} base64 characters with padding). It can never match anything, so the script or style it was meant to allow is blocked.`,
             d.name,
           );
+        } else if (s.value.length % 4 !== 0) {
+          // CSP3 "Does element match source list": the base64 of the digest
+          // must be identical to the listed value (after base64url to
+          // base64), so the "=" padding is part of the comparison.
+          add(
+            `hash-padding-${s.token}`,
+            "low",
+            `A ${s.hashAlg} hash in ${d.name} is missing its = padding`,
+            `${s.token.length > 60 ? s.token.slice(0, 57) + "...'" : s.token} has the right number of bytes, but CSP3 compares the base64 text exactly, and the base64 of a ${want}-byte digest ends in ${want % 3 === 1 ? "==" : want % 3 === 2 ? "=" : "no padding"}. Browsers that follow the specification will not match it. Copy the value with its padding.`,
+            d.name,
+          );
         }
       }
     }
@@ -1412,13 +1451,13 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
   for (const value of nonceValues.keys()) {
     // A nonce need not be base64 of whole bytes, so count six bits per
     // character rather than insisting on a decodable length.
-    const bytes = Math.floor((value.replace(/=+$/, "").length * 6) / 8);
-    if (bytes < 16) {
+    const bits = value.replace(/=+$/, "").length * 6;
+    if (bits < 128) {
       add(
         `nonce-short-${value}`,
         "medium",
         "A nonce is shorter than 128 bits",
-        `'nonce-${value.length > 40 ? value.slice(0, 40) + "..." : value}' carries at most ${bytes * 8} bits. CSP3 asks for at least 128 bits from a cryptographically secure generator, fresh on every response, because the nonce is the only thing an attacker needs to guess.`,
+        `'nonce-${value.length > 40 ? value.slice(0, 40) + "..." : value}' carries at most ${bits} bits. CSP3 asks for at least 128 bits from a cryptographically secure generator, fresh on every response, because the nonce is the only thing an attacker needs to guess.`,
       );
     }
   }
@@ -1468,7 +1507,9 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
             "script-unsafe-inline-ignored",
             "info",
             `'unsafe-inline' is ignored by modern browsers`,
-            `Browsers that implement CSP Level 2 or later ignore 'unsafe-inline' in a list that also holds a nonce or a hash${f.strictDynamic ? ", and CSP3 browsers ignore it beside 'strict-dynamic' too" : ""}. It remains for CSP Level 1 browsers, which do not understand nonces and would otherwise block every inline script. Keeping it as a fallback is deliberate and recommended.`,
+            f.nonce || f.hash
+              ? `Browsers that implement CSP Level 2 or later ignore 'unsafe-inline' in a list that also holds a nonce or a hash${f.strictDynamic ? ", and CSP3 browsers ignore it beside 'strict-dynamic' too" : ""}. It remains for CSP Level 1 browsers, which do not understand nonces and would otherwise block every inline script. Keeping it as a fallback is deliberate and recommended.`
+              : "CSP3 browsers ignore 'unsafe-inline' in a list that holds 'strict-dynamic'. Older browsers that do not know 'strict-dynamic' still honor it, so for them every inline script runs.",
             elem.name,
           );
         }
@@ -1888,7 +1929,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         reportTo.tokens.length > 1 ? "report-to takes one endpoint name" : `Reports go to the "${first}" endpoint`,
         reportTo.tokens.length > 1
           ? `report-to is defined with a single endpoint name; ${quoteList(reportTo.tokens.slice(1))} is outside the grammar. Define one endpoint and point it wherever reports should go.`
-          : `report-to names an endpoint that the Reporting-Endpoints response header must define, for example Reporting-Endpoints: ${first}="https://example.com/csp". If that header is missing or does not define ${first}, no reports are sent.`,
+          : `report-to names an endpoint that a response header must define, normally Reporting-Endpoints (the older Report-To header served the same purpose), for example Reporting-Endpoints: ${first}="https://example.com/csp". If no header defines ${first}, no reports are sent.`,
         "report-to",
       );
     }
@@ -1928,6 +1969,15 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         "low",
         "Report-only with nowhere to report",
         "A report-only policy blocks nothing and, without report-uri or report-to, sends no reports either. Its only effect is console messages in each visitor's own browser.",
+      );
+    }
+    if (byName.has("sandbox")) {
+      add(
+        "sandbox-report-only",
+        "info",
+        "sandbox does nothing here",
+        "CSP3 ignores the sandbox directive in a report-only policy; it only takes effect when enforced.",
+        "sandbox",
       );
     }
     if (byName.has("upgrade-insecure-requests")) {
@@ -1997,7 +2047,7 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
         "trusted-types-on",
         "pass",
         "Trusted Types are enforced",
-        "DOM XSS sinks such as innerHTML, document.write and a script element's src only accept values produced by a named Trusted Types policy, so a plain string from an attacker cannot reach them.",
+        "DOM XSS sinks such as innerHTML, document.write and a script element's src reject plain strings and accept only values produced by a Trusted Types policy. A policy named default can still convert strings automatically, so review what any default policy lets through.",
         "require-trusted-types-for",
       );
     } else {
@@ -2022,13 +2072,29 @@ export function analyzePolicy(raw: RawPolicy): PolicyAnalysis {
   if (!byName.has("frame-ancestors") && raw.source !== "meta") added.push("frame-ancestors 'self'");
   const hardened = added.length ? [normalized, ...added].filter((s) => s !== "").join(";\n") : null;
 
+  let sorted = sortFindings(findings);
+  if (sorted.length > MAX_FINDINGS) {
+    // Notes about the input itself stay, whatever their severity.
+    const pinned = sorted.filter((f) => f.id === "truncated" || f.id === "report-only");
+    const rest = sorted.filter((f) => f.id !== "truncated" && f.id !== "report-only");
+    const keep = rest.slice(0, MAX_FINDINGS - pinned.length);
+    const hidden = rest.length - keep.length;
+    sorted = sortFindings([...keep, ...pinned]);
+    sorted.push({
+      id: "findings-capped",
+      severity: "info",
+      title: `${hidden} more findings not listed`,
+      detail: `This policy produced ${findings.length} findings. The ${MAX_FINDINGS} most severe are listed, and the rest are left out to keep the page usable. They are usually the same problem repeated for further directives or sources.`,
+    });
+  }
+
   return {
     label: raw.label,
     source: raw.source,
     disposition: raw.disposition,
     directives,
     rows,
-    findings: sortFindings(findings),
+    findings: sorted,
     script: scriptVerdict(byName),
     normalized,
     added,

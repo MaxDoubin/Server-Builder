@@ -12,6 +12,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
   EXAMPLES,
+  MAX_FINDINGS,
   MAX_INPUT_CHARS,
   SNIPPET_TARGETS,
   auditConfig,
@@ -80,14 +81,18 @@ function CodeLines({ text }: { text: string }) {
   );
 }
 
+/** Longest list rendered in full; a real algorithm list has well under this many entries. */
+const LIST_CAP = 64;
+
 /** A comma separated list with a line break opportunity after every comma. */
 function CommaList({ value }: { value: string }) {
-  const parts = value.split(",");
+  const all = value.split(",");
+  const parts = all.slice(0, LIST_CAP);
   return (
     <>
       {parts.map((part, i) => (
         <span key={i}>
-          {part}
+          {part.length > 120 ? `${part.slice(0, 120)}...` : part}
           {i < parts.length - 1 ? (
             <>
               ,<wbr />
@@ -95,6 +100,7 @@ function CommaList({ value }: { value: string }) {
           ) : null}
         </span>
       ))}
+      {all.length > LIST_CAP ? <span>, and {all.length - LIST_CAP} more</span> : null}
     </>
   );
 }
@@ -196,6 +202,12 @@ export function SshdConfigAuditor() {
                   Nothing to report.
                 </p>
               )}
+              {audit.hiddenFindings ? (
+                <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                  The first {MAX_FINDINGS} findings are listed, most severe first. {audit.hiddenFindings} more are counted in the
+                  summary above but not shown.
+                </p>
+              ) : null}
             </ToolPanel>
 
             <ToolPanel title="Effective values">

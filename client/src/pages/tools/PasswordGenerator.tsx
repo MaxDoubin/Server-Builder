@@ -90,17 +90,24 @@ function rateLabel(rate: number): string {
   return `10^${Math.round(Math.log10(rate))}`;
 }
 
-/** Average time to find one password: half the space at the given rate. */
+/**
+ * Average time to find one password: half the space at the given rate. Each
+ * unit is chosen after rounding, so 59.6 seconds reads "1 minute", never
+ * "60 seconds".
+ */
 function crackTime(bits: number, rate: number): string {
   const log10Seconds = (bits - 1) * Math.log10(2) - Math.log10(rate);
+  if (!Number.isFinite(log10Seconds)) return "not applicable";
   if (log10Seconds < 0) return "under a second";
   const seconds = Math.pow(10, log10Seconds);
-  if (seconds < 60) return `${Math.round(seconds)} ${pluralise(Math.round(seconds), "second")}`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)} ${pluralise(Math.round(seconds / 60), "minute")}`;
-  if (seconds < 86400)
-    return `${Math.round(seconds / 3600)} ${pluralise(Math.round(seconds / 3600), "hour")}`;
-  if (seconds < SECONDS_PER_YEAR)
-    return `${Math.round(seconds / 86400)} ${pluralise(Math.round(seconds / 86400), "day")}`;
+  const s = Math.round(seconds);
+  if (s < 60) return `${s} ${pluralise(s, "second")}`;
+  const min = Math.round(seconds / 60);
+  if (min < 60) return `${min} ${pluralise(min, "minute")}`;
+  const h = Math.round(seconds / 3600);
+  if (h < 24) return `${h} ${pluralise(h, "hour")}`;
+  const d = Math.round(seconds / 86400);
+  if (d < 365) return `${d} ${pluralise(d, "day")}`;
   const log10Years = log10Seconds - Math.log10(SECONDS_PER_YEAR);
   if (log10Years < 6) {
     const years = Math.round(Math.pow(10, log10Years));
@@ -111,6 +118,13 @@ function crackTime(bits: number, rate: number): string {
 
 function percent(p: number, digits = 3): string {
   return `${(p * 100).toPrecision(digits)}%`;
+}
+
+/** A share that may be far below a percent, such as 2^-127. */
+function smallShare(p: number): string {
+  if (p >= 0.0001) return percent(p);
+  if (!(p > 0)) return "none";
+  return `about 1 in ${powerOfTen(-Math.log2(p))}`;
 }
 
 /* ------------------------------------------------------------ number field */
@@ -581,12 +595,14 @@ export function PasswordGenerator() {
             {planOk ? (
               <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {mode === "password"
-                  ? `Entropy is length x log2(alphabet size) = ${pwPlan.length} x ${Math.log2(n).toFixed(3)} = ${pwPlan.unconstrainedBits.toFixed(1)} bits`
+                  ? `Drawing uniformly from every string of this length gives length x log2(alphabet size) = ${pwPlan.length} x ${Math.log2(n).toFixed(3)} = ${pwPlan.unconstrainedBits.toFixed(1)} bits.`
                   : `Entropy is characters x log2(alphabet size) = ${codePlan.totalChars} x ${Math.log2(n).toFixed(3)} = ${codePlan.bits.toFixed(1)} bits.`}
-                {mode === "password"
-                  ? pwPlan.acceptance < 1
-                    ? ` for any string, less ${(pwPlan.unconstrainedBits - pwPlan.bits).toFixed(2)} bits for the every-class rule, which keeps the ${percent(pwPlan.acceptance)} of draws that already contain every class and redraws the rest.`
-                    : "."
+                {mode === "password" && pwPlan.enforceEach
+                  ? ` The every-class rule redraws any draw that lacks a class (${smallShare(pwPlan.rejectShare)} of them), which leaves ${pwPlan.bits.toFixed(1)} bits, ${
+                      pwPlan.unconstrainedBits - pwPlan.bits < 0.005
+                        ? "less than 0.01"
+                        : (pwPlan.unconstrainedBits - pwPlan.bits).toFixed(2)
+                    } fewer.`
                   : ""}{" "}
                 The guess rates are an offline attacker against a fast unsalted hash and against a slow one
                 such as bcrypt. A login form with rate limiting allows far fewer
@@ -663,7 +679,7 @@ export function PasswordGenerator() {
                 </div>
                 <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                   {bias.favored === 0
-                    ? `256 divides evenly by ${n}, so a byte remainder happens to be fair for this alphabet. Most alphabet sizes are not so lucky: with 62 or 94 characters it is not.`
+                    ? `256 divides evenly by ${n}, so a byte remainder happens to be fair for this alphabet. Most alphabet sizes do not divide 256, and neither 62 nor 94 does.`
                     : `256 = ${Math.floor(256 / n)} x ${n} + ${bias.favored}, so with one byte per character the first ${bias.favored} characters (${alphabet
                         .slice(0, Math.min(bias.favored, 12))
                         .join(
@@ -671,7 +687,7 @@ export function PasswordGenerator() {
                         )}${bias.favored > 12 ? " ..." : ""}) would each get ${Math.floor(256 / n) + 1} of the 256 byte values, ${percent(bias.pHigh)}, and the rest ${Math.floor(256 / n)}, ${percent(bias.pLow)}.`}{" "}
                   {r32 === 0
                     ? `2^32 also divides by ${n}, so no draw is ever rejected here.`
-                    : `This page draws 32-bit values and throws away any at or above ${rejectionLimit(n).toLocaleString("en-US")}, the largest multiple of ${n}, so ${r32} of the 2^32 possible values are redrawn and every character keeps exactly ${q32.toLocaleString("en-US")} of the rest.`}
+                    : `This page draws 32-bit values and throws away any at or above ${rejectionLimit(n).toLocaleString("en-US")}, the largest multiple of ${n} below 2^32, so ${r32} of the 2^32 possible values are redrawn and every character keeps exactly ${q32.toLocaleString("en-US")} of the rest.`}
                 </p>
               </>
             ) : (

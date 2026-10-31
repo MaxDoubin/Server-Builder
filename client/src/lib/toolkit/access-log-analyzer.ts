@@ -188,7 +188,9 @@ const XSS: Pattern[] = [
   },
   { re: /(?:java|vb)script\s{0,10}:/, label: "javascript: URL" },
   { re: /\bdata\s{0,5}:\s{0,5}text\/html/, label: "data:text/html URL" },
-  { re: /\b(?:alert|prompt|confirm)\s{0,10}[(`]/, label: "alert() probe" },
+  // The lookahead skips "prompt (1).txt", the suffix file managers give a
+  // second download of the same name, which is not script.
+  { re: /\b(?:alert|prompt|confirm)(?!\s\(\d{1,3}\)\.\w)\s{0,10}[(`]/, label: "alert() probe" },
   { re: /document\s{0,5}\.\s{0,5}(?:cookie|domain|write)\b/, label: "document.cookie" },
   { re: /\bstring\s{0,5}\.\s{0,5}fromcharcode\s{0,5}\(/, label: "String.fromCharCode" },
 ];
@@ -202,14 +204,42 @@ const TRAVERSAL: Pattern[] = [
   { re: /\bc:\/windows\//, label: "C:\\Windows path" },
 ];
 
-const CMDI: Pattern[] = [
-  {
-    re: /(?:;|\|\|?|&&|`|\$\(|\n)\s{0,10}(?:wget|curl|tftp|busybox|chmod|nc|ncat|bash|sh|rm|cat|id|uname|whoami|python3?|perl|powershell|ping|echo)(?![\w=-])/,
-    label: "separator then command",
-  },
+const SHELL_COMMANDS =
+  "(?:wget|curl|tftp|busybox|chmod|nc|ncat|bash|sh|rm|cat|id|uname|whoami|python3?|perl|powershell|ping|echo)";
+
+const CMDI_COMMON: Pattern[] = [
   { re: /\$\{ifs\}/, label: "${IFS} space substitute" },
   { re: /\/bin\/(?:ba|da|z)?sh\b/, label: "/bin/sh" },
   { re: /\bcmd(?:\.exe)?\s{0,5}\/c\b/, label: "cmd /c" },
+];
+
+/** In a request target, any shell separator followed by a command name. */
+const CMDI: Pattern[] = [
+  {
+    re: new RegExp(`(?:;|\\|\\|?|&&|\`|\\$\\(|\\n)\\s{0,10}${SHELL_COMMANDS}(?![\\w=-])`),
+    label: "separator then command",
+  },
+  ...CMDI_COMMON,
+];
+
+/*
+  In a User-Agent or Referer, ";" is ordinary syntax: product comments read
+  "(compatible; curl)" or "(X11; Linux x86_64; id)". So a ";", "|", "&&" or
+  newline only counts when the command name is followed by an argument or by
+  another separator, while backtick and $( substitution count on their own.
+*/
+const CMDI_HEADER: Pattern[] = [
+  {
+    re: new RegExp(`(?:\`|\\$\\()\\s{0,10}${SHELL_COMMANDS}(?![\\w=-])`),
+    label: "command substitution",
+  },
+  {
+    re: new RegExp(
+      `(?:;|\\|\\|?|&&|\\n)\\s{0,10}${SHELL_COMMANDS}(?:\\s{1,10}(?:[-/$'"~]|\\.{1,2}/|https?:|\\d{1,3}\\.\\d{1,3}\\.|[\\w.-]{1,40}\\.(?:sh|pl|py)\\b)|\\s{0,10}(?:[;|&]|$))`,
+    ),
+    label: "separator then command with arguments",
+  },
+  ...CMDI_COMMON,
 ];
 
 const LOG4SHELL: Pattern[] = [
@@ -330,12 +360,15 @@ function firstMatch(patterns: Pattern[], s: string): string | null {
   return null;
 }
 
-/** Injection rules, which apply to the target and to the two quoted headers. */
-function injectionFlags(norm: string): number {
+/**
+ * Injection rules, which apply to the target and to the two quoted headers.
+ * Headers get the stricter command injection list (see CMDI_HEADER).
+ */
+function injectionFlags(norm: string, header: boolean): number {
   let flags = 0;
   if (firstMatch(SQLI, sqlView(norm))) flags |= BIT.sqli;
   if (firstMatch(XSS, norm)) flags |= BIT.xss;
-  if (firstMatch(CMDI, norm)) flags |= BIT.cmdi;
+  if (firstMatch(header ? CMDI_HEADER : CMDI, norm)) flags |= BIT.cmdi;
   if (firstMatch(LOG4SHELL, norm)) flags |= BIT.log4shell;
   if (firstMatch(SHELLSHOCK, norm)) flags |= BIT.shellshock;
   return flags;
@@ -349,7 +382,7 @@ function pathOf(target: string): string {
 function targetFlags(target: string): number {
   if (target === "") return 0;
   const norm = normalizeForMatch(target);
-  let flags = injectionFlags(norm);
+  let flags = injectionFlags(norm, false);
   if (firstMatch(TRAVERSAL, norm)) flags |= BIT.traversal;
   if (firstMatch(PROBES, normalizeForMatch(pathOf(target)))) flags |= BIT.probe;
   return flags;
@@ -357,9 +390,23 @@ function targetFlags(target: string): number {
 
 function agentFlags(agent: string): number {
   const norm = normalizeForMatch(agent);
-  let flags = injectionFlags(norm);
+  let flags = injectionFlags(norm, true);
   if (firstMatch(SCANNERS, norm)) flags |= BIT.scanner;
   return flags;
+}
+
+function refererFlags(referer: string): number {
+  return injectionFlags(normalizeForMatch(referer), true);
+}
+
+/**
+ * The text the target rules run on. When the request line did not split
+ * into method, target and version, the whole line is scanned instead, so a
+ * bare "${jndi:...}" or a request with unescaped spaces is still checked.
+ */
+function scannedTarget(entry: { method: string; target: string; request: string }): string {
+  if (entry.method) return entry.target;
+  return entry.request === "-" ? "" : entry.request;
 }
 
 /* ----------------------------------------------------------------- parsing */
@@ -498,10 +545,22 @@ function parseLine(text: string, lineNo: number, caches: Caches): LineOutcome {
     return { reason: "does not match the common or combined layout" };
   }
   const when = parseClfTime(m[2]);
-  if (!when) return { reason: `timestamp "${clip(m[2], 40)}" is not dd/Mon/yyyy:HH:MM:SS +hhmm` };
+  if (!when) {
+    return {
+      reason: TIME_RE.test(m[2])
+        ? `timestamp "${clip(m[2], 40)}" is not a real date and time`
+        : `timestamp "${clip(m[2], 40)}" is not dd/Mon/yyyy:HH:MM:SS +hhmm`,
+    };
+  }
 
   const prefix = m[1].split(/ +/);
   const hasVhost = prefix.length === 4;
+  // vhost_combined writes "%v:%p", so a leading fourth field must end in a
+  // port. Anything else, such as "203.0.113.1, 198.51.100.2" from a logged
+  // X-Forwarded-For list, is a different layout and is not guessed at.
+  if (hasVhost && !/:\d{1,5}$/.test(prefix[0])) {
+    return { reason: "four fields before the [timestamp], and the first is not a %v:%p virtual host" };
+  }
   const [ip, ident, user] = hasVhost ? prefix.slice(1) : prefix;
 
   let bytes: number | null = null;
@@ -527,9 +586,9 @@ function parseLine(text: string, lineNo: number, caches: Caches): LineOutcome {
   const target = req ? req[2] : "";
   const protocol = req && req[3] ? req[3] : "";
 
-  let flags = cached(caches.target, target, targetFlags);
+  let flags = cached(caches.target, scannedTarget({ method, target, request }), targetFlags);
   if (userAgent) flags |= cached(caches.agent, userAgent, agentFlags);
-  if (referer) flags |= cached(caches.referer, referer, injectionFlagsOfRaw);
+  if (referer) flags |= cached(caches.referer, referer, refererFlags);
   if (method.toUpperCase() === "CONNECT" || /^https?:\/\//i.test(target)) flags |= BIT.proxy;
   if (!req && request !== "-" && request !== "") flags |= BIT.malformed;
 
@@ -555,10 +614,6 @@ function parseLine(text: string, lineNo: number, caches: Caches): LineOutcome {
       flags,
     },
   };
-}
-
-function injectionFlagsOfRaw(raw: string): number {
-  return injectionFlags(normalizeForMatch(raw));
 }
 
 /**
@@ -625,17 +680,20 @@ export interface Explanation {
 /** Which pattern raised each flag on an entry, and in which field. Used for display only. */
 export function explainEntry(entry: LogEntry): Explanation[] {
   const out: Explanation[] = [];
-  const fields: { name: string; norm: string }[] = [];
-  if (entry.target) fields.push({ name: "target", norm: normalizeForMatch(entry.target) });
-  if (entry.userAgent) fields.push({ name: "user agent", norm: normalizeForMatch(entry.userAgent) });
-  if (entry.referer) fields.push({ name: "referer", norm: normalizeForMatch(entry.referer) });
+  const scanned = scannedTarget(entry);
+  const fields: { name: string; norm: string; header: boolean }[] = [];
+  if (scanned) {
+    fields.push({ name: entry.method ? "target" : "request line", norm: normalizeForMatch(scanned), header: false });
+  }
+  if (entry.userAgent) fields.push({ name: "user agent", norm: normalizeForMatch(entry.userAgent), header: true });
+  if (entry.referer) fields.push({ name: "referer", norm: normalizeForMatch(entry.referer), header: true });
 
-  const injection: [RuleId, Pattern[]][] = [
-    ["sqli", SQLI],
-    ["xss", XSS],
-    ["cmdi", CMDI],
-    ["log4shell", LOG4SHELL],
-    ["shellshock", SHELLSHOCK],
+  const injection: [RuleId, Pattern[], Pattern[]][] = [
+    ["sqli", SQLI, SQLI],
+    ["xss", XSS, XSS],
+    ["cmdi", CMDI, CMDI_HEADER],
+    ["log4shell", LOG4SHELL, LOG4SHELL],
+    ["shellshock", SHELLSHOCK, SHELLSHOCK],
   ];
   for (const rule of RULES) {
     if ((entry.flags & rule.bit) === 0) continue;
@@ -643,16 +701,16 @@ export function explainEntry(entry: LogEntry): Explanation[] {
     const list = injection.find(([id]) => id === rule.id);
     if (list) {
       for (const f of fields) {
-        const hit = firstMatch(list[1], rule.id === "sqli" ? sqlView(f.norm) : f.norm);
+        const hit = firstMatch(f.header ? list[2] : list[1], rule.id === "sqli" ? sqlView(f.norm) : f.norm);
         if (hit) {
           detail = `${hit} in ${f.name}`;
           break;
         }
       }
     } else if (rule.id === "traversal") {
-      detail = firstMatch(TRAVERSAL, normalizeForMatch(entry.target)) ?? "";
+      detail = firstMatch(TRAVERSAL, normalizeForMatch(scanned)) ?? "";
     } else if (rule.id === "probe") {
-      detail = firstMatch(PROBES, normalizeForMatch(pathOf(entry.target))) ?? "";
+      detail = firstMatch(PROBES, normalizeForMatch(pathOf(scanned))) ?? "";
     } else if (rule.id === "scanner") {
       detail = firstMatch(SCANNERS, normalizeForMatch(entry.userAgent ?? "")) ?? "";
     } else if (rule.id === "proxy") {

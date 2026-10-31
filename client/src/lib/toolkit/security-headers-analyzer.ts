@@ -207,6 +207,7 @@ export function describeSeconds(seconds: bigint): string {
     return `${trim1(d)} ${d === 1 ? "day" : "days"}`;
   }
   const y = Number(seconds) / 31_536_000;
+  if (!Number.isFinite(y)) return "an effectively unlimited time";
   return `${trim1(y)} ${y === 1 ? "year" : "years"}`;
 }
 
@@ -468,10 +469,29 @@ function checkCsp(r: ParsedResponse, add: Adder): CspSummary | null {
     return null;
   }
   const report = analyzeCsp(lines.map((h) => `${h.name}: ${h.value}`).join("\n"));
+  if (report.policies.length === 0) {
+    // The header is there but yields no policy: every copy is empty, or the
+    // value is longer than the CSP analyzer reads.
+    const tooLong = report.extraction.error !== null && /at most/.test(report.extraction.error);
+    add(
+      tooLong ? "csp-too-long" : "csp-empty",
+      tooLong ? "info" : "medium",
+      H,
+      tooLong ? "The CSP is too long to analyze" : "Content-Security-Policy is empty",
+      tooLong
+        ? `${report.extraction.error} Its directives, including any frame-ancestors, were not checked.`
+        : "The header is present but carries no directives, so the browser has no policy to enforce and any cross-site scripting flaw executes unhindered.",
+    );
+    return null;
+  }
   const enforcedPolicies = report.policies.filter((p) => p.disposition === "enforce");
   const reportOnly = report.policies.length - enforcedPolicies.length;
-  const frameAncestors = enforcedPolicies.some((p) => p.directives.some((d) => d.name === "frame-ancestors"));
-  const frameAncestorsBroad = enforcedPolicies.some((p) => p.findings.some((f) => f.id === "frame-ancestors-broad"));
+  // Every enforced policy must allow a load, so framing is open only when
+  // each policy that sets frame-ancestors is itself permissive.
+  const withAncestors = enforcedPolicies.filter((p) => p.directives.some((d) => d.name === "frame-ancestors"));
+  const frameAncestors = withAncestors.length > 0;
+  const frameAncestorsBroad =
+    frameAncestors && withAncestors.every((p) => p.findings.some((f) => f.id === "frame-ancestors-broad"));
   const serious = report.policies.flatMap((p) => p.findings).filter((f) => f.severity === "high" || f.severity === "medium");
 
   if (enforcedPolicies.length === 0) {
@@ -598,7 +618,9 @@ function checkFraming(r: ParsedResponse, csp: CspSummary | null, add: Adder): st
     return raw;
   }
 
-  const values = new Set(splitHeaderValues(raw).map((v) => asciiLower(v.trim())).filter((v) => v !== ""));
+  // HTML: "getting, decoding, and splitting", then ASCII lowercase into a set.
+  // Empty members count, so "SAMEORIGIN," is two values and a conflict.
+  const values = new Set(splitHeaderValues(raw).map((v) => asciiLower(v)));
   const first = [...values][0] ?? "";
   if (values.size > 1) {
     const meaningful = ["deny", "allowall", "sameorigin"].some((v) => values.has(v));
@@ -608,8 +630,8 @@ function checkFraming(r: ParsedResponse, csp: CspSummary | null, add: Adder): st
       H,
       meaningful ? "Conflicting X-Frame-Options values" : "X-Frame-Options has several unrecognized values",
       meaningful
-        ? `The header carries ${list([...values])}. The HTML Standard treats more than one distinct value as a conflict and blocks framing entirely, even from this origin. Send one value.`
-        : `The header carries ${list([...values])}, none of which the browser acts on, so it is ignored and any site can frame the page.`,
+        ? `The header carries ${list([...values].map((v) => (v === "" ? "an empty value" : v)))}. The HTML Standard treats more than one distinct value as a conflict and blocks framing entirely, even from this origin. Send one value.`
+        : `The header carries ${list([...values].map((v) => (v === "" ? "an empty value" : v)))}, none of which the browser acts on, so it is ignored and any site can frame the page.`,
     );
   } else if (first === "deny" || first === "sameorigin") {
     add(
@@ -646,7 +668,7 @@ function checkNosniff(r: ParsedResponse, add: Adder): boolean {
       "low",
       H,
       "No X-Content-Type-Options",
-      "Without nosniff, a browser may guess a response's type from its content, so an uploaded file served as text can be read as HTML or script. With it, browsers also refuse to run a script or apply a stylesheet served with the wrong MIME type.",
+      "Without nosniff, a browser may guess a type from the content when the declared one is missing or generic, and it will still run a script served as text/plain. With nosniff, a script must carry a JavaScript MIME type and a stylesheet text/css, which stops an uploaded file or a JSON response from being loaded as script.",
     );
     return false;
   }
@@ -904,6 +926,7 @@ export const KNOWN_FEATURES = new Set([
   "ambient-light-sensor",
   "attribution-reporting",
   "autoplay",
+  "battery",
   "bluetooth",
   "browsing-topics",
   "camera",
@@ -929,6 +952,7 @@ export const KNOWN_FEATURES = new Set([
   "idle-detection",
   "join-ad-interest-group",
   "keyboard-map",
+  "language-detector",
   "local-fonts",
   "magnetometer",
   "microphone",
@@ -943,9 +967,13 @@ export const KNOWN_FEATURES = new Set([
   "run-ad-auction",
   "screen-wake-lock",
   "serial",
+  "shared-storage",
+  "shared-storage-select-url",
   "speaker-selection",
   "storage-access",
+  "summarizer",
   "sync-xhr",
+  "translator",
   "unload",
   "usb",
   "web-share",
@@ -967,7 +995,7 @@ export function permissionRules(entries: Map<string, SfMember>): { rules: Featur
   for (const [feature, member] of entries) {
     const items = member.inner ?? (member.item ? [member.item] : []);
     if (member.item && member.item.type === "boolean") {
-      problems.push(`${feature} has no allowlist`);
+      problems.push(`${feature} is written without =() or =(...)`);
       continue;
     }
     const bad = items.filter((it) => !(it.type === "token" || it.type === "string"));
@@ -987,7 +1015,8 @@ export function permissionRules(entries: Map<string, SfMember>): { rules: Featur
     rules.push({
       feature,
       allow: members.length === 0 ? "none" : items.some((it) => it.type === "token" && it.value === "*") ? "all" : members,
-      known: KNOWN_FEATURES.has(feature),
+      // Client hint features (ch-ua-platform, ch-dpr and so on) share a prefix.
+      known: KNOWN_FEATURES.has(feature) || feature.startsWith("ch-"),
     });
   }
   return { rules, problems };
@@ -1031,7 +1060,13 @@ function checkPermissions(r: ParsedResponse, add: Adder): FeatureRule[] | null {
   }
   const { rules, problems } = permissionRules(parsed.entries);
   if (problems.length) {
-    add("permissions-problems", "low", H, "Some entries are not valid allowlists", `${list(problems, 4)}. Browsers skip what they cannot read. Write feature=() to disable a feature or feature=(self) to keep it for this origin.`);
+    add(
+      "permissions-problems",
+      "low",
+      H,
+      "Some entries are not valid allowlists",
+      `${list(problems, 4)}. Browsers drop allowlist members they cannot read, which can leave a feature switched off or allowed differently than intended. Write feature=() to disable a feature or feature=(self) to keep it for this origin.`,
+    );
   }
   const unknown = rules.filter((rule) => !rule.known).map((rule) => rule.feature);
   if (unknown.includes("interest-cohort")) {
@@ -1074,7 +1109,9 @@ function checkPermissions(r: ParsedResponse, add: Adder): FeatureRule[] | null {
 
 function sfToken(raw: string): { token: string | null; error: string | null } {
   const value = raw.trim();
-  const m = /^([A-Za-z*][!#$%&'*+\-.^_`|~0-9A-Za-z:/]*)(\s*;.*)?$/.exec(value);
+  // RFC 8941: an item is a bare item followed directly by ";key=value"
+  // parameters; whitespace before the ";" fails the parse.
+  const m = /^([A-Za-z*][!#$%&'*+\-.^_`|~0-9A-Za-z:/]*)(;.*)?$/.exec(value);
   if (!m) return { token: null, error: `"${value}" is not a single token` };
   return { token: m[1], error: null };
 }
@@ -1121,7 +1158,7 @@ function checkCrossOrigin(r: ParsedResponse, add: Adder): { coop: string | null;
     }
   }
   if (coop === "same-origin" && (coep === "require-corp" || coep === "credentialless")) {
-    add("isolated", "pass", COEP, "The page is cross-origin isolated", `COOP same-origin with COEP ${coep} unlocks SharedArrayBuffer and finer-grained timers, and keeps cross-origin resources out of the page's process unless they opt in.`);
+    add("isolated", "pass", COEP, "The page is cross-origin isolated", `COOP same-origin with COEP ${coep} unlocks SharedArrayBuffer and finer-grained timers. ${coep === "require-corp" ? "Cross-origin resources load only if they opt in with CORP or CORS." : "Cross-origin resources that do not opt in load without credentials."}`);
   } else if (coep === null) {
     add("coep-missing", "info", COEP, "No Cross-Origin-Embedder-Policy", "COEP is only needed for cross-origin isolation, which pages use for SharedArrayBuffer and precise timers. Most sites can leave it out.");
   }
@@ -1130,7 +1167,8 @@ function checkCrossOrigin(r: ParsedResponse, add: Adder): { coop: string | null;
   if (corpRaw === null || corpRaw.trim() === "") {
     add("corp-missing", "info", CORP, "No Cross-Origin-Resource-Policy", "CORP lets a response refuse to be embedded by other sites through no-cors requests such as img and script tags, which limits Spectre-style reads and cross-site leaks. It matters most on API responses and private resources rather than on public pages.");
   } else {
-    const value = asciiLower(corpRaw.trim());
+    // Fetch compares the value byte for byte, so case matters.
+    const value = corpRaw.trim();
     if (value === "same-origin" || value === "same-site") {
       corp = value;
       add("corp-ok", "pass", CORP, `CORP: ${value}`, `Other ${value === "same-origin" ? "origins" : "sites"} cannot embed this response with a no-cors request.`);
@@ -1138,7 +1176,13 @@ function checkCrossOrigin(r: ParsedResponse, add: Adder): { coop: string | null;
       corp = value;
       add("corp-cross", "info", CORP, "CORP: cross-origin", "Any site may embed this response. That is right for public assets and CDNs, and it is what lets cross-origin isolated pages load them.");
     } else {
-      add("corp-invalid", "low", CORP, "Unrecognized CORP value", `"${corpRaw.trim()}" is not same-origin, same-site or cross-origin, so browsers ignore it.`);
+      add(
+        "corp-invalid",
+        "low",
+        CORP,
+        "Unrecognized CORP value",
+        `"${value}" is not same-origin, same-site or cross-origin, written in lowercase exactly once, so browsers ignore it.`,
+      );
     }
   }
   return { coop, coep, corp };
@@ -1221,7 +1265,7 @@ function checkCookies(r: ParsedResponse, add: Adder): CookieRow[] {
       "medium",
       H,
       `${rejected.length === 1 ? "A cookie is" : `${rejected.length} cookies are`} rejected by browsers`,
-      `${rejected.map((c) => `${label(c)}: ${c.rejected.join(", ")}`).slice(0, MAX_NAMES).join(". ")}. A browser following RFC 6265bis drops such a cookie entirely, so whatever depends on it fails.`,
+      `${rejected.map((c) => `${label(c)}: ${c.rejected.join(", ")}`).slice(0, MAX_NAMES).join(". ")}${rejected.length > MAX_NAMES ? `. And ${rejected.length - MAX_NAMES} more` : ""}. Current browsers drop such a cookie entirely (RFC 6265bis for the prefixes and SameSite=None, CHIPS for Partitioned), so whatever depends on it fails.`,
     );
   }
   const live = cookies.filter((c) => c.rejected.length === 0);
@@ -1430,14 +1474,16 @@ function suggest(
   const oneLine = (s: string) => s.replace(/;\n/g, "; ");
   if (enforced) {
     const strong = enforced.script.level === "strict" || enforced.script.level === "blocked";
+    const broadFraming = enforced.findings.some((f) => f.id === "frame-ancestors-broad");
+    const framingNote = broadFraming ? " Its frame-ancestors still lets any site frame the page; narrow it to 'self'." : "";
     lines.push({
       text: `Content-Security-Policy: ${oneLine(enforced.hardened ?? enforced.normalized)}`,
-      status: enforced.hardened || !strong ? "change" : "keep",
+      status: enforced.hardened || !strong || broadFraming ? "change" : "keep",
       why: enforced.hardened
-        ? `Adds ${enforced.added.join(", ")}.${strong ? "" : " The script rules still need work; see the CSP analyzer."}`
+        ? `Adds ${enforced.added.join(", ")}.${strong ? "" : " The script rules still need work; see the CSP analyzer."}${framingNote}`
         : strong
-          ? "Already restricts scripts well."
-          : "Nothing to add mechanically, but the script rules need work; see the CSP analyzer.",
+          ? `${broadFraming ? "Restricts scripts well." : "Already restricts scripts well."}${framingNote}`
+          : `Nothing to add mechanically, but the script rules need work; see the CSP analyzer.${framingNote}`,
     });
   } else if (trial) {
     lines.push({
@@ -1507,9 +1553,12 @@ function suggest(
   }
   const server = combined(r, "server");
   if (server !== null && has("server-version")) {
-    const product = server.split(/[\s/]/)[0];
-    lines.push({ text: `Server: ${product}`, status: "change", why: "The product name without the version." });
+    const product = server.trim().split(/[\s/]/)[0];
+    if (product !== "" && !/\d/.test(product)) {
+      lines.push({ text: `Server: ${product}`, status: "change", why: "The product name without the version." });
+    }
   }
+  const serverIsVersion = server !== null && has("server-version") && /\d/.test(server.trim().split(/[\s/]/)[0] ?? "");
 
   const remove: Suggestion["remove"] = [];
   const removable: [string, string][] = [
@@ -1527,6 +1576,7 @@ function suggest(
     ["x-webkit-csp", "Obsolete prefixed CSP."],
     ["p3p", "Obsolete."],
   ];
+  if (serverIsVersion) remove.push({ name: original("server")!.name, why: "Carries a version number and no product name worth keeping." });
   for (const [lower, why] of removable) {
     const h = original(lower);
     if (h) remove.push({ name: h.name, why });

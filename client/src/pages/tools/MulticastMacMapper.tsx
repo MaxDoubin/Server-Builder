@@ -267,10 +267,11 @@ function Result({ result, onPick }: { result: MapResult; onPick: (value: string)
         {result.sharesControlBlockMac && !result.inControlBlock ? (
           <Callout tone="warn" testId="text-flood-warning">
             <strong className="font-normal uppercase tracking-[0.2em]">Caution: </strong>
-            this group uses {formatMac(result.mac)}, the same MAC as a 224.0.0.0/24 control group. Many switches flood
-            every 01:00:5e:00:00:xx frame out of every port, even with IGMP snooping on, because link-local protocols
-            such as OSPF and VRRP must reach every router. Traffic for this group will be flooded like broadcast. Avoid
-            groups of the form x.0.0.y and x.128.0.y.
+            this group uses {formatMac(result.mac)}, the same MAC as a 224.0.0.0/24 control group. RFC 4541 tells
+            IGMP snooping switches to send 224.0.0.0/24 traffic out of every port, because many hosts never send IGMP
+            joins for those groups. A switch that filters by MAC address therefore floods every 01:00:5e:00:00:xx
+            frame, so traffic for this group is flooded like broadcast, even with snooping on. Avoid groups of the form
+            x.0.0.y and x.128.0.y.
           </Callout>
         ) : null}
 
@@ -321,8 +322,8 @@ function Result({ result, onPick }: { result: MapResult; onPick: (value: string)
         </div>
         <ToolPanel title="Other groups on this MAC">
           <p className="mb-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-            Any of 2^96 groups with the same low 32 bits uses {formatMac(result.mac)}. These are the same group ID in
-            other scopes, the collisions most likely to meet on one link.
+            All 2^88 multicast groups with the same low 32 bits use {formatMac(result.mac)}. A few of them, the same
+            low 32 bits in common scopes with no flags set:
           </p>
           <V6List items={siblings} onPick={onPick} testId="list-siblings" />
         </ToolPanel>

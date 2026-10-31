@@ -5,20 +5,30 @@
  * cost is what the router advertises for that link in its router-LSA, that
  * it must be greater than zero (Appendix C.3), and that the router-LSA
  * metric field is 16 bits wide (Appendix A.4.2). The reference bandwidth
- * formula is a vendor convention that most implementations follow:
+ * formula is the default metric in the OSPF MIB (RFC 4750, ospfIfMetricValue:
+ * 10^8 / ifSpeed), and most implementations follow it:
  *
  *     cost = reference bandwidth / interface bandwidth
  *
- * with the fraction dropped (Cisco IOS truncates, so a T1 is 64, not 65),
- * floored at 1 and capped at 65535. Bandwidth is held as whole kilobits per
+ * This tool follows Cisco IOS: the fraction is dropped (a T1 is 64, not 65),
+ * then the cost is floored at 1 and capped at 65535. FRRouting rounds to the
+ * nearest integer instead; frrCost below models that for the FRR output.
+ * Bandwidth is held as whole kilobits per
  * second in a BigInt, because that is the unit the IOS `bandwidth` command
  * takes and because the division then stays exact at every size.
  *
  * Pure functions only: no React, no DOM.
  */
 
-/** IOS and FRR both default to 100 Mbps, which is 10^8 bps. */
+/** The Cisco IOS default and the OSPF MIB default: 100 Mbps, which is 10^8 bps. */
 export const DEFAULT_REFERENCE_MBPS = 100;
+/**
+ * FRRouting documents 100 Mbps, but ospfd initializes ref_bandwidth to
+ * OSPF_DEFAULT_REF_BANDWIDTH (100000) and divides it by interface bandwidth in
+ * Mbps, so out of the box a 1 Gbps link costs 100 (lib/libospf.h,
+ * ospfd/ospf_interface.c; FRR issue 15455).
+ */
+export const FRR_BUILTIN_REFERENCE_MBPS = 100000;
 /** The range `auto-cost reference-bandwidth` accepts on IOS and FRR, in Mbps. */
 export const MIN_REFERENCE_MBPS = 1;
 export const MAX_REFERENCE_MBPS = 4294967;
@@ -90,8 +100,10 @@ export function parseBandwidthKbps(text: string, unit: BandwidthUnit): Parsed<bi
   if (whole.length + frac.length > 24) {
     return { ok: false, error: "That number is too long. This tool stops at 10 Tbps." };
   }
+  const exponent: number | undefined = UNIT_EXPONENT[unit];
+  if (exponent === undefined) return { ok: false, error: "Pick a unit: kbps, Mbps or Gbps." };
   const digits = BigInt(whole + frac);
-  const shift = UNIT_EXPONENT[unit] - frac.length;
+  const shift = exponent - frac.length;
   let kbps: bigint;
   if (shift >= 0) {
     kbps = digits * 10n ** BigInt(shift);
@@ -164,9 +176,15 @@ export interface CostResult {
   capped: boolean;
 }
 
+/** A reference that is not a finite number of at least 1 Mbps is treated as 1, so BigInt never throws. */
+function referenceKbps(referenceMbps: number): bigint {
+  const whole = Number.isFinite(referenceMbps) && referenceMbps >= 1 ? Math.trunc(referenceMbps) : 1;
+  return BigInt(Math.min(whole, MAX_REFERENCE_MBPS)) * 1000n;
+}
+
 /** Cisco-style cost: reference / bandwidth, fraction dropped, clamped to 1..65535. */
 export function ospfCost(referenceMbps: number, bandwidthKbps: bigint): CostResult {
-  const refKbps = BigInt(Math.trunc(referenceMbps)) * 1000n;
+  const refKbps = referenceKbps(referenceMbps);
   const bw = bandwidthKbps > 0n ? bandwidthKbps : 1n;
   const raw = refKbps / bw; // BigInt division truncates toward zero
   const floored = raw < 1n;
@@ -180,6 +198,22 @@ export function ospfCost(referenceMbps: number, bandwidthKbps: bigint): CostResu
     floored,
     capped,
   };
+}
+
+/**
+ * FRRouting ospfd cost: (uint32_t)(refbw / bw + 0.5), then clamped to
+ * 1..65535 (ospf_if_get_output_cost in ospfd/ospf_interface.c). That rounds
+ * half up, so 2.5 becomes 3 where IOS gives 2. Done here in integers as
+ * floor((2 * ref + bw) / (2 * bw)), which matches the C double arithmetic
+ * for every reference and bandwidth this tool accepts.
+ */
+export function frrCost(referenceMbps: number, bandwidthKbps: bigint): number {
+  const refKbps = referenceKbps(referenceMbps);
+  const bw = bandwidthKbps > 0n ? bandwidthKbps : 1n;
+  const rounded = (2n * refKbps + bw) / (2n * bw);
+  if (rounded < 1n) return 1;
+  if (rounded > BigInt(MAX_INTERFACE_COST)) return MAX_INTERFACE_COST;
+  return Number(rounded);
 }
 
 /** "1.544 Mbps", "10 Gbps", "56 kbps". Exact, never rounded. */
@@ -233,6 +267,8 @@ export function compareTotals(a: number | null, b: number | null): Winner {
  * above what the command accepts.
  */
 export function suggestReferenceMbps(fastestKbps: bigint): number {
+  // Capped at 1,000,000 Mbps, the largest power of ten the command takes, so
+  // a link above 1 Tbps can still be faster than the suggestion.
   let ref = 100n;
   while (ref * 1000n < fastestKbps && ref * 10n <= BigInt(MAX_REFERENCE_MBPS)) ref *= 10n;
   return Number(ref);
@@ -293,17 +329,20 @@ function hopComment(hop: ConfigHop, referenceMbps: number): string {
   return `! Path ${hop.path}, hop ${hop.index}: ${formatBandwidth(hop.kbps)}, cost ${hop.cost} at ${referenceMbps.toLocaleString("en-US")} Mbps`;
 }
 
-function header(referenceMbps: number): string[] {
+function header(referenceMbps: number, dialect: "ios" | "frr"): string[] {
   const lines = ["! Same reference on every OSPF router in the domain, or costs disagree."];
-  if (referenceMbps === DEFAULT_REFERENCE_MBPS) {
-    lines.push("! 100 Mbps is the default. This line restores it.");
+  if (dialect === "ios" && referenceMbps === DEFAULT_REFERENCE_MBPS) {
+    lines.push("! 100 Mbps is the IOS default. This line restores it.");
+  }
+  if (dialect === "frr") {
+    lines.push("! FRR's ospfd starts at 100000 Mbps, not the documented 100, so set it explicitly.");
   }
   return lines;
 }
 
 /** Cisco IOS and IOS XE. `auto-cost reference-bandwidth` takes Mbps. */
 export function iosConfig(o: ConfigOptions): string {
-  const lines = [...header(o.referenceMbps), `router ospf ${o.processId}`, ` auto-cost reference-bandwidth ${o.referenceMbps}`, "!"];
+  const lines = [...header(o.referenceMbps, "ios"), `router ospf ${o.processId}`, ` auto-cost reference-bandwidth ${o.referenceMbps}`, "!"];
   for (const hop of o.hops) {
     lines.push(hopComment(hop, o.referenceMbps));
     if (o.pin) {
@@ -314,15 +353,41 @@ export function iosConfig(o: ConfigOptions): string {
   return lines.join("\n");
 }
 
-/** FRRouting ospfd through vtysh. Same command and unit as IOS. */
+/**
+ * FRRouting ospfd through vtysh. Same command and unit as IOS, but FRR
+ * rounds where IOS truncates and holds interface bandwidth in whole Mbps, so
+ * each hop says when FRR's own cost differs from the one on the page.
+ */
 export function frrConfig(o: ConfigOptions): string {
-  const lines = [...header(o.referenceMbps), "router ospf", ` auto-cost reference-bandwidth ${o.referenceMbps}`, "exit", "!"];
+  const lines = [
+    ...header(o.referenceMbps, "frr"),
+    "router ospf",
+    ` auto-cost reference-bandwidth ${o.referenceMbps}`,
+    "exit",
+    "!",
+  ];
   for (const hop of o.hops) {
     lines.push(hopComment(hop, o.referenceMbps));
+    const own = frrCost(o.referenceMbps, hop.kbps);
+    if (hop.kbps % 1000n !== 0n) {
+      lines.push(
+        o.pin
+          ? "!   FRR holds interface bandwidth in whole Mbps, so this link is pinned."
+          : "!   FRR holds interface bandwidth in whole Mbps and cannot express this speed. Pin it.",
+      );
+    } else if (own !== hop.cost) {
+      lines.push(
+        o.pin
+          ? `!   FRR rounds and would give ${own}. The pinned ${hop.cost} matches IOS.`
+          : `!   FRR rounds to the nearest integer, so it gives this interface ${own}, not ${hop.cost}.`,
+      );
+    }
     if (o.pin) {
       lines.push(`interface ${hop.name}`, ` ip ospf cost ${hop.cost}`, "exit", "!");
     }
   }
-  if (!o.pin && o.hops.length) lines.push("! Costs above follow from each interface's bandwidth value.");
+  if (!o.pin && o.hops.length) {
+    lines.push("! Costs above follow from each interface's bandwidth setting or, without one, its reported link speed.");
+  }
   return lines.join("\n");
 }

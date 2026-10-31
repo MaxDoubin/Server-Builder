@@ -251,7 +251,8 @@ function environmentalLines(m: Metrics, r: CvssResult): string[] {
       changed
         ? `Modified base = Roundup(min(1.08 x (MI + ME), 10)) = ${f1(r.modifiedBase)}`
         : `Modified base = Roundup(min(MI + ME, 10)) = ${f1(r.modifiedBase)}`,
-      `Environmental = Roundup(${f1(r.modifiedBase)} x E x RL x RC = ${f4(r.environmentalUnrounded)}) = ${f1(r.environmental)}`,
+      `Environmental = Roundup(${f1(r.modifiedBase)} x E ${optionWeight("E", m.E, e.S)} x RL ${optionWeight("RL", m.RL, e.S)} x RC ${optionWeight("RC", m.RC, e.S)})`,
+      `              = Roundup(${f4(r.environmentalUnrounded)}) = ${f1(r.environmental)}`,
     );
   }
   return lines;

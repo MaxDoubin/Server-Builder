@@ -32,6 +32,7 @@ import {
   parseRtt,
   parseWindow,
   requiredWindowShift,
+  windowCoversBdp,
   windowFieldFor,
   windowThroughputBps,
 } from "@/lib/toolkit/bandwidth-delay-product";
@@ -77,7 +78,7 @@ const CEILING_NAME: Record<Ceiling, string> = {
 const CEILING_FIX: Record<Ceiling, string> = {
   link: "The stream can fill the link. Only a faster link makes it faster.",
   window:
-    "The sender runs out of window and waits for acknowledgements. A larger receive window (and send buffer) fixes this; a faster link does nothing.",
+    "The sender runs out of window and waits for acknowledgments. A larger receive window (and send buffer) fixes this; a faster link does nothing.",
   loss:
     "Congestion control keeps backing off. Finding the loss, or a congestion control that tolerates it, helps more than a bigger window or a faster link.",
 };
@@ -104,8 +105,13 @@ function errorOf(parsed: { kind: string; message?: string }): string | null {
   return parsed.kind === "error" ? (parsed.message ?? "That value is not valid.") : null;
 }
 
+/**
+ * A share of the link, for a rate that does not fill it. Rounding never
+ * reaches 100 percent here, because "no, 100%" would contradict itself.
+ */
 function percentOf(part: number, whole: number): string {
-  return `${formatSig(Math.min(1, part / whole) * 100, 3)}%`;
+  const pct = Math.min(1, part / whole) * 100;
+  return pct >= 99.9 ? "over 99.9%" : `${formatSig(pct, 3)}%`;
 }
 
 /* --------------------------------------------------------------- component */
@@ -159,20 +165,23 @@ export function BandwidthDelayProduct() {
   const segments = product && mssBytes !== null ? (product.needed + BigInt(mssBytes) - 1n) / BigInt(mssBytes) : null;
 
   const windowBps = win && rt ? windowThroughputBps(win.bytes, rt.seconds) : null;
+  // Decided in integers, so a window equal to the product never reads as
+  // a hair short of the link because of a rounded division.
+  const windowCovers = win && product ? windowCoversBdp(win.bytes, product.needed) : false;
   const mathisBps =
     mssBytes !== null && rt && lossFraction !== null
       ? mathisThroughputBps(mssBytes, rt.seconds, lossFraction, mathisC)
       : null;
-  const binding = bw && windowBps !== null ? bindingCeiling(bw.bps, windowBps, mathisBps) : null;
+  const binding = bw && windowBps !== null ? bindingCeiling(bw.bps, windowBps, mathisBps, windowCovers) : null;
 
   const scaleRows = useMemo(() => {
-    if (!rt || !bw) return [];
+    if (!rt || !product) return [];
     return Array.from({ length: MAX_WINDOW_SHIFT + 1 }, (_, shift) => {
       const maxWindow = MAX_UNSCALED_WINDOW * 2 ** shift;
       const bps = windowThroughputBps(maxWindow, rt.seconds);
-      return { shift, maxWindow, bps, fills: bps >= bw.bps };
+      return { shift, maxWindow, bps, fills: windowCoversBdp(maxWindow, product.needed) };
     });
-  }, [rt, bw]);
+  }, [rt, product]);
 
   const bwError = errorOf(bwParsed);
   const rttError = errorOf(rttParsed);
@@ -188,7 +197,9 @@ export function BandwidthDelayProduct() {
             ? "The unscaled 64 KiB window is enough."
             : `Needs window scale ${product.shift}.`
       }`
-    : "Enter a bandwidth and a round trip time.";
+    : bwParsed.kind === "error" || rttParsed.kind === "error"
+      ? "Fix the highlighted field to see the product."
+      : "Enter a bandwidth and a round trip time.";
 
   function applyPreset(index: number) {
     const preset = PATH_PRESETS[index];
@@ -472,7 +483,7 @@ export function BandwidthDelayProduct() {
 
             <div className="mt-5">
               <label htmlFor="bdp-ack" className={LABEL_CLASS}>
-                Acknowledgements
+                Acknowledgments
               </label>
               <select
                 id="bdp-ack"
@@ -517,10 +528,10 @@ export function BandwidthDelayProduct() {
                   value={`${formatBytesSI(product.bytesNum)} = ${formatBytesIEC(product.bytesNum)}`}
                 />
                 <ToolResult
-                  label="Full segments in flight"
+                  label="Segments in flight"
                   value={
                     segments !== null && mssBytes !== null
-                      ? `${groupDigits(segments)} segments of ${groupDigits(BigInt(mssBytes))} B`
+                      ? `${groupDigits(segments)} of ${groupDigits(BigInt(mssBytes))} B, rounded up`
                       : "needs a valid MSS"
                   }
                 />
@@ -557,8 +568,8 @@ export function BandwidthDelayProduct() {
                 className={`mt-4 ${NOTE_CLASS} ${product.shift === 0 ? GOOD_TONE_CLASS : WARN_TONE_CLASS}`}
               >
                 {product.shift === 0
-                  ? `The unscaled window is enough. 65,535 bytes covers the ${groupDigits(product.needed)} byte product, so this path fills without window scaling.`
-                  : `The unscaled window is not enough. 65,535 bytes per ${formatSig(rt.seconds * 1000, 4)} ms round trip carries at most ${formatBitRate(product.unscaledBps)}, ${percentOf(product.unscaledBps, bw.bps)} of the link.`}
+                  ? `The unscaled window is enough. 65,535 bytes covers the ${groupDigits(product.needed)} byte product, so one stream can fill this path without window scaling, loss permitting.`
+                  : `The unscaled window is not enough. 65,535 bytes per ${formatSig(rt.seconds * 1000, 6)} ms round trip carries at most ${formatBitRate(product.unscaledBps)}, ${percentOf(product.unscaledBps, bw.bps)} of the link.`}
                 {product.shift === null
                   ? ` Even the largest scaled window, ${groupDigits(BigInt(MAX_SCALED_WINDOW))} bytes at scale 14, is smaller than this product, so one TCP connection cannot fill the path. Parallel streams can.`
                   : ""}
@@ -620,7 +631,7 @@ export function BandwidthDelayProduct() {
                 Reno-style congestion avoidance under light, steady loss and ignores timeouts and slow start, so read it as
                 an order of magnitude.
                 {mssBytes !== null && rt && lossFraction !== null && lossFraction > 0
-                  ? ` Here: (${groupDigits(BigInt(mssBytes))} B x 8 / ${formatSig(rt.seconds, 4)} s) x (${formatSig(mathisC, 3)} / sqrt(${formatSig(lossFraction, 4)})).`
+                  ? ` Here: (${groupDigits(BigInt(mssBytes))} B x 8 / ${formatSig(rt.seconds, 6)} s) x (${formatSig(mathisC, 3)} / sqrt(${formatSig(lossFraction, 4)})).`
                   : ""}
               </p>
               {lossFraction !== null && lossFraction >= 0.01 ? (

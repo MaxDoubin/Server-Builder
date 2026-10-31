@@ -94,6 +94,15 @@ export function applyUmask(requested: number, mask: number): number {
   return requested & ~(mask & PERMISSION_BITS) & MAX_OCTAL;
 }
 
+/**
+ * A directory made by mkdir(2) inside a setgid directory on Linux: the mask
+ * applies to the nine permission bits, then the kernel sets setgid on the new
+ * directory so the group keeps propagating (inode_init_owner).
+ */
+export function setgidChildDir(mask: number): number {
+  return applyUmask(DIR_BASE, mask) | SETGID;
+}
+
 /** The bits that were requested and that the mask removed. */
 export function removedBits(requested: number, mask: number): number {
   return requested & mask & PERMISSION_BITS;
@@ -350,6 +359,18 @@ export function review(mask: number): Finding[] {
       text: "The owner cannot write files they just created, so an editor saving in place will fail until a chmod.",
     });
   }
+  // Read without execute on a directory lists names but blocks every lookup
+  // inside it. A mask that does this was usually worked out by subtraction.
+  const listOnly: string[] = [];
+  if ((dir & 0o040) !== 0 && (dir & 0o010) === 0) listOnly.push("the group");
+  if ((dir & 0o004) !== 0 && (dir & 0o001) === 0) listOnly.push("others");
+  if (listOnly.length) {
+    findings.push({
+      tone: "warn",
+      text: `New directories give ${listOnly.join(" and ")} read without execute, so they can list the names inside but cannot cd in or open anything. Masks that do this were usually worked out by subtracting digits.`,
+    });
+  }
+
   if ((dir & 0o100) === 0) {
     findings.push({
       tone: "warn",

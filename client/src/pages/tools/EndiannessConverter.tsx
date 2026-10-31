@@ -143,9 +143,9 @@ export function EndiannessConverter() {
   );
   const network = useMemo(() => networkReadings(bytes, offset), [bytes, offset]);
 
-  // The headline comparison: 32 bits if there are four bytes, otherwise 16.
+  // The headline comparison: the widest of 64, 32 and 16 bits that the bytes from the offset fill.
   const headline = useMemo(() => {
-    for (const w of [32, 16] as Width[]) {
+    for (const w of [64, 32, 16] as Width[]) {
       const big = intView(bytes, offset, w, "big");
       const little = intView(bytes, offset, w, "little");
       if (big && little) return { big, little };
@@ -187,7 +187,7 @@ export function EndiannessConverter() {
 
   const sequenceLabels =
     mode === "integer"
-      ? { asIs: "Big endian, network order", reversed: "Little endian, as x86 and ARM store it" }
+      ? { asIs: "Big endian, network order", reversed: "Little endian, as x86 and most ARM systems store it" }
       : { asIs: "As entered", reversed: "Reversed" };
 
   return (

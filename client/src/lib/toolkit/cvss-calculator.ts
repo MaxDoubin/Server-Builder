@@ -662,6 +662,21 @@ export function parseVector(raw: string): ParseResult {
       error: "A vector has no spaces or line breaks inside it. Remove them and try again.",
     };
   }
+  // Checked before upper-casing, because toUpperCase maps some non-ASCII
+  // letters onto ASCII ones (dotless i becomes I, long s becomes S), which
+  // would let a look-alike string pass as a real metric.
+  let position = 0;
+  for (const ch of trimmed) {
+    position++;
+    const code = ch.codePointAt(0) ?? 0;
+    if (code < 0x21 || code > 0x7e) {
+      const hex = code.toString(16).toUpperCase().padStart(4, "0");
+      return {
+        ok: false,
+        error: `Character ${position} is U+${hex}, which cannot appear in a vector. CVSS vectors use only ASCII letters, digits, colons, periods and slashes.`,
+      };
+    }
+  }
 
   let text = trimmed;
   if (text !== text.toUpperCase()) {

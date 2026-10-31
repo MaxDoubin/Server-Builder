@@ -373,8 +373,9 @@ export function NmapCommandBuilder() {
               data-testid="text-root"
             >
               <strong className="font-normal uppercase tracking-[0.2em]">Needs root: </strong>
-              {rootReasons.join(" and ")}. Run it with sudo, or Nmap quietly falls back to a slower
-              connect scan.
+              {rootReasons.join(" and ")}. Run it with sudo, or as a user with raw-socket access.
+              Without that privilege Nmap cannot send these raw probes: it reports an error, or for a
+              plain TCP scan drops back to a connect scan.
             </p>
           ) : null}
         </ToolPanel>

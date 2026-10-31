@@ -25,6 +25,10 @@ export const MAX_ATTRIBUTE_VALUE_BYTES = 1024;
 export const AGE_LIMIT_SECONDS = 34_560_000;
 /** Longest decoded preview shown for a value. */
 export const MAX_PREVIEW_CHARS = 1200;
+/** Most findings listed for one cookie, after identical ones are merged. */
+export const MAX_FINDINGS = 40;
+/** Most attribute rows the page lists for one cookie. Every attribute is still parsed. */
+export const MAX_ATTRIBUTE_ROWS = 100;
 
 const DAY = 86_400;
 
@@ -883,6 +887,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
   const domainAttr = lastDomain ? lastDomain.domain : "";
   let hostOnly = true;
   let effectiveDomain: string | null = null;
+  const rejectionsBeforeDomain = rejections.length;
   if (domainAttr !== "") {
     hostOnly = false;
     effectiveDomain = domainAttr;
@@ -916,6 +921,8 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
       );
     }
   }
+
+  const domainRefused = rejections.length > rejectionsBeforeDomain;
 
   /* ---- steps 11 to 13: path, Secure, secure origin */
   const pathFromAttribute = lastPath !== null;
@@ -961,6 +968,17 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
       });
     } else if (path !== "/") {
       rejections.push(`${prefix} requires the path to be exactly /, and it is ${path} (section 5.7 step 21).`);
+    } else if (lastPath && lastPath.rec.value !== "/") {
+      findings.push({
+        tone: "warn",
+        text: `Path=${lastPath.rec.value || "(empty)"} does not start with /, so the path falls back to the default path of this URL, which is /. Section 5.7 accepts that, but a browser that compares the attribute as written refuses it. Write Path=/ explicitly.`,
+      });
+    }
+    if (hostOnly && lastDomain && lastDomain.domain === "") {
+      findings.push({
+        tone: "warn",
+        text: `Domain is present but empty. Section 5.7 step 7 still leaves the cookie host-only, so the draft accepts it, but a browser that refuses ${prefix} whenever a Domain attribute is present would drop it. Remove the empty Domain.`,
+      });
     }
     if (!name.startsWith("__Host-")) {
       findings.push({
@@ -1007,6 +1025,32 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     });
   }
 
+  const report = (insights: ValueInsight[], authLike: boolean): CookieReport => ({
+    line,
+    source,
+    name,
+    value,
+    attributes,
+    rejections,
+    findings: capFindings(findings),
+    effective: {
+      lifetime,
+      hostOnly,
+      domain: effectiveDomain,
+      path,
+      pathFromAttribute,
+      secure,
+      httpOnly,
+      sameSite,
+      partitioned,
+    },
+    insights,
+    authLike,
+  });
+
+  // An empty pair is refused outright, so advice about its flags is noise.
+  if (name === "" && value === "") return report([], false);
+
   /* ---- judgment calls */
   const { insights, jwt } = inspectValue(value);
   const authLike = looksLikeAuthName(name) || jwt !== null;
@@ -1040,7 +1084,9 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     });
   }
 
-  if (!hostOnly && effectiveDomain && isIpAddress(effectiveDomain)) {
+  if (domainRefused) {
+    // The Domain already explains the refusal; its scope never takes effect.
+  } else if (!hostOnly && effectiveDomain && isIpAddress(effectiveDomain)) {
     findings.push({
       tone: "info",
       text: `Domain=${effectiveDomain} is an IP address, which domain-matches only that exact address, so no other host receives the cookie.`,
@@ -1100,7 +1146,9 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
   if (pathFromAttribute && path !== null && path !== "/") {
     findings.push({
       tone: "info",
-      text: `Path=${path} narrows where the cookie is sent, but it is not a security boundary: any page on the same origin can still read it, for example by loading a ${path} URL in a frame (section 8.5).`,
+      text: httpOnly
+        ? `Path=${path} narrows where the cookie is sent, but it is not a security boundary (section 8.5). HttpOnly keeps script out here, but any page on the same origin can still make requests under ${path} that carry the cookie.`
+        : `Path=${path} narrows where the cookie is sent, but it is not a security boundary: script on any page of the same origin can still read it, for example by loading a ${path} URL in a frame (section 8.5).`,
     });
   }
 
@@ -1114,28 +1162,26 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     });
   }
 
-  return {
-    line,
-    source,
-    name,
-    value,
-    attributes,
-    rejections,
-    findings,
-    effective: {
-      lifetime,
-      hostOnly,
-      domain: effectiveDomain,
-      path,
-      pathFromAttribute,
-      secure,
-      httpOnly,
-      sameSite,
-      partitioned,
-    },
-    insights,
-    authLike,
-  };
+  return report(insights, authLike);
+}
+
+/** Merge identical findings and cap the list, so a line of 10,000 attributes stays readable. */
+function capFindings(findings: Finding[]): Finding[] {
+  const seen = new Set<string>();
+  const unique: Finding[] = [];
+  for (const f of findings) {
+    if (seen.has(f.text)) continue;
+    seen.add(f.text);
+    unique.push(f);
+  }
+  if (unique.length <= MAX_FINDINGS) return unique;
+  const order: Record<Tone, number> = { danger: 0, warn: 1, info: 2, ok: 3 };
+  const kept = [...unique].sort((a, b) => order[a.tone] - order[b.tone]).slice(0, MAX_FINDINGS);
+  kept.push({
+    tone: "info",
+    text: `${unique.length - MAX_FINDINGS} more findings are not listed. Only the first ${MAX_FINDINGS}, most serious first, are shown.`,
+  });
+  return kept;
 }
 
 /* ------------------------------------------------------------- the paste */
@@ -1230,7 +1276,10 @@ export function analyzePaste(input: string, ctx: Context): Analysis {
     if (prior !== undefined) {
       notes.push({
         tone: "warn",
-        text: `Line ${r.line} sets ${r.name || "a nameless cookie"} again with the same Domain and Path as line ${prior}. The later one replaces the earlier (section 5.7 step 23), so only line ${r.line} survives.`,
+        text:
+          r.effective.lifetime.kind === "delete"
+            ? `Line ${r.line} sets ${r.name || "a nameless cookie"} again with the same Domain and Path as line ${prior}, with a lifetime that has already ended, so the browser removes the cookie that line ${prior} stored (section 5.7 step 23).`
+            : `Line ${r.line} sets ${r.name || "a nameless cookie"} again with the same Domain and Path as line ${prior}. The later one replaces the earlier (section 5.7 step 23), so only line ${r.line} survives.`,
       });
     }
     seen.set(key, r.line);

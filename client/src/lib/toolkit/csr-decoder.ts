@@ -410,14 +410,19 @@ export function isHostName(name: string): boolean {
 }
 
 /** Reads a free-form SAN list (commas, spaces or new lines) and types each entry. */
-export function parseSanList(text: string): { entries: SanEntry[]; errors: string[] } {
+export function parseSanList(text: string): { entries: SanEntry[]; errors: string[]; truncated: boolean } {
   const entries: SanEntry[] = [];
   const errors: string[] = [];
   const seen = new Set<string>();
   const tokens = text.split(/[\s,]+/).filter(Boolean);
+  let truncated = false;
   for (const raw of tokens) {
     if (entries.length >= MAX_TEMPLATE_SANS) {
-      errors.push(`Only the first ${MAX_TEMPLATE_SANS} names are used.`);
+      truncated = true;
+      break;
+    }
+    if (errors.length >= 20) {
+      errors.push("More entries were not checked; fix the ones above first.");
       break;
     }
     const token = raw.replace(/^(DNS|IP|email|URI):/i, "");
@@ -443,7 +448,7 @@ export function parseSanList(text: string): { entries: SanEntry[]; errors: strin
       entries.push(entry);
     }
   }
-  return { entries, errors };
+  return { entries, errors, truncated };
 }
 
 /** POSIX shell single quoting: the only character that needs care inside '...' is ' itself. */
@@ -451,9 +456,9 @@ export function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
-/** OpenSSL -subj escaping: backslash before / and \. */
+/** OpenSSL -subj escaping: a backslash before / and \, and before +, which OpenSSL 3 reads as a multi-valued RDN separator. */
 function subjEscape(value: string): string {
-  return value.replace(/[\\/]/g, (ch) => `\\${ch}`);
+  return value.replace(/[\\/+]/g, (ch) => `\\${ch}`);
 }
 
 /** OpenSSL config values: backslash before the characters config(5) treats specially, both quote marks included. */
@@ -497,8 +502,14 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
   const cn = input.commonName.trim();
   const org = input.organization.trim();
   const country = input.country.trim().toUpperCase();
-  const { entries, errors: sanErrors } = parseSanList(input.sans);
+  const { entries, errors: sanErrors, truncated } = parseSanList(input.sans);
   errors.push(...sanErrors);
+  if (truncated) warnings.push(`Only the first ${MAX_TEMPLATE_SANS} names are used.`);
+  for (const e of entries) {
+    if (e.type === "DNS" && wildcardVerdict(e.value) === "too-broad") {
+      warnings.push(`${e.value} is a wildcard directly under a top-level domain. No public CA issues one, and most clients refuse to match it.`);
+    }
+  }
 
   if (cn.length > 64) errors.push(`The common name is ${cn.length} characters; the limit is 64. Leave it out or shorten it, and keep the long name in the SANs.`);
   if (/[\u0000-\u001f\u007f]/.test(cn + org)) errors.push("The subject fields contain control characters.");
@@ -556,7 +567,7 @@ export function templateFromCsr(csr: CsrInfo): Omit<TemplateInput, "key"> & { ke
     .map((n) => (n.type === "DNS" ? n.raw : `${n.type}:${n.raw}`));
   const k = csr.publicKey;
   let key: KeyOptionId = "p256";
-  if (k.keyType === "RSA") key = (k.bits ?? 0) >= 4096 ? "rsa4096" : (k.bits ?? 0) >= 3072 ? "rsa3072" : "rsa2048";
+  if (k.keyType === "RSA" || k.keyType === "RSA-PSS") key = (k.bits ?? 0) >= 4096 ? "rsa4096" : (k.bits ?? 0) >= 3072 ? "rsa3072" : "rsa2048";
   else if (k.keyType === "EC" && k.curve?.webCrypto === "P-384") key = "p384";
   return { commonName: first("2.5.4.3"), organization: first("2.5.4.10"), country: first("2.5.4.6"), sans: sans.join("\n"), key };
 }

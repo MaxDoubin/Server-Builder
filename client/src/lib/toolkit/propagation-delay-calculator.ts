@@ -41,6 +41,10 @@ export const ETHERNET_HEADER_FCS_BYTES = 18;
 export const ETHERNET_PREAMBLE_IFG_BYTES = 20;
 /** Payloads shorter than this are padded, so the minimum frame is 64 bytes. */
 export const ETHERNET_MIN_PAYLOAD_BYTES = 46;
+/** The largest payload a standard Ethernet frame carries; above it only jumbo frames apply. */
+export const ETHERNET_MAX_PAYLOAD_BYTES = 1500;
+/** A common jumbo frame payload limit. Larger packets cannot be one Ethernet frame. */
+export const ETHERNET_JUMBO_PAYLOAD_BYTES = 9000;
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -75,7 +79,7 @@ export const MEDIA: Medium[] = [
     id: "copper",
     label: "Copper twisted pair",
     velocityFactor: 0.64,
-    detail: "Category cable is specified by its nominal velocity of propagation, around 0.64 c.",
+    detail: "Category cable data sheets quote a nominal velocity of propagation, commonly 0.64 to 0.70 c. This uses 0.64.",
   },
   {
     id: "coax-solid",

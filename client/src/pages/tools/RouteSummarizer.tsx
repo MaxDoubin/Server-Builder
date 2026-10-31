@@ -62,6 +62,8 @@ function percent(part: number, whole: number): string {
   if (whole === 0) return "0%";
   const p = (part / whole) * 100;
   if (p > 0 && p < 0.1) return "under 0.1%";
+  // Rounding must not turn "almost all" into "all": 2 of 2^32 listed is not 100% extra.
+  if (p < 100 && p >= 99.9) return "over 99.9%";
   return `${p.toFixed(p < 10 ? 1 : 0)}%`;
 }
 
@@ -119,6 +121,7 @@ export function RouteSummarizer() {
   }, [parsed]);
 
   const hostBitNotices = parsed.prefixes.filter((p) => p.hostBitsCleared);
+  const pairNotices = parsed.prefixes.filter((p) => p.pairedMask !== null);
   const hasProblems = parsed.problems.length > 0 || parsed.tooLong || parsed.truncated;
 
   const statusText = parsed.tooLong
@@ -201,10 +204,29 @@ export function RouteSummarizer() {
             </div>
           ) : (
             <p id="route-hint" className="mt-3 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-              Netmask form works too (10.1.0.0/255.255.255.0), and anything after a # is a comment. Up
-              to {commas(MAX_PREFIXES)} entries.
+              Netmask forms work too (10.1.0.0/255.255.255.0 or 10.1.0.0 255.255.255.0), and anything
+              after a # is a comment. Up to {commas(MAX_PREFIXES)} entries.
             </p>
           )}
+
+          {pairNotices.length > 0 ? (
+            <div
+              data-testid="text-mask-pairs"
+              className="mt-3 rounded-lg border border-[hsl(var(--brand-iron))] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+            >
+              <p>An address followed by a mask was read as one prefix, the way router configurations write it:</p>
+              <ul className="mt-1 space-y-1">
+                {pairNotices.slice(0, MAX_NOTICES_SHOWN).map((p, i) => (
+                  <li key={`${p.line}-${i}`} className="break-all">
+                    {p.source} ({p.pairedMask === "wildcard" ? "wildcard mask" : "netmask"}) is {formatCidr(p)}
+                  </li>
+                ))}
+                {pairNotices.length > MAX_NOTICES_SHOWN ? (
+                  <li>And {pairNotices.length - MAX_NOTICES_SHOWN} more.</li>
+                ) : null}
+              </ul>
+            </div>
+          ) : null}
 
           {hostBitNotices.length > 0 ? (
             <div
@@ -322,7 +344,7 @@ export function RouteSummarizer() {
                     className="mt-4 rounded-lg border border-[hsl(var(--brand-signal)/0.45)] bg-[hsl(var(--brand-signal)/0.07)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-signal))]"
                   >
                     Exact. The summary covers the listed addresses and nothing else, so advertising it
-                    in place of the list changes no forwarding decision.
+                    in place of the list attracts no traffic for addresses outside the list.
                   </p>
                 ) : (
                   <p

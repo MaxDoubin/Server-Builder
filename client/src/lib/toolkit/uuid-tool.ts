@@ -245,6 +245,9 @@ export function uuidNameBased(
   namespaceHex32: string,
   name: string,
 ): { ok: true; hex: string } | { ok: false; error: string } {
+  if (!/^[0-9a-fA-F]{32}$/.test(namespaceHex32)) {
+    return { ok: false, error: "The namespace must be a UUID: 32 hex digits." };
+  }
   const nameBytes = utf8(name);
   if (nameBytes.length > MAX_NAME_BYTES) {
     return { ok: false, error: `The name is ${nameBytes.length.toLocaleString("en-US")} bytes. The limit here is ${MAX_NAME_BYTES.toLocaleString("en-US")}.` };
@@ -274,7 +277,11 @@ export function swapGuidOrder(hex32: string): string {
 function describeChar(ch: string): string {
   const cp = ch.codePointAt(0) ?? 0;
   if (ch === " ") return "A space";
-  if (cp < 0x20 || cp === 0x7f) return `Control character U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+  const code = `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+  if (cp < 0x20 || cp === 0x7f) return `Control character ${code}`;
+  // Invisible or unprintable: other controls, format characters such as a
+  // zero-width space or byte order mark, lone surrogates, odd spaces.
+  if (/[\p{C}\p{Z}]/u.test(ch)) return `Invisible character ${code}`;
   return `"${ch}"`;
 }
 
@@ -282,7 +289,8 @@ function describeChar(ch: string): string {
  * Accepts the 36-character hyphenated form, 32 bare hex digits, either case,
  * wrapped in braces, quotes or a urn:uuid: prefix. With `guidBytes`, the 32
  * digits are taken as raw bytes in Windows GUID struct order and the first
- * three fields are byte-swapped before decoding.
+ * three fields are byte-swapped before decoding; spaces and colons between
+ * the bytes, as a hex dump prints them, are ignored in that mode.
  */
 export function parseUuid(raw: string, guidBytes = false): ParseResult {
   let s = raw.trim();
@@ -296,10 +304,20 @@ export function parseUuid(raw: string, guidBytes = false): ParseResult {
   else if (s.startsWith("{") || s.endsWith("}")) {
     return { kind: "error", message: "An opening or closing brace is missing." };
   }
+  if (guidBytes) s = s.replace(/[\s:]+/g, "");
+  else if (/^(?:[0-9a-fA-F]{2}[\s:]+){15}[0-9a-fA-F]{2}$/.test(s)) {
+    return {
+      kind: "error",
+      message:
+        "These look like 16 bytes from a hex dump. Remove the separators to read them in order, or turn on the Windows GUID byte order option if they came from a GUID structure.",
+    };
+  }
 
-  const bad = s.match(/[^0-9a-fA-F-]/);
+  // The u flag makes an emoji or other astral character one match, so the
+  // message shows the character itself and counts it as one position.
+  const bad = /[^0-9a-fA-F-]/u.exec(s);
   if (bad) {
-    const at = s.indexOf(bad[0]) + 1;
+    const at = Array.from(s.slice(0, bad.index)).length + 1;
     return {
       kind: "error",
       message: `${describeChar(bad[0])} at position ${at} is not a hex digit. A UUID uses 0 to 9 and a to f only.`,
@@ -308,7 +326,14 @@ export function parseUuid(raw: string, guidBytes = false): ParseResult {
 
   const digits = s.replace(/-/g, "");
   if (s.includes("-")) {
-    if (s.length !== 36 || s[8] !== "-" || s[13] !== "-" || s[18] !== "-" || s[23] !== "-") {
+    if (
+      s.length !== 36 ||
+      digits.length !== 32 ||
+      s[8] !== "-" ||
+      s[13] !== "-" ||
+      s[18] !== "-" ||
+      s[23] !== "-"
+    ) {
       return {
         kind: "error",
         message: `Hyphens go after hex digits 8, 12, 16 and 20 (groups of 8-4-4-4-12). This has groups of ${s.split("-").map((g) => g.length).join("-")}.`,

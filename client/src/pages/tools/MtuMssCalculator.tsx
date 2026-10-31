@@ -432,7 +432,7 @@ export function MtuMssCalculator() {
                   <Stat
                     label="Inner MTU"
                     value={result.innerMtu > 0 ? String(result.innerMtu) : "none"}
-                    sub={`${result.totalOverhead} bytes of overhead`}
+                    sub={result.innerMtu > 0 ? `${result.totalOverhead} bytes of overhead` : "the stack does not fit"}
                     testId="text-inner-mtu"
                   />
                   <Stat
@@ -666,7 +666,8 @@ export function MtuMssCalculator() {
             <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               The rules match SYN and SYN-ACK in both directions through the interface, and only ever lower an MSS:
               iptables' --set-mss has not raised one since Linux 2.6.25, and the nftables rules test the size first.
-              Use them on the router that forwards into the tunnel, not on the endpoints.
+              They sit in the forward path, so they belong on the router that forwards traffic into the tunnel.
+              Connections the router opens itself already take their MSS from the interface MTU.
             </p>
           </div>
         ) : (

@@ -21,6 +21,13 @@ export const MAX_LIST_CHARS = 1_000_000;
 export const MAX_ENTRIES = 50_000;
 /** Most problems listed back to the reader. */
 export const MAX_REPORTED = 20;
+/**
+ * Most blocks kept for the minimal CIDR list of a merged set. Realistic lists
+ * stay far below this, but up to 50,000 disjoint ranges that each need dozens
+ * of blocks would otherwise build over half a million of them. The total is
+ * still counted exactly past the cap.
+ */
+export const MAX_AGGREGATED = 200_000;
 
 const MAX_FIELD_LENGTH = 64;
 
@@ -200,6 +207,9 @@ export function parseCidr(token: string): Parsed<{ range: Range; hostBitsSet: bo
   const slash = token.indexOf("/");
   const addrText = slash === -1 ? token : token.slice(0, slash);
   const prefixText = slash === -1 ? "32" : token.slice(slash + 1);
+  if (addrText.trim() === "") {
+    return { ok: false, error: "There is no address before the slash." };
+  }
   const addr = parseIpv4(addrText);
   if (!addr.ok) return addr;
   if (!/^[0-9]{1,2}$/.test(prefixText) || Number(prefixText) > 32) {
@@ -223,7 +233,8 @@ export function parseCidr(token: string): Parsed<{ range: Range; hostBitsSet: bo
 
 /**
  * Reads a pasted list. Each line holds CIDR blocks or bare addresses
- * separated by spaces or commas, or one range written "start - end".
+ * separated by spaces, commas or semicolons, or one range written
+ * "start - end".
  * Text after # is a comment. Blocks with host bits set are read as their
  * network and reported, the way Python's ipaddress does with strict=False.
  */
@@ -260,7 +271,8 @@ export function parseCidrList(text: string): ParsedList {
       break;
     }
 
-    const rangeMatch = /^([0-9.]+)\s*-\s*([0-9.]+)$/.exec(body);
+    // A hyphen or an en dash separates the two ends of a range.
+    const rangeMatch = /^([0-9.]+)\s*[-\u2013]\s*([0-9.]+)$/.exec(body);
     if (rangeMatch) {
       const a = parseIpv4(rangeMatch[1]);
       const b = parseIpv4(rangeMatch[2]);
@@ -268,6 +280,18 @@ export function parseCidrList(text: string): ParsedList {
       else if (!b.ok) addError(lineNo, body, b.error);
       else if (a.value > b.value) addError(lineNo, body, "The range starts after it ends. Write the lower address first.");
       else result.entries.push({ line: lineNo, text: clip(body), range: { start: a.value, end: b.value } });
+      continue;
+    }
+
+    // A dash on any other line is a malformed range. Reading the tokens
+    // around it as separate addresses would quietly change its meaning, so
+    // the whole line is rejected.
+    if (/[-\u2013]/.test(body)) {
+      addError(
+        lineNo,
+        body,
+        "A range goes on a line of its own, written as start - end, for example 192.0.2.10 - 192.0.2.20.",
+      );
       continue;
     }
 
@@ -302,19 +326,25 @@ export interface MergeSummary {
   inputAddresses: number;
   /** Distinct addresses covered. */
   uniqueAddresses: number;
-  /** The minimal CIDR cover of the merged set, all ranges together. */
+  /** The minimal CIDR cover of the merged set, up to MAX_AGGREGATED blocks. */
   aggregated: CidrBlock[];
+  /** Blocks in the full minimal cover, including any past the cap. */
+  aggregatedTotal: number;
 }
 
-export function summarizeMerge(entries: { range: Range }[]): MergeSummary {
+export function summarizeMerge(entries: { range: Range }[], maxAggregated = MAX_AGGREGATED): MergeSummary {
   const merged = mergeRanges(entries.map((e) => e.range));
   let inputAddresses = 0;
   for (const e of entries) inputAddresses += rangeSize(e.range);
   let uniqueAddresses = 0;
+  let aggregatedTotal = 0;
   const aggregated: CidrBlock[] = [];
   for (const r of merged) {
     uniqueAddresses += rangeSize(r);
-    for (const b of rangeToCidrs(r.start, r.end)) aggregated.push(b);
+    for (const b of rangeToCidrs(r.start, r.end)) {
+      aggregatedTotal += 1;
+      if (aggregated.length < maxAggregated) aggregated.push(b);
+    }
   }
-  return { merged, inputAddresses, uniqueAddresses, aggregated };
+  return { merged, inputAddresses, uniqueAddresses, aggregated, aggregatedTotal };
 }

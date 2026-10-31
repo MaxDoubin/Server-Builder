@@ -102,6 +102,7 @@ function formula(parts: Part[]): string {
 function outcomeCell(outcome: ParseOutcome): { text: string; tone: Tone } {
   if (outcome.ok) return { text: toDottedDecimal(outcome.value), tone: "ok" };
   if (outcome.kind === "domain") return { text: "domain name", tone: "warn" };
+  if (outcome.kind === "unmodeled") return { text: "not modeled", tone: "warn" };
   return { text: "rejected", tone: "danger" };
 }
 
@@ -127,6 +128,16 @@ export function IpAddressConverter() {
     ? Array.from(new Set(ok.rows.filter((r) => r.outcome.ok).map((r) => (r.outcome as { value: number }).value)))
     : [];
 
+  // For binary input: what the real parsers make of the same string, when
+  // they accept it and get a different address.
+  const systemReading =
+    ok && ok.via === "binary"
+      ? ok.rows
+          .filter((r) => r.id === "inet_aton" || r.id === "whatwg")
+          .map((r) => (r.outcome.ok ? r.outcome.value : null))
+          .find((v): v is number => v !== null && v !== value) ?? null
+      : null;
+
   const statusText =
     analysis.kind === "empty"
       ? "Type an address to convert it."
@@ -134,7 +145,7 @@ export function IpAddressConverter() {
         ? "Nothing parsed."
         : value === null
           ? "No parser below reads this as an IPv4 address."
-          : `Resolves to ${toDottedDecimal(value)}${special ? ` (${special.name})` : ""}.`;
+          : `${ok?.via === "binary" ? "Read as binary" : "Resolves to"} ${toDottedDecimal(value)}${special ? ` (${special.name})` : ""}.`;
 
   return (
     <ToolShell slug="ip-address-converter">
@@ -216,6 +227,9 @@ export function IpAddressConverter() {
               <p className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE.ok}`}>
                 Read as binary because it is four groups of exactly eight 0s and 1s. No system parser reads
                 binary, so the table below shows what they make of the same string instead.
+                {systemReading !== null
+                  ? ` inet_aton and browsers read each group as an octal number, because it starts with 0, and get ${toDottedDecimal(systemReading)}, a different address.`
+                  : ""}
               </p>
             ) : null}
             {ok.conflict ? (
@@ -317,6 +331,11 @@ export function IpAddressConverter() {
                     <pre className="mt-4 overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs text-[hsl(var(--brand-signal))]">
                       {formula(sourceParts)} = {toInteger(value)}
                     </pre>
+                    {source && source.ok && source.note ? (
+                      <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                        {source.note}
+                      </p>
+                    ) : null}
                   </>
                 ) : null}
                 {special ? (

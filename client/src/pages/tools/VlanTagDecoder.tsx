@@ -20,6 +20,7 @@ import {
   bytesToHex,
   decodeInput,
   hex16,
+  linuxCommandBlocker,
   linuxCommands,
   parseVid,
   tciBits,
@@ -118,7 +119,7 @@ function TagPanel({ tag, title, testId }: { tag: DecodedTag; title: string; test
           ) : (
             <span className="text-[hsl(var(--brand-cyan))]">{bytesToHex(tag.bytes)}</span>
           )}
-          <span className="ml-3 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">at byte {tag.offset}</span>
+          <span className="ml-3 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">at offset {tag.offset}</span>
         </p>
 
         <div className="mt-4 overflow-x-auto">
@@ -283,6 +284,7 @@ export function VlanTagDecoder() {
       cArray: `{ ${bytes.map((b) => `0x${b.toString(16).padStart(2, "0")}`).join(", ")} }`,
       findings,
       linux: linuxCommands(parentName, outerSpec, innerSpec),
+      linuxBlocker: linuxCommandBlocker(outerSpec, innerSpec),
       tcpdump: tcpdumpFilter(outerSpec, innerSpec),
       wireshark:
         outerSpec.tpid === TPID_CTAG && !innerSpec
@@ -492,9 +494,9 @@ export function VlanTagDecoder() {
                     </div>
                   ) : null,
                 )}
-                {built.linux === null ? (
+                {built.linuxBlocker ? (
                   <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                    ip link sets only 802.1Q and 802.1ad tags, so there is no command for a 0x9100 outer tag.
+                    {built.linuxBlocker}
                   </p>
                 ) : null}
               </div>

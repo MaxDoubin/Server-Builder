@@ -394,6 +394,9 @@ export function ipv6FlagNotes(flags: number): string[] {
       ? "T = 1: a transient, dynamically assigned group."
       : "T = 0: a permanently assigned, well-known group.",
   );
+  // RFC 3306 section 4: P = 1 requires T = 1. RFC 3956 section 3: R = 1 requires P = 1.
+  if (flags & 0x2 && !(flags & 0x1)) notes.push("P = 1 requires T = 1 (RFC 3306), so this flag combination is not valid.");
+  if (flags & 0x4 && !(flags & 0x2)) notes.push("R = 1 requires P = 1 (RFC 3956), so this flag combination is not valid.");
   return notes;
 }
 
@@ -429,7 +432,7 @@ export function ipv6Name(value: bigint): string | null {
   if (exact) return exact;
   if (isSolicitedNode(value)) {
     const low = Number(value & 0xffffffn).toString(16).padStart(6, "0");
-    return `Solicited-node group for unicast addresses ending in ${low.slice(0, 2)}:${low.slice(2)} (RFC 4291)`;
+    return `Solicited-node group for addresses whose low 24 bits are ${low.slice(0, 2)}:${low.slice(2)} (RFC 4291)`;
   }
   // RFC 6676: ff0X::db8:0:0/96 is reserved for documentation.
   const groups = bigIntToGroups(value);
@@ -548,7 +551,7 @@ export function macToCandidates(mac: MacBytes): MapResult {
       ...base,
       family: "ipv6",
       summary:
-        "An IPv6 multicast MAC. It carries only the low 32 bits of the group, so any of 2^96 groups (about 7.9 × 10^28) with those low bits maps here. The likeliest ones are listed.",
+        "An IPv6 multicast MAC. It carries only the low 32 bits of the group. Every multicast group starts with ff, so 2^88 groups (about 3.1 × 10^26) share those low 32 bits and map here. A few likely ones are listed.",
       ipv6Candidates: candidates,
     };
   }
@@ -596,15 +599,35 @@ function mapIPv4(text: string): MapResult {
   };
 }
 
+/** Hex octets with one kind of separator, but not six of them: probably a mistyped MAC. */
+const MAC_LIKE = /^[0-9a-fA-F]{1,2}([:-])[0-9a-fA-F]{1,2}(\1[0-9a-fA-F]{1,2})*$/;
+
 function mapIPv6(text: string): MapResult {
   const parsed = parseIPv6(text);
-  if (!parsed.ok) return { kind: "error", message: parsed.error };
+  if (!parsed.ok) {
+    if (MAC_LIKE.test(text)) {
+      const octets = text.split(/[:-]/).length;
+      return {
+        kind: "error",
+        message: `A MAC address has six octets. This has ${octets}. As an IPv6 address it is not valid either: ${parsed.error}`,
+      };
+    }
+    return { kind: "error", message: parsed.error };
+  }
   const { value, zone } = parsed.value;
   if (!isIPv6Multicast(value)) {
     if (value === 0n || value === 1n) {
       return {
         kind: "error",
         message: `${formatIPv6(value)} is the ${value === 0n ? "unspecified" : "loopback"} address, not a multicast group. IPv6 multicast is ff00::/8.`,
+      };
+    }
+    // RFC 4291 section 2.5.5.2: ::ffff:0:0/96 only represents an IPv4 address inside IPv6 software.
+    if (value >> 32n === 0xffffn) {
+      const inner = formatIPv4(Number(value & 0xffffffffn));
+      return {
+        kind: "error",
+        message: `This is the IPv4-mapped form of ${inner}. It is never assigned to an interface, so it has no solicited-node group. Enter ${inner} itself to map an IPv4 group.`,
       };
     }
     const solicited = solicitedNodeGroup(value);
@@ -649,6 +672,9 @@ export function mapInput(raw: string): MapResult {
   }
   if (/^[0-9.]+$/.test(text)) return mapIPv4(text);
   if (text.includes(":")) return mapIPv6(text);
+  if (MAC_LIKE.test(text)) {
+    return { kind: "error", message: `A MAC address has six octets. This has ${text.split("-").length}.` };
+  }
   return {
     kind: "error",
     message: "Not recognized. Enter an IPv4 group such as 224.0.0.5, an IPv6 group such as ff02::1, or a MAC such as 01:00:5e:00:00:05.",

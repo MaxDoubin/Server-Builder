@@ -126,8 +126,10 @@ export function integerToBytes(value: bigint, width: Width): number[] {
 
 /**
  * An integer in decimal, 0x hex, 0b binary or 0o octal, optionally negative,
- * with _ , and spaces allowed as digit separators. "auto" picks the narrowest
- * of 16, 32 and 64 bits that holds it as either signed or unsigned.
+ * with _ and spaces allowed as digit separators and commas allowed between
+ * groups of three decimal digits. "auto" picks the narrowest of 16, 32 and
+ * 64 bits that holds it as either signed or unsigned, and never narrower
+ * than the digits written: 0x00000001 is a 32-bit value.
  */
 export function parseInteger(raw: string, width: Width | "auto"): IntParse {
   const trimmed = raw.trim();
@@ -135,7 +137,14 @@ export function parseInteger(raw: string, width: Width | "auto"): IntParse {
   if (trimmed.length > 200) {
     return { kind: "error", message: "That is longer than any 64-bit integer can be written." };
   }
-  const text = trimmed.replace(/−/g, "-").replace(/[\s_,]/g, "");
+  const spaced = trimmed.replace(/\u2212/g, "-").replace(/[\s_]/g, "");
+  if (spaced.includes(",") && !/^[+-]?\d{1,3}(,\d{3})+$/.test(spaced)) {
+    return {
+      kind: "error",
+      message: "A comma is only read as a thousands separator, as in 1,000,000. This takes integers, not decimal fractions.",
+    };
+  }
+  const text = spaced.replace(/,/g, "");
   const m = /^([+-]?)(0x|0b|0o)?(.*)$/i.exec(text);
   if (!m) return { kind: "error", message: "Not an integer." };
   const neg = m[1] === "-";
@@ -171,9 +180,11 @@ export function parseInteger(raw: string, width: Width | "auto"): IntParse {
     };
   }
 
+  // Leading zeros in hex or binary state a width: 0x0050 is 16 bits, 0x00000050 is 32.
+  const written = base === 16 ? digits.length * 4 : base === 2 ? digits.length : 0;
   let chosen: Width;
   if (width === "auto") {
-    chosen = WIDTHS.find((w) => fits(value, w)) ?? 64;
+    chosen = WIDTHS.find((w) => fits(value, w) && (written > 64 || w >= written)) ?? 64;
   } else {
     if (!fits(value, width)) {
       return {

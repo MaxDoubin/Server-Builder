@@ -235,12 +235,21 @@ const TCP_SENDER_RETR = /bits\/sec\s+([0-9]+)\s+sender/;
  * per-interval lines in between are ignored. The function never throws: an
  * input with no summary lines returns empty results.
  */
+/**
+ * A real iperf3 run prints two summary lines, or a handful with parallel
+ * streams. Stop collecting well before any adversarial paste can grow the
+ * array without bound; the picked sender and receiver rows are still correct
+ * because they appear at the top of a normal run.
+ */
+export const IPERF3_MAX_ROWS = 2000;
+
 export function parseIperf3Summary(text: string): Iperf3Summary {
   const rows: Iperf3Row[] = [];
   let sawUdp = false;
   let sawTcp = false;
 
   for (const line of text.split(/\r?\n/)) {
+    if (rows.length >= IPERF3_MAX_ROWS) break;
     const roleMatch = /\b(sender|receiver)\s*$/.exec(line.trim());
     if (!roleMatch) continue;
     const role = roleMatch[1] as "sender" | "receiver";

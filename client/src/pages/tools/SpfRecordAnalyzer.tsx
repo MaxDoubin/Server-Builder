@@ -447,7 +447,7 @@ export function SpfRecordAnalyzer() {
                     }`}
                   >
                     {total.total > LOOKUP_LIMIT
-                      ? `${total.total} lookups${total.complete ? "" : " at least"}, over the limit of ${LOOKUP_LIMIT}. Senders not matched in time get permerror.`
+                      ? `${total.complete ? "" : "At least "}${total.total} lookups, over the limit of ${LOOKUP_LIMIT}. Senders not matched before the limit is reached get permerror.`
                       : total.complete
                         ? `${total.total} of ${LOOKUP_LIMIT} lookups for the whole tree, as entered.`
                         : `At least ${total.total} of ${LOOKUP_LIMIT}, with ${total.missing} ${pluralise(total.missing, "target")} not counted yet.`}

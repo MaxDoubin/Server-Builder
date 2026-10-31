@@ -318,7 +318,7 @@ export function keyFindings(key: PublicKeyInfo): Finding[] {
   } else if (key.keyType === "DSA") {
     out.push({ tone: "danger", text: "DSA keys are no longer accepted for TLS by browsers or public CAs, and FIPS 186-5 no longer approves DSA for generating signatures." });
   } else if (key.keyType === "Ed25519" || key.keyType === "Ed448") {
-    out.push({ tone: "info", text: `${key.keyType} is a sound algorithm, but the Baseline Requirements allow only RSA and ECDSA keys, so public CAs will not certify it. Private PKI and SSH-style uses are fine.` });
+    out.push({ tone: "info", text: `${key.keyType} is a sound algorithm, but the Baseline Requirements allow only RSA and ECDSA keys, so public CAs will not certify it. A private CA whose clients support it can.` });
   }
   for (const issue of key.issues) out.push({ tone: "warn", text: issue });
   return out;

@@ -97,13 +97,15 @@ export function centerFrequency(band: Band, channel: number): number | null {
   }
   // 5 GHz numbers above 177 include the 4.9 GHz channels (4000 + 5n), so stop here.
   if (band === "5") return channel >= 1 && channel <= 177 ? 5000 + 5 * channel : null;
+  // 802.11ax: 6 GHz channel 2 is the one exception, at 5935 MHz (as in ieee80211_channel_to_freq_khz).
+  if (channel === 2) return 5935;
   return channel >= 1 && channel <= 233 ? 5950 + 5 * channel : null;
 }
 
 export function formulaText(band: Band, channel: number): string {
   if (band === "2.4") return channel === 14 ? "special case: 2484" : `2407 + 5 × ${channel}`;
   if (band === "5") return `5000 + 5 × ${channel}`;
-  return `5950 + 5 × ${channel}`;
+  return channel === 2 ? "special case: 5935" : `5950 + 5 × ${channel}`;
 }
 
 /* --------------------------------------------------------------- channels */
@@ -315,9 +317,9 @@ export const SUBBANDS: Record<Band, SubBand[]> = {
   ],
   "6": [
     { name: "UNII-5", lowMHz: 5925, highMHz: 6425, summary: "Low power indoor and standard power (AFC).", available: true },
-    { name: "UNII-6", lowMHz: 6425, highMHz: 6525, summary: "Low power indoor only.", available: true },
+    { name: "UNII-6", lowMHz: 6425, highMHz: 6525, summary: "Low power indoor. No standard power.", available: true },
     { name: "UNII-7", lowMHz: 6525, highMHz: 6875, summary: "Low power indoor and standard power (AFC).", available: true },
-    { name: "UNII-8", lowMHz: 6875, highMHz: 7125, summary: "Low power indoor only.", available: true },
+    { name: "UNII-8", lowMHz: 6875, highMHz: 7125, summary: "Low power indoor. No standard power.", available: true },
   ],
 };
 
@@ -363,21 +365,24 @@ const SP_US =
 const LPI_US =
   "Low power indoor (LPI): up to 5 dBm/MHz EIRP for access points, which must be indoor units with integrated antennas, not weatherized and not battery powered.";
 
+const VLP_US =
+  "Very low power (VLP) devices, which the FCC authorized in 2023, may also use UNII-5 and UNII-7 indoors or outdoors without AFC, at far lower power.";
+
 const US_6: Record<string, string[]> = {
-  "UNII-5": [LPI_US, SP_US],
+  "UNII-5": [LPI_US, SP_US, VLP_US],
   "UNII-6": [LPI_US, "Standard power is not allowed in UNII-6."],
-  "UNII-7": [LPI_US, SP_US],
+  "UNII-7": [LPI_US, SP_US, VLP_US],
   "UNII-8": [LPI_US, "Standard power is not allowed in UNII-8."],
   "UNII-7/8": [
     LPI_US,
-    "This channel straddles 6875 MHz, the UNII-7 and UNII-8 boundary. Standard power is limited to UNII-5 and UNII-7, so only low power indoor covers it.",
+    "This channel straddles 6875 MHz, the UNII-7 and UNII-8 boundary. Standard power is limited to UNII-5 and UNII-7, so it does not apply here.",
   ],
 };
 
 const LOWER_6_ELSEWHERE =
   "Inside the lower part of the band that Europe (5945 to 6425 MHz), the UK and Japan opened for low power indoor and very low power devices.";
 const UPPER_6_ELSEWHERE =
-  "Above 6425 MHz: not available in Europe, the UK or Japan. Canada, South Korea and Brazil opened the full band, as the US did.";
+  "Above 6425 MHz: Canada, South Korea and Brazil opened the full band to Wi-Fi, as the US did. Europe, the UK and Japan first opened only the lower part, and decisions on the upper part vary by country.";
 
 function uniq(list: string[]): string[] {
   return Array.from(new Set(list));
@@ -426,6 +431,9 @@ export function channelNotes(band: Band, channel: number): RegNotes {
       );
       elsewhere.push("Europe: not allowed, because the channel extends past 5725 MHz.");
     }
+    if (channel === 169) {
+      us.push("Straddles 5850 MHz, the UNII-3 and UNII-4 boundary, so it needs UNII-4 support even though half of it is in UNII-3.");
+    }
     if (channel === 165) {
       us.push("Its 40 MHz partner, 169, is in UNII-4, so without UNII-4 support channel 165 is 20 MHz only.");
     }
@@ -433,7 +441,11 @@ export function channelNotes(band: Band, channel: number): RegNotes {
   }
 
   const us = [...(US_6[c.subband] ?? [])];
-  if (c.psc) us.push("Preferred scanning channel: a client scanning passively checks this one.");
+  if (c.psc) {
+    us.push(
+      "Preferred scanning channel. Access points are encouraged to put their primary 20 MHz channel on one of the 15 PSCs, so a client searching 6 GHz without other information can scan those instead of all 59.",
+    );
+  }
   const elsewhere = [c.channel <= 93 ? LOWER_6_ELSEWHERE : UPPER_6_ELSEWHERE];
   return { us, elsewhere };
 }
@@ -456,7 +468,7 @@ export function bondedNotes(b: Bonded): RegNotes {
     extra.push(`Every member is a DFS channel, so radar anywhere in the ${b.width} MHz span forces a move.`);
   }
   if (b.band === "6" && !b.standardPower) {
-    extra.push("Not every member is in UNII-5 or UNII-7, so this channel is limited to low power indoor.");
+    extra.push("Not every member is in UNII-5 or UNII-7, so standard power under AFC is not available on this channel.");
   }
   return { us: uniq([...extra, ...us]), elsewhere: uniq(elsewhere) };
 }
@@ -466,7 +478,7 @@ export function ht40Notes(o: Ht40Option): RegNotes {
     o.us
       ? "Allowed: both halves are within channels 1 to 11."
       : "Not usable on most US equipment: one half falls on channel 12 or 13.",
-    "802.11n makes a 40 MHz network in 2.4 GHz scan for overlapping networks and drop to 20 MHz when it finds them (20/40 coexistence), and any station can set the Forty MHz Intolerant bit to forbid 40 MHz near it.",
+    "Under the 802.11n 20/40 coexistence rules, a 2.4 GHz access point scans for neighboring networks before using 40 MHz and falls back to 20 MHz when their channels conflict or when any station reports itself Forty MHz Intolerant.",
   ];
   const elsewhere = ["Allowed in Europe and most regions with channels 1 to 13."];
   return { us, elsewhere };
@@ -541,6 +553,12 @@ function byFrequency(mhz: number): Lookup {
       note: `${mhz} MHz is not a channel center. The nearest center is channel ${best.channel} at ${best.centerMHz} MHz.`,
     };
   }
+  if (mhz > 5730 && mhz < 5735) {
+    return {
+      kind: "error",
+      message: `${mhz} MHz falls in the 5 MHz between channel 144 (which ends at 5730 MHz) and channel 149 (which starts at 5735 MHz), inside no 20 MHz channel.`,
+    };
+  }
   if (mhz > 5330 && mhz < 5490) {
     return {
       kind: "error",
@@ -575,21 +593,31 @@ export function parseLookup(raw: string, current: Band): Lookup {
   if (text.length > MAX_LOOKUP_LENGTH) {
     return { kind: "error", message: `Too long. Lookups are capped at ${MAX_LOOKUP_LENGTH} characters.` };
   }
-  const m = /^(?:ch(?:annel)?\.?\s*)?(\d{1,5}(?:\.\d{1,4})?)\s*(mhz|ghz|m|g)?$/.exec(text);
+  const m = /^(ch(?:annel)?\.?\s*)?(\d{1,5}(?:\.\d{1,4})?)\s*(mhz|ghz|m|g)?$/.exec(text);
   if (!m) {
     return {
       kind: "error",
       message: "Enter a channel number such as 36, or a frequency such as 5180 MHz or 5.18 GHz.",
     };
   }
-  const value = Number(m[1]);
-  const unit = m[2] ?? null;
-  const hasDecimal = m[1].includes(".");
+  const prefixed = m[1] !== undefined;
+  const value = Number(m[2]);
+  const unit = m[3] ?? null;
+  const hasDecimal = m[2].includes(".");
 
-  if (unit === "ghz" || unit === "g" || (unit === null && hasDecimal && value < 10)) {
-    return byFrequency(Math.round(value * 1000));
+  if (prefixed && (unit !== null || hasDecimal)) {
+    return { kind: "error", message: "After \"ch\", enter a whole channel number such as 36, with no unit." };
   }
-  if (unit === "mhz" || unit === "m" || value >= 1000) {
+  if (unit === "ghz" || unit === "g" || (!prefixed && unit === null && hasDecimal && value < 10)) {
+    // Up to four decimals in GHz, so check for a fraction of a megahertz on integers, not floats.
+    const [whole, frac = ""] = m[2].split(".");
+    const mhzText = whole + frac.padEnd(3, "0");
+    if (mhzText.length > whole.length + 3 && /[1-9]/.test(mhzText.slice(whole.length + 3))) {
+      return { kind: "error", message: "Channel centers are whole megahertz. Enter at most three decimals in GHz." };
+    }
+    return byFrequency(Number(mhzText.slice(0, whole.length + 3)));
+  }
+  if (!prefixed && (unit === "mhz" || unit === "m" || value >= 1000)) {
     if (hasDecimal && !Number.isInteger(value)) {
       return { kind: "error", message: "Channel centers are whole megahertz. Enter the frequency without a fraction." };
     }

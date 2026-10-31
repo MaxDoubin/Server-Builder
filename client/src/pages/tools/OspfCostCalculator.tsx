@@ -426,8 +426,8 @@ export function OspfCostCalculator() {
     if (defaultWinner !== winner && referenceMbps !== DEFAULT_REFERENCE_MBPS && defaultWinner !== "none") {
       parts.push(
         defaultWinner === "tie"
-          ? "At the 100 Mbps default the two paths would tie."
-          : `At the 100 Mbps default OSPF would pick path ${defaultWinner} instead.`,
+          ? "At the 100 Mbps IOS default the two paths would tie."
+          : `At the 100 Mbps IOS default OSPF would pick path ${defaultWinner} instead.`,
       );
     }
     const slowerWins =
@@ -458,7 +458,7 @@ export function OspfCostCalculator() {
             {ref.ok ? (
               <p id="ospf-reference-hint" className={HINT_TEXT}>
                 {mbpsLabel(ref.value)}. Any link at or above it costs 1. Range 1 to{" "}
-                {MAX_REFERENCE_MBPS.toLocaleString("en-US")} Mbps; the default is 100.
+                {MAX_REFERENCE_MBPS.toLocaleString("en-US")} Mbps; the IOS default is 100.
               </p>
             ) : (
               <p id="ospf-reference-error" role="alert" data-testid="text-reference-error" className={ERROR_TEXT}>
@@ -477,7 +477,7 @@ export function OspfCostCalculator() {
                   className={`${CHIP_BASE} ${referenceMbps === mbps ? CHIP_ON : CHIP_OFF}`}
                 >
                   {mbpsLabel(mbps)}
-                  {mbps === DEFAULT_REFERENCE_MBPS ? " (default)" : ""}
+                  {mbps === DEFAULT_REFERENCE_MBPS ? " (IOS default)" : ""}
                 </button>
               ))}
             </div>
@@ -485,8 +485,10 @@ export function OspfCostCalculator() {
             {fastest !== null && suggested !== null ? (
               <div className="mt-5 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.4)] p-3">
                 <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  Fastest link on these paths: {formatBandwidth(fastest)}. The smallest power of ten at or above it is{" "}
-                  {suggested.toLocaleString("en-US")} Mbps, which keeps every link here above the floor of 1.
+                  Fastest link on these paths: {formatBandwidth(fastest)}.{" "}
+                  {BigInt(suggested) * 1000n >= fastest
+                    ? `The smallest power of ten at or above it is ${suggested.toLocaleString("en-US")} Mbps. No link here is faster than that, so none is raised to the floor of 1.`
+                    : `The largest power of ten the command accepts is ${suggested.toLocaleString("en-US")} Mbps, which is still slower than this link, so it costs 1 at any reference.`}
                 </p>
                 <button
                   type="button"
@@ -506,7 +508,7 @@ export function OspfCostCalculator() {
             <ToolResult label="Path B total" value={totalB === null ? "n/a" : totalB.toLocaleString("en-US")} />
             <ToolResult label="OSPF picks" value={winnerText} testId="text-winner" />
             <ToolResult
-              label="At the 100 Mbps default"
+              label="At the IOS default, 100 Mbps"
               value={
                 defaultA === null || defaultB === null
                   ? "n/a"
@@ -729,9 +731,10 @@ export function OspfCostCalculator() {
             <p className={ERROR_TEXT}>Fix the reference bandwidth to generate configuration.</p>
           )}
           <p className={HINT_TEXT}>
-            Interface names are copied as typed. FRR uses the Linux name, such as eth0 or ens3. Pinning makes the cost
-            independent of the reference and of how a given implementation rounds; leaving it off lets the reference do
-            the work.
+            Interface names are copied as typed. FRR uses the Linux name, such as eth0 or ens3. Costs on this page follow
+            IOS, which drops the fraction. FRR rounds to the nearest integer instead, and its ospfd starts at a reference
+            of 100000 Mbps although its documentation says 100, so the FRR output always sets the reference and flags any
+            hop where FRR's own cost would differ. Pinning with ip ospf cost makes both agree with the numbers above.
           </p>
         </ToolPanel>
 

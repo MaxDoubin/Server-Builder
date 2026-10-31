@@ -318,7 +318,16 @@ export function WildcardMaskCalculator() {
     onWildType(preset.wildcard);
   }
 
-  const ref = address.ok ? address.value : null;
+  // The wildcard state keeps the last valid value while a field is being
+  // edited. Nothing is derived from it while either field shows an error, so
+  // a stale wildcard can never end up in a copied ACL or OSPF line.
+  const patternOk = wildStatus.ok && maskStatus.kind !== "error";
+  const ref = address.ok && patternOk ? address.value : null;
+  const blocker = !patternOk
+    ? "Fix the subnet mask or wildcard field above to see this."
+    : !address.ok
+      ? "Enter a valid pattern address above to see this."
+      : null;
   const base = ref === null ? null : normalize(ref, wildcard);
   const hostBitsIgnored = ref !== null && base !== null && base !== ref;
 
@@ -339,7 +348,7 @@ export function WildcardMaskCalculator() {
 
   const aclOut = ref !== null && acl.ok ? aclLines(acl.value.number, acl.value.kind, action, ref, wildcard) : null;
   const ospfOut = ref !== null && pid.ok && area.ok ? ospfLines(pid.value, area.value, ref, wildcard) : null;
-  const suspiciousMask = looksLikeSubnetMask(wildcard);
+  const suspiciousMask = patternOk && looksLikeSubnetMask(wildcard);
   const shapePrefix = maskToPrefix(wildcard) ?? 0;
   const maskShapeNote = `${ipToString(wildcard)} has the shape of a subnet mask. As a wildcard it ignores the first ${shapePrefix} ${pluralise(
     shapePrefix,
@@ -450,46 +459,57 @@ export function WildcardMaskCalculator() {
           </ToolPanel>
 
           <ToolPanel title="Conversion">
-            <ToolResult label="Wildcard mask" value={ipToString(wildcard)} testId="text-wildcard" />
-            <ToolResult
-              label="Subnet mask"
-              value={contiguous ? ipToString(invert(wildcard)) : "none (not contiguous)"}
-              testId="text-mask"
-            />
-            <ToolResult label="Prefix length" value={contiguous ? `/${prefix}` : "none"} testId="text-prefix" />
-            <ToolResult label="Wildcard in binary" value={toDottedBinary(wildcard)} />
-            <ToolResult
-              label="Bits checked / ignored"
-              value={`${32 - ignored} checked, ${ignored} ignored`}
-            />
-            <ToolResult
-              label="Addresses matched"
-              value={`${formatCount(count)} (2^${ignored})`}
-              testId="text-count"
-            />
-            <ToolResult
-              label="As CIDR"
-              value={
-                base === null
-                  ? "needs a valid address"
-                  : contiguous
-                    ? `${ipToString(base)}/${prefix}`
-                    : "none (not one block)"
-              }
-              testId="text-cidr"
-            />
-            {ref !== null ? (
+            {!patternOk ? (
               <>
-                <ToolResult label="Lowest match" value={ipToString(lowestMatch(ref, wildcard))} />
-                <ToolResult label="Highest match" value={ipToString(highestMatch(ref, wildcard))} />
+                <ToolResult label="Wildcard mask" value="needs a valid entry" testId="text-wildcard" />
+                <FieldHint id="wc-conversion-wait">
+                  The results return when the subnet mask and wildcard fields both hold valid values.
+                </FieldHint>
               </>
-            ) : null}
-            {hostBitsIgnored && ref !== null && base !== null ? (
-              <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                {ipToString(ref)} has bits set where the wildcard says ignore. They play no part in the match,
-                so the pattern is written below with those bits cleared, as {ipToString(base)}.
-              </p>
-            ) : null}
+            ) : (
+              <>
+                <ToolResult label="Wildcard mask" value={ipToString(wildcard)} testId="text-wildcard" />
+                <ToolResult
+                  label="Subnet mask"
+                  value={contiguous ? ipToString(invert(wildcard)) : "none (not contiguous)"}
+                  testId="text-mask"
+                />
+                <ToolResult label="Prefix length" value={contiguous ? `/${prefix}` : "none"} testId="text-prefix" />
+                <ToolResult label="Wildcard in binary" value={toDottedBinary(wildcard)} />
+                <ToolResult
+                  label="Bits checked / ignored"
+                  value={`${32 - ignored} checked, ${ignored} ignored`}
+                />
+                <ToolResult
+                  label="Addresses matched"
+                  value={`${formatCount(count)} (2^${ignored})`}
+                  testId="text-count"
+                />
+                <ToolResult
+                  label="As CIDR"
+                  value={
+                    base === null
+                      ? "needs a valid address"
+                      : contiguous
+                        ? `${ipToString(base)}/${prefix}`
+                        : "none (not one block)"
+                  }
+                  testId="text-cidr"
+                />
+                {ref !== null ? (
+                  <>
+                    <ToolResult label="Lowest match" value={ipToString(lowestMatch(ref, wildcard))} />
+                    <ToolResult label="Highest match" value={ipToString(highestMatch(ref, wildcard))} />
+                  </>
+                ) : null}
+                {hostBitsIgnored && ref !== null && base !== null ? (
+                  <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    {ipToString(ref)} has bits set where the wildcard says ignore. They play no part in the match,
+                    so the pattern is written below with those bits cleared, as {ipToString(base)}.
+                  </p>
+                ) : null}
+              </>
+            )}
           </ToolPanel>
         </div>
 
@@ -577,12 +597,12 @@ export function WildcardMaskCalculator() {
                   {acl.ok && acl.value.kind === "standard"
                     ? "A standard list (1 to 99, 1300 to 1999) matches the source address only."
                     : "An extended list (100 to 199, 2000 to 2699) matches protocol, source and destination; this entry matches any IP packet from the pattern to any destination."}{" "}
-                  Every access list ends with an implicit deny, so a list holding only deny entries blocks
-                  everything.
+                  Every access list ends with an implicit deny, so a list of only deny entries applied as a
+                  filter blocks everything.
                 </p>
               </>
-            ) : ref === null ? (
-              <FieldHint id="wc-acl-wait">Enter a valid address to build the entry.</FieldHint>
+            ) : blocker ? (
+              <FieldHint id="wc-acl-wait">{blocker}</FieldHint>
             ) : null}
           </ToolPanel>
 
@@ -629,8 +649,8 @@ export function WildcardMaskCalculator() {
                 <CommandBlock value={ospfOut} label="Copy OSPF configuration" testId="text-ospf" />
                 <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   The network command does not advertise this pattern. It turns OSPF on for every interface
-                  whose address falls inside it, and the router then advertises those interfaces' own
-                  subnets.
+                  whose address falls inside it, and what the router advertises then comes from those
+                  interfaces, not from this line.
                 </p>
                 {!contiguous ? (
                   <p className="mt-3 rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
@@ -640,8 +660,8 @@ export function WildcardMaskCalculator() {
                   </p>
                 ) : null}
               </>
-            ) : ref === null ? (
-              <FieldHint id="wc-ospf-wait">Enter a valid address to build the statement.</FieldHint>
+            ) : blocker ? (
+              <FieldHint id="wc-ospf-wait">{blocker}</FieldHint>
             ) : null}
           </ToolPanel>
         </div>
@@ -730,8 +750,8 @@ export function WildcardMaskCalculator() {
                 <span>·</span> ignored. The rule is (test XOR pattern) AND NOT wildcard = 0.
               </p>
             </>
-          ) : ref === null ? (
-            <FieldHint id="wc-test-wait">Enter a valid pattern address above to test against it.</FieldHint>
+          ) : blocker ? (
+            <FieldHint id="wc-test-wait">{blocker}</FieldHint>
           ) : null}
         </ToolPanel>
 

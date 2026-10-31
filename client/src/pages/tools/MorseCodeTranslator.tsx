@@ -730,8 +730,8 @@ export function MorseCodeTranslator() {
 
         <ToolPanel title="Reference">
           <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            Press any sign to hear it at the current settings. Signs marked * are in common amateur use but not in
-            ITU-R M.1677-1.
+            Press any sign to hear it at the current settings. Signs marked * are not in ITU-R M.1677-1; they come
+            from amateur and maritime practice.
           </p>
           {groups.map((group) => (
             <div key={group.kind} className="mt-6">

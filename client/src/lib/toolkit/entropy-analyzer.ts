@@ -444,6 +444,15 @@ export function downsample(sliding: SlidingResult, columns: number): Column[] {
 
 export type Decoded = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 
+/** A character for an error message: quoted if printable, U+XXXX otherwise, whole even outside the BMP. */
+function showChar(s: string, index: number): string {
+  const cp = s.codePointAt(index) ?? 0;
+  if (cp < 0x20 || (cp >= 0x7f && cp <= 0x9f) || (cp >= 0xd800 && cp <= 0xdfff)) {
+    return `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+  }
+  return `"${String.fromCodePoint(cp)}"`;
+}
+
 /**
  * Hex in the shapes people paste: "deadbeef", "de ad be ef", "de:ad:be:ef",
  * "0xde, 0xad" and "\xde\xad". Separators are dropped and the rest must be
@@ -456,9 +465,7 @@ export function decodeHex(text: string): Decoded {
     .replace(/[\s:,;.\-]/g, "");
   const bad = stripped.search(/[^0-9a-fA-F]/);
   if (bad !== -1) {
-    const ch = stripped[bad];
-    const shown = ch.charCodeAt(0) < 0x20 ? `U+${ch.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0")}` : `"${ch}"`;
-    return { ok: false, error: `${shown} is not a hex digit. Hex uses 0 to 9 and a to f only.` };
+    return { ok: false, error: `${showChar(stripped, bad)} is not a hex digit. Hex uses 0 to 9 and a to f only.` };
   }
   if (stripped.length % 2 !== 0) {
     return {
@@ -479,9 +486,15 @@ export function decodeBase64(text: string): Decoded {
   s = s.replace(/=+$/, "");
   const bad = s.search(/[^A-Za-z0-9+/]/);
   if (bad !== -1) {
+    if (s[bad] === "=") {
+      return {
+        ok: false,
+        error: `There is an = sign at position ${bad + 1} (whitespace not counted). Padding can only end the text, so this may be two Base64 strings joined together.`,
+      };
+    }
     return {
       ok: false,
-      error: `"${s[bad]}" at position ${bad + 1} is not in the Base64 alphabet (A to Z, a to z, 0 to 9, + and /, or - and _ for URL-safe).`,
+      error: `${showChar(s, bad)} at position ${bad + 1} (whitespace not counted) is not in the Base64 alphabet (A to Z, a to z, 0 to 9, + and /, or - and _ for URL-safe).`,
     };
   }
   if (s.length % 4 === 1) {

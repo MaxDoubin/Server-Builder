@@ -221,11 +221,27 @@ export async function subtleHex(
 
 /* ------------------------------------------------ comparing a checksum */
 
-/** Several digest lengths collide (MD5 and the NT hash are both 32), so a
- * length can map to more than one algorithm. The list is ordered by how
- * often a file checksum of that length is one of them. */
+/** Algorithm names from ALGORITHMS whose hex digest has this length. Each
+ * length computed here belongs to exactly one of them. */
 export function algorithmsForLength(len: number): string[] {
   return ALGORITHMS.filter((a) => a.hexLength === len).map((a) => a.name);
+}
+
+/**
+ * Other common algorithms that share a digest length with one computed here.
+ * A length is only a hint: a 64 character value might be SHA3-256 rather
+ * than SHA-256, and no comparison against SHA-256 can tell those apart.
+ */
+const SAME_LENGTH_OTHERS: Record<number, string[]> = {
+  32: ["MD4", "NT hash"],
+  40: ["RIPEMD-160"],
+  64: ["SHA3-256", "SHA-512/256", "BLAKE2s-256"],
+  96: ["SHA3-384"],
+  128: ["SHA3-512", "BLAKE2b-512"],
+};
+
+export function otherAlgorithmsForLength(len: number): string[] {
+  return SAME_LENGTH_OTHERS[len] ?? [];
 }
 
 export interface ParsedExpected {
@@ -233,37 +249,117 @@ export interface ParsedExpected {
   hex: string;
   /** A filename if the line carried one, otherwise null. */
   filename: string | null;
-  /** The algorithm named by a BSD-style line, otherwise null. */
+  /** The algorithm named on the line, normalized to a name in ALGORITHMS,
+   * or null when no name was given or the name is not one computed here. */
   algorithm: string | null;
+  /** The algorithm name exactly as written on the line, or null. */
+  algorithmTag: string | null;
+  /** 1-based line number within the pasted text. */
+  line: number;
+}
+
+const KNOWN_LENGTHS = new Set(ALGORITHMS.map((a) => a.hexLength));
+
+/** Most lines this tool will scan in one paste. A SHA256SUMS file for a
+ * large release has a few hundred entries, so this leaves ample room. */
+export const MAX_EXPECTED_LINES = 5000;
+
+/** Longest single line considered. PATH_MAX on Linux is 4096 bytes, so a
+ * real checksum line is well under this. Longer lines are skipped. */
+const MAX_LINE_CHARS = 8192;
+
+/** Most characters of pasted text scanned at all. */
+export const MAX_EXPECTED_CHARS = 2 * 1024 * 1024;
+
+/**
+ * Parse one line of a checksum listing. Accepted forms:
+ *   - a bare digest, optionally split into groups by spaces or colons
+ *   - GNU coreutils and Perl shasum: digest, a space, then a space (text
+ *     mode) or an asterisk (binary mode), then the filename. Coreutils puts
+ *     a backslash in front of the line when the filename had to be escaped.
+ *   - BSD tag form, also printed by coreutils --tag: ALGO (filename) = digest
+ *   - openssl dgst: ALGO(filename)= digest
+ *   - a prefixed digest such as sha256:9f86d0...
+ * Returns null when the line holds no hex digest.
+ */
+export function parseExpectedLine(raw: string, lineNo = 1): ParsedExpected | null {
+  if (raw.length > MAX_LINE_CHARS) return null;
+  let line = raw.trim();
+  if (line === "" || line.startsWith("#")) return null;
+  if (line.startsWith("\\")) line = line.slice(1);
+
+  // BSD tag and openssl dgst forms. The filename match is greedy so that a
+  // name containing parentheses, such as "setup (1).exe", still parses.
+  const tag = /^([A-Za-z][A-Za-z0-9/_-]*)\s*\((.*)\)\s*=\s*([0-9a-fA-F]+)$/.exec(line);
+  if (tag) {
+    return {
+      hex: tag[3].toLowerCase(),
+      filename: tag[2] || null,
+      algorithm: normalizeAlgoName(tag[1]),
+      algorithmTag: tag[1],
+      line: lineNo,
+    };
+  }
+
+  // A bare digest, possibly grouped ("d41d8cd9 8f00b204 ..." or "D4:1D:...").
+  // Grouping is accepted only when the joined value has a known digest
+  // length, so a coreutils line whose filename happens to be hex is not
+  // mistaken for one long digest.
+  if (/^[0-9a-fA-F]+(?:[\s:][0-9a-fA-F]+)*$/.test(line)) {
+    const compact = line.replace(/[\s:]+/g, "");
+    if (!/[\s:]/.test(line) || KNOWN_LENGTHS.has(compact.length)) {
+      return { hex: compact.toLowerCase(), filename: null, algorithm: null, algorithmTag: null, line: lineNo };
+    }
+  }
+
+  // GNU coreutils and shasum: digest, whitespace, optional "*", filename.
+  const gnu = /^([0-9a-fA-F]{8,})\s+\*?(.+)$/.exec(line);
+  if (gnu) {
+    return {
+      hex: gnu[1].toLowerCase(),
+      filename: gnu[2].trim() || null,
+      algorithm: null,
+      algorithmTag: null,
+      line: lineNo,
+    };
+  }
+
+  // A prefixed digest such as "sha256:..." or "SHA-1 = ...": find a run of
+  // hex whose length matches a digest computed here.
+  const prefixed = /^([A-Za-z][A-Za-z0-9/_-]*)\s*[:=]\s*([0-9a-fA-F]+)$/.exec(line);
+  if (prefixed && KNOWN_LENGTHS.has(prefixed[2].length)) {
+    return {
+      hex: prefixed[2].toLowerCase(),
+      filename: null,
+      algorithm: normalizeAlgoName(prefixed[1]),
+      algorithmTag: prefixed[1],
+      line: lineNo,
+    };
+  }
+  return null;
+}
+
+/** First parsable line of the pasted text, or null if none parses. */
+export function parseExpected(raw: string): ParsedExpected | null {
+  return parseExpectedAll(raw).entries[0] ?? null;
 }
 
 /**
- * Accepts a bare hex digest, a GNU coreutils line (digest, two spaces or a
- * space and an asterisk, then the filename) or a BSD-style line (ALGO
- * (filename) = digest). Returns null when no hex digest can be found.
+ * Every parsable line of the pasted text, so a whole SHA256SUMS file can be
+ * pasted and searched. Scanning stops after MAX_EXPECTED_LINES lines or
+ * MAX_EXPECTED_CHARS characters, whichever comes first.
  */
-export function parseExpected(raw: string): ParsedExpected | null {
-  const line = raw.trim();
-  if (line === "") return null;
-
-  // BSD tag form, for example: SHA256 (disk.iso) = 9f86d0...
-  const bsd = /^([A-Za-z0-9-]+)\s*\(([^)]*)\)\s*=\s*([0-9a-fA-F]+)\s*$/.exec(line);
-  if (bsd) {
-    return { hex: bsd[3].toLowerCase(), filename: bsd[2] || null, algorithm: normalizeAlgoName(bsd[1]) };
+export function parseExpectedAll(raw: string): { entries: ParsedExpected[]; truncated: boolean } {
+  const clipped = raw.length > MAX_EXPECTED_CHARS;
+  const lines = (clipped ? raw.slice(0, MAX_EXPECTED_CHARS) : raw).split(/\r\n|\r|\n/);
+  const truncated = clipped || lines.length > MAX_EXPECTED_LINES;
+  const entries: ParsedExpected[] = [];
+  const limit = Math.min(lines.length, MAX_EXPECTED_LINES);
+  for (let i = 0; i < limit; i++) {
+    const parsed = parseExpectedLine(lines[i], i + 1);
+    if (parsed) entries.push(parsed);
   }
-
-  // GNU coreutils form: a hex digest, then whitespace (or " *"), then a name.
-  const gnu = /^([0-9a-fA-F]{8,})\s+[ *]?(.+)$/.exec(line);
-  if (gnu) {
-    return { hex: gnu[1].toLowerCase(), filename: gnu[2].trim() || null, algorithm: null };
-  }
-
-  // A bare digest on its own, with any internal spacing removed.
-  const compact = line.replace(/\s+/g, "");
-  if (/^[0-9a-fA-F]+$/.test(compact)) {
-    return { hex: compact.toLowerCase(), filename: null, algorithm: null };
-  }
-  return null;
+  return { entries, truncated };
 }
 
 /** Map common spellings (SHA256, sha-256, SHA2-256) to the names used here. */
@@ -282,8 +378,38 @@ function normalizeAlgoName(raw: string): string | null {
   return table[key] ?? null;
 }
 
-/** Constant-ignorant equality: this compares strings a reader pasted, not
- * secrets, so a plain case-insensitive compare is correct and clear. */
+/** Case-insensitive equality. These are published checksums, not secrets,
+ * so a constant-time compare would add nothing. */
 export function hexEquals(a: string, b: string): boolean {
   return a.toLowerCase() === b.toLowerCase();
+}
+
+export interface MatchResult {
+  /** Index into the entries array. */
+  index: number;
+  /** The algorithm name whose digest matched. */
+  algorithm: string;
+}
+
+/**
+ * Find the first entry that equals one of the computed digests. When a line
+ * names its algorithm, only that algorithm's digest is compared, so a line
+ * labeled SHA256 can never match through a different algorithm.
+ */
+export function findMatch(
+  entries: ParsedExpected[],
+  digests: Record<string, string>,
+): MatchResult | null {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    if (e.algorithmTag !== null && e.algorithm === null) continue;
+    for (const algo of ALGORITHMS) {
+      if (e.algorithm !== null && e.algorithm !== algo.name) continue;
+      const value = digests[algo.name];
+      if (value && value.length === e.hex.length && hexEquals(value, e.hex)) {
+        return { index: i, algorithm: algo.name };
+      }
+    }
+  }
+  return null;
 }

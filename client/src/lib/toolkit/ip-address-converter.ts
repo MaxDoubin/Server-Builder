@@ -30,13 +30,20 @@ export interface Part {
   bits: number;
 }
 
+/**
+ * invalid: the parser refuses the string. domain: the URL parser would treat
+ * it as a host name and ask DNS. unmodeled: the result depends on a step this
+ * page does not implement (IDNA mapping of non-ASCII text).
+ */
+export type FailKind = "invalid" | "domain" | "unmodeled";
+
 export type ParseOutcome =
   | { ok: true; value: number; parts: Part[]; note?: string }
-  | { ok: false; kind: "invalid" | "domain"; reason: string };
+  | { ok: false; kind: FailKind; reason: string };
 
 const C_SPACE = /[ \t\n\v\f\r]/;
 
-function fail(reason: string, kind: "invalid" | "domain" = "invalid"): ParseOutcome {
+function fail(reason: string, kind: FailKind = "invalid"): ParseOutcome {
   return { ok: false, kind, reason };
 }
 
@@ -208,17 +215,64 @@ export function whatwgEndsInNumber(text: string): boolean {
 }
 
 /**
- * The host parser of the WHATWG URL Standard, sections "ends in a number"
- * and "IPv4 parser". The radix rules match inet_aton, with two differences:
- * one trailing dot is allowed, and a bare 0x is zero. If the last label is
- * not numeric the host is a domain name, and if it is numeric but the rest
- * does not parse, the whole URL fails.
+ * Percent-decode as the URL Standard does: %XX with two hex digits becomes
+ * that byte, and a % not followed by two hex digits stays as it is. Returns
+ * null when a decoded byte is outside ASCII, since the standard would then
+ * UTF-8 decode and IDNA-map the result, which this page does not model.
+ */
+export function whatwgPercentDecode(text: string): string | null {
+  let out = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const hex = text.slice(i + 1, i + 3);
+    if (text[i] === "%" && /^[0-9a-fA-F]{2}$/.test(hex)) {
+      const byte = parseInt(hex, 16);
+      if (byte > 0x7f) return null;
+      out += String.fromCharCode(byte);
+      i += 2;
+    } else {
+      out += text[i];
+    }
+  }
+  return out;
+}
+
+/** The URL Standard's forbidden domain code points: C0 controls, space, DEL and URL delimiters. */
+// eslint-disable-next-line no-control-regex
+const FORBIDDEN_DOMAIN = /[\x00-\x20#%/:<>?@[\\\]^|\x7f]/;
+
+/**
+ * The host parser of the WHATWG URL Standard for http and https URLs. The
+ * URL parser first deletes every tab and newline in the URL, then the host
+ * parser percent-decodes the host, lowercases it (the ASCII part of "domain
+ * to ASCII"), refuses forbidden domain code points, and runs "ends in a
+ * number" and the "IPv4 parser". The radix rules match inet_aton, with two
+ * differences: one trailing dot is allowed, and a bare 0x is zero. If the
+ * last label is not numeric the host is a domain name, and if it is numeric
+ * but the rest does not parse, the whole URL fails.
  */
 export function parseWhatwg(text: string): ParseOutcome {
-  if (/\s/.test(text)) {
-    return fail("Whitespace is a forbidden host code point, so a URL with this host fails to parse.");
+  const notes: string[] = [];
+  const stripped = text.replace(/[\t\n\r]/g, "");
+  if (stripped !== text) {
+    notes.push("The URL parser deletes tabs and newlines anywhere in a URL before reading it.");
   }
-  const host = text.toLowerCase();
+  const decoded = whatwgPercentDecode(stripped);
+  if (decoded === null) {
+    return fail(
+      "Percent-decodes to non-ASCII bytes, which a browser would UTF-8 decode and map through IDNA before reading the host. That mapping is not modeled here.",
+      "unmodeled",
+    );
+  }
+  if (decoded !== stripped) {
+    notes.push(`The host is percent-decoded first, so this reads as ${decoded}.`);
+  }
+  const host = decoded.toLowerCase();
+  const forbidden = FORBIDDEN_DOMAIN.exec(host);
+  if (forbidden) {
+    const ch = forbidden[0];
+    const shown = ch === " " ? "A space" : ch.charCodeAt(0) < 0x20 || ch === "\x7f" ? "A control character" : `"${ch}"`;
+    return fail(`${shown} is a forbidden domain code point, so a URL with this host fails to parse.`);
+  }
   if (!whatwgEndsInNumber(host)) {
     return fail(
       "The last label is not a number, so a URL parser treats this as a domain name and asks DNS, rather than reading it as an address.",
@@ -226,10 +280,9 @@ export function parseWhatwg(text: string): ParseOutcome {
     );
   }
   let texts = host.split(".");
-  let note: string | undefined;
   if (texts[texts.length - 1] === "" && texts.length > 1) {
     texts = texts.slice(0, -1);
-    note = "One trailing dot is allowed and dropped. inet_aton would reject it.";
+    notes.push("One trailing dot is allowed and dropped. inet_aton would reject it.");
   }
   if (texts.length > 4) return fail("More than four parts, so the URL fails to parse.");
 
@@ -259,9 +312,14 @@ export function parseWhatwg(text: string): ParseOutcome {
     return fail(`The last part has to fit in ${last.bits} bits and ${last.text} does not, so the URL fails to parse.`);
   }
   if (parts.some((p) => p.text === "0x")) {
-    note = (note ? note + " " : "") + "A bare 0x counts as zero here. glibc's inet_aton rejects it.";
+    notes.push("A bare 0x counts as zero here. glibc's inet_aton rejects it.");
   }
-  return { ok: true, value: combine(parts.map((p) => p.value)), parts, note };
+  return {
+    ok: true,
+    value: combine(parts.map((p) => p.value)),
+    parts,
+    note: notes.length > 0 ? notes.join(" ") : undefined,
+  };
 }
 
 /* --------------------------------------------------------------- naive */
@@ -376,8 +434,11 @@ export const SPECIAL_RANGES: SpecialRange[] = [
   { cidr: "172.16.0.0/12", name: "Private use", rfc: "RFC 1918", internal: true },
   { cidr: "192.0.0.0/24", name: "IETF protocol assignments", rfc: "RFC 6890", internal: true },
   { cidr: "192.0.2.0/24", name: "Documentation (TEST-NET-1)", rfc: "RFC 5737", internal: false },
+  { cidr: "192.31.196.0/24", name: "AS112-v4", rfc: "RFC 7535", internal: false },
+  { cidr: "192.52.193.0/24", name: "AMT relay anycast", rfc: "RFC 7450", internal: false },
   { cidr: "192.88.99.0/24", name: "Deprecated 6to4 relay anycast", rfc: "RFC 7526", internal: false },
   { cidr: "192.168.0.0/16", name: "Private use", rfc: "RFC 1918", internal: true },
+  { cidr: "192.175.48.0/24", name: "Direct Delegation AS112 service", rfc: "RFC 7534", internal: false },
   { cidr: "198.18.0.0/15", name: "Benchmarking", rfc: "RFC 2544", internal: true },
   { cidr: "198.51.100.0/24", name: "Documentation (TEST-NET-2)", rfc: "RFC 5737", internal: false },
   { cidr: "203.0.113.0/24", name: "Documentation (TEST-NET-3)", rfc: "RFC 5737", internal: false },
@@ -436,12 +497,23 @@ export function analyze(raw: string): Analysis {
         "Only ASCII is parsed here. A browser maps some Unicode, such as fullwidth digits and dots, to ASCII before it reads a host, which is one more reason to compare parsed addresses rather than strings.",
     };
   }
-  const bad = /[^0-9A-Za-z.\s]/.exec(input);
+  // Letters, hyphens and underscores can be part of a host name, and % is
+  // percent-encoding, which the URL parser decodes, so those go through to
+  // the parsers and each says what it makes of them.
+  const bad = /[^0-9A-Za-z.%_\-\s]/.exec(input);
   if (bad) {
-    return {
-      kind: "error",
-      message: `Enter only the address, without a scheme, port or path. "${bad[0]}" belongs to the URL around the host, not to the host.`,
-    };
+    const ch = bad[0];
+    let message: string;
+    if (/^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(input)) {
+      message = "Enter only the host, without the scheme (http://) or anything after the host. For http://127.1:8080/x, enter 127.1.";
+    } else if (ch === ":" || ch === "[" || ch === "]") {
+      message = `"${ch}" belongs to a port number or an IPv6 address. Enter only an IPv4 host, without a port.`;
+    } else if ("/?#@\\".includes(ch)) {
+      message = `Enter only the host, without a scheme, path, query or user name. "${ch}" belongs to the URL around the host, not to the host.`;
+    } else {
+      message = `"${ch}" is not part of any IPv4 notation.`;
+    }
+    return { kind: "error", message };
   }
 
   const rows: ParserRow[] = [

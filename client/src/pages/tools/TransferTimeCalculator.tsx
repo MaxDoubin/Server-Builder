@@ -84,7 +84,7 @@ function FieldMessage({ id, error, hint }: { id: string; error: string | null; h
       {error}
     </p>
   ) : (
-    <p id={`${id}-hint`} className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+    <p id={`${id}-hint`} className="mt-2 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
       {hint}
     </p>
   );
@@ -359,7 +359,7 @@ export function TransferTimeCalculator() {
           <ToolPanel title="Transfer time">
             <p
               data-testid="text-transfer-time"
-              className="font-display text-3xl font-medium tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
+              className="break-words font-display text-3xl font-medium tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
             >
               {forward ? formatDuration(forward.seconds) : "--"}
             </p>
@@ -367,7 +367,7 @@ export function TransferTimeCalculator() {
               role="status"
               aria-live="polite"
               data-testid="text-summary"
-              className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]"
+              className="mt-2 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]"
             >
               {summary}
             </p>
@@ -400,13 +400,13 @@ export function TransferTimeCalculator() {
           <ToolPanel title="The units, spelled out">
             {forward && sizeOk && bps !== null && pct !== null ? (
               <ul className="space-y-3" data-testid="list-units">
-                <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <li className="break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   <span className="text-[hsl(var(--brand-bone))]">Bits and bytes. </span>A byte is 8 bits, so{" "}
                   {formatBitRate(bps)} moves at most {formatByteRateSI(bps)}. Reading {rate.trim()} {rateUnitId} as{" "}
                   {rate.trim()} {BYTE_MISREAD[rateUnitId]} would predict {formatDuration(forward.seconds / 8)}, eight
                   times too fast.
                 </li>
-                <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <li className="break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   <span className="text-[hsl(var(--brand-bone))]">SI and IEC. </span>
                   {unit.system === "none"
                     ? "Plain bytes carry no prefix, so there is nothing to mix up. The difference appears from kilo upward: a KiB is 1024 bytes, a KB is 1000."
@@ -414,15 +414,15 @@ export function TransferTimeCalculator() {
                       ? `${unit.id} is ${unit.system}, ${unit.power} bytes each. The same ${size.trim()} read as ${partner.id} (${partner.system}, ${partner.power}) would take ${formatDuration(forward.partnerSeconds)}, ${pctChange(forward.seconds, forward.partnerSeconds)}.`
                       : `${unit.id} is ${unit.system}, ${unit.power} bytes each.`}
                 </li>
-                <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <li className="break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   <span className="text-[hsl(var(--brand-bone))]">Line rate and payload. </span>
                   {pct === 0
-                    ? "No overhead is set, so this is the time at the full line rate: a best case no real protocol reaches."
+                    ? "No overhead is set, so the whole link speed is treated as payload. That fits a measured figure such as a speed test result, not a raw line rate."
                     : `At the raw line rate the same transfer would take ${formatDuration(forward.rawSeconds)}. The ${formatSig(pct, 4)} percent overhead is the difference.`}
                 </li>
-                <li className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="text-[hsl(var(--brand-bone))]">Network rates are decimal. </span>1 Gbps is exactly
-                  1,000,000,000 bits per second. No link rate uses 1024.
+                <li className="break-words font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="text-[hsl(var(--brand-bone))]">Link rates are decimal. </span>1 Gbps is exactly
+                  1,000,000,000 bits per second, never 2^30.
                 </li>
               </ul>
             ) : (

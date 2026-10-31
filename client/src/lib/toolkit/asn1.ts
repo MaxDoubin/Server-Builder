@@ -417,7 +417,7 @@ export function decodeStringBytes(tag: number, bytes: Uint8Array): DecodedString
 }
 
 /** Control, bidirectional override and zero width characters, which can make two names look identical. */
-const INVISIBLE = /[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩﻿]/g;
+const INVISIBLE = /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
 
 /** Makes invisible characters visible as \xNN or \u{NNNN}, so a NUL inside a name cannot hide. */
 export function visible(text: string): { text: string; hidden: boolean } {
@@ -756,7 +756,7 @@ export function readPemText(input: string): ReadResult {
   if (input.length > MAX_TEXT_CHARS) {
     return { objects, notices, error: `The text is longer than ${MAX_TEXT_CHARS / 1_048_576} MiB, which is far more than any certificate bundle needs.` };
   }
-  const text = input.replace(/^﻿/, "");
+  const text = input.replace(/^\ufeff/, "");
   if (text.trim() === "") return { objects, notices, error: null };
 
   PEM_BEGIN.lastIndex = 0;
@@ -1912,6 +1912,48 @@ export function ecdsaDerToRaw(sig: Uint8Array, size: number): Uint8Array | null 
   }
 }
 
+function derElement(tag: number, content: Uint8Array): Uint8Array {
+  const len: number[] = [];
+  if (content.length < 0x80) len.push(content.length);
+  else {
+    for (let n = content.length; n > 0; n = Math.floor(n / 256)) len.unshift(n & 0xff);
+    len.unshift(0x80 | len.length);
+  }
+  const out = new Uint8Array(1 + len.length + content.length);
+  out[0] = tag;
+  out.set(len, 1);
+  out.set(content, 1 + len.length);
+  return out;
+}
+
+function concatBytes(parts: Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let at = 0;
+  for (const p of parts) {
+    out.set(p, at);
+    at += p.length;
+  }
+  return out;
+}
+
+/**
+ * RFC 4055 1.2: an id-RSASSA-PSS key holds the same RSAPublicKey as an
+ * rsaEncryption key, only with a usage restriction. Web Crypto imports only
+ * the rsaEncryption form, so the key is rewrapped under that OID.
+ */
+export function rsaEncryptionSpki(spki: Uint8Array): Uint8Array | null {
+  try {
+    const seq = parseExactly(spki, 0, spki.length, "subject public key info");
+    const bits = readBitString(spki, seq.children[1], "public key", seq.start);
+    // AlgorithmIdentifier { rsaEncryption, NULL }, as RFC 3279 2.3.1 requires.
+    const alg = Uint8Array.from([0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]);
+    const bitString = derElement(0x03, concatBytes([Uint8Array.of(0), bits.bytes]));
+    return derElement(0x30, concatBytes([alg, bitString]));
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Checks `signature` over `signed` with the key in `key`, through Web
  * Crypto. Covers RSA PKCS#1 v1.5, RSASSA-PSS, ECDSA on P-256, P-384 and
@@ -1930,10 +1972,15 @@ export async function verifySignature(
   const data = toArrayBuffer(signed);
   try {
     if (alg.family === "RSA" || alg.family === "RSA-PSS") {
-      if (key.keyType !== "RSA") return { status: "invalid", detail: `An RSA signature cannot come from a ${key.summary} key.` };
+      if (key.keyType !== "RSA" && key.keyType !== "RSA-PSS") return { status: "invalid", detail: `An RSA signature cannot come from a ${key.summary} key.` };
+      if (alg.family === "RSA" && key.keyType === "RSA-PSS") {
+        return { status: "invalid", detail: "The key is restricted to RSASSA-PSS (RFC 4055 section 1.2), so a PKCS#1 v1.5 signature made with it is not acceptable." };
+      }
       if (!alg.hash || !webHashes.has(alg.hash)) return { status: "unsupported", detail: `Web Crypto cannot check RSA with ${alg.hash ?? "this hash"}.` };
+      const spki = key.keyType === "RSA-PSS" ? rsaEncryptionSpki(key.spki) : key.spki;
+      if (!spki) return { status: "error", detail: "The RSA-PSS key could not be prepared for checking." };
       if (alg.family === "RSA") {
-        const k = await subtle.importKey("spki", toArrayBuffer(key.spki), { name: "RSASSA-PKCS1-v1_5", hash: alg.hash }, false, ["verify"]);
+        const k = await subtle.importKey("spki", toArrayBuffer(spki), { name: "RSASSA-PKCS1-v1_5", hash: alg.hash }, false, ["verify"]);
         const ok = await subtle.verify("RSASSA-PKCS1-v1_5", k, toArrayBuffer(signature), data);
         return ok ? { status: "valid", detail: "The RSA signature verifies." } : { status: "invalid", detail: "The RSA signature does not verify with this key." };
       }
@@ -1941,7 +1988,7 @@ export async function verifySignature(
       if (!pss || pss.mgfHash !== pss.hash || pss.trailer !== 1) {
         return { status: "unsupported", detail: "These PSS parameters (a different MGF1 hash or trailer) are outside what Web Crypto supports." };
       }
-      const k = await subtle.importKey("spki", toArrayBuffer(key.spki), { name: "RSA-PSS", hash: pss.hash }, false, ["verify"]);
+      const k = await subtle.importKey("spki", toArrayBuffer(spki), { name: "RSA-PSS", hash: pss.hash }, false, ["verify"]);
       const ok = await subtle.verify({ name: "RSA-PSS", saltLength: pss.saltLength }, k, toArrayBuffer(signature), data);
       return ok ? { status: "valid", detail: "The RSA-PSS signature verifies." } : { status: "invalid", detail: "The RSA-PSS signature does not verify with this key." };
     }

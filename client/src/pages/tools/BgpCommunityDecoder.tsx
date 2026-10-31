@@ -71,6 +71,11 @@ function slugOf(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+/** Shortens a very long unreadable entry for display; the error says how long it was. */
+function clipForDisplay(text: string, max = 100): string {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
 function CommunityCard({ value, index }: { value: DecodedCommunity; index: number }) {
   const enteredDifferently = value.input.toLowerCase() !== value.canonical.toLowerCase();
   return (
@@ -112,9 +117,9 @@ function CommunityCard({ value, index }: { value: DecodedCommunity; index: numbe
 
       {value.flags.length ? (
         <ul className="mt-3 space-y-2">
-          {value.flags.map((flag) => (
+          {value.flags.map((flag, i) => (
             <li
-              key={flag.text}
+              key={i}
               className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE_STYLE[flag.tone]}`}
             >
               {flag.text}
@@ -132,7 +137,9 @@ function ErrorCard({ result, index }: { result: Extract<CommunityResult, { ok: f
       data-testid={`card-error-${index}`}
       className="min-w-0 rounded-2xl border border-[hsl(var(--brand-danger)/0.5)] bg-[hsl(var(--brand-danger)/0.08)] p-5"
     >
-      <code className="break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">{result.input}</code>
+      <code className="break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
+        {clipForDisplay(result.input)}
+      </code>
       <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]">{result.error}</p>
     </li>
   );
@@ -164,11 +171,14 @@ export function BgpCommunityDecoder() {
           .filter(Boolean)
           .join(" · ");
 
+  // Tab separated, four columns on every row so it pastes into a
+  // spreadsheet cleanly: canonical form, name or kind, 32-bit integer (blank
+  // for extended and large), wire bytes.
   const plainText = decoded
     .map((r) => {
       const v = r.value;
-      const integer = v.fields.find((f) => f.label.startsWith("32-bit integer"))?.value;
-      return [v.canonical, v.name ?? v.kind, integer ?? "", v.bytes].filter(Boolean).join("\t");
+      const integer = v.fields.find((f) => f.label.startsWith("32-bit integer"))?.value ?? "";
+      return [v.canonical, v.name ?? v.kind, integer, v.bytes].join("\t");
     })
     .join("\n");
 
@@ -246,7 +256,11 @@ export function BgpCommunityDecoder() {
             {summary}
           </p>
           {plainText ? (
-            <CopyButton value={plainText} label="Copy all decoded communities as text" testId="button-copy-all">
+            <CopyButton
+              value={plainText}
+              label="Copy all decoded communities as tab separated text"
+              testId="button-copy-all"
+            >
               <span>Copy all</span>
             </CopyButton>
           ) : null}
@@ -335,8 +349,8 @@ export function BgpCommunityDecoder() {
             </table>
           </div>
           <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            RFC 1997 reserves 0:0 to 0:65535 and 65535:0 to 65535:65535. IANA lists a few more
-            well-known values from drafts that are not shown here.
+            RFC 1997 reserves 0:0 to 0:65535 and 65535:0 to 65535:65535. The IANA well-known
+            communities registry lists other values in the 65535 block that are not shown here.
           </p>
         </ToolPanel>
       </div>

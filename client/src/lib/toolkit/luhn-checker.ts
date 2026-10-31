@@ -44,9 +44,10 @@ export function cleanDigits(raw: string): Cleaned {
   if (raw.length > MAX_INPUT_CHARS) {
     return { kind: "error", message: `That is ${raw.length} characters. The cap is ${MAX_INPUT_CHARS}.` };
   }
-  const text = raw.trim();
-  if (text === "") return { kind: "empty" };
-  const chars = Array.from(text);
+  if (raw.trim() === "") return { kind: "empty" };
+  // Walk the raw input, not a trimmed copy, so the position reported is
+  // the one the reader sees in the field even after leading spaces.
+  const chars = Array.from(raw);
   for (let i = 0; i < chars.length; i++) {
     const c = chars[i];
     if (/[0-9]/.test(c) || /[\s\- ]/.test(c)) continue;
@@ -57,7 +58,10 @@ export function cleanDigits(raw: string): Cleaned {
       message: `Character ${i + 1}, ${shown}, is not a digit. Spaces and hyphens are ignored; nothing else is.${hint}`,
     };
   }
-  const digits = text.replace(/[^0-9]/g, "");
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length === 0) {
+    return { kind: "error", message: "There are no digits here, only spaces or hyphens." };
+  }
   if (digits.length > MAX_DIGITS) {
     return { kind: "error", message: `That is ${digits.length} digits. This page checks up to ${MAX_DIGITS}.` };
   }
@@ -389,7 +393,10 @@ export function analyze(raw: string, mode: Mode, readAs: ReadAs): Outcome {
   }
 
   if (kind === "imei") {
-    imei = imeiParts(full);
+    // Computing appends a check digit, so only a 14 digit payload gives an
+    // IMEI. A 15 digit payload must not be shown as an IMEISV: the 16th
+    // digit here would be a computed check digit, not a software version.
+    imei = hasCheck || full.length === 15 ? imeiParts(full) : null;
     if (!imei) {
       findings.push({
         tone: "warn",
@@ -416,7 +423,7 @@ export function analyze(raw: string, mode: Mode, readAs: ReadAs): Outcome {
   if (verdict === "invalid") {
     findings.unshift({
       tone: "danger",
-      text: `The check digit is ${digits[digits.length - 1]}, and the digits before it call for ${expectedCheck}. The usual causes are one mistyped digit or two neighboring digits swapped, and Luhn catches nearly all of both.`,
+      text: `The check digit is ${digits[digits.length - 1]}, and the digits before it call for ${expectedCheck}. The usual causes are one mistyped digit, which Luhn always catches, or two neighboring digits swapped, which it catches except for 09 and 90.`,
     });
   }
 

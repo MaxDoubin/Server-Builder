@@ -78,6 +78,18 @@ export interface PasswordPlan {
   bits: number;
   /** Fraction of uniformly drawn strings that already satisfy the rule (1 without it). */
   acceptance: number;
+  /**
+   * True when generation must check for every class. Kept separate from
+   * acceptance, which rounds to exactly 1 in floating point for long
+   * passwords (lower and upper only at 128 characters misses a class with
+   * probability 2^-127), and the rule must still be enforced then.
+   */
+  enforceEach: boolean;
+  /**
+   * Fraction of uniform draws the rule discards, 1 - acceptance, computed
+   * from the exact BigInt count so it stays accurate when it is tiny.
+   */
+  rejectShare: number;
   /** Number of distinct passwords the settings can produce. */
   spaceSize: bigint;
 }
@@ -135,6 +147,8 @@ export function planPassword(opts: PasswordOptions): PasswordPlan {
     unconstrainedBits: 0,
     bits: 0,
     acceptance: 0,
+    enforceEach: false,
+    rejectShare: 0,
     spaceSize: 0n,
   });
 
@@ -172,17 +186,34 @@ export function planPassword(opts: PasswordOptions): PasswordPlan {
   const everything = BigInt(alphabet.length) ** BigInt(length);
   let spaceSize = everything;
   let acceptance = 1;
+  let rejectShare = 0;
   let bits = unconstrainedBits;
+  const enforceEach = opts.requireEach && groups.length > 1;
 
-  if (opts.requireEach && groups.length > 1) {
+  if (enforceEach) {
     spaceSize = countContainingEach(
       alphabet.length,
       groups.map((g) => g.chars.length),
       length,
     );
     if (spaceSize <= 0n) return fail("No password of this length can contain every selected class.");
-    bits = log2Big(spaceSize);
-    acceptance = Math.pow(2, bits - unconstrainedBits);
+    // Both shares come from ratios of exact BigInt counts. Whichever share is
+    // the smaller one is computed directly and the other as its complement,
+    // so neither loses precision: subtracting two 800-bit logarithms leaves
+    // an error near 1e-13, enough to push a near-1 acceptance above 1.
+    const totalBits = log2Big(everything);
+    const rejected = everything - spaceSize;
+    if (rejected * 2n <= everything) {
+      rejectShare = rejected > 0n ? Math.pow(2, log2Big(rejected) - totalBits) : 0;
+      acceptance = 1 - rejectShare;
+    } else {
+      acceptance = Math.pow(2, log2Big(spaceSize) - totalBits);
+      rejectShare = 1 - acceptance;
+    }
+    acceptance = Math.min(1, Math.max(0, acceptance));
+    rejectShare = Math.min(1, Math.max(0, rejectShare));
+    // log2(acceptance) via log1p keeps tiny costs (2^-127 of a bit) accurate.
+    bits = unconstrainedBits + Math.log1p(-rejectShare) / Math.LN2;
     if (acceptance < MIN_ACCEPTANCE) {
       return fail(
         `With these exclusions only ${(acceptance * 100).toPrecision(2)}% of random passwords contain every class, so each one would take about ${Math.round(1 / acceptance).toLocaleString("en-US")} redraws. Allow more characters in the sparse classes, make the password longer, or turn off the every-class rule.`,
@@ -200,6 +231,8 @@ export function planPassword(opts: PasswordOptions): PasswordPlan {
     unconstrainedBits,
     bits,
     acceptance,
+    enforceEach,
+    rejectShare,
     spaceSize,
   };
 }
@@ -268,10 +301,11 @@ function drawString(alphabet: string[], length: number, next: Uint32Source): str
 export function generatePasswords(plan: PasswordPlan, count: number, next: Uint32Source): GenerateResult {
   if (!plan.ok) return { ok: false, error: plan.error ?? "These settings cannot produce a password." };
   const n = clampInt(count, MIN_COUNT, MAX_COUNT);
-  const needed =
-    plan.groups.length > 1 && plan.acceptance < 1 ? plan.groups.map((g) => new Set(g.chars)) : null;
-  // With acceptance p, failing this many redraws in a row has probability about e^-64.
-  const maxAttempts = needed ? Math.ceil(64 / plan.acceptance) : 1;
+  const needed = plan.enforceEach ? plan.groups.map((g) => new Set(g.chars)) : null;
+  // With acceptance p, failing this many redraws in a row has probability
+  // about e^-64. planPassword refuses p below MIN_ACCEPTANCE, so this is at
+  // most 64,000 attempts per password.
+  const maxAttempts = needed ? Math.ceil(64 / Math.max(plan.acceptance, MIN_ACCEPTANCE)) : 1;
 
   const values: string[] = [];
   let redraws = 0;

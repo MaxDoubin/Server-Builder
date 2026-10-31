@@ -14,6 +14,8 @@ import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 import {
   CITIES,
   EARTH_RADIUS_KM,
+  ETHERNET_JUMBO_PAYLOAD_BYTES,
+  ETHERNET_MAX_PAYLOAD_BYTES,
   MAX_HOPS,
   MAX_SURFACE_KM,
   MEDIA,
@@ -162,13 +164,19 @@ export function PropagationDelayCalculator() {
   const totalOneWay = usable && totalSerial !== null ? result.oneWaySeconds + totalSerial : null;
   const bdp = usable && rate.ok ? bdpBytes(rate.value, result.rttSeconds) : null;
 
+  // Compared against serialization across every hop, since that is what adds to the one-way total.
   let ratioText: string | null = null;
-  if (usable && serial !== null && serial > 0 && result.oneWaySeconds > 0) {
-    const ratio = result.oneWaySeconds / serial;
+  if (usable && totalSerial !== null && totalSerial > 0 && result.oneWaySeconds > 0) {
+    const ratio = result.oneWaySeconds / totalSerial;
+    const times = (x: number) => x.toLocaleString("en-US", { maximumSignificantDigits: 3 });
     ratioText =
-      ratio >= 1
-        ? `Propagation is ${ratio.toLocaleString("en-US", { maximumSignificantDigits: 3 })} times one frame's serialization here, so a faster link barely moves the latency. Only a shorter path does.`
-        : `Serialization is ${(1 / ratio).toLocaleString("en-US", { maximumSignificantDigits: 3 })} times the propagation here, so the link speed, not the distance, sets the latency.`;
+      ratio >= 10
+        ? `Propagation is ${times(ratio)} times the serialization here, so a faster link barely moves the latency. Only a shorter path does.`
+        : ratio <= 0.1
+          ? `Serialization is ${times(1 / ratio)} times the propagation here, so the link speed, not the distance, sets the latency.`
+          : ratio >= 1
+            ? `Propagation is ${times(ratio)} times the serialization here. Both are large enough to matter, so a faster link and a shorter path each help.`
+            : `Serialization is ${times(1 / ratio)} times the propagation here. Both are large enough to matter, so a faster link and a shorter path each help.`;
   }
 
   const minElevation = result?.satellite
@@ -589,6 +597,13 @@ export function PropagationDelayCalculator() {
                 Framing adds the 14-byte header, 4-byte FCS, 8 bytes of preamble and SFD and the 12-byte gap, and pads
                 anything under 46 bytes up to the 64-byte minimum frame. Up to {MAX_HOPS} hops.
               </p>
+              {ethernet && packet.ok && packet.value > ETHERNET_MAX_PAYLOAD_BYTES ? (
+                <p className={HINT_TEXT} data-testid="text-jumbo">
+                  {packet.value > ETHERNET_JUMBO_PAYLOAD_BYTES
+                    ? `No Ethernet frame carries ${packet.value.toLocaleString("en-US")} bytes. A real sender splits it into frames of at most ${ETHERNET_MAX_PAYLOAD_BYTES.toLocaleString("en-US")} bytes (or about ${ETHERNET_JUMBO_PAYLOAD_BYTES.toLocaleString("en-US")} with jumbo frames), each with its own 38 bytes of overhead, so this counts the overhead once and understates the time slightly.`
+                    : `Above ${ETHERNET_MAX_PAYLOAD_BYTES.toLocaleString("en-US")} bytes this is a jumbo frame, which every device on the path has to be configured to accept.`}
+                </p>
+              ) : null}
 
               <div className="mt-4">
                 <ToolResult label="Bytes on the wire" value={onWire === null ? "n/a" : onWire.toLocaleString("en-US")} />
@@ -683,7 +698,7 @@ export function PropagationDelayCalculator() {
             </div>
             <p className={HINT_TEXT}>
               Ground media cover the route length; satellite rows cover the climb to orbit and back. A GEO hop is at
-              least 71,572 km, more than three times the longest great circle on Earth.
+              least 71,572 km, more than three times the greatest great-circle distance between two points on Earth.
             </p>
           </ToolPanel>
         ) : null}

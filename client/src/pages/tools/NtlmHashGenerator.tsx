@@ -3,9 +3,9 @@
  *
  * The NT hash is MD4 of the password encoded as UTF-16LE, with no salt. MD4
  * is not in Web Crypto, so it is computed here from RFC 1320. The page shows
- * the intermediate UTF-16LE bytes, the digest, and the forms hashcat and John
- * the Ripper expect, so a cracking exercise can start from the output
- * directly. Everything is computed in this tab.
+ * the intermediate UTF-16LE bytes, the digest, and the line formats that
+ * hashcat, John the Ripper and SAM dump tools use, which helps when checking
+ * a lab exercise or a password audit. Everything is computed in this tab.
  */
 
 import { useMemo, useState } from "react";
@@ -13,7 +13,8 @@ import { ToolShell, ToolPanel, ToolResult } from "./ToolShell";
 import { CopyButton } from "@/components/ui/copy-button";
 import { ntHash, utf16leBytes, bytesToHex } from "@/lib/toolkit/ntlm-hash-generator";
 
-/** The constant NT hash of an empty LM field, used in pwdump-style lines. */
+/** The LM hash of an empty password. Dump tools print it in the LM column
+ * when no LM hash is stored, which is the default since Windows Vista. */
 const EMPTY_LM = "aad3b435b51404eeaad3b435b51404ee";
 
 const MAX_LEN = 256;
@@ -38,7 +39,12 @@ export function NtlmHashGenerator() {
   }, [password, tooLong]);
 
   const nt = computed?.nt ?? "";
-  const user = username.trim() === "" ? "user" : username.trim();
+  // Colons separate the fields of the John and pwdump lines, and whitespace
+  // would split the line for many parsers, so both are removed here.
+  const userRaw = username.trim();
+  const userClean = userRaw.replace(/[:\s]+/g, "");
+  const userChanged = userClean !== userRaw;
+  const user = userClean === "" ? "user" : userClean;
   const hashcat = nt;
   const john = `${user}:$NT$${nt}`;
   const pwdump = `${user}:1001:${EMPTY_LM}:${nt}:::`;
@@ -85,7 +91,7 @@ export function NtlmHashGenerator() {
               role="alert"
               className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]"
             >
-              That is {password.length} characters. This tool caps input at {MAX_LEN}. The algorithm itself has no length limit, but Windows stores at most 127 UTF-16 characters.
+              That is {password.length} UTF-16 code units. This tool caps input at {MAX_LEN}. MD4 itself accepts input of any length.
             </p>
           ) : (
             <p id="password-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
@@ -139,7 +145,7 @@ export function NtlmHashGenerator() {
                   </p>
                 </div>
                 <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  Each character becomes two little-endian bytes, so an ASCII letter is followed by a zero byte. MD4 runs over exactly these bytes with no trailing null.
+                  Each UTF-16 code unit becomes two little-endian bytes, so an ASCII letter is followed by a zero byte, and a character outside the Basic Multilingual Plane, such as an emoji, takes four bytes as a surrogate pair. MD4 runs over exactly these bytes with no trailing null.
                 </p>
               </div>
             </div>
@@ -170,15 +176,24 @@ export function NtlmHashGenerator() {
                 maxLength={128}
                 placeholder="user"
                 data-testid="input-username"
+                aria-describedby={userChanged ? "username-note" : undefined}
                 className="w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
               />
+              {userChanged ? (
+                <p
+                  id="username-note"
+                  className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]"
+                >
+                  Colons and spaces were removed from the account name, because they would break the colon-separated lines below.
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-3">
               {[
-                { name: "hashcat (-m 1000)", value: hashcat, note: "The bare NT hash. Mode 1000 is NTLM." },
-                { name: "John the Ripper (nt)", value: john, note: "The $NT$ prefix tells John which format to use." },
-                { name: "pwdump / secretsdump", value: pwdump, note: "RID, empty LM, then the NT hash. The shape tools dump from a SAM hive." },
+                { name: "hashcat (-m 1000)", value: hashcat, note: "The bare NT hash, 32 hex characters. Hash mode 1000 is NTLM." },
+                { name: "John the Ripper (nt)", value: john, note: "Account name, a colon, then the hash with the $NT$ tag that marks John's nt format." },
+                { name: "pwdump / secretsdump", value: pwdump, note: "Account name, RID (1001 here as a placeholder), the LM column holding the empty-password LM hash, then the NT hash. This is the layout SAM and NTDS dump tools print." },
               ].map((fmt) => (
                 <div
                   key={fmt.name}
@@ -209,7 +224,7 @@ export function NtlmHashGenerator() {
             The hash is the credential
           </div>
           <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-            Because the NT hash is unsalted and is what the protocol actually proves knowledge of, a stolen hash is as good as the password for many Windows services. That is pass-the-hash. NetNTLMv2, the thing sent across the wire during a logon, is a separate salted challenge-response built from this hash, so it is not the same string and cannot be replayed the same way.
+            NTLM authentication proves knowledge of the NT hash, not of the password, so a stolen NT hash works in place of the password against services that accept NTLM. That is pass-the-hash. The NetNTLMv2 response sent during a network logon is a different value: it is derived from this hash, the account name and fresh challenges, so it changes on every logon and is not the string shown here.
           </p>
         </div>
       </div>

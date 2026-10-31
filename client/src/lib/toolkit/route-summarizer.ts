@@ -32,6 +32,12 @@ export interface InputPrefix extends Cidr {
   line: number;
   /** True when the address had host bits set and was moved down to its network. */
   hostBitsCleared: boolean;
+  /**
+   * Set when the entry was written router-config style, as an address and
+   * then a separate mask token ("10.1.0.0 255.255.255.0" or the wildcard
+   * form "10.1.0.0 0.0.0.255"), and the two tokens were read as one prefix.
+   */
+  pairedMask: "netmask" | "wildcard" | null;
 }
 
 export interface InputProblem {
@@ -106,6 +112,21 @@ export function formatCidr(cidr: Cidr): string {
   return `${formatIpv4(cidr.network)}/${cidr.length}`;
 }
 
+/** The prefix length a netmask stands for, or -1 when its one bits are not contiguous from the left. */
+export function maskLength(mask: number): number {
+  for (let l = 0; l <= 32; l += 1) if (maskOf(l) === mask) return l;
+  return -1;
+}
+
+/**
+ * The prefix length a wildcard (inverse) mask stands for, as used in ACLs and
+ * OSPF network statements: 0.0.0.255 is /24. Returns -1 when the zero bits
+ * are not contiguous from the left.
+ */
+export function wildcardLength(wildcard: number): number {
+  return maskLength(TWO_32 - 1 - wildcard);
+}
+
 /** Number of leading bits on which two addresses agree, 0 to 32. */
 export function commonPrefixLength(a: number, b: number): number {
   // XOR leaves a 1 at the first differing bit. Math.clz32 reads its operand
@@ -166,17 +187,19 @@ export function parsePrefix(
           message: "has something after the slash that is neither a prefix length (0 to 32) nor a netmask.",
         };
       }
-      let found = -1;
-      for (let l = 0; l <= 32; l += 1) {
-        if (maskOf(l) === mask) {
-          found = l;
-          break;
-        }
-      }
+      const found = maskLength(mask);
       if (found === -1) {
+        const wild = wildcardLength(mask);
+        if (wild !== -1) {
+          return {
+            ok: false,
+            message: `has ${lenText} after the slash, which is a wildcard (inverse) mask, not a netmask. The netmask for that is ${formatIpv4(maskOf(wild))}, or /${wild}.`,
+          };
+        }
         return {
           ok: false,
-          message: "has a netmask whose one bits are not contiguous, so it is not a prefix.",
+          message:
+            "has a netmask whose one bits do not run unbroken from the left, so it does not describe a prefix.",
         };
       }
       length = found;
@@ -185,6 +208,32 @@ export function parsePrefix(
 
   const network = networkOf(addr, length);
   return { ok: true, cidr: { network, length }, hostBitsCleared: network !== addr };
+}
+
+/** Longest token echoed back in an error message. */
+const MAX_ECHO_CHARS = 60;
+
+function echo(token: string): string {
+  return token.length > MAX_ECHO_CHARS ? `${token.slice(0, MAX_ECHO_CHARS)}...` : token;
+}
+
+/**
+ * When a bare address is followed on the same line by a bare token that can
+ * only be a mask, the two are one entry, the way router configurations write
+ * them ("ip route 10.1.0.0 255.255.255.0 ..." or "network 10.1.0.0 0.0.0.255
+ * area 0"). Only unambiguous tokens count: a netmask starts with 255 (/8 or
+ * longer; 255.0.0.0/8 is reserved space, never a route), and a wildcard mask
+ * starts with 0 and is not 0.0.0.0 (0.0.0.0/8 is "this network", never a
+ * route). Anything else stays an address of its own.
+ */
+function maskKind(addrToken: string, maskToken: string | undefined): "netmask" | "wildcard" | null {
+  if (maskToken === undefined || addrToken.includes("/") || maskToken.includes("/")) return null;
+  if (parseIpv4(addrToken) === null) return null;
+  const value = parseIpv4(maskToken);
+  if (value === null) return null;
+  if (value >= 0xff000000) return "netmask";
+  if (value !== 0 && value < 0x01000000 && wildcardLength(value) !== -1) return "wildcard";
+  return null;
 }
 
 /**
@@ -202,23 +251,40 @@ export function parsePrefixList(input: string): ParsedList {
   for (let i = 0; i < lines.length; i += 1) {
     const hash = lines[i].indexOf("#");
     const body = hash === -1 ? lines[i] : lines[i].slice(0, hash);
-    for (const token of body.split(/[\s,;]+/)) {
-      if (token === "") continue;
+    const tokens = body.split(/[\s,;]+/).filter((t) => t !== "");
+    for (let k = 0; k < tokens.length; k += 1) {
       seen += 1;
       if (seen > MAX_PREFIXES) {
         result.truncated = true;
         return result;
       }
-      const parsed = parsePrefix(token);
+      const token = tokens[k];
+      const pair = maskKind(token, tokens[k + 1]);
+      let text = token;
+      let parsed: ReturnType<typeof parsePrefix>;
+      if (pair === null) {
+        parsed = parsePrefix(token);
+      } else {
+        const maskToken = tokens[k + 1];
+        k += 1;
+        text = `${token} ${maskToken}`;
+        if (pair === "netmask") {
+          parsed = parsePrefix(`${token}/${maskToken}`);
+        } else {
+          const len = wildcardLength(parseIpv4(maskToken) as number);
+          parsed = parsePrefix(`${token}/${len}`);
+        }
+      }
       if (parsed.ok) {
         result.prefixes.push({
           ...parsed.cidr,
-          source: token,
+          source: text,
           line: i + 1,
           hostBitsCleared: parsed.hostBitsCleared,
+          pairedMask: pair,
         });
       } else {
-        result.problems.push({ line: i + 1, text: token, message: parsed.message });
+        result.problems.push({ line: i + 1, text: echo(text), message: parsed.message });
       }
     }
   }

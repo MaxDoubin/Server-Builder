@@ -33,6 +33,12 @@ export const MAX_ENTRIES = 500;
 export const MAX_UA_LENGTH = 8190;
 /** Whole paste cap, in characters. */
 export const MAX_INPUT_CHARS = 2_000_000;
+/**
+ * Total characters of User-Agent text analyzed from one paste. Every string
+ * runs through about 150 patterns, so this bounds the work per keystroke;
+ * strings past it are counted, not read.
+ */
+export const MAX_ANALYZED_CHARS = 500_000;
 /** Tokens kept for display from one string. */
 const MAX_TOKENS = 200;
 /** Comment nesting followed before further parentheses are treated as text. */
@@ -418,7 +424,11 @@ export function detectBrowser(ua: string): Named | null {
   if ((v = m1(/\bHeadlessChrome\/([\d.]+)/, ua)) !== null) return { name: "Headless Chrome", version: v };
   if ((v = m1(/\bFxiOS\/([\d.]+)/, ua)) !== null) return { name: "Firefox for iOS", version: v };
   if ((v = m1(/\bCriOS\/([\d.]+)/, ua)) !== null) return { name: "Chrome for iOS", version: v };
-  if ((v = m1(/\bFirefox\/([\d.]+)/, ua)) !== null) return { name: android ? "Firefox for Android" : "Firefox", version: v };
+  if ((v = m1(/\bFirefox\/([\d.]+)/, ua)) !== null) {
+    // KaiOS's own browser is built on Gecko and its Firefox token is the Gecko version.
+    if (/KAIOS\//i.test(ua)) return { name: "KaiOS browser", version: null };
+    return { name: android ? "Firefox for Android" : "Firefox", version: v };
+  }
   if ((v = m1(/\bMSIE ([\d.]+)/, ua)) !== null) return { name: "Internet Explorer", version: v };
   if (/Trident\/7\.0/.test(ua) && (v = m1(/\brv:([\d.]+)/, ua)) !== null) return { name: "Internet Explorer", version: v };
   if (/; wv\)/.test(ua) && (v = m1(/\bChrome\/([\d.]+)/, ua)) !== null) return { name: "Android WebView", version: v };
@@ -426,17 +436,24 @@ export function detectBrowser(ua: string): Named | null {
   if ((v = m1(/\bChrome\/([\d.]+)/, ua)) !== null) return { name: android ? "Chrome for Android" : "Chrome", version: v };
   if ((v = m1(/^Dalvik\/([\d.]+)/, ua)) !== null) return { name: "Android app (system HTTP client)", version: v };
   if (android && /\bVersion\/[\d.]+/.test(ua) && /\bSafari\//.test(ua)) return { name: "Android Browser (stock)", version: m1(/\bVersion\/([\d.]+)/, ua) };
-  if ((v = m1(/\bVersion\/([\d.]+).*\bSafari\//, ua)) !== null) return { name: ios ? "Mobile Safari" : "Safari", version: v };
-  if (ios && /AppleWebKit/.test(ua) && !/\bSafari\//.test(ua)) return { name: "iOS WebView (in-app)", version: null };
-  if (/\bSafari\//.test(ua) && /AppleWebKit/.test(ua)) return { name: "Safari", version: null };
+  // Two separate tests instead of one "Version/.*Safari/" pattern, which
+  // backtracks quadratically on a long string full of Version/ tokens.
+  if ((v = m1(/\bVersion\/([\d.]+)/, ua)) !== null && /\bSafari\//.test(ua)) {
+    return { name: ios ? "Mobile Safari" : "Safari", version: v };
+  }
+  if (ios && /AppleWebKit/i.test(ua) && !/\bSafari\//.test(ua)) return { name: "iOS WebView (in-app)", version: null };
+  // Real Safari always sends Version/. Without it this is some other WebKit
+  // or Blink browser, such as a TV's built-in one.
+  if (/\bSafari\//.test(ua) && /AppleWebKit/i.test(ua)) return { name: "Unidentified WebKit or Blink browser", version: null };
   return null;
 }
 
 export function detectEngine(ua: string, browser: Named | null): Named | null {
   let v: string | null;
-  // Every browser on iOS is built on WebKit; Apple's rules required it
-  // everywhere until iOS 17.4 opened other engines in the EU only.
-  if (isIOS(ua)) return { name: "WebKit", version: m1(/AppleWebKit\/([\d.]+)/, ua) };
+  // Every browser on iOS has been built on WebKit. Apple's rules required it
+  // everywhere until iOS 17.4 allowed other engines in the EU, and few
+  // browsers have shipped another engine since.
+  if (isIOS(ua)) return { name: "WebKit", version: m1(/AppleWebKit\/([\d.]+)/i, ua) };
   if (browser?.name === "Microsoft Edge Legacy") return { name: "EdgeHTML", version: m1(/\bEdge\/([\d.]+)/, ua) };
   if ((v = m1(/Trident\/([\d.]+)/, ua)) !== null) return { name: "Trident", version: v };
   if (/\bMSIE\b/.test(ua)) return { name: "Trident", version: null };
@@ -445,12 +462,13 @@ export function detectEngine(ua: string, browser: Named | null): Named | null {
   if (chrome !== null && chrome !== "") {
     // Chrome 28 is where Blink forked from WebKit.
     if (parseInt(chrome, 10) >= 28) return { name: "Blink", version: chrome };
-    return { name: "WebKit", version: m1(/AppleWebKit\/([\d.]+)/, ua) };
+    return { name: "WebKit", version: m1(/AppleWebKit\/([\d.]+)/i, ua) };
   }
   if (/\bGecko\/\d/.test(ua) || /\bFirefox\//.test(ua)) {
     return { name: "Gecko", version: m1(/\bFirefox\/([\d.]+)/, ua) ?? m1(/\brv:([\d.]+)/, ua) };
   }
-  if ((v = m1(/AppleWebKit\/([\d.]+)/, ua)) !== null) return { name: "WebKit", version: v };
+  // Some old Android builds spell it AppleWebkit.
+  if ((v = m1(/AppleWebKit\/([\d.]+)/i, ua)) !== null) return { name: "WebKit", version: v };
   if ((v = m1(/KHTML\/([\d.]+)/, ua)) !== null) return { name: "KHTML", version: v };
   return null;
 }
@@ -528,6 +546,8 @@ export function detectOs(ua: string): OsInfo | null {
   }
   if (/Macintosh|Mac_PowerPC/.test(ua)) return os("macOS", null);
   if (/HarmonyOS/.test(ua)) return os("HarmonyOS", m1(/HarmonyOS[ /]?([\d.]+)/, ua));
+  // KaiOS strings on some phones also say Android, so KaiOS is checked first.
+  if ((v = m1(/KAIOS\/([\d.]+)/i, ua)) !== null) return os("KaiOS", v);
   if ((v = m1(/Android[ /]?([\d.]*)/, ua)) !== null) {
     const note = /Android 10; K\)/.test(ua)
       ? "Chrome's reduced string. Every Android device running Chrome 110 or later says Android 10 and model K."
@@ -537,7 +557,6 @@ export function detectOs(ua: string): OsInfo | null {
   if ((v = m1(/\bCrOS \S+ ([\d.]+)/, ua)) !== null) {
     return os("ChromeOS", v, v === "14541.0.0" ? "Frozen: Chrome 107 and later send 14541.0.0 whatever the real platform version." : null);
   }
-  if ((v = m1(/KAIOS\/([\d.]+)/i, ua)) !== null) return os("KaiOS", v);
   if (/Tizen/.test(ua)) return os("Tizen", m1(/Tizen[ /]?([\d.]+)/, ua));
   if (/Web0S|webOS/.test(ua)) return os("webOS", null);
   if ((v = m1(/PlayStation (\d+|Vita|Portable)/, ua)) !== null) return os(`PlayStation ${v} system software`, m1(/PlayStation \S+ ([\d.]+)/, ua));
@@ -566,10 +585,18 @@ export function detectArch(ua: string): string | null {
 
 const DESKTOP_OS = /^(?:Windows(?! Phone)|macOS|Mac OS X|OS X|Linux|ChromeOS|FreeBSD|OpenBSD|NetBSD|Solaris)/;
 
+/** The first parenthesized comment that mentions `word`, found in one linear pass. */
+function commentWith(ua: string, word: string): string | null {
+  const re = /\(([^()]*)\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(ua)) !== null) if (m[1].includes(word)) return m[1];
+  return null;
+}
+
 function androidModel(ua: string): string | null {
-  const comment = /\(([^()]*Android[^()]*)\)/.exec(ua);
-  if (!comment) return null;
-  const parts = comment[1].split(";").map((p) => p.trim());
+  const comment = commentWith(ua, "Android");
+  if (comment === null) return null;
+  const parts = comment.split(";").map((p) => p.trim());
   const idx = parts.findIndex((p) => /Android/.test(p));
   for (const p of parts.slice(idx + 1)) {
     if (p === "" || p === "U" || p === "wv" || p === "Mobile" || p === "Tablet" || /^rv:/.test(p)) continue;
@@ -579,10 +606,22 @@ function androidModel(ua: string): string | null {
   return null;
 }
 
+/** Windows Phone strings end their platform comment with the maker and the model. */
+function windowsPhoneModel(ua: string): string | null {
+  const comment = commentWith(ua, "Windows Phone");
+  if (comment === null) return null;
+  const parts = comment.split(";").map((p) => p.trim()).filter(Boolean);
+  if (parts.length < 2) return null;
+  const tail = parts.slice(-2);
+  if (tail.some((p) => /Windows Phone|Android|Trident|IEMobile|^ARM$|^Touch$|^rv:/i.test(p))) return null;
+  return clip(tail.join(" "));
+}
+
 export function detectDevice(ua: string, os: OsInfo | null, bot: BotInfo | null): { type: DeviceType; model: string | null } {
   let model: string | null = null;
   const apple = /\b(iPhone|iPad|iPod)\b/.exec(ua);
   if (apple && !/Windows Phone/i.test(ua)) model = apple[1] === "iPod" ? "iPod touch" : apple[1];
+  else if (/Windows Phone/.test(ua)) model = windowsPhoneModel(ua);
   else if (/Android/.test(ua)) model = androidModel(ua);
   const xbox = /Xbox (?:One|Series [XS])/.exec(ua) ?? /\bXbox\b/.exec(ua);
   if (xbox) model = xbox[0];
@@ -620,7 +659,7 @@ function reductionNotes(ua: string): string[] {
     /\((?:Windows NT 10\.0; Win64; x64|Macintosh; Intel Mac OS X 10_15_7|X11; Linux x86_64|X11; CrOS x86_64 14541\.0\.0)\)/.test(ua)
   ) {
     out.push(
-      "Frozen platform: from Chrome 107 the desktop platform section is one of four fixed strings, whatever the real OS version or CPU. Sec-CH-UA-Platform-Version and Sec-CH-UA-Arch carry the real values.",
+      "Frozen platform: from Chrome 107 the desktop platform section is a fixed string for each operating system, whatever the real OS version or CPU. Sec-CH-UA-Platform-Version and Sec-CH-UA-Arch carry the real values.",
     );
   }
   if (/\(Linux; Android 10; K\)/.test(ua)) {
@@ -639,11 +678,13 @@ export function payloadFindings(ua: string): Finding[] {
     out.push({
       tone: lookup ? "danger" : "warn",
       text: lookup
-        ? "Contains a ${...} lookup, the shape of a Log4Shell probe (CVE-2021-44228). Log4j 2 up to 2.14.1 expanded lookups inside logged strings, so ${jndi:ldap://...} in a logged header made the server fetch and run remote code. Seeing it means someone tested you, not that it worked; check what the host contacted next."
+        ? "Contains a ${...} lookup, the shape of a Log4Shell probe (CVE-2021-44228). Log4j 2 up to 2.14.1 expanded lookups inside logged strings, so ${jndi:ldap://...} in a logged header could make the server fetch and run remote code. Seeing it means someone tested you, not that it worked; check what the host contacted next."
         : "Contains a ${...} expression. In a User-Agent that is usually template or Log4Shell-style injection testing.",
     });
   }
-  if (/\(\)\s*\{[^}]*\}\s*;/.test(ua)) {
+  // The body excludes both braces and is bounded, so a string of many
+  // "() {" with no "}" is scanned in linear time.
+  if (/\(\)\s{0,16}\{[^{}]{0,512}\}\s{0,16};/.test(ua)) {
     out.push({
       tone: "danger",
       text: "Contains a Shellshock probe (CVE-2014-6271): a Bash function definition followed by a command. CGI copies the User-Agent into the HTTP_USER_AGENT environment variable, and unpatched Bash ran whatever followed the function body.",
@@ -665,7 +706,7 @@ export function payloadFindings(ua: string): Finding[] {
       text: "Contains HTML or script. The target is whatever later displays this header: a log viewer, analytics dashboard or admin panel that renders it unescaped.",
     });
   }
-  if (/\.\.[/\\]|\/etc\/passwd|\bcmd\.exe\b|\|\s*(?:sh|bash)\b|;\s*(?:wget|curl)\s|\$\([^)]*\)/i.test(ua)) {
+  if (/\.\.[/\\]|\/etc\/passwd|\bcmd\.exe\b|\|\s*(?:sh|bash)\b|;\s*(?:wget|curl)\s|\$\([^$()]{0,512}\)/i.test(ua)) {
     out.push({ tone: "warn", text: "Contains path traversal or shell command syntax, a probe for code that passes the header to a file path or a shell." });
   }
   if (/%0d%0a|%0a|%0d/i.test(ua)) {
@@ -845,6 +886,7 @@ export function parseBrandList(value: string): BrandParse {
     if (s[i] !== ",") return fail("Expected a comma between brands");
     i++;
     ws();
+    if (i >= s.length) return fail("A trailing comma ends the list");
   }
   return { ok: true, brands };
 }
@@ -1030,10 +1072,12 @@ export function extractLogUa(line: string): string | null {
     if (slashes % 2 === 0) break;
   }
   if (i < 0) return null;
+  // One pass, so an escaped backslash followed by "x41" stays literal text.
   return t
     .slice(i + 1, t.length - 1)
-    .replace(/\\x([0-9a-fA-F]{2})/g, (_, h: string) => String.fromCharCode(parseInt(h, 16)))
-    .replace(/\\(["\\])/g, "$1");
+    .replace(/\\(x[0-9a-fA-F]{2}|["\\])/g, (_, e: string) =>
+      e.length === 3 ? String.fromCharCode(parseInt(e.slice(1), 16)) : e,
+    );
 }
 
 /**
@@ -1049,9 +1093,10 @@ export function parseInput(text: string): ParseOutput {
   }
   const hints = emptyHints();
   const lines = text.split(/\r?\n/);
+  let analyzed = 0;
 
   const push = (line: number, source: EntrySource, ua: string) => {
-    if (out.entries.length >= MAX_ENTRIES) {
+    if (out.entries.length >= MAX_ENTRIES || analyzed + Math.min(ua.length, MAX_UA_LENGTH) > MAX_ANALYZED_CHARS) {
       out.truncated++;
       return;
     }
@@ -1065,6 +1110,7 @@ export function parseInput(text: string): ParseOutput {
       });
       return;
     }
+    analyzed += ua.length;
     out.entries.push({ line, source, kind: "ua", analysis: analyzeUa(ua) });
   };
 
@@ -1080,7 +1126,8 @@ export function parseInput(text: string): ParseOutput {
         return;
       }
     }
-    const header = /^([A-Za-z][A-Za-z0-9-]*):[ \t]*(.*)$/.exec(line);
+    // "http://..." is a URL, not a header called http.
+    const header = /^([A-Za-z][A-Za-z0-9-]*):(?!\/\/)[ \t]*(.*)$/.exec(line);
     if (header && !/^[0-9a-fA-F]+$/.test(header[1])) {
       const name = header[1].toLowerCase();
       if (name === "user-agent") push(n, "header", header[2]);

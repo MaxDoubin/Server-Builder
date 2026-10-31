@@ -142,6 +142,16 @@ export function fixed(input: Rational, places: number): string {
   return `${groupDigits(whole)}.${(q % scale).toString().padStart(places, "0")}`;
 }
 
+/** r rounded toward zero to a fixed number of decimals, the way Windows Explorer shortens a size. */
+export function truncatedFixed(input: Rational, places: number): string {
+  const r = reduce(input);
+  const scale = 10n ** BigInt(places);
+  const q = (r.num * scale) / r.den;
+  const whole = q / scale;
+  if (places === 0) return groupDigits(whole);
+  return `${groupDigits(whole)}.${(q % scale).toString().padStart(places, "0")}`;
+}
+
 /* ------------------------------------------------------------------ units */
 
 export type UnitGroup = "base" | "si-bytes" | "iec-bytes" | "si-bits" | "iec-bits";
@@ -477,7 +487,6 @@ export const DRIVE_LABELS: DriveLabel[] = [
   { label: "2 TB", bytes: 2n * 10n ** 12n },
   { label: "4 TB", bytes: 4n * 10n ** 12n },
   { label: "8 TB", bytes: 8n * 10n ** 12n },
-  { label: "18 TB", bytes: 18n * 10n ** 12n },
 ];
 
 /**
@@ -487,6 +496,39 @@ export const DRIVE_LABELS: DriveLabel[] = [
  */
 export function idemaSectors(gigabytes: bigint): bigint {
   return 97_696_368n + 1_953_504n * (gigabytes - 50n);
+}
+
+/* ------------------------------------------------------------------ links */
+
+export interface LinkSpeed {
+  label: string;
+  /** Line rate in bits per second. Network rates use SI prefixes. */
+  bitsPerSecond: bigint;
+}
+
+export const LINK_SPEEDS: LinkSpeed[] = [
+  { label: "100 Mbit/s", bitsPerSecond: 100n * 10n ** 6n },
+  { label: "1 Gbit/s", bitsPerSecond: 10n ** 9n },
+  { label: "2.5 Gbit/s", bitsPerSecond: 25n * 10n ** 8n },
+  { label: "10 Gbit/s", bitsPerSecond: 10n ** 10n },
+];
+
+/**
+ * Wire time for one full-size packet on Ethernet (IEEE 802.3): a 1500-byte IP
+ * packet, plus 14 bytes of MAC header, 4 of frame check sequence, 8 of
+ * preamble and start delimiter, and a 12-byte interframe gap.
+ */
+export const WIRE_BYTES_PER_PACKET = 1500n + 14n + 4n + 8n + 12n;
+
+/** TCP payload in that packet with no IP or TCP options: 1500 - 20 - 20 (RFC 791, RFC 9293). */
+export const TCP_PAYLOAD_PER_PACKET = 1460n;
+
+/** Bulk TCP payload rate on a link, in bits per second, for full-size packets with no options. */
+export function tcpPayloadRate(bitsPerSecond: Rational): Rational {
+  return reduce({
+    num: bitsPerSecond.num * TCP_PAYLOAD_PER_PACKET,
+    den: bitsPerSecond.den * WIRE_BYTES_PER_PACKET,
+  });
 }
 
 /* ------------------------------------------------------------------ tools */

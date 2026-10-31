@@ -271,7 +271,10 @@ interface LoadedFile {
 
 function FlaggedRow({ entry }: { entry: LogEntry }) {
   const explanations = useMemo(() => explainEntry(entry), [entry]);
-  const decoded = /%|\\x/i.test(entry.target) ? normalizeForMatch(entry.target) : null;
+  // A request line that did not split into method and target is shown
+  // decoded as a whole, since that is the text the patterns ran on.
+  const scanned = entry.method ? entry.target : entry.request === "-" ? "" : entry.request;
+  const decoded = /%|\\x/i.test(scanned) ? normalizeForMatch(scanned) : null;
   return (
     <li className="rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-3">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono-tight text-xs">
@@ -285,7 +288,7 @@ function FlaggedRow({ entry }: { entry: LogEntry }) {
       <p className="mt-2 break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
         {entry.request === "" ? "(empty request line)" : entry.request}
       </p>
-      {decoded && decoded !== entry.target.toLowerCase() ? (
+      {decoded && decoded !== scanned.toLowerCase() ? (
         <p className="mt-1 break-all font-mono-tight text-xs text-[hsl(var(--brand-bone-dim))]">
           <span className="text-[hsl(var(--brand-ash))]">decoded: </span>
           {decoded}
@@ -408,7 +411,9 @@ export function AccessLogAnalyzer() {
     : busy
       ? "Reading the file."
       : !hasInput
-        ? "Paste log lines or choose a file to analyze them."
+        ? file
+          ? `${file.name || "The file"} holds no text to analyze.`
+          : "Paste log lines or choose a file to analyze them."
         : parsed.entries.length === 0
           ? `None of the ${parsed.examined.toLocaleString("en-US")} ${pluralise(parsed.examined, "line")} matched the common or combined format.`
           : `${parsed.entries.length.toLocaleString("en-US")} ${pluralise(parsed.entries.length, "request")} parsed, ${summary.flaggedRequests.toLocaleString("en-US")} of ${filtered.length.toLocaleString("en-US")} shown flagged.`;

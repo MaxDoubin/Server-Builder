@@ -11,10 +11,11 @@
  * database and nothing is looked up: every conclusion comes from the text.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { pluralise } from "@/lib/plural";
 import {
+  MAX_ANALYZED_CHARS,
   MAX_ENTRIES,
   MAX_UA_LENGTH,
   brandListValue,
@@ -352,7 +353,9 @@ export function UserAgentParser() {
     };
   }, []);
 
-  const parsed = useMemo(() => parseInput(raw), [raw]);
+  // Parsing a big paste can take a moment; deferring it keeps typing responsive.
+  const deferredRaw = useDeferredValue(raw);
+  const parsed = useMemo(() => parseInput(deferredRaw), [deferredRaw]);
   const entries = parsed.entries;
   const sel = entries.length === 0 ? -1 : Math.min(selected, entries.length - 1);
   const current = sel >= 0 ? entries[sel] : null;
@@ -421,7 +424,9 @@ export function UserAgentParser() {
           errCount ? `${errCount} skipped as too long` : null,
           parsed.hints ? `${parsed.hints.headers.length} client ${pluralise(parsed.hints.headers.length, "hint")}` : null,
           parsed.ignored ? `${parsed.ignored} other ${pluralise(parsed.ignored, "line")} ignored` : null,
-          parsed.truncated ? `${parsed.truncated} beyond the first ${MAX_ENTRIES} not read` : null,
+          parsed.truncated
+            ? `${parsed.truncated} more not read (the limit is ${MAX_ENTRIES} strings or ${MAX_ANALYZED_CHARS.toLocaleString("en-US")} characters in all)`
+            : null,
         ]
           .filter(Boolean)
           .join(". ") + ".";
@@ -461,7 +466,7 @@ export function UserAgentParser() {
             <p id="ua-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               User-Agent: and Sec-CH-UA lines are read from a header block and other headers are skipped. In a combined
               format log line the last quoted field is taken. Up to {MAX_ENTRIES} strings of up to {MAX_UA_LENGTH}{" "}
-              characters each.
+              characters each, {MAX_ANALYZED_CHARS.toLocaleString("en-US")} characters in all.
             </p>
           )}
           {browserNote ? (

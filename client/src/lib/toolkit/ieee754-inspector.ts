@@ -14,7 +14,11 @@
  *   4.3.1  roundTiesToEven, the default rounding-direction attribute.
  *   6.2.1  NaN encodings: the first bit of the trailing significand is the
  *          quiet bit (1 quiet, 0 signaling); the rest is the payload.
+ *   5.3.1  nextUp and nextDown.
+ *   5.5.1  negate flips the sign bit only, NaN included.
  *   6.3    an exact zero sum of opposite-signed operands is +0.
+ *   7.4    overflow: a result at or past the midpoint above the largest
+ *          finite value rounds to infinity under roundTiesToEven.
  *
  * Pure functions, no React and no DOM.
  */
@@ -147,7 +151,7 @@ export function parseInput(raw: string): Parsed {
     };
   }
 
-  const special = /^([+-]?)(inf|infinity|nan)$/i.exec(text);
+  const special = /^([+-]?)(inf|infinity|nan|\u221e)$/i.exec(text);
   if (special) {
     const neg = special[1] === "-";
     if (special[2].toLowerCase() === "nan") {
@@ -626,11 +630,17 @@ export interface RoundingReport {
   ulps: number | null;
   /** |error| / |input|. */
   relative: number | null;
+  /**
+   * The input sat exactly halfway between two neighbors, so ties-to-even
+   * picked the stored value. Measured against the gap on the input's side,
+   * which at the bottom of a binade is half the ULP above.
+   */
+  tie: boolean;
 }
 
 /** How far the stored value is from the exact input, and in which units. */
 export function roundingReport(input: Value, d: Decoded): RoundingReport {
-  const none = { error: null, ulps: null, relative: null };
+  const none = { error: null, ulps: null, relative: null, tie: false };
   if (input.kind === "nan") return { kind: "nan", ...none };
   if (input.kind === "infinity") return { kind: "infinity", ...none };
   if (input.kind === "huge") return { kind: "overflow", ...none };
@@ -644,13 +654,27 @@ export function roundingReport(input: Value, d: Decoded): RoundingReport {
   const xNum = (input.neg ? -1n : 1n) * input.num;
   const errNum = sNum * input.den - xNum * sDen;
   const errDen = sDen * input.den;
-  if (errNum === 0n) return { kind: "exact", error: { neg: false, digits: 0n, scale: 0 }, ulps: 0, relative: 0 };
+  if (errNum === 0n) {
+    return { kind: "exact", error: { neg: false, digits: 0n, scale: 0 }, ulps: 0, relative: 0, tie: false };
+  }
 
   const error = rationalToDecimal(errNum < 0n, errNum < 0n ? -errNum : errNum, errDen);
   const ulps = ratioToNumber(errNum * (q < 0 ? pow2(-q) : 1n), errDen * (q >= 0 ? pow2(q) : 1n));
   const absErr = errNum < 0n ? -errNum : errNum;
   const relative = input.num === 0n ? null : ratioToNumber(absErr * input.den, errDen * input.num);
-  return { kind: d.cls === "zero" ? "underflow" : "rounded", error, ulps, relative };
+
+  // Which side of the stored value the input is on, in magnitude: the error
+  // points away from zero when the stored value is the smaller of the two.
+  const storedSmaller = d.sign ? errNum > 0n : errNum < 0n;
+  const p = d.format.fracBits + 1;
+  const binadeBottom = d.cls === "normal" && d.significand === pow2(p - 1) && d.expField > 1;
+  // Gap to the neighbor on the input's side is 2^gapExp.
+  const gapExp = !storedSmaller && binadeBottom ? q - 1 : q;
+  // Tie when 2 x |error| equals the gap: 2|errNum| / errDen == 2^gapExp.
+  const twice = 2n * absErr;
+  const tie = gapExp >= 0 ? twice === errDen << big(gapExp) : twice << big(-gapExp) === errDen;
+
+  return { kind: d.cls === "zero" ? "underflow" : "rounded", error, ulps, relative, tie };
 }
 
 /** One ULP at this value, exactly, or null for infinity and NaN. */
@@ -659,6 +683,59 @@ export function ulpDecimal(d: Decoded): Decimal | null {
   return d.exp2 >= 0
     ? { neg: false, digits: pow2(d.exp2), scale: 0 }
     : rationalToDecimal(false, 1n, pow2(-d.exp2));
+}
+
+/**
+ * An exact decimal rounded to `sig` significant digits (ties to even) in
+ * scientific form, for a short label next to the full expansion.
+ */
+export function decimalShort(d: Decimal, sig = 4): string {
+  if (d.digits === 0n) return "0";
+  const s = d.digits.toString();
+  let exp = s.length - 1 - d.scale;
+  let lead = d.digits;
+  if (s.length > sig) {
+    const p = 10n ** big(s.length - sig);
+    lead = d.digits / p;
+    const twiceRem = (d.digits % p) * 2n;
+    if (twiceRem > p || (twiceRem === p && (lead & 1n) === 1n)) lead += 1n;
+    if (lead.toString().length > sig) {
+      lead /= 10n;
+      exp += 1;
+    }
+  }
+  const ls = lead.toString().replace(/0+$/, "") || "0";
+  const mantissa = ls.length > 1 ? `${ls[0]}.${ls.slice(1)}` : ls;
+  return `${d.neg ? "-" : ""}${mantissa}e${exp < 0 ? "-" : "+"}${Math.abs(exp)}`;
+}
+
+/* ------------------------------------------------------------- stepping */
+
+/** Flips the sign bit and nothing else (section 5.5.1), NaN included. */
+export function negateBits(bits: bigint, f: Format): bigint {
+  return (bits & (pow2(f.width) - 1n)) ^ signBit(f);
+}
+
+/**
+ * The least value that compares greater (section 5.3.1). Zeros step to the
+ * smallest positive subnormal, the largest finite steps to infinity, the
+ * negative value of least magnitude steps to -0, and +infinity stays put.
+ * A NaN comes back quiet with its payload.
+ */
+export function nextUp(bitsIn: bigint, f: Format): bigint {
+  const d = decode(bitsIn, f);
+  if (d.cls === "nan") return d.bits | quietBit(f);
+  if (d.cls === "zero") return 1n;
+  if (d.sign === 0) return d.cls === "infinity" ? d.bits : d.bits + 1n;
+  // Negative, including -infinity: one step toward zero in magnitude.
+  return d.bits - 1n;
+}
+
+/** The greatest value that compares less: nextDown(x) is -nextUp(-x). */
+export function nextDown(bits: bigint, f: Format): bigint {
+  const d = decode(bits, f);
+  if (d.cls === "nan") return d.bits | quietBit(f);
+  return negateBits(nextUp(negateBits(d.bits, f), f), f);
 }
 
 /** The largest finite value of a format, decoded. */

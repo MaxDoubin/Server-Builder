@@ -453,8 +453,8 @@ export function checkMacroString(spec: string, domain: boolean): MacroCheck {
   }
   let i = 0;
   while (i < spec.length) {
-    const c = spec[i];
-    const code = c.charCodeAt(0);
+    const code = spec.codePointAt(i) ?? 0;
+    const c = String.fromCodePoint(code);
     if (code < 0x21 || code > 0x7e) {
       out.error = `contains ${describeChar(c)}, which is not allowed here.`;
       return out;
@@ -488,12 +488,14 @@ export function checkMacroString(spec: string, domain: boolean): MacroCheck {
       return out;
     }
     const letter = m[1].toLowerCase();
-    if (EXP_ONLY_LETTERS.includes(letter)) {
+    // The grammar's macro-letter includes c, r and t, so they are legal in
+    // any macro-string; section 7.2 only keeps them out of domain-specs.
+    if (domain && EXP_ONLY_LETTERS.includes(letter)) {
       out.error = `uses %{${m[1]}}, which section 7.2 allows only in explanation text, not in a domain.`;
       return out;
     }
-    if (!MACRO_LETTERS.includes(letter)) {
-      out.error = `uses %{${m[1]}}, which is not a macro letter. The letters are s, l, o, d, i, p, h and v.`;
+    if (!MACRO_LETTERS.includes(letter) && !EXP_ONLY_LETTERS.includes(letter)) {
+      out.error = `uses %{${m[1]}}, which is not a macro letter. The letters are s, l, o, d, i, p, h and v, plus c, r and t in explanation text.`;
       return out;
     }
     if (m[2] !== "" && /^0+$/.test(m[2])) {
@@ -769,7 +771,7 @@ export function parseTerm(raw: string, position: number): SpfTerm {
   }
   if (!(MECHANISMS as readonly string[]).includes(name)) {
     const hint = SUGGESTIONS[name];
-    t.error = `"${clip(name, 24)}" is not an SPF mechanism${hint ? `; you probably meant ${hint}` : ""}. Unknown mechanisms are a permerror (section 5). The mechanisms are all, include, a, mx, ptr, ip4, ip6 and exists.`;
+    t.error = `"${clip(name, 24)}" is not an SPF mechanism${hint ? `; you probably meant ${hint}` : ""}. A term that is not a known mechanism is a syntax error, and any syntax error is a permerror (section 4.6). The mechanisms are all, include, a, mx, ptr, ip4, ip6 and exists.`;
     return t;
   }
 
@@ -883,7 +885,7 @@ function summarize(t: SpfTerm, domain: string, hasAll: boolean): string {
   if (t.kind === "invalid") return "Not valid, so the whole record is a permerror.";
   if (t.kind === "modifier") {
     if (t.name === "redirect") {
-      const base = `If no mechanism matches, the check is rerun against ${t.target} and its result is used as it is, including the result of its own all.`;
+      const base = `If no mechanism matches, the check is rerun against ${t.target} and its result is used as it is, including the result of its own all. If that name publishes no SPF record, the result is permerror (section 6.1).`;
       return hasAll ? `${base} Ignored here, because this record has an all mechanism (section 6.1).` : base;
     }
     if (t.name === "exp") {
@@ -900,7 +902,7 @@ function summarize(t: SpfTerm, domain: string, hasAll: boolean): string {
     case "a":
       return `Matches if the sender's IP is an address of ${d}: its A records for an IPv4 sender, its AAAA records for IPv6${cidrPhrase(t)}.`;
     case "mx":
-      return `Looks up the MX hosts of ${d}, then their addresses, and matches if the sender is one of them${cidrPhrase(t)}. Addresses are looked up for no more than 10 MX hosts; more is a permerror.`;
+      return `Looks up the MX hosts of ${d}, then their addresses, and matches if the sender is one of them${cidrPhrase(t)}. Section 4.6.4 caps the address lookups behind one mx term at 10; going past that is a permerror.`;
     case "ptr":
       return `Reverse-resolves the sender's IP, keeps the names that resolve forward to that same IP, and matches if one is ${d} or a subdomain of it. Deprecated: section 5.5 says not to publish it.`;
     case "ip4":
@@ -1077,13 +1079,13 @@ export function analyzeSpf(record: string, domain = ""): SpfAnalysis {
     if (t.kind === "mechanism" && t.name === "ptr" && !t.error) {
       findings.push({
         tone: "warn",
-        text: `Term ${t.position} uses ptr. Section 5.5 says it SHOULD NOT be published: it is slow, fails under DNS errors, and loads the reverse zones. Replace it with ip4, ip6 or a.`,
+        text: `Term ${t.position} uses ptr. Section 5.5 says it SHOULD NOT be published: it is slow, less reliable than other mechanisms when DNS errors occur, and puts a heavy load on the .arpa name servers. Replace it with ip4, ip6 or a.`,
       });
     }
     if (t.macroLetters.includes("p")) {
       findings.push({
         tone: "warn",
-        text: `Term ${t.position} uses the %{p} macro, which costs the same reverse lookups as ptr. Section 7.3 says it SHOULD NOT be used.`,
+        text: `Term ${t.position} uses the %{p} macro, which costs the same reverse lookups as ptr. Section 7.3 says it SHOULD NOT be published.`,
       });
     }
     if (t.kind === "modifier" && !t.error && t.status === "ignored" && t.name !== "redirect") {
@@ -1166,12 +1168,12 @@ export function analyzeSpf(record: string, domain = ""): SpfAnalysis {
   if (existsCount > VOID_LOOKUP_LIMIT) {
     findings.push({
       tone: "warn",
-      text: `${existsCount} exists terms. Each returns no answer for every sender it does not match, and receivers SHOULD stop after ${VOID_LOOKUP_LIMIT} void lookups (section 4.6.4), so a sender that matches none of them gets permerror instead of reaching all.`,
+      text: `${existsCount} exists terms. An exists name usually returns NXDOMAIN for a sender it does not match, and section 4.6.4 says implementations SHOULD allow no more than ${VOID_LOOKUP_LIMIT} such void lookups, so a sender that matches none of them gets permerror instead of reaching all.`,
     });
   } else if (voidCapable.length > VOID_LOOKUP_LIMIT) {
     findings.push({
       tone: "info",
-      text: `${voidCapable.length} a, mx, ptr or exists terms can each come back empty. Receivers SHOULD stop after ${VOID_LOOKUP_LIMIT} empty or NXDOMAIN answers (section 4.6.4), so names left pointing at retired hosts are not harmless clutter. An a term checked for an IPv6 sender asks for AAAA, so a host with only an A record produces one.`,
+      text: `${voidCapable.length} a, mx, ptr or exists terms can each come back empty. Section 4.6.4 says implementations SHOULD allow no more than ${VOID_LOOKUP_LIMIT} empty or NXDOMAIN answers per check and return permerror past that, so names left pointing at retired hosts are not harmless clutter. An a term checked for an IPv6 sender asks for AAAA, so a host with only an A record produces one.`,
     });
   }
 
@@ -1250,9 +1252,16 @@ export function lookupTotal(analysis: SpfAnalysis, nestedCounts: Record<number, 
 
 /** Lines that look like SPF but are not selected by section 4.5, with the reason. */
 function rejectReason(text: string): string | null {
+  const after = /^v=spf1(\s)/i.exec(text);
+  if (after && after[1] !== " ") {
+    return `has ${describeChar(after[1])} after v=spf1. The version must be followed by a plain space or nothing at all (section 4.5), so receivers skip this record.`;
+  }
   if (/^v=spf1\S/i.test(text)) return `starts with "${clip(text, 10)}", but the version must be followed by a space or nothing at all, so receivers skip it.`;
+  if (/^[\u201c\u201d\u2018\u2019'`]\s*v=spf1/i.test(text)) {
+    return "starts with a curly or single quotation mark, which usually comes from copying the record out of a document. Receivers would read it as part of the record, so it would not begin with v=spf1. Use straight double quotes, or none.";
+  }
   if (/^\s+v=spf1/i.test(text)) return "starts with a space inside the quotes, so it does not begin with v=spf1 and receivers skip it.";
-  if (/^spf2\.0\//i.test(text)) return "is a Sender ID record (spf2.0). Sender ID is an abandoned experiment, and SPF receivers ignore it.";
+  if (/^spf2\.0\//i.test(text)) return "is a Sender ID record (spf2.0). Sender ID was an experiment that RFC 6686 retired, and SPF receivers ignore it.";
   return null;
 }
 

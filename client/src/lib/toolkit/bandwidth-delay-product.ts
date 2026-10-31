@@ -75,7 +75,9 @@ export function parseBandwidth(
   if (parsed.kind !== "ok") return parsed;
   const exact: Decimal = { m: parsed.value.m, e: parsed.value.e + rateUnit(unit).exp };
   const bps = parsed.num * rateUnit(unit).bitsPerSecond;
-  if (bps === 0) return { kind: "error", message: "The bandwidth has to be greater than zero." };
+  // Zero is tested on the exact mantissa, so an underflowing 1e-400 gets the
+  // minimum-rate message rather than "greater than zero".
+  if (parsed.value.m === 0n) return { kind: "error", message: "The bandwidth has to be greater than zero." };
   if (bps < 1) return { kind: "error", message: "The slowest rate accepted is 1 bps." };
   if (bps > MAX_BANDWIDTH_BPS) {
     return { kind: "error", message: "The cap is 1 Pbps (10^15 bits per second). Enter a slower rate." };
@@ -89,7 +91,7 @@ export function parseRtt(raw: string, unit: RttUnit): Parsed<{ seconds: number; 
   const exp = RTT_UNITS.find((u) => u.id === unit)?.exp ?? -3;
   const exact: Decimal = { m: parsed.value.m, e: parsed.value.e + exp };
   const seconds = parsed.num * 10 ** exp;
-  if (seconds === 0) return { kind: "error", message: "The round trip time has to be greater than zero." };
+  if (parsed.value.m === 0n) return { kind: "error", message: "The round trip time has to be greater than zero." };
   if (seconds < MIN_RTT_S) return { kind: "error", message: "The shortest round trip accepted is 1 µs." };
   if (seconds > MAX_RTT_S) return { kind: "error", message: "The cap is 60 seconds of round trip time." };
   return { kind: "ok", seconds, exact };
@@ -135,7 +137,11 @@ export function parseMss(raw: string): Parsed<{ bytes: number }> {
 
 /** Loss as a percentage. Empty means "skip the estimate", not zero. */
 export function parseLossPct(raw: string): Parsed<{ fraction: number }> {
+  if (raw.trim() === "") return { kind: "empty" };
   const parsed = parseDecimal(raw.trim().replace(/%$/, ""));
+  if (parsed.kind === "empty") {
+    return { kind: "error", message: "Enter a number before the percent sign, or clear the field to skip the estimate." };
+  }
   if (parsed.kind !== "ok") return parsed;
   if (parsed.num >= 100) {
     return { kind: "error", message: "Loss is a percentage below 100. At 100 percent nothing arrives." };
@@ -200,16 +206,34 @@ export function mathisThroughputBps(
   return ((mssBytes * 8) / rttSeconds) * (c / Math.sqrt(lossFraction));
 }
 
+/**
+ * Whether a window of whole bytes covers the product, decided exactly.
+ * A window W fills the link when W * 8 >= bandwidth * RTT, and since W is
+ * an integer that is the same as W >= ceil(bits / 8). Comparing the doubles
+ * W * 8 / RTT and bandwidth instead gets this wrong at the boundary: with
+ * 1 Gbps and 70 ms, 8,750,000 * 8 / 0.07 comes out as 999,999,999.9999999.
+ */
+export function windowCoversBdp(windowBytes: number, neededBytes: bigint): boolean {
+  if (!Number.isFinite(windowBytes) || windowBytes < 0) return false;
+  return BigInt(Math.floor(windowBytes)) >= neededBytes;
+}
+
 export type Ceiling = "link" | "window" | "loss";
 
-/** Which of the three limits binds a single stream, and at what rate. */
+/**
+ * Which of the three limits binds a single stream, and at what rate.
+ * `windowCovers` is the exact answer from windowCoversBdp: when it is true
+ * the window cannot be the bottleneck, whatever the doubles say, and when
+ * it is false the window rate is below the link rate by definition.
+ */
 export function bindingCeiling(
   linkBps: number,
   windowBps: number,
   lossBps: number | null,
+  windowCovers: boolean = windowBps >= linkBps,
 ): { ceiling: Ceiling; bps: number } {
   let best: { ceiling: Ceiling; bps: number } = { ceiling: "link", bps: linkBps };
-  if (windowBps < best.bps) best = { ceiling: "window", bps: windowBps };
+  if (!windowCovers) best = { ceiling: "window", bps: Math.min(windowBps, linkBps) };
   if (lossBps !== null && lossBps < best.bps) best = { ceiling: "loss", bps: lossBps };
   return best;
 }
@@ -241,7 +265,7 @@ export const PATH_PRESETS: PathPreset[] = [
     bandwidthUnit: "Gbps",
     rtt: "20",
     rttUnit: "ms",
-    note: "A regional path a few hundred miles long.",
+    note: "Light in fiber covers about 200 km per ms, so this allows at most about 2,000 km each way, less on real routes.",
   },
   {
     id: "coast",
@@ -268,7 +292,7 @@ export const PATH_PRESETS: PathPreset[] = [
     bandwidthUnit: "Mbps",
     rtt: "600",
     rttUnit: "ms",
-    note: "Geostationary orbit puts about half a second of physics in every round trip.",
+    note: "The signal climbs to geostationary orbit and back twice per round trip: about half a second of propagation delay.",
   },
   {
     id: "research",

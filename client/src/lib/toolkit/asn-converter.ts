@@ -193,7 +193,7 @@ export function describeAsn(n: number): AsnInfo {
       label: "Public, AS112 project",
       source: "RFC 7534",
       detail:
-        "Used by the AS112 project, which anycasts sink servers that answer reverse DNS queries for private address space so they do not load the root and in-addr.arpa servers.",
+        "Used by the AS112 project, which anycasts servers that answer reverse DNS queries for private address space, such as 10.in-addr.arpa, so those queries are answered by a nearby AS112 node instead of loading the in-addr.arpa servers.",
       range: "112",
     };
   }
@@ -230,7 +230,10 @@ export function parseAsn(raw: string): ParsedAsn {
   const input = raw.trim();
   if (input === "") return fail(input, "Empty entry.");
   if (input.length > MAX_TOKEN_CHARS) {
-    return fail(input, `That is ${input.length} characters long. No AS number notation needs more than 12, prefix included.`);
+    return fail(
+      input,
+      `That is ${input.length} characters long. The longest AS number, written with a prefix, is AS 4294967295 or AS 65535.65535, 13 or 14 characters.`,
+    );
   }
 
   if (/^as-[a-z]/i.test(input)) {

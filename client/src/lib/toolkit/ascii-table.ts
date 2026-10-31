@@ -4,8 +4,9 @@
  *
  * Sources: ASCII is ANSI X3.4-1986 (the same 128 codes as ISO/IEC 646 IRV).
  * Control names are the Unicode aliases from NameAliases.txt, which follow
- * ISO/IEC 6429 for C0 and C1. Latin-1 is ISO/IEC 8859-1, whose 256 codes are
- * the first 256 Unicode code points. Windows-1252 is the WHATWG Encoding
+ * ISO/IEC 6429 for C0 and C1. Latin-1 is ISO/IEC 8859-1 with the C0 and C1
+ * controls filled in (the IANA charset ISO-8859-1), whose 256 codes are the
+ * first 256 Unicode code points. Windows-1252 is the WHATWG Encoding
  * Standard's index, which is also what the HTML parser's numeric character
  * reference table uses for 0x80 to 0x9F. HTML entity names are from the
  * WHATWG named character reference list.

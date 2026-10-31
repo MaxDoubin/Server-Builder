@@ -536,14 +536,14 @@ export function DmarcRecordAnalyzer() {
                         })}
                     </div>
                     <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                      Published by the receiving organization, in its own zone (RFC 7489 section 7.1). Report services usually
-                      publish a wildcard for this already.
+                      Published by the receiving organization, in its own zone (RFC 7489 section 7.1). A service that accepts
+                      reports for any domain can publish one wildcard record at *._report._dmarc under its own domain instead.
                     </p>
                   </div>
                 ) : null}
                 <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                   {effectiveDomain
-                    ? `Organizational domains are approximated with a short list of multi-label suffixes (co.uk, com.au and the like), not the full public suffix list.`
+                    ? `Organizational domains are approximated with a short list of multi-label suffixes (co.uk, com.au and the like), not the full public suffix list. RFC 9989 finds them with a DNS tree walk instead, which needs live lookups.`
                     : "Enter the domain above to tell your own destinations from external ones."}
                 </p>
               </ToolPanel>
@@ -800,7 +800,8 @@ export function DmarcRecordAnalyzer() {
             </button>
             <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               Defaults are left out (pct=100, adkim=r, aspf=r, fo=0, ri=86400), so the record carries only what you
-              changed. Publish it as a TXT record at _dmarc.{isDomainName(builder.domain) ? builder.domain.trim() : "yourdomain"}.
+              changed. pct and ri are RFC 7489 tags that RFC 9989 lists as historic, so newer receivers ignore them.
+              Publish the record as a TXT record at _dmarc.{isDomainName(builder.domain) ? builder.domain.trim() : "yourdomain"}.
             </p>
           </div>
         </ToolPanel>

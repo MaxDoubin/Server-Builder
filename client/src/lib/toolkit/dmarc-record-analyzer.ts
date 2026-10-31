@@ -4,13 +4,17 @@
  * Parsing follows the grammar in section 6.4 and the tag definitions in
  * section 6.3. Policy discovery (section 6.6.3) decides whether a receiver
  * would use the record at all, and external report destinations are checked
- * as section 7.1 describes. The np tag comes from RFC 9091; t and psd are
- * recognized as tags of the DMARCbis revision and otherwise left alone.
+ * as section 7.1 describes. The np tag comes from RFC 9091. RFC 9989 (May
+ * 2026) obsoletes both: it adds t and psd, which are parsed here, and lists
+ * pct, rf and ri as historic, which is pointed out where they appear. The
+ * rest of the behavior follows RFC 7489, which is what most deployed
+ * receivers were written against.
  *
  * Organizational domains are approximated. RFC 7489 section 3.2 derives
  * them from a public suffix list, which is far too large to ship here, so a
- * short list of common multi-label suffixes stands in for it. The UI says so
- * wherever the approximation affects an answer.
+ * short list of common multi-label suffixes stands in for it. RFC 9989
+ * replaces the list with a DNS tree walk, which needs live queries this page
+ * does not make. The UI says so wherever the approximation affects an answer.
  */
 
 import {
@@ -196,11 +200,14 @@ export function parseReportUri(raw: string): ReportUri {
       out.error = `"${clip(uri)}" does not hold a usable address. It should look like mailto:dmarc-reports@example.com.`;
       return out;
     }
-    if (addr.includes(",")) {
-      out.error = `"${clip(uri)}" contains a comma, which has to be written %2C so it is not read as the next URI.`;
-      return out;
-    }
     out.host = normalizeDomain(domain);
+    if (addr.includes(",")) {
+      // A raw comma never gets here: it already split the list. An encoded
+      // one is the RFC 6068 separator between two addresses in one URI.
+      out.warning = `"${clip(uri)}" holds an encoded comma (%2C), which in a mailto: URI separates two addresses (RFC 6068). Not every receiver splits it, so list each address as its own mailto: URI.`;
+    } else if (local.includes("@")) {
+      out.warning = `"${clip(uri)}" has more than one @ in its address. Check that it is the mailbox you meant.`;
+    }
     return out;
   }
 
@@ -214,6 +221,11 @@ export function parseReportUri(raw: string): ReportUri {
   }
   out.warning = `"${clip(uri)}" uses ${scheme}:. Receivers are only required to support mailto: (section 6.3), so many will skip it.`;
   return out;
+}
+
+/** True for an IPv6 literal in brackets or a dotted IPv4 address, which no _report._dmarc name can be built under. */
+export function isIpLiteral(host: string): boolean {
+  return host.startsWith("[") || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
 }
 
 /* ------------------------------------------------------------------- tags */
@@ -234,17 +246,17 @@ export const TAG_INFO: Record<string, { label: string; meaning: string }> = {
   v: { label: "Version", meaning: "Identifies the record as DMARC. Must be first, and exactly DMARC1." },
   p: { label: "Policy", meaning: "What to do with mail that fails DMARC: none, quarantine or reject. Required." },
   sp: { label: "Subdomain policy", meaning: "Policy for subdomains. Defaults to p. Only read from the organizational domain's record." },
-  np: { label: "Non-existent subdomain policy", meaning: "RFC 9091: policy for subdomains with no A, AAAA or MX records. Defaults to sp, then p." },
-  pct: { label: "Percentage", meaning: "Share of failing mail the policy applies to, 0 to 100. Default 100." },
+  np: { label: "Non-existent subdomain policy", meaning: "RFC 9091, now part of RFC 9989: policy for subdomains with no A, AAAA or MX records. Defaults to sp, then p." },
+  pct: { label: "Percentage", meaning: "Share of failing mail the policy applies to, 0 to 100. Default 100. Historic in RFC 9989." },
   rua: { label: "Aggregate reports", meaning: "Where to send daily XML summaries of who sent mail as this domain." },
   ruf: { label: "Failure reports", meaning: "Where to send reports about individual failing messages. Many receivers never send them." },
   adkim: { label: "DKIM alignment", meaning: "r (relaxed, default): same organizational domain. s (strict): exact match." },
   aspf: { label: "SPF alignment", meaning: "r (relaxed, default): same organizational domain. s (strict): exact match." },
   fo: { label: "Failure options", meaning: "When to generate a failure report: 0 (default), 1, d, s. Ignored without ruf." },
-  rf: { label: "Report format", meaning: "Format of failure reports. Only afrf is registered, and it is the default." },
-  ri: { label: "Report interval", meaning: "Requested seconds between aggregate reports. Default 86400, one day." },
-  t: { label: "Test mode", meaning: "DMARCbis: y asks receivers to apply one level less than p. Not part of RFC 7489." },
-  psd: { label: "Public suffix", meaning: "DMARCbis: y, n or u, whether this is a public suffix domain. Not part of RFC 7489." },
+  rf: { label: "Report format", meaning: "Format of failure reports. Only afrf is registered, and it is the default. Historic in RFC 9989." },
+  ri: { label: "Report interval", meaning: "Requested seconds between aggregate reports. Default 86400, one day. Historic in RFC 9989." },
+  t: { label: "Test mode", meaning: "RFC 9989: y asks receivers to apply one level below the stated policy, so reject becomes quarantine and quarantine becomes none. Not part of RFC 7489." },
+  psd: { label: "Public suffix", meaning: "RFC 9989: y, n or u, whether the record belongs to a public suffix domain. Not part of RFC 7489." },
 };
 
 export interface PolicyOutcome {
@@ -316,6 +328,7 @@ export function policyStrength(p: PolicyValue | null, pct: number, applies: bool
     if (pct < 100) return { level: 2, label: "Partial quarantine" };
     return { level: 3, label: "Quarantine" };
   }
+  if (pct <= 0) return { level: 3, label: "Quarantine (reject at pct=0)" };
   if (pct < 100) return { level: 3, label: "Reject, sampled" };
   return { level: 4, label: "Reject" };
 }
@@ -444,15 +457,16 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
   }
   if (npTag) {
     np = policyOf(npTag.value);
-    if (!np) npTag.error = `np=${clip(npTag.value, 16)} is not a policy. It must be none, quarantine or reject.`;
+    if (!np) npTag.error = `np=${clip(npTag.value, 16)} is not a policy. It must be none, quarantine or reject. Under RFC 9989 an invalid np, like an invalid sp, drops the record to p=none or to no DMARC at all.`;
   }
 
   /* ---------- pct */
   let pct = DEFAULT_PCT;
   const pctTag = get("pct");
   if (pctTag) {
-    if (!/^\d{1,3}$/.test(pctTag.value)) pctTag.error = `pct=${clip(pctTag.value, 16)} is not a whole number from 0 to 100.`;
-    else if (Number(pctTag.value) > 100) pctTag.error = `pct=${pctTag.value} is over 100. It is a percentage, 0 to 100 inclusive.`;
+    // Section 6.3: syntax errors outside v and p SHOULD fall back to the default.
+    if (!/^\d{1,3}$/.test(pctTag.value)) pctTag.error = `pct=${clip(pctTag.value, 16)} is not a whole number from 0 to 100. Section 6.3 has receivers discard it and use the default, 100.`;
+    else if (Number(pctTag.value) > 100) pctTag.error = `pct=${pctTag.value} is over 100. It is a percentage, 0 to 100 inclusive; receivers discard it and use the default, 100 (section 6.3).`;
     else pct = Number(pctTag.value);
   }
 
@@ -462,7 +476,7 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
     if (!tag) return "r";
     const v = tag.value.toLowerCase();
     if (v === "r" || v === "s") return v;
-    tag.error = `${key}=${clip(tag.value, 16)} is not valid. It must be r (relaxed) or s (strict); receivers fall back to relaxed.`;
+    tag.error = `${key}=${clip(tag.value, 16)} is not valid. It must be r (relaxed) or s (strict); section 6.3 has receivers discard it and use the default, relaxed.`;
     return "r";
   };
   const adkim = align("adkim");
@@ -476,6 +490,12 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
     const badFo = parts.filter((x) => !FO_VALUES.includes(x.toLowerCase()));
     if (badFo.length) foTag.error = `fo=${clip(foTag.value, 16)} holds ${badFo.map((x) => `"${clip(x, 8)}"`).join(", ")}. The options are 0, 1, d and s, separated by colons.`;
     else fo = parts.map((x) => x.toLowerCase());
+    if (fo.includes("0") && fo.includes("1")) {
+      findings.push({
+        tone: "info",
+        text: "fo lists both 0 and 1. Option 1 already covers every case 0 does, and RFC 9989 makes the two mutually exclusive, so keep only 1.",
+      });
+    }
   }
   let rf = ["afrf"];
   const rfTag = get("rf");
@@ -497,8 +517,8 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
   let ri = DEFAULT_RI;
   const riTag = get("ri");
   if (riTag) {
-    if (!/^\d+$/.test(riTag.value)) riTag.error = `ri=${clip(riTag.value, 16)} is not a whole number of seconds.`;
-    else if (BigInt(riTag.value) > RI_MAX) riTag.error = `ri=${clip(riTag.value, 16)} does not fit in the 32-bit unsigned integer section 6.3 defines.`;
+    if (!/^\d+$/.test(riTag.value)) riTag.error = `ri=${clip(riTag.value, 16)} is not a whole number of seconds, so receivers use the default, 86400.`;
+    else if (BigInt(riTag.value) > RI_MAX) riTag.error = `ri=${clip(riTag.value, 16)} does not fit in the 32-bit unsigned integer section 6.3 defines, so receivers use the default, 86400.`;
     else ri = Number(riTag.value);
   }
 
@@ -529,7 +549,20 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
   if (bis.length) {
     findings.push({
       tone: "info",
-      text: `${bis.map((t) => `${t.name}=${t.value}`).join(" and ")} ${bis.length === 1 ? "comes" : "come"} from the DMARCbis revision, not RFC 7489. Receivers that implement only RFC 7489 ignore ${bis.length === 1 ? "it" : "them"}.`,
+      text: `${bis.map((t) => `${t.name}=${t.value}`).join(" and ")} ${bis.length === 1 ? "comes" : "come"} from RFC 9989, not RFC 7489. Receivers that implement only RFC 7489 ignore ${bis.length === 1 ? "it" : "them"}.${
+        tTag && !tTag.error && tTag.value.toLowerCase() === "y"
+          ? " Receivers that implement RFC 9989 treat t=y as a test: reject is applied as quarantine and quarantine as none."
+          : ""
+      }`,
+    });
+  }
+  const historic = (["pct", "rf", "ri"] as const).filter((k) => get(k) !== null);
+  if (historic.length) {
+    findings.push({
+      tone: "info",
+      text: `RFC 9989, which obsoleted RFC 7489 in May 2026, lists ${historic.join(", ")} as historic, so receivers that follow it ignore ${historic.length === 1 ? "that tag" : "those tags"}.${
+        historic.includes("pct") ? " Its replacement for the common pct=0 rollout step is t=y." : ""
+      }`,
     });
   }
 
@@ -567,12 +600,13 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
   if (applies && effectiveP) {
     const spEff = sp ?? effectiveP;
     const npEff = np ?? sp ?? effectiveP;
-    outcomes.push({ scope: "This domain", policy: effectiveP, source: p ? "p" : "p (treated as none)", effect: policyEffect(effectiveP, pct) });
-    outcomes.push({ scope: "Subdomains", policy: spEff, source: sp ? "sp" : "inherits p", effect: policyEffect(spEff, pct) });
+    const pSource = effectiveP === p ? "p" : "p (treated as none)";
+    outcomes.push({ scope: "This domain", policy: effectiveP, source: pSource, effect: policyEffect(effectiveP, pct) });
+    outcomes.push({ scope: "Subdomains", policy: spEff, source: sp ? "sp" : `inherits ${pSource}`, effect: policyEffect(spEff, pct) });
     outcomes.push({
       scope: "Non-existent subdomains",
       policy: npEff,
-      source: np ? "np (RFC 9091)" : sp ? "inherits sp" : "inherits p",
+      source: np ? "np (RFC 9091)" : sp ? "inherits sp" : `inherits ${pSource}`,
       effect: policyEffect(npEff, pct),
     });
   }
@@ -580,23 +614,23 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
 
   /* ---------- policy findings */
   if (applies && effectiveP) {
-    if (p === "none") {
+    if (effectiveP === "none" && p === "none") {
       findings.push({
         tone: "warn",
         text: "p=none is monitor-only. Receivers deliver failing mail exactly as they would without DMARC and only send reports. It is the right first step, and protects nobody if it is left there.",
       });
-    } else if (p === "reject" && pct === 100) {
+    } else if (effectiveP === "reject" && pct === 100) {
       findings.push({ tone: "ok", text: "p=reject at 100%: receivers are asked to refuse every message that fails DMARC, the strongest policy." });
-    } else if (p === "quarantine" && pct === 100) {
+    } else if (effectiveP === "quarantine" && pct === 100) {
       findings.push({ tone: "ok", text: "p=quarantine at 100%: failing mail is treated as suspicious, usually the spam folder. The next step is reject." });
     }
-    if (pctTag && pct < 100 && p !== "none") {
+    if (pctTag && pct < 100 && effectiveP !== "none") {
       findings.push({
         tone: "warn",
         text:
           pct === 0
-            ? `pct=0 applies the policy to no messages. Under ${p}, the rest get ${p === "reject" ? "quarantine instead" : "normal handling"} (section 6.6.4), so this record enforces ${p === "reject" ? "only quarantine" : "nothing"}.`
-            : `pct=${pct} applies ${p} to ${pct}% of failing mail; the rest get ${p === "reject" ? "quarantine" : "normal handling"} (section 6.6.4). Useful during rollout, then raise it to 100.`,
+            ? `pct=0 applies the policy to no messages. Under ${effectiveP}, the rest get ${effectiveP === "reject" ? "quarantine instead" : "normal handling"} (section 6.6.4), so this record enforces ${effectiveP === "reject" ? "only quarantine" : "nothing"}.`
+            : `pct=${pct} applies ${effectiveP} to ${pct}% of failing mail; the rest get ${effectiveP === "reject" ? "quarantine" : "normal handling"} (section 6.6.4). Useful during rollout, then raise it to 100.`,
       });
     }
     if (sp && POLICY_RANK[sp] < POLICY_RANK[effectiveP]) {
@@ -647,6 +681,13 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
         });
       }
       for (const u of list) if (u.warning) findings.push({ tone: "warn", text: u.warning });
+      const sized = list.filter((u) => !u.error && u.limitText);
+      if (sized.length) {
+        findings.push({
+          tone: "info",
+          text: `${key} gives a size limit (${sized.map((u) => `!${u.raw.slice(u.uri.length + 1)}`).join(", ")}). RFC 7489 allows it, but RFC 9989 marks the suffix obsolete and tells reporters to ignore it.`,
+        });
+      }
     }
     if (riTag && !riTag.error && ri !== DEFAULT_RI) {
       findings.push({
@@ -665,9 +706,14 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
   /* ---------- external destinations (section 7.1) */
   const external: ExternalDestination[] = [];
   const orgSelf = domain ? organizationalDomain(domain) : "";
+  const ipHosts: string[] = [];
   for (const [tag, list] of [["rua", validRua], ["ruf", validRuf]] as const) {
     for (const u of list) {
       if (!u.host) continue;
+      if (isIpLiteral(u.host)) {
+        if (!ipHosts.includes(u.host)) ipHosts.push(u.host);
+        continue;
+      }
       if (domain && organizationalDomain(u.host) === orgSelf) continue;
       if (external.some((e) => e.host === u.host && e.tag === tag)) continue;
       external.push({ tag, host: u.host, recordName: domain ? `${domain}._report._dmarc.${u.host}` : null });
@@ -685,6 +731,13 @@ export function analyzeDmarc(record: string, policyDomain = ""): DmarcAnalysis {
         text: "Enter the domain this record is for to check whether any report destination is external. Section 7.1 has receivers send reports to another organization's domain only if that domain publishes an authorization record.",
       });
     }
+  }
+
+  if (applies && ipHosts.length) {
+    findings.push({
+      tone: "warn",
+      text: `${ipHosts.join(", ")} ${ipHosts.length === 1 ? "is an IP address" : "are IP addresses"}, not a domain. Section 7.1 needs an authorization record under the destination's domain name, which an address cannot have, so receivers that follow it will not send reports there.`,
+    });
   }
 
   if (ignoredReason && !findings.some((f) => f.text === ignoredReason)) {
@@ -852,7 +905,15 @@ export function normalizeReportAddresses(text: string, label: string): { uris: s
       errors.push(`${label}: "${clip(item, 40)}" is not an email address such as dmarc@example.com.`);
       continue;
     }
-    const uri = `mailto:${local}@${host.toLowerCase()}${m[2] ?? ""}`;
+    const size = m[2] ?? "";
+    if (size && BigInt(size.replace(/[^0-9]/g, "")) > SIZE_LIMIT_MAX) {
+      errors.push(`${label}: the size limit in "${clip(item, 40)}" does not fit in an unsigned 64-bit integer (RFC 7489 section 6.4).`);
+      continue;
+    }
+    // Characters that email allows but a URI does not (RFC 3986), such as
+    // { } | ^ and the backquote, are percent-encoded so the record parses.
+    const encodedLocal = local.replace(/[^A-Za-z0-9.\-_~+]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`);
+    const uri = `mailto:${encodedLocal}@${host.toLowerCase()}${size.toLowerCase()}`;
     if (!uris.includes(uri)) uris.push(uri);
   }
   if (items.length > 10) errors.push(`${label}: only the first 10 addresses are used.`);
@@ -896,7 +957,8 @@ export function buildDmarcRecord(input: DmarcBuilderInput): DmarcBuildResult {
   if (input.aspf === "s") parts.push("aspf=s");
 
   if (ruf.uris.length) {
-    const fo = FO_VALUES.filter((v) => input.fo.includes(v));
+    // Option 1 is a superset of 0, and RFC 9989 forbids listing both.
+    const fo = FO_VALUES.filter((v) => input.fo.includes(v) && !(v === "0" && input.fo.includes("1")));
     if (fo.length && !(fo.length === 1 && fo[0] === "0")) parts.push(`fo=${fo.join(":")}`);
   }
 

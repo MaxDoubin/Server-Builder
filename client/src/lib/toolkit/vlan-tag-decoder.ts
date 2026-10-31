@@ -50,9 +50,10 @@ export interface PcpInfo {
 }
 
 /**
- * Traffic types from IEEE 802.1Q Annex I (Table I-2), the assignments
- * inherited from 802.1D-2004. In priority order from lowest the values run
- * 1, 0, 2, 3, 4, 5, 6, 7: background sits below best effort.
+ * Traffic types from IEEE 802.1Q Annex I (traffic type acronyms and their
+ * default PCP values, unchanged since 802.1D-2004). In priority order from
+ * lowest the values run 1, 0, 2, 3, 4, 5, 6, 7: background sits below best
+ * effort.
  */
 export const PCP_TABLE: PcpInfo[] = [
   { value: 0, code: "BE", name: "Best effort", note: "The default for unmarked traffic. Ranks above background." },
@@ -89,7 +90,8 @@ export const ETHERTYPES: Record<number, string> = {
 
 /** What a 16 bit value means when it sits where an EtherType or TPID goes. */
 export function describeType(value: number): string {
-  if (value <= 0x05dc) return `an 802.3 length field (${value} bytes), so the frame is untagged`;
+  // IEEE 802.3 clause 3.2.6: 1500 and below is a length, 0x0600 and up an EtherType.
+  if (value <= 0x05dc) return `an 802.3 length field (${value} bytes)`;
   if (value < 0x0600) return "an undefined value: neither a length (at most 1500) nor an EtherType (0x0600 and up)";
   const known = ETHERTYPES[value];
   return known ? `the ${known} EtherType` : "an EtherType this tool does not name";
@@ -130,7 +132,8 @@ export function parseHexBytes(raw: string): HexParse {
     return { kind: "error", message: "There are no hex digits in that." };
   }
   for (const tok of tokens) {
-    const bad = tok.match(/[^0-9a-f]/i);
+    // The u flag keeps an emoji or other astral character whole in the message.
+    const bad = tok.match(/[^0-9a-f]/iu);
     if (bad) {
       return { kind: "error", message: `"${bad[0]}" is not a hex digit. Use 0 to 9 and a to f.` };
     }
@@ -369,12 +372,21 @@ export function decodeInput(raw: string): Decoded {
       offset += 4;
     }
     const etherType = offset + 2 <= n ? (bytes[offset] << 8) | bytes[offset + 1] : null;
+    // A TPID with fewer than 2 bytes after it is a tag cut off mid TCI, not an EtherType.
+    const cutTag = etherType !== null && isVlanTpid(etherType) && tags.length < MAX_FRAME_TAGS && offset + 4 > n;
     const frame: FrameInfo = {
       dst: macString(bytes.slice(0, 6)),
       src: macString(bytes.slice(6, 12)),
-      etherType,
-      etherTypeName: etherType === null ? null : describeType(etherType),
+      // A cut-off tag is reported as a finding, not shown as the payload type.
+      etherType: cutTag ? null : etherType,
+      etherTypeName: cutTag || etherType === null ? null : describeType(etherType),
     };
+    if (tags.length === 0 && cutTag && etherType !== null) {
+      return {
+        kind: "error",
+        message: `Bytes 13 and 14 are ${hex16(etherType)}, a VLAN TPID, but the input ends before the 2 byte TCI that follows it. Paste at least 16 bytes to decode the tag.`,
+      };
+    }
     if (tags.length === 0) {
       return {
         kind: "error",
@@ -385,7 +397,12 @@ export function decodeInput(raw: string): Decoded {
     if (tags.length === MAX_FRAME_TAGS && etherType !== null && isVlanTpid(etherType)) {
       stack.push({ tone: "warn", text: `Stopped after ${MAX_FRAME_TAGS} tags; there are more.` });
     }
-    if (etherType === null) {
+    if (cutTag && etherType !== null) {
+      stack.push({
+        tone: "warn",
+        text: `Another tag starts at byte ${offset + 1} (TPID ${hex16(etherType)}), but the input ends before its TCI, so it is not decoded.`,
+      });
+    } else if (etherType === null) {
       stack.push({ tone: "info", text: "The input ends before the EtherType that follows the last tag." });
     }
     return { kind: "ok", mode: "frame", byteCount: n, tags, frame, stack };
@@ -436,19 +453,39 @@ export function tpidBits(tpid: number): string {
   return (tpid & 0xffff).toString(2).padStart(16, "0");
 }
 
-/** Linux ip-link commands for the built stack. Null for 0x9100, which ip-link cannot set. */
+/**
+ * Why ip-link cannot produce the built stack, or null when it can. ip-link
+ * sets only 0x8100 and 0x88a8, and the kernel's VLAN driver refuses VID
+ * 4095 (vlan_validate rejects any id >= VLAN_VID_MASK, 0xfff).
+ */
+export function linuxCommandBlocker(outer: TagSpec, inner: TagSpec | null): string | null {
+  const tags = inner ? [outer, inner] : [outer];
+  if (tags.some((t) => t.tpid !== TPID_CTAG && t.tpid !== TPID_STAG)) {
+    return "ip link sets only 802.1Q (0x8100) and 802.1ad (0x88a8) tags, so there is no command for a 0x9100 tag.";
+  }
+  if (tags.some((t) => t.vid === VID_RESERVED)) {
+    return "The Linux VLAN driver rejects VID 4095, so there is no ip link command for it.";
+  }
+  return null;
+}
+
+/**
+ * Linux ip-link commands for the built stack, or null when linuxCommandBlocker
+ * gives a reason. Each device maps skb priority 0 to its tag's PCP, and both
+ * maps apply on a stacked pair because the inner device leaves skb->priority
+ * unchanged for the outer one.
+ */
 export function linuxCommands(parent: string, outer: TagSpec, inner: TagSpec | null): string | null {
-  const proto = (tpid: number) => (tpid === TPID_STAG ? " protocol 802.1ad" : tpid === TPID_CTAG ? "" : null);
+  if (linuxCommandBlocker(outer, inner) !== null) return null;
+  const proto = (tpid: number) => (tpid === TPID_STAG ? " protocol 802.1ad" : "");
   const qos = (pcp: number) => (pcp > 0 ? ` egress-qos-map 0:${pcp}` : "");
   const p1 = proto(outer.tpid);
-  if (p1 === null) return null;
   // Interface names are capped at 15 characters (IFNAMSIZ 16 with the NUL),
   // so a long parent falls back to vlanN, which always fits.
   const first = fitName(`${parent}.${outer.vid}`, `vlan${outer.vid}`);
-  const lines = [`ip link add link ${parent} name ${first} type vlan${p1} id ${outer.vid}${inner ? "" : qos(outer.pcp)}`];
+  const lines = [`ip link add link ${parent} name ${first} type vlan${p1} id ${outer.vid}${qos(outer.pcp)}`];
   if (inner) {
     const p2 = proto(inner.tpid);
-    if (p2 === null) return null;
     const second = fitName(`${first}.${inner.vid}`, `vlan${outer.vid}.${inner.vid}`);
     lines.push(`ip link add link ${first} name ${second} type vlan${p2} id ${inner.vid}${qos(inner.pcp)}`);
   }

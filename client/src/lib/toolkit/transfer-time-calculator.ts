@@ -213,7 +213,10 @@ export function parseSize(
   const parsed = parseDecimal(raw);
   if (parsed.kind !== "ok") return parsed;
   const bytes = scaleDecimal(parsed.value, sizeUnit(unit).bytes);
-  if (bytes.num > 0n && bytes.num < bytes.den) {
+  if (bytes.num === 0n) {
+    return { kind: "error", message: "Enter a size greater than zero." };
+  }
+  if (bytes.num < bytes.den) {
     return { kind: "error", message: "The smallest size accepted is 1 byte. Nothing smaller crosses a link." };
   }
   if (bytes.num > MAX_BYTES * bytes.den) {
@@ -229,7 +232,9 @@ export function parseRate(raw: string, unit: RateUnit): Parsed<{ bps: number }> 
   const parsed = parseDecimal(raw);
   if (parsed.kind !== "ok") return parsed;
   const bps = parsed.num * rateUnit(unit).bitsPerSecond;
-  if (bps === 0) return { kind: "error", message: "The link speed has to be greater than zero." };
+  // Zero is tested on the exact mantissa: 1e-400 underflows a double to 0
+  // but is not zero, and deserves the minimum-rate message instead.
+  if (parsed.value.m === 0n) return { kind: "error", message: "The link speed has to be greater than zero." };
   if (bps < MIN_RATE_BPS) return { kind: "error", message: "The slowest rate accepted is 1 bps." };
   if (bps > MAX_RATE_BPS) {
     return { kind: "error", message: "The cap is 1 Pbps (10^15 bits per second). Enter a slower rate." };
@@ -241,6 +246,9 @@ export function parseRate(raw: string, unit: RateUnit): Parsed<{ bps: number }> 
 export function parseOverhead(raw: string): Parsed<{ pct: number }> {
   if (raw.trim() === "") return { kind: "ok", pct: 0 };
   const parsed = parseDecimal(raw.trim().replace(/%$/, ""));
+  if (parsed.kind === "empty") {
+    return { kind: "error", message: "Enter a number before the percent sign, or clear the field for no overhead." };
+  }
   if (parsed.kind !== "ok") return parsed;
   if (parsed.num > MAX_OVERHEAD_PCT) {
     return {
@@ -256,7 +264,7 @@ export function parseDuration(raw: string, unit: DurationUnit): Parsed<{ seconds
   if (parsed.kind !== "ok") return parsed;
   const per = DURATION_UNITS.find((u) => u.id === unit)?.seconds ?? 1;
   const seconds = parsed.num * per;
-  if (seconds === 0) return { kind: "error", message: "The time has to be greater than zero." };
+  if (parsed.value.m === 0n) return { kind: "error", message: "The time has to be greater than zero." };
   if (seconds < MIN_DURATION_S) return { kind: "error", message: "The shortest time accepted is 1 microsecond." };
   if (seconds > MAX_DURATION_S) {
     return { kind: "error", message: "The cap is 10^10 seconds, about 317 years. Enter a shorter time." };
@@ -436,8 +444,16 @@ export function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "longer than can be shown";
   if (seconds === 0) return "0 s";
   if (seconds < 1e-9) return "under 1 ns";
-  if (seconds < 1e-6) return `${formatSig(seconds * 1e9, 3)} ns`;
-  if (seconds < 1e-3) return `${formatSig(seconds * 1e6, 3)} µs`;
+  // Each unit rounds first and hands over to the next when the rounding
+  // reaches 1000, so 999.7 ns prints as 1 µs and not as 1,000 ns.
+  if (seconds < 1e-6) {
+    const ns = Number((seconds * 1e9).toPrecision(3));
+    if (ns < 1000) return `${formatSig(ns, 3)} ns`;
+  }
+  if (seconds < 1e-3) {
+    const us = Number((seconds * 1e6).toPrecision(3));
+    if (us < 1000) return `${formatSig(us, 3)} µs`;
+  }
   if (seconds < 1) {
     const ms = Number((seconds * 1e3).toPrecision(3));
     if (ms < 1000) return `${formatSig(ms, 3)} ms`;
@@ -462,6 +478,6 @@ export function formatDuration(seconds: number): string {
     const m = totalMin % 60;
     return `${d} d ${h} h ${m} min`;
   }
-  const years = seconds / YEAR_S;
-  return `${formatSig(years, 3)} years`;
+  const years = formatSig(seconds / YEAR_S, 3);
+  return `${years} ${years === "1" ? "year" : "years"}`;
 }

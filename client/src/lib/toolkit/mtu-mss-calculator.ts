@@ -110,8 +110,10 @@ export function parseMtu(raw: string): MtuParse {
   if (!/^\d+$/.test(text)) {
     return { ok: false, error: "The MTU is a whole number of bytes, digits only." };
   }
-  // Compare as text length first so a 400 digit paste never becomes Infinity.
-  const value = text.length > 6 ? Number.POSITIVE_INFINITY : Number(text);
+  // Drop leading zeros, then compare as text length first so a 400 digit
+  // paste never becomes Infinity and "0001500" still reads as 1500.
+  const digits = text.replace(/^0+(?=\d)/, "");
+  const value = digits.length > 6 ? Number.POSITIVE_INFINITY : Number(digits);
   if (value < IPV4_MIN_MTU) {
     return {
       ok: false,

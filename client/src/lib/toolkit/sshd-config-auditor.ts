@@ -26,6 +26,8 @@ export type Tone = "ok" | "info" | "warn" | "danger";
 
 export const MAX_INPUT_CHARS = 200_000;
 export const MAX_LINES = 5_000;
+/** Findings returned for display; the counts still cover every finding. */
+export const MAX_FINDINGS = 300;
 
 const TONE_RANK: Record<Tone, number> = { danger: 3, warn: 2, info: 1, ok: 0 };
 
@@ -285,7 +287,7 @@ function scopeLabel(block: MatchBlock | null): string {
 
 export function parseConfig(input: string): ParsedConfig {
   const findings: Finding[] = [];
-  let text = input.startsWith("﻿") ? input.slice(1) : input;
+  let text = input.startsWith("\uFEFF") ? input.slice(1) : input;
   let truncated = false;
   if (text.length > MAX_INPUT_CHARS) {
     text = text.slice(0, MAX_INPUT_CHARS);
@@ -340,7 +342,8 @@ export function parseConfig(input: string): ParsedConfig {
       findings.push({
         tone: "info",
         title: "Comment after a value",
-        detail: "Current OpenSSH ignores text after an unquoted #, but older releases treat it as extra arguments and refuse the file. Keep comments on their own lines.",
+        detail:
+          "Current OpenSSH ignores text after an unquoted #. Older releases read it as more arguments, which breaks a single-value line and adds the words to a list such as AllowUsers. Keep comments on their own lines.",
         line: lineNo,
         scope,
         key,
@@ -540,7 +543,12 @@ export function classifyAlgorithm(key: AlgoKey, name: string): Weakness | null {
     return null;
   }
   if (key === "macs") {
-    if (n.includes("md5")) return { tone: "danger", why: "built on MD5, retired everywhere, and the -96 variants truncate the tag" };
+    if (n.includes("md5")) {
+      return {
+        tone: "danger",
+        why: "HMAC-MD5. MD5 is broken as a hash, OpenSSH no longer offers it by default, and the -96 variants cut the tag to 96 bits",
+      };
+    }
     if (n.startsWith("hmac-sha1")) {
       return { tone: "warn", why: "HMAC-SHA1. Not broken as a MAC, but retired by policy, and nothing current needs it" };
     }
@@ -633,6 +641,8 @@ export interface AuditResult {
   findings: Finding[];
   rows: EffectiveRow[];
   counts: Record<Tone, number>;
+  /** Findings past MAX_FINDINGS, counted but not returned. */
+  hiddenFindings: number;
   /** Users and groups from the effective allow lists, carried into the snippet. */
   allowUsers: string[];
   allowGroups: string[];
@@ -731,9 +741,16 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
   permitrootlogin: {
     name: "PermitRootLogin",
     def: "prohibit-password",
-    check: (value) => {
+    check: (value, ctx) => {
       const v = value.toLowerCase();
-      if (v === "yes") return { tone: "danger", note: "root may log in with a password. Every guess goes straight at the one account that owns the machine." };
+      if (v === "yes") {
+        return ctx.passwordAuth
+          ? { tone: "danger", note: "root may log in with a password, so every guess goes straight at the one account that owns the machine." }
+          : {
+              tone: "warn",
+              note: "root may log in by any enabled method. Password logins are off, so this needs root's key, but logins should still go through named accounts and sudo so every action traces to a person.",
+            };
+      }
       if (v === "prohibit-password" || v === "without-password") {
         return {
           tone: "info",
@@ -825,6 +842,17 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
       return { tone: "ok", note: `${n} attempts per connection. Failures are logged once half of them are used.` };
     },
   },
+  disableforwarding: {
+    name: "DisableForwarding",
+    def: "no",
+    check: (value) => {
+      const f = flag("DisableForwarding", value);
+      if (typeof f !== "boolean") return f;
+      return f
+        ? { tone: "ok", note: "All forwarding is off: X11, agent, TCP and StreamLocal, whatever the individual options say." }
+        : { tone: "ok", note: "The individual forwarding options below decide." };
+    },
+  },
   x11forwarding: {
     name: "X11Forwarding",
     def: "no",
@@ -859,7 +887,7 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
       if (v === "yes" || v === "all") {
         return {
           tone: "info",
-          note: `${ctx.isDefault ? "Not set, and the default is yes. " : ""}Any user can tunnel through this host to whatever it can reach. sshd_config(5) points out this only helps if users also lack a shell, since they could run their own forwarder.`,
+          note: `${ctx.isDefault ? "Not set, and the default is yes. " : ""}Users can tunnel through this host to whatever it can reach. sshd_config(5) notes that turning it off only helps if users also lack a shell, since they could run their own forwarder.`,
         };
       }
       if (v === "local" || v === "remote") return { tone: "info", note: `Only ${v} forwarding is allowed.` };
@@ -949,8 +977,10 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     def: "INFO",
     check: (value) => {
       const v = value.toUpperCase();
-      if (v === "VERBOSE") return { tone: "ok", note: "Logs the fingerprint of the key used for each login." };
-      if (v === "INFO") return { tone: "info", note: "VERBOSE also logs which key fingerprint each login used, which is what an investigation needs." };
+      if (v === "VERBOSE") return { tone: "ok", note: "Logs each login with its key fingerprint, plus keys that were offered and refused." };
+      if (v === "INFO") {
+        return { tone: "ok", note: "Logs each login with the fingerprint of the key it used. VERBOSE adds keys that were offered and refused." };
+      }
       if (v === "QUIET" || v === "FATAL" || v === "ERROR") return { tone: "warn", note: "Failed and successful logins are not logged." };
       if (/^DEBUG[123]?$/.test(v)) return { tone: "warn", note: "sshd_config(5): logging at a DEBUG level violates the privacy of users and is not recommended." };
       return invalid("LogLevel", value, ["QUIET", "FATAL", "ERROR", "INFO", "VERBOSE", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3"]);
@@ -962,7 +992,12 @@ const CHECKS: Record<string, { name: string; def: string; check: Check }> = {
     check: (value) => {
       const s = parseSshdTime(value);
       if (s === null) return { tone: "danger", note: `"${clip(value)}" is not an sshd time value such as 30, 30s or 1m. sshd refuses to start.` };
-      if (s === 0) return { tone: "warn", note: "No limit. An unauthenticated connection can hold one of the MaxStartups slots indefinitely." };
+      if (s === 0) {
+        return {
+          tone: "warn",
+          note: "No limit, so an unauthenticated connection can hold one of the MaxStartups slots indefinitely. This was the stopgap for CVE-2024-6387 (regreSSHion) on OpenSSH 8.5p1 to 9.7p1; the fix is 9.8p1 or a patched distribution package.",
+        };
+      }
       if (s > 60) return { tone: "info", note: `${s} seconds to authenticate. 30 to 60 is plenty for a person and shortens how long half-open logins hold a slot.` };
       return { tone: "ok", note: `${s} seconds to authenticate.` };
     },
@@ -982,6 +1017,7 @@ const ROW_ORDER = [
   "allowgroups",
   "denyusers",
   "denygroups",
+  "disableforwarding",
   "x11forwarding",
   "x11uselocalhost",
   "allowtcpforwarding",
@@ -1002,6 +1038,15 @@ const ROW_ORDER = [
   "protocol",
 ];
 
+/** Options that DisableForwarding yes switches off (sshd_config(5)). */
+const FORWARDING_KEYS = new Set(["x11forwarding", "allowtcpforwarding", "allowagentforwarding", "gatewayports"]);
+
+/** Applies DisableForwarding yes on top of a forwarding option's own verdict. */
+function withDisable(key: string, verdict: Verdict, disabled: boolean): Verdict {
+  if (!disabled || !FORWARDING_KEYS.has(key) || verdict.tone === "danger") return verdict;
+  return { tone: "ok", note: "DisableForwarding yes overrides this, so it has no effect." };
+}
+
 const ALGO_KEYS: AlgoKey[] = ["ciphers", "macs", "kexalgorithms", "hostkeyalgorithms", "pubkeyacceptedalgorithms"];
 const ALGO_NAMES: Record<AlgoKey, string> = {
   ciphers: "Ciphers",
@@ -1010,6 +1055,12 @@ const ALGO_NAMES: Record<AlgoKey, string> = {
   hostkeyalgorithms: "HostKeyAlgorithms",
   pubkeyacceptedalgorithms: "PubkeyAcceptedAlgorithms",
 };
+
+/** At most ten names, each clipped, so a pasted wall of text stays readable. */
+function nameList(names: string[]): string {
+  const shown = names.slice(0, 10).map(clip).join(", ");
+  return names.length > 10 ? `${shown} and ${names.length - 10} more` : shown;
+}
 
 function algoVerdict(key: AlgoKey, value: string | null): { verdict: Verdict; list: string[]; weak: { name: string; w: Weakness }[] } {
   const res = effectiveAlgorithms(key, value);
@@ -1020,8 +1071,10 @@ function algoVerdict(key: AlgoKey, value: string | null): { verdict: Verdict; li
   else if (res.mode === "append") parts.push("Appended to the default list with +.");
   else if (res.mode === "remove") parts.push("Removed from the default list with -.");
   else if (res.mode === "prepend") parts.push("Moved to the front of the default list with ^.");
-  if (weak.length) parts.push(`Weak: ${weak.map((x) => x.name).join(", ")}.`);
-  if (res.unknown.length) parts.push(`Not recognized: ${res.unknown.join(", ")}. sshd refuses names it does not support.`);
+  if (weak.length) parts.push(`Weak: ${nameList(weak.map((x) => x.name))}.`);
+  if (res.unknown.length) {
+    parts.push(`Not in this auditor's list: ${nameList(res.unknown)}. Check the spelling, since sshd refuses to start on a name it does not support.`);
+  }
   let tone = worstTone(weak.map((x) => x.w.tone));
   if (tone === "ok" && res.unknown.length) tone = "info";
   if (!weak.length && !res.unknown.length) parts.push("Nothing weak in the list.");
@@ -1037,7 +1090,7 @@ function protocolVerdict(value: string): Verdict {
   if (versions.includes("1")) {
     return {
       tone: "danger",
-      note: "Asks for SSH protocol 1, which has no real integrity protection and known attacks on its CRC-32 based design. OpenSSH 7.3 and older will enable it; 7.4 removed it from the server.",
+      note: "Asks for SSH protocol 1, whose CRC-32 integrity check can be forged and which has known session attacks. Releases before 7.0 enable it when asked, 7.0 to 7.3 only when built with SSH1 support, and 7.4 removed it from the server.",
     };
   }
   return { tone: "info", note: "Current OpenSSH only speaks protocol 2 and ignores this keyword. It can be removed." };
@@ -1109,6 +1162,7 @@ export function auditConfig(input: string): AuditResult {
   const pwRes = resolved("passwordauthentication");
   const usePam = (pamRes.args?.[0] ?? CHECKS.usepam.def).toLowerCase() === "yes";
   const passwordAuth = (pwRes.args?.[0] ?? CHECKS.passwordauthentication.def).toLowerCase() === "yes";
+  const disableForwarding = (resolved("disableforwarding").args?.[0] ?? "no").toLowerCase() === "yes";
 
   const rows: EffectiveRow[] = [];
   const algoWeak: Partial<Record<AlgoKey, { name: string; w: Weakness }[]>> = {};
@@ -1143,7 +1197,7 @@ export function auditConfig(input: string): AuditResult {
       const c = CHECKS[key];
       name = c.name;
       value = r.args ? r.args[0] : c.def;
-      verdict = c.check(value, { isDefault, usePam, passwordAuth });
+      verdict = withDisable(key, c.check(value, { isDefault, usePam, passwordAuth }), disableForwarding);
     }
 
     rows.push({
@@ -1172,18 +1226,61 @@ export function auditConfig(input: string): AuditResult {
     for (const block of parsed.blocks) {
       if (block.all) continue;
       const d = firstDirective(block.directives, key);
-      if (!d || !(key in CHECKS || key === "protocol")) continue;
-      const v = key === "protocol" ? protocolVerdict(d.args[0]) : CHECKS[key].check(d.args[0], { isDefault: false, usePam, passwordAuth });
+      if (!d) continue;
+      let v: Verdict;
+      if (key === "protocol") v = protocolVerdict(d.args[0]);
+      else if ((ALGO_KEYS as string[]).includes(key)) v = algoVerdict(key as AlgoKey, d.args[0]).verdict;
+      else if (key in CHECKS) {
+        const blockDisable = firstDirective(block.directives, "disableforwarding");
+        const disabled = blockDisable ? blockDisable.args[0].toLowerCase() === "yes" : disableForwarding;
+        const blockPw = firstDirective(block.directives, "passwordauthentication");
+        const pw = blockPw ? blockPw.args[0].toLowerCase() === "yes" : passwordAuth;
+        v = withDisable(key, CHECKS[key].check(d.args[0], { isDefault: false, usePam, passwordAuth: pw }), disabled);
+      } else continue;
       if (v.tone === "ok") continue;
       findings.push({
         tone: v.tone,
-        title: `${CHECKS[key]?.name ?? name} ${clip(d.args[0])}`,
+        title: `${name} ${clip(d.args[0])}`,
         detail: `For connections matching ${block.criteria}: ${v.note}`,
         line: d.line,
         scope: scopeLabel(block),
         key,
       });
     }
+  }
+
+  // ForceCommand restricts session requests, not channels, and a chroot does
+  // not stop outbound sockets: ssh -N opens no session, so port forwarding
+  // still works for these accounts unless it is switched off.
+  const baseTcp = (resolved("allowtcpforwarding").args?.[0] ?? CHECKS.allowtcpforwarding.def).toLowerCase();
+  for (const block of parsed.blocks) {
+    if (block.all) continue;
+    const limits = [firstDirective(block.directives, "chrootdirectory"), firstDirective(block.directives, "forcecommand")]
+      .filter((d): d is Directive => d !== undefined)
+      .sort((a, b) => a.line - b.line);
+    if (!limits.length) continue;
+    const restrict = { name: limits.map((d) => d.name).join(" and "), line: limits[0].line };
+    const ownDisable = firstDirective(block.directives, "disableforwarding");
+    const disabled = ownDisable ? ownDisable.args[0].toLowerCase() === "yes" : disableForwarding;
+    const ownTcp = firstDirective(block.directives, "allowtcpforwarding");
+    const tcp = ownTcp ? ownTcp.args[0].toLowerCase() : baseTcp;
+    if (disabled || tcp === "no") continue;
+    const why = limits
+      .map((d) =>
+        d.key === "forcecommand"
+          ? "ForceCommand applies only to shell, command and subsystem requests"
+          : "A chroot limits the file system, not network sockets",
+      )
+      .join(", and ")
+      .replace(", and A chroot", ", and a chroot");
+    findings.push({
+      tone: "warn",
+      title: `Forwarding still allowed for Match ${clip(block.criteria)}`,
+      detail: `This block restricts sessions with ${restrict.name}, but AllowTcpForwarding is ${tcp}${ownTcp ? ` (line ${ownTcp.line})` : " for it"}. ${why}, so these accounts can still open tunnels with ssh -N -L or -D. Add AllowTcpForwarding no, or DisableForwarding yes, inside the block.`,
+      line: restrict.line,
+      scope: scopeLabel(block),
+      key: "allowtcpforwarding",
+    });
   }
 
   // Allow lists: missing everywhere is the finding; per-block lists are noted.
@@ -1229,12 +1326,14 @@ export function auditConfig(input: string): AuditResult {
   findings.sort((a, b) => TONE_RANK[b.tone] - TONE_RANK[a.tone] || (a.line ?? 0) - (b.line ?? 0));
   const counts: Record<Tone, number> = { danger: 0, warn: 0, info: 0, ok: 0 };
   for (const f of findings) counts[f.tone] += 1;
+  const hiddenFindings = Math.max(0, findings.length - MAX_FINDINGS);
 
   return {
     parsed,
-    findings,
+    findings: hiddenFindings ? findings.slice(0, MAX_FINDINGS) : findings,
     rows,
     counts,
+    hiddenFindings,
     allowUsers: allowUsersRes.args ?? [],
     allowGroups: allowGroupsRes.args ?? [],
   };
@@ -1250,7 +1349,8 @@ export const SNIPPET_TARGETS: { id: SnippetTarget; label: string }[] = [
   { id: "7.4", label: "OpenSSH 7.4 to 8.7" },
 ];
 
-const SAFE_NAME = /^[A-Za-z0-9._@*?!,%-]+$/;
+/** User and group patterns, including user@host and user@10.0.0.0/8 forms. */
+const SAFE_NAME = /^[A-Za-z0-9._@*?!,%:/[\]-]+$/;
 
 /**
  * A hardened block for the chosen OpenSSH range. Every algorithm name in it

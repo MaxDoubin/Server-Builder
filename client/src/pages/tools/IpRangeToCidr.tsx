@@ -8,10 +8,11 @@
  * so it can be tested on its own; this file only parses fields and renders.
  */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { pluralise } from "@/lib/plural";
 import {
+  MAX_AGGREGATED,
   MAX_ENTRIES,
   MAX_LIST_CHARS,
   blockToString,
@@ -75,12 +76,14 @@ function Message({ id, tone, children }: { id: string; tone: "error" | "hint"; c
   );
 }
 
-function ListBlock({ lines, testId }: { lines: string[]; testId: string }) {
+function ListBlock({ lines, testId, label }: { lines: string[]; testId: string; label: string }) {
   const shown = lines.length > MAX_ROWS ? lines.slice(0, MAX_ROWS) : lines;
   return (
     <>
       <pre
         data-testid={testId}
+        tabIndex={0}
+        aria-label={label}
         className="mt-4 max-h-[22rem] overflow-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-signal))]"
       >
         {shown.join("\n")}
@@ -119,7 +122,11 @@ export function IpRangeToCidr() {
 
   /* ---------------------------------------------------- list to ranges */
 
-  const parsedList = useMemo(() => parseCidrList(listDraft), [listDraft]);
+  // A long paste can take a few hundred milliseconds to parse and merge. The
+  // deferred copy lets the textarea and the range fields stay responsive
+  // while that work catches up.
+  const listText = useDeferredValue(listDraft);
+  const parsedList = useMemo(() => parseCidrList(listText), [listText]);
   const merge = useMemo(() => summarizeMerge(parsedList.entries), [parsedList]);
   const mergedLines = useMemo(
     () =>
@@ -129,6 +136,9 @@ export function IpRangeToCidr() {
     [merge],
   );
   const aggregatedLines = useMemo(() => merge.aggregated.map(blockToString), [merge]);
+  const mergedCopy = useMemo(() => mergedLines.join("\n"), [mergedLines]);
+  const aggregatedCopy = useMemo(() => aggregatedLines.join("\n"), [aggregatedLines]);
+  const aggregatedCapped = merge.aggregatedTotal > merge.aggregated.length;
   const overlap = merge.inputAddresses - merge.uniqueAddresses;
   const listEmpty = listDraft.trim() === "";
 
@@ -258,7 +268,7 @@ export function IpRangeToCidr() {
                     testId="button-copy-blocks"
                   />
                 </div>
-                <ListBlock lines={blockLines} testId="list-cidr-blocks" />
+                <ListBlock lines={blockLines} testId="list-cidr-blocks" label="CIDR blocks for the range" />
               </>
             ) : (
               <p className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -349,9 +359,9 @@ export function IpRangeToCidr() {
               className="mt-3 w-full resize-y rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
             />
             <p id="cidr-list-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              Separate blocks with spaces, commas or new lines. A bare address counts as a /32, a line may be a
-              range written start - end, and # starts a comment. Up to {formatCount(MAX_ENTRIES)} entries and{" "}
-              {formatCount(MAX_LIST_CHARS)} characters.
+              Separate blocks with spaces, commas, semicolons or new lines. A bare address counts as a /32, a
+              range written start - end goes on a line of its own, and # starts a comment. Up to{" "}
+              {formatCount(MAX_ENTRIES)} entries and {formatCount(MAX_LIST_CHARS)} characters.
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -456,13 +466,15 @@ export function IpRangeToCidr() {
                   value={formatCount(merge.uniqueAddresses)}
                   testId="text-unique"
                 />
+                <ToolResult label="Sum of entry sizes" value={formatCount(merge.inputAddresses)} />
                 <ToolResult
-                  label="Counted more than once"
+                  label="Removed as overlap"
                   value={overlap === 0 ? "none" : formatCount(overlap)}
+                  testId="text-overlap"
                 />
                 <ToolResult
                   label="Minimal CIDR list"
-                  value={`${formatCount(aggregatedLines.length)} ${pluralise(aggregatedLines.length, "block")}`}
+                  value={`${formatCount(merge.aggregatedTotal)} ${pluralise(merge.aggregatedTotal, "block")}`}
                   testId="text-aggregated-count"
                 />
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
@@ -471,14 +483,14 @@ export function IpRangeToCidr() {
                   </span>
                   <div className="flex flex-wrap gap-2">
                     <CopyButton
-                      value={mergedLines.join("\n")}
+                      value={mergedCopy}
                       label="Copy merged ranges"
                       testId="button-copy-ranges"
                     >
                       <span>Ranges</span>
                     </CopyButton>
                     <CopyButton
-                      value={aggregatedLines.join("\n")}
+                      value={aggregatedCopy}
                       label="Copy minimal CIDR list"
                       testId="button-copy-aggregated"
                     >
@@ -486,7 +498,14 @@ export function IpRangeToCidr() {
                     </CopyButton>
                   </div>
                 </div>
-                <ListBlock lines={aggregatedLines} testId="list-aggregated" />
+                <ListBlock lines={aggregatedLines} testId="list-aggregated" label="Minimal CIDR list for the merged set" />
+                {aggregatedCapped ? (
+                  <p className="mt-2 rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
+                    The full list is {formatCount(merge.aggregatedTotal)} blocks. Only the first{" "}
+                    {formatCount(MAX_AGGREGATED)} are kept, so the CIDR copy stops there; the merged ranges are
+                    complete.
+                  </p>
+                ) : null}
               </>
             ) : (
               <p className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

@@ -5,7 +5,7 @@
  * sliding window, draws the 256-bin byte histogram, and lists the regions
  * whose windows reach a chosen threshold. Chi-square, mean and serial
  * correlation sit beside the entropy because entropy alone cannot tell
- * compressed data from encrypted data, and chi-square often can. The file is
+ * compressed data from encrypted data, and chi-square sometimes can. The file is
  * read into memory in this tab and is never stored or sent.
  */
 
@@ -511,12 +511,19 @@ export function EntropyAnalyzer() {
     if (deferredPaste.length > MAX_PASTE_CHARS) {
       return {
         bytes: null,
-        error: `The paste is ${dec(deferredPaste.length)} characters, over the ${formatBytes(MAX_PASTE_CHARS)} limit for pasted text. Save it to a file and choose the file instead.`,
+        error: `The paste is ${dec(deferredPaste.length)} characters, over the ${dec(MAX_PASTE_CHARS)} character limit for pasted text. Save it to a file and choose the file instead.`,
       };
     }
     if (mode === "text") return { bytes: new TextEncoder().encode(deferredPaste), error: null };
     const decoded = mode === "hex" ? decodeHex(deferredPaste) : decodeBase64(deferredPaste);
-    return decoded.ok ? { bytes: decoded.bytes, error: null } : { bytes: null, error: decoded.error };
+    if (!decoded.ok) return { bytes: null, error: decoded.error };
+    if (decoded.bytes.length === 0) {
+      return {
+        bytes: null,
+        error: `The paste holds no ${mode === "hex" ? "hex digits" : "Base64 characters"}, only separators or padding, so there are no bytes to measure.`,
+      };
+    }
+    return { bytes: decoded.bytes, error: null };
   }, [file, deferredPaste, mode]);
 
   const bytes = input.bytes && input.bytes.length > 0 ? input.bytes : null;
@@ -615,14 +622,17 @@ export function EntropyAnalyzer() {
               sliding ? `, ${dec(regions.length)} ${pluralise(regions.length, "region")} at or above ${deferredThreshold.toFixed(2)}` : ""
             }.`;
 
+  // Measured on compressed text: gzip and Brotli output fails this test in
+  // nearly every 256 KiB sample but passes in most 4 KiB ones, and xz (LZMA)
+  // output passes even at several MiB. The wording follows those results.
   let chiReading = "";
   if (stats && stats.size >= 1280) {
     if (stats.entropy >= 7.5 && stats.chiP < 0.01) {
       chiReading =
-        "The chi-square test rejects a uniform distribution (p below 0.01). A sound cipher's output should pass it, while deflate, Brotli and most other compressed formats usually fail on anything over a few kilobytes, so this leans toward compression or a structured format. It is a heuristic, not proof.";
+        "The chi-square test rejects a uniform distribution (p below 0.01). A sound cipher's output should pass it, so this leans toward compressed data, such as gzip, zip, bzip2 or Brotli output, or a structured format. It is a heuristic, not proof: uniform random data also fails at this level 1% of the time.";
     } else if (stats.entropy >= 7.5) {
       chiReading =
-        "The chi-square test is consistent with uniform random bytes. Encrypted data, random keys and some very well compressed data look like this.";
+        "The chi-square test is consistent with uniform random bytes. Ciphertext and random data look like this, but so does xz or 7-Zip (LZMA) output at any size, and gzip or Brotli output under a few hundred kilobytes, so a pass does not show encryption.";
     }
   }
 
@@ -832,8 +842,9 @@ export function EntropyAnalyzer() {
                   ) : null}
                   {chiReading ? <li>{chiReading}</li> : null}
                   <li>
-                    Rough bands: plain text and source code usually measure 4 to 5, executable code 5 to 6.5, and compressed
-                    or encrypted data above 7.9 once there are a few kilobytes of it.
+                    Rough bands: plain text and source code usually measure 4 to 5, compiled executables about 4.5 to 6.5,
+                    and compressed or encrypted data above 7.9 once there are a few kilobytes of it. The bands overlap, so
+                    the figure narrows the possibilities rather than naming the format.
                   </li>
                 </ul>
               </ToolPanel>

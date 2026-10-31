@@ -59,6 +59,11 @@ function slugOf(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+/** Shortens a very long unreadable entry for display; the error says how long it was. */
+function clipForDisplay(text: string, max = 60): string {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
 function KindBadge({ kind }: { kind: AsnKind }) {
   return (
     <span
@@ -350,7 +355,7 @@ export function AsnConverter() {
                           scope="row"
                           className="max-w-[180px] break-all py-2.5 pr-4 font-mono-tight text-sm font-normal text-[hsl(var(--brand-bone-dim))]"
                         >
-                          {row.parsed.input}
+                          {clipForDisplay(row.parsed.input)}
                         </th>
                         {row.info ? (
                           <>
@@ -371,7 +376,7 @@ export function AsnConverter() {
                                 type="button"
                                 onClick={() => setSelected(row.index)}
                                 aria-pressed={isCurrent}
-                                aria-label={`Show details for ${row.parsed.input}`}
+                                aria-label={`Show details for ${clipForDisplay(row.parsed.input)}`}
                                 data-testid={`button-details-${row.index}`}
                                 className="inline-flex min-h-[32px] items-center rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                               >

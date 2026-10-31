@@ -5,9 +5,9 @@
  * SHA-512, all in this tab. MD5 has no Web Crypto support, so it is computed
  * here from RFC 1321 and fed the file in chunks, which also keeps a very
  * large file from arriving as one allocation. The SHA family runs through
- * SubtleCrypto. A pasted expected value, whether a bare digest or a
- * coreutils or BSD style line, is matched against whichever algorithm its
- * length names.
+ * SubtleCrypto. A pasted expected value, whether a bare digest, a
+ * coreutils or BSD style line, or a whole checksum file, is matched against
+ * the computed digest of the same length, or of the algorithm a line names.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,12 +19,16 @@ import {
   md5Hex,
   subtleHex,
   algorithmsForLength,
-  parseExpected,
-  hexEquals,
+  otherAlgorithmsForLength,
+  parseExpectedAll,
+  findMatch,
+  MAX_EXPECTED_LINES,
 } from "@/lib/toolkit/file-hash-checker";
 
 const MAX_BYTES = 512 * 1024 * 1024; // 512 MiB
 const CHUNK = 8 * 1024 * 1024; // 8 MiB read window
+// Text mode rehashes on every keystroke, so it gets a smaller cap than files.
+const MAX_TEXT_BYTES = 8 * 1024 * 1024; // 8 MiB
 
 interface HashSet {
   md5: string;
@@ -104,6 +108,14 @@ export function FileHashChecker() {
       setStatus("idle");
       return;
     }
+    if (bytes.length > MAX_TEXT_BYTES) {
+      setResult(null);
+      setStatus("error");
+      setError(
+        `That text is ${formatBytes(bytes.length)} as UTF-8. Text mode is capped at ${formatBytes(MAX_TEXT_BYTES)}; save it to a file and use file mode, which allows up to ${formatBytes(MAX_BYTES)}.`,
+      );
+      return;
+    }
     setStatus("hashing");
     hashWholeBuffer(bytes)
       .then((hashes) => {
@@ -118,6 +130,20 @@ export function FileHashChecker() {
       });
   }, [mode, text]);
 
+  function switchMode(next: Mode): void {
+    if (next === mode) return;
+    // Drop the other mode's result and stop any in-flight file read, so a
+    // digest is never shown next to an input it was not computed from.
+    runRef.current += 1;
+    setResult(null);
+    setFileName(null);
+    setFileSize(0);
+    setProgress(0);
+    setError(null);
+    setStatus("idle");
+    setMode(next);
+  }
+
   async function loadFile(file: File): Promise<void> {
     const run = ++runRef.current;
     setError(null);
@@ -129,7 +155,7 @@ export function FileHashChecker() {
     if (file.size > MAX_BYTES) {
       setStatus("error");
       setError(
-        `This file is ${formatBytes(file.size)}. The limit is ${formatBytes(MAX_BYTES)}, above which the browser tab would run out of memory.`,
+        `This file is ${formatBytes(file.size)}. The limit is ${formatBytes(MAX_BYTES)}, because Web Crypto has no streaming digest and the whole file has to sit in memory while the SHA digests run. For a larger file, use sha256sum or Get-FileHash locally.`,
       );
       return;
     }
@@ -180,45 +206,69 @@ export function FileHashChecker() {
   function onDrop(e: DragEvent<HTMLDivElement>): void {
     e.preventDefault();
     setDragging(false);
-    if (mode !== "file") setMode("file");
+    if (mode !== "file") return;
     const file = e.dataTransfer.files[0];
     if (file) void loadFile(file);
   }
 
-  const parsed = useMemo(() => parseExpected(expected), [expected]);
+  const parsedAll = useMemo(() => parseExpectedAll(expected), [expected]);
+  const entries = parsedAll.entries;
+
+  const match = useMemo(() => {
+    if (!result) return null;
+    const digests: Record<string, string> = {};
+    for (const row of ROWS) digests[row.name] = result[row.key];
+    return findMatch(entries, digests);
+  }, [result, entries]);
+  const matchKey = match ? (ROWS.find((r) => r.name === match.algorithm)?.key ?? null) : null;
+
+  // The entry described in the details list: the matching line if there is
+  // one, otherwise the first line that parsed.
+  const parsed = match ? entries[match.index] : (entries[0] ?? null);
   const expectedHex = parsed?.hex ?? null;
   const detected = expectedHex ? algorithmsForLength(expectedHex.length) : [];
-
-  const matchKey = useMemo<keyof HashSet | null>(() => {
-    if (!result || !expectedHex) return null;
-    for (const row of ROWS) {
-      if (hexEquals(result[row.key], expectedHex)) return row.key;
-    }
-    return null;
-  }, [result, expectedHex]);
+  const others = expectedHex ? otherAlgorithmsForLength(expectedHex.length) : [];
+  const many = entries.length > 1;
+  const inputNoun = mode === "file" ? "file" : "text";
 
   let verdict: { tone: "ok" | "warn" | "danger"; text: string } | null = null;
-  if (expectedHex) {
+  if (parsed) {
+    const where = many ? `Line ${parsed.line}${parsed.filename ? ` (${parsed.filename})` : ""}` : "The expected value";
     if (!result) {
       verdict = { tone: "warn", text: "Add a file or some text, and the expected value will be checked against it." };
-    } else if (matchKey) {
-      const name = ROWS.find((r) => r.key === matchKey)?.name ?? "digest";
-      verdict = { tone: "ok", text: `Match. The expected value equals the ${name} of this input.` };
+    } else if (match) {
+      verdict = { tone: "ok", text: `Match. ${where} equals the ${match.algorithm} of this ${inputNoun}.` };
+    } else if (many) {
+      verdict = {
+        tone: "danger",
+        text: `No match. None of the ${entries.length} checksums found in the pasted text equals a digest of this ${inputNoun}${parsedAll.truncated ? `, though only the first ${MAX_EXPECTED_LINES.toLocaleString("en-US")} lines were scanned` : ""}.`,
+      };
+    } else if (parsed.algorithmTag !== null && parsed.algorithm === null) {
+      verdict = {
+        tone: "warn",
+        text: `The line names ${parsed.algorithmTag}, which this tool does not compute, so it cannot be checked here.`,
+      };
+    } else if (parsed.algorithm !== null && !detected.includes(parsed.algorithm)) {
+      verdict = {
+        tone: "warn",
+        text: `The line says ${parsed.algorithm}, but ${expectedHex?.length ?? 0} hex characters is not a ${parsed.algorithm} length. The digest is probably truncated or mislabeled.`,
+      };
     } else if (detected.length === 0) {
       verdict = {
         tone: "warn",
-        text: `That is ${expectedHex.length} hex characters, which is not the length of any digest shown here. Check for a truncated or run-together paste.`,
+        text: `That is ${expectedHex?.length ?? 0} hex characters, which is not the length of any digest shown here. Check for a truncated or run-together paste.`,
       };
     } else {
+      const algo = parsed.algorithm ?? detected[0];
       verdict = {
         tone: "danger",
-        text: `No match. The expected value is a ${detected.join(" or ")} length digest, but it does not equal the ${detected.join(" or ")} computed here. The file differs from the one that value describes.`,
+        text: `No match. The expected value has the length of a ${algo} digest but does not equal the ${algo} computed here, so this ${inputNoun} is not the one that value describes${parsed.algorithm === null && others.length ? `, unless the value came from another algorithm of the same length, such as ${others.join(" or ")}` : ""}.`,
       };
     }
   } else if (expected.trim() !== "") {
     verdict = {
       tone: "warn",
-      text: "No hex digest found in that text. Paste the checksum itself, or a full sha256sum or shasum line.",
+      text: "No hex digest found in that text. Paste the checksum itself, a sha256sum or shasum line, or a BSD style line such as SHA256 (file) = digest.",
     };
   }
 
@@ -250,7 +300,7 @@ export function FileHashChecker() {
       <div className="space-y-6">
         <ToolPanel title="Input">
           <div
-            role="tablist"
+            role="group"
             aria-label="Input source"
             className="mb-5 flex flex-wrap gap-2"
           >
@@ -258,9 +308,8 @@ export function FileHashChecker() {
               <button
                 key={m}
                 type="button"
-                role="tab"
-                aria-selected={mode === m}
-                onClick={() => setMode(m)}
+                aria-pressed={mode === m}
+                onClick={() => switchMode(m)}
                 data-testid={`button-mode-${m}`}
                 className={`inline-flex min-h-[44px] items-center rounded-full border px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   mode === m
@@ -286,7 +335,11 @@ export function FileHashChecker() {
                   e.preventDefault();
                   setDragging(true);
                 }}
-                onDragLeave={() => setDragging(false)}
+                onDragLeave={(e) => {
+                  const next = e.relatedTarget;
+                  if (next instanceof Node && e.currentTarget.contains(next)) return;
+                  setDragging(false);
+                }}
                 onDrop={onDrop}
                 data-testid="dropzone"
                 className={`rounded-xl border border-dashed p-4 transition-colors ${
@@ -325,8 +378,12 @@ export function FileHashChecker() {
                 autoCorrect="off"
                 placeholder="Paste or type the text whose digest you need."
                 data-testid="input-text"
+                aria-describedby="text-hint"
                 className="w-full resize-y rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
               />
+              <p id="text-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                Every byte counts, including line breaks, which are hashed as LF. A trailing newline changes the digest, which is why the output of a plain echo piped into sha256sum differs from echo -n. Limit {formatBytes(MAX_TEXT_BYTES)}.
+              </p>
             </>
           )}
 
@@ -437,13 +494,13 @@ export function FileHashChecker() {
             htmlFor="expected-input"
             className="mb-2 block font-mono-tight text-xs text-[hsl(var(--brand-bone-dim))]"
           >
-            Paste the published checksum, or a full sha256sum / shasum line
+            Paste the published checksum, a sha256sum or BSD style line, or a whole checksum file
           </label>
           <textarea
             id="expected-input"
             value={expected}
             onChange={(e) => setExpected(e.target.value)}
-            rows={2}
+            rows={3}
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
@@ -468,9 +525,29 @@ export function FileHashChecker() {
                 </dt>
                 <dd className="font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
                   {detected.length ? detected.join(" or ") : "no known digest"}
-                  {parsed?.algorithm ? ` (line says ${parsed.algorithm})` : ""}
+                  {parsed?.algorithmTag ? ` (line says ${parsed.algorithmTag})` : ""}
                 </dd>
               </div>
+              {many ? (
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-[hsl(var(--brand-iron)/0.5)] py-2">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    Checksums found
+                  </dt>
+                  <dd className="font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
+                    {entries.length.toLocaleString("en-US")}
+                  </dd>
+                </div>
+              ) : null}
+              {parsed?.filename ? (
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-[hsl(var(--brand-iron)/0.5)] py-2">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    Listed file
+                  </dt>
+                  <dd className="min-w-0 break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
+                    {parsed.filename}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           ) : null}
 
