@@ -269,7 +269,16 @@ export type ExpectedResult =
  * "sha256=<hex>" (and the older "sha1=<hex>"), so a leading algorithm label
  * is stripped and reported rather than treated as bad input.
  */
+/** Longest MAC text read. SHA-512 in hex with a colon between bytes is 191 characters. */
+export const MAX_EXPECTED_CHARS = 1024;
+
 export function parseExpectedMac(input: string, format: ExpectedFormat): ExpectedResult {
+  if (input.length > MAX_EXPECTED_CHARS) {
+    return {
+      ok: false,
+      error: `That is ${input.length.toLocaleString("en-US")} characters. No MAC here is longer than 64 bytes, which is 128 hex digits.`,
+    };
+  }
   let text = input.trim();
   let prefix: string | null = null;
   const labelled = /^(sha(?:-?1|-?256|-?384|-?512))\s*[=:]\s*/i.exec(text);
@@ -587,12 +596,13 @@ export const HMAC_EXAMPLES: HmacExample[] = [
 
 /** The example whose key and message bytes equal the given ones, if any. */
 export function matchExample(key: Uint8Array, message: Uint8Array): HmacExample | null {
-  const k = bytesToHex(key);
-  const m = bytesToHex(message);
   for (const ex of HMAC_EXAMPLES) {
     const ek = parseBytes(ex.key, ex.keyFormat, MAX_KEY_BYTES, "key");
     const em = parseBytes(ex.message, ex.messageFormat, MAX_MESSAGE_BYTES, "message");
-    if (ek.ok && em.ok && bytesToHex(ek.bytes) === k && bytesToHex(em.bytes) === m) return ex;
+    // Lengths first, so a 1 MiB message is not compared byte by byte against
+    // examples that are a few dozen bytes long.
+    if (!ek.ok || !em.ok || ek.bytes.length !== key.length || em.bytes.length !== message.length) continue;
+    if (bytesToHex(ek.bytes) === bytesToHex(key) && bytesToHex(em.bytes) === bytesToHex(message)) return ex;
   }
   return null;
 }

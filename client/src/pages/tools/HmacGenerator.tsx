@@ -529,7 +529,7 @@ export function HmacGenerator() {
                     ) : outcome?.kind === "truncated-match" ? (
                       <p className={OK_BOX}>
                         Match as a truncated MAC: it equals the first {outcome.bytes} of {info.outBytes} bytes. RFC 2104
-                        section 5 allows truncation to no less than half the output and no less than 80 bits.
+                        section 5 recommends keeping at least half the output and at least 80 bits.
                       </p>
                     ) : outcome?.kind === "length" ? (
                       <p className={ERROR_BOX}>
