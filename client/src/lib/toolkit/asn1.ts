@@ -185,8 +185,12 @@ function parseElement(buf: Uint8Array, pos: number, limit: number, depth: number
     const count = first & 0x7f;
     if (count > 4) throw new DerError(`A length field is ${count} bytes long, too large to be real`, pos - 1);
     if (pos + count > limit) throw new DerError("The data ends inside a length field", pos);
+    // X.690 10.1: DER encodes a length in the fewest octets, so a long form
+    // never starts with a zero octet and never carries a value below 128.
+    if (buf[pos] === 0) throw new DerError("A length is padded with a leading zero octet, which DER forbids (X.690 10.1)", pos - 1);
     length = 0;
     for (let i = 0; i < count; i++) length = length * 256 + buf[pos++];
+    if (length < 0x80) throw new DerError(`A length of ${length} uses the long form, which DER forbids below 128 (X.690 10.1)`, pos - count - 1);
   }
 
   const contentStart = pos;

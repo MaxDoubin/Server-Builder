@@ -919,6 +919,26 @@ await test("W6: a same-name certificate without a subject key ID is only probabl
   assert.ok(plainRoot.ok && plainRoot.cert.selfSigned && !plainRoot.cert.selfSignedUnconfirmed);
 });
 
+await test("W7: DER lengths must be minimal, so a padded or needlessly long length is refused", () => {
+  const body = (n: number) => new Uint8Array(n).fill(5);
+  // Minimal long form for 128 is accepted: 30 81 80 <128 bytes>.
+  const ok = new Uint8Array([0x04, 0x81, 0x80, ...body(128)]);
+  assert.equal(parseDer(ok).end, 131);
+  // Long form for a value below 128 is not DER (X.690 10.1).
+  assert.throws(() => parseDer(new Uint8Array([0x04, 0x81, 0x05, ...body(5)])), /uses the long form, which DER forbids below 128/);
+  // A leading zero octet in a long-form length is not DER either.
+  assert.throws(() => parseDer(new Uint8Array([0x04, 0x82, 0x00, 0x80, ...body(128)])), /padded with a leading zero octet/);
+  // Through the decoder: the outer SEQUENCE of a real certificate re-encoded with one padding octet.
+  const [real] = decodeCertificates(readPemText(readFileSync(FIX + "leaf.pem", "utf8"))).entries;
+  assert.ok(real.ok);
+  if (!real.ok) return;
+  const der = real.cert.der;
+  assert.equal(der[1], 0x82); // 30 82 LL LL
+  const padded = new Uint8Array([0x30, 0x83, 0x00, der[2], der[3], ...der.subarray(4)]);
+  const entries = decodeCertificates(readBinary(padded)).entries;
+  assert.ok(entries.length === 1 && !entries[0].ok && /padded with a leading zero octet/.test(entries[0].error));
+});
+
 console.log(`certificate-decoder: ${passed} tests passed`);
 }
 

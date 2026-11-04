@@ -395,6 +395,20 @@ test("a whole packet yields its transport segment, Ethernet padding trimmed", ()
   assert.equal(t.protocol, 17);
   const check = analyzeTransport({ ...t });
   assert.ok(check.ok && check.valid);
+  // A capture shorter than the IPv4 total length says is truncated: no segment, so no transport checksum.
+  const truncated = analyzeIpv4Header(hex("4500 0028 0000 4000 4006 0000 c0a8 0101 c0a8 0102 0050 1f90 0000 0001 0000 0000 5010 0000 0000 0000"));
+  assert.ok(truncated.ok);
+  if (truncated.ok) {
+    // Total length 40 names a 20-byte TCP segment; paste only 12 bytes of it.
+    const cut = analyzeIpv4Header(hex("4500 0028 0000 4000 4006 0000 c0a8 0101 c0a8 0102 0050 1f90 0000 0001 0000 0000"));
+    assert.ok(cut.ok && transportFromPacket(cut) === null);
+    // A total length below header plus transport minimum is wrong, not a segment either.
+    const tiny = analyzeIpv4Header(hex("4500 0018 0000 4000 4006 0000 c0a8 0101 c0a8 0102 0050 1f90 0000 0001 0000 0000 5010 0000 0000 0000"));
+    assert.ok(tiny.ok && transportFromPacket(tiny) === null);
+    // The complete packet still yields its 20-byte segment.
+    const whole = transportFromPacket(truncated);
+    assert.ok(whole && whole.segment.length === 20);
+  }
   // A fragment does not yield a segment.
   const frag = analyzeIpv4Header(hex("4500 001e 0000 2000 4011 0000 c0a8 0101 c0a8 0102 1234 0035 000a 01b4 6869"));
   assert.ok(frag.ok && transportFromPacket(frag) === null);

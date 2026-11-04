@@ -838,7 +838,8 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
 /**
  * When a whole IPv4 packet is pasted, the fields needed for the transport
  * checksum are already in it. Returns null when the payload is not a whole,
- * unfragmented TCP or UDP segment.
+ * unfragmented TCP or UDP segment, including when the capture is shorter than
+ * the IPv4 total length says.
  */
 export function transportFromPacket(
   result: Ipv4HeaderResult,
@@ -848,11 +849,14 @@ export function transportFromPacket(
   const minimum = result.protocol === 6 ? 20 : 8;
   if (result.trailing.length < minimum) return null;
   const declared = result.totalLength - result.headerLength;
+  // A total length that names more payload than was pasted means the capture
+  // is truncated, and one that names less than a transport header is wrong.
+  // Either way there is no whole segment to checksum, and offering the bytes
+  // that happen to be there would give a verdict and a "corrected" checksum
+  // for data that is not the datagram.
+  if (declared < minimum || declared > result.trailing.length) return null;
   // Ethernet pads short frames to 60 bytes, so a capture can carry bytes
   // past the IPv4 total length. Those are not part of the segment.
-  const segment =
-    declared >= minimum && declared <= result.trailing.length
-      ? result.trailing.slice(0, declared)
-      : result.trailing;
+  const segment = result.trailing.slice(0, declared);
   return { source: result.source, destination: result.destination, protocol: result.protocol, segment };
 }
