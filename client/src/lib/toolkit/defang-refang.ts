@@ -165,10 +165,14 @@ export const AMBIGUOUS_TLDS: ReadonlySet<string> = new Set(FILE_LIKE_CANDIDATES.
  * ordinary English ("meet at noon").
  *
  * hxxp and fxp are only reversed when a colon (live or defanged) follows,
- * so the word hxxp in a sentence about defanging is left alone.
+ * so the word hxxp in a sentence about defanging is left alone. They are
+ * also only reversed when no scheme character (a letter, a digit, + . -)
+ * comes right before, which is the same rule the URL scanner applies to a
+ * live scheme. A plain \b is not enough: it fails after an underscore, so
+ * "_https://x" would defang to "_hxxps://x" and never refang again.
  */
 const DEFANG_TOKEN =
-  /\[\.\]|\(\.\)|\{\.\}|\[dot\]|\(dot\)|\{dot\}|\\\.|\[@\]|\(@\)|\{@\}|\[at\]|\(at\)|\{at\}|\[:\/\/\]|\[:\]|\(:\)|\{:\}|\[\/\/\]|\[\/\]|\b(h)xx(p)(s?)(?=:|\[:|\(:|\{:)|\b(f)x(p)(s?)(?=:|\[:|\(:|\{:)/gi;
+  /\[\.\]|\(\.\)|\{\.\}|\[dot\]|\(dot\)|\{dot\}|\\\.|\[@\]|\(@\)|\{@\}|\[at\]|\(at\)|\{at\}|\[:\/\/\]|\[:\]|\(:\)|\{:\}|\[\/\/\]|\[\/\]|(?<![A-Za-z0-9+.-])(h)xx(p)(s?)(?=:|\[:|\(:|\{:)|(?<![A-Za-z0-9+.-])(f)x(p)(s?)(?=:|\[:|\(:|\{:)/gi;
 
 /** Uppercase when the reference letter is uppercase. */
 function caseLike(letter: string, reference: string): string {
@@ -839,10 +843,19 @@ function atSign(style: DefangStyle): string {
   return style.at === "keep" ? "@" : style.at;
 }
 
-/** userinfo@host:port with the @, the host's dots, and an IPv6 literal's colons defanged. The port is kept. */
+/**
+ * The text before the @ of a URL. It can hold a name that a mail client turns
+ * into a link on its own (http://paypal.com@evil.example/ is the classic
+ * disguise), so its dots are broken like the host's.
+ */
+function defangUserinfo(userinfo: string, style: DefangStyle): string {
+  return defangDots(userinfo, style);
+}
+
+/** userinfo@host:port with the @, the userinfo and host dots, and an IPv6 literal's colons defanged. The port is kept. */
 function defangAuthority(authority: string, style: DefangStyle): string {
   const at = authority.lastIndexOf("@");
-  const user = at === -1 ? "" : `${authority.slice(0, at)}${atSign(style)}`;
+  const user = at === -1 ? "" : `${defangUserinfo(authority.slice(0, at), style)}${atSign(style)}`;
   const hostPort = authority.slice(at + 1);
   if (hostPort.startsWith("[")) {
     const close = hostPort.indexOf("]");
@@ -872,7 +885,7 @@ export function defangIndicator(type: NetType, fanged: string, style: DefangStyl
     case "url": {
       const parts = parseUrl(fanged);
       if (!parts) return fanged;
-      const user = parts.userinfo === null ? "" : `${parts.userinfo}${atSign(style)}`;
+      const user = parts.userinfo === null ? "" : `${defangUserinfo(parts.userinfo, style)}${atSign(style)}`;
       const host =
         parts.hostKind === "ipv6" ? `[${defangIPv6(parts.host.slice(1, -1), style)}]` : defangDots(parts.host, style);
       // A URL in the query string (?next=http://...) would still be picked up
@@ -907,7 +920,9 @@ function looseDefangWord(word: string, style: DefangStyle): string {
     const c = chars[i];
     if (c === "." && i > 0 && i < chars.length - 1 && LETTER_OR_DIGIT.test(chars[i - 1]) && LETTER_OR_DIGIT.test(chars[i + 1])) {
       out += style.dot;
-    } else if (c === "@" && i > 0 && i < chars.length - 1) {
+    } else if (c === "@" && i > 0 && i < chars.length - 1 && !("[({".includes(chars[i - 1]) && "])}".includes(chars[i + 1]))) {
+      // An @ already wrapped as [@] is left alone, so this can run over text
+      // that an earlier step has defanged without writing [[@]].
       out += atSign(style);
     } else {
       out += c;
@@ -951,6 +966,9 @@ export type TransformResult =
       skippedFileNames: string[];
       skippedFileNameCount: number;
     };
+
+/** A defanged colon and the port digits after it, straight after a bare host. */
+const PORT_TOKEN = /^(?:\[:\]|\(:\)|\{:\})(\d{1,5})(?![A-Za-z0-9_-]|\.[A-Za-z0-9])/;
 
 /** Offsets where each line starts, for turning an offset into a line number. */
 export function lineStarts(text: string): number[] {
@@ -1036,10 +1054,33 @@ export function transform(input: string, options: TransformOptions): TransformRe
   for (const m of found.matches) {
     if (m.nested || m.start < cursor) continue;
     gap(cursor, m.start);
-    const next = options.direction === "refang" ? m.fanged : defangIndicator(m.type, m.fanged, style);
-    if (next !== m.raw) record(m.start, m.type, m.raw, next);
+    let end = m.end;
+    let next: string;
+    if (options.direction === "refang") {
+      next = m.fanged;
+      // "evil[.]com[:]8080" and "198[.]51[.]100[.]23[:]443": the host is the
+      // indicator, but the colon before its port is part of the same defang.
+      if (m.type === "domain" || m.type === "ipv4") {
+        const port = PORT_TOKEN.exec(input.slice(m.end, m.end + 12));
+        if (port) {
+          next = `${next}:${port[1]}`;
+          end = m.end + port[0].length;
+        }
+      }
+    } else {
+      next = defangIndicator(m.type, m.fanged, style);
+      if (everything) {
+        // Everything mode also breaks the dots and @ in the rest of a URL
+        // (path, query, user name) and in an email's local part, when that
+        // still refangs to exactly the live text.
+        const loose = looseDefangWord(next, style);
+        if (loose !== next && refangAll(loose) === m.fanged) next = loose;
+      }
+    }
+    const raw = end === m.end ? m.raw : input.slice(m.start, end);
+    if (next !== raw) record(m.start, m.type, raw, next);
     out.push(next);
-    cursor = m.end;
+    cursor = end;
   }
   gap(cursor, input.length);
 
