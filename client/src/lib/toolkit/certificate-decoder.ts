@@ -573,8 +573,13 @@ export function analyzeChain(certs: CertificateInfo[]): ChainReport {
         findings.push({ tone: "danger", text: `The keyUsage of ${i + 2} does not include keyCertSign, so it cannot sign certificates.` });
       }
       const pathLen = parent.extensions.basicConstraints?.pathLen;
-      if (pathLen !== null && pathLen !== undefined && i > pathLen) {
-        findings.push({ tone: "danger", text: `Certificate ${i + 2} allows ${pathLen} intermediate${pathLen === 1 ? "" : "s"} below it (pathLen), and there ${i === 1 ? "is" : "are"} ${i}.` });
+      // RFC 5280 6.1.4 (l): a self-issued certificate, such as a same-name
+      // rollover CA, is not counted against pathLenConstraint. The first
+      // certificate is the end entity, so the intermediates below the parent
+      // are certificates 2 to i + 1 of the list.
+      const below = certs.slice(1, i + 1).filter((c) => !c.selfIssued).length;
+      if (pathLen !== null && pathLen !== undefined && below > pathLen) {
+        findings.push({ tone: "danger", text: `Certificate ${i + 2} allows ${pathLen} intermediate${pathLen === 1 ? "" : "s"} below it (pathLen), and there ${below === 1 ? "is" : "are"} ${below}, not counting self-issued certificates.` });
       }
     }
     links.push({ child: i, parent: i + 1, nameMatch, keyIdMatch, findings });

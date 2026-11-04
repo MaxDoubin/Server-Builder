@@ -614,7 +614,7 @@ await test("V3: pathLen 0 on a root with two intermediates below it (openssl ver
   const r = analyzeChain(chain);
   assert.ok(r.links[0].findings.every((f) => f.tone === "ok"));
   assert.ok(r.links[1].findings.every((f) => f.tone === "ok"));
-  assert.ok(r.links[2].findings.some((f) => f.tone === "danger" && /allows 0 intermediates below it \(pathLen\), and there are 2/.test(f.text)));
+  assert.ok(r.links[2].findings.some((f) => f.tone === "danger" && /allows 0 intermediates below it \(pathLen\), and there are 2, not counting self-issued/.test(f.text)));
   for (let i = 0; i < 3; i++) {
     const v = await verifySignature(chain[i].signatureAlgorithm, chain[i + 1].publicKey, chain[i].tbs, chain[i].signature);
     assert.equal(v.status, "valid", `link ${i}`);
@@ -622,6 +622,13 @@ await test("V3: pathLen 0 on a root with two intermediates below it (openssl ver
   // Int A directly under the root: pathLen 0 allows a CA certificate with no intermediates below it.
   const shorter = analyzeChain([chain[2], chain[3]]);
   assert.ok(shorter.links[0].findings.every((f) => f.tone !== "danger"));
+  // RFC 5280 6.1.4 (l): self-issued certificates are not counted. Treating both intermediates as
+  // self-issued rollover certificates leaves none to count against the root's pathLen of 0, and
+  // treating one of them as self-issued leaves one, which is still over.
+  const bothSelfIssued = analyzeChain([chain[0], { ...chain[1], selfIssued: true }, { ...chain[2], selfIssued: true }, chain[3]]);
+  assert.ok(!bothSelfIssued.links[2].findings.some((f) => /pathLen/.test(f.text)));
+  const oneSelfIssued = analyzeChain([chain[0], { ...chain[1], selfIssued: true }, chain[2], chain[3]]);
+  assert.ok(oneSelfIssued.links[2].findings.some((f) => f.tone === "danger" && /there is 1, not counting self-issued/.test(f.text)));
 });
 
 await test("V4: RFC 5952 text for SAN addresses, IPv4-mapped tail and the first-run tie rule", () => {
