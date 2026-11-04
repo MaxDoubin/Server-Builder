@@ -22,7 +22,9 @@ import { useSEO } from "@/lib/useSEO";
 import {
   BASELINE,
   BOUNDARY_TESTS,
+  BUSY_SETTLE,
   CEILING_CONFIGS,
+  CLIPS,
   CODEC_PROFILES,
   CONCURRENCY_SWEEP,
   CORRECTNESS,
@@ -31,9 +33,14 @@ import {
   DECODE_32K,
   EDITORS,
   ENDURANCE,
+  FIRST_PASS_BOUNDARIES,
+  FIXED_TOTAL,
   FPGA,
+  LINK_STATE,
   MACHINE,
+  MIXED_IN_BUDGET,
   MIXED_LOAD,
+  NATIVE_SWEEP,
   NATIVE_VS_BGRA,
   PER_CARD_BUSY,
   PIPELINE_FINDINGS,
@@ -41,6 +48,7 @@ import {
   REAL_TIME_FPS,
   SCRUBBING,
   SOFTWARE_VS_HARDWARE,
+  STILL_OPEN,
   STREAM_CEILINGS,
   TECHNIQUE,
   isRealTime,
@@ -365,6 +373,7 @@ function BlockDemo() {
 /* --------------------------------------------------------------- the page */
 
 const ANCHORS: Array<[string, string]> = [
+  ["verification", "What changed"],
   ["capacity", "Capacity"],
   ["cpu", "CPU load"],
   ["mixed", "Mixed timelines"],
@@ -379,7 +388,7 @@ export function CinematicAfterburner() {
   useSEO({
     title: "Three Apple Afterburner Cards, Measured | Max Doubin",
     description:
-      "Interactive results from three Apple Afterburner cards in one Mac Pro 7,1: 96 real-time 1080p streams, 27 at 4K and 6 at 8K across all three cards, CPU isolation, mixed timelines, and a browser demo of recovering files through a video decoder.",
+      "Interactive results from three Apple Afterburner cards in one Mac Pro 7,1: 106 real-time 1080p streams, 27 at 4K and 6 at 8K across all three cards, CPU isolation, mixed timelines, a verification pass that corrected the first report, and a browser demo of recovering files through a video decoder.",
     canonical: `${SITE_URL}/afterburner`,
     ogImage: `${SITE_URL}/images/og/afterburner.jpg`,
     schema: {
@@ -387,7 +396,7 @@ export function CinematicAfterburner() {
       "@type": "Dataset",
       name: "Three Apple Afterburner cards, measured",
       description:
-        "Decode capacity, CPU isolation, mixed-resolution, endurance and data recovery measurements from three Apple Afterburner cards in one Mac Pro 7,1, using locally generated gradient and noise ProRes test clips.",
+        "Decode capacity, CPU isolation, mixed-resolution, endurance and data recovery measurements from three Apple Afterburner cards in one Mac Pro 7,1, using locally generated ProRes test clips, only one of which has realistic gradient and noise content.",
       url: `${SITE_URL}/afterburner`,
       creator: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
       isBasedOn: `${SITE_URL}${WRITE_UP}`,
@@ -451,9 +460,9 @@ export function CinematicAfterburner() {
               ))}
             </dl>
             <p className="mt-3 max-w-2xl font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              All three cards together. At 1080p, 4K and 8K every stream held {REAL_TIME_FPS} fps or better; the two
-              16K streams decoded at the same time, but their frame rate was not logged, so they are not counted as
-              real time.
+              All three cards together; each count is the most streams that all held {REAL_TIME_FPS} fps or better. Only
+              the 4K clip is realistic, hard-to-compress content. The 1080p, 8K and 16K clips are flat test patterns, so
+              those counts are likely more favorable than real footage would give.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -468,7 +477,8 @@ export function CinematicAfterburner() {
 
             <p className="mt-8 max-w-2xl font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               <span className="text-[hsl(var(--brand-bone-dim))]">The machine.</span> {MACHINE.host}, {MACHINE.cpu} with{" "}
-              {MACHINE.physicalCores} physical and {MACHINE.logicalCores} logical cores, {MACHINE.os}. Three
+              {MACHINE.physicalCores} physical and {MACHINE.logicalCores} logical cores, {MACHINE.memory} of memory,{" "}
+              {MACHINE.os}, {MACHINE.kext}. Three
               Afterburner cards ({MACHINE.fpga}) in PCIe{" "}
               {MACHINE.cards.map((card) => `slot ${card.slot} (x${card.lanes})`).join(", ")}. The two Radeon Pro Vega
               II modules were left out of every test.
@@ -479,7 +489,8 @@ export function CinematicAfterburner() {
               data-testid="afterburner-caveat"
             >
               Every number on this page is a measurement on this one machine, not a specification. The video
-              tests used locally generated ProRes test clips of gradients and noise, not real footage. Stream counts
+              tests used locally generated ProRes test clips, not real footage, and only the 4K clip has gradient and
+              noise content. Stream counts
               are for all three cards together, through VideoToolbox&apos;s hardware-required decode path, and real
               time means at least {REAL_TIME_FPS} fps on every stream.
             </p>
@@ -500,16 +511,74 @@ export function CinematicAfterburner() {
             </nav>
           </header>
 
+          {/* ── verification addendum ── */}
+          <Section id="verification" tag="Verification addendum" title="What the verification pass changed">
+            <p className={P}>
+              A seven-item test list was run against the first report. Two of its findings change conclusions, not
+              just confidence, and several figures on this page were re-measured. Where this page and the first report
+              differ, this page is current.
+            </p>
+            <ol className="mt-5 max-w-2xl list-decimal space-y-3 pl-5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] marker:text-[hsl(var(--brand-signal))]">
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">
+                  The 16 MB/s data recovery ceiling and the cliff past nine sessions came from forcing BGRA output, not
+                  from the cards.
+                </span>{" "}
+                With native output the same sessions show no cliff, and stay flat from 9 to 96 sessions (
+                {spanText(NATIVE_SWEEP.extended.combinedMBps)} MB/s combined, {NATIVE_SWEEP.extended.exact} of{" "}
+                {NATIVE_SWEEP.extended.of} bit-exact).
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">The stream counts are not an apples-to-apples comparison across resolutions.</span>{" "}
+                Only the 4K clip has gradient and noise content. The 1080p, 8K and 16K clips are flat, so those counts
+                are likely more favorable than real footage would give.
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">The 1080p ceiling is 106, not about 96.</span> The first
+                pass tested only widely spaced levels; a fine sweep found the edge.
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">The fixed-total idea holds at 1080p and 4K only.</span>{" "}
+                8K and 16K totals were still rising with the stream count.
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">The 27-stream 4K ceiling was sometimes reached with only one or two of the three cards working.</span>{" "}
+                The true all-three-cards capacity may be higher.
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">Mixing penalty is an 8K effect.</span> Redone at exactly
+                one third of each solo ceiling, 4K and 1080p had headroom and 8K did not.
+              </li>
+              <li className="pl-1">
+                <span className="text-[hsl(var(--brand-bone))]">Cards B and C were in slots 6 and 7, not 7 and 6.</span>{" "}
+                The machine record corrects the first report&apos;s table; both are x8 slots.
+              </li>
+            </ol>
+            <Sub id="open" tag="Still open" title="What is still open">
+              <ul className="mt-4 max-w-2xl list-disc space-y-2 pl-5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] marker:text-[hsl(var(--brand-signal))]">
+                {STILL_OPEN.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </Sub>
+          </Section>
+
           {/* ── 2. capacity ── */}
           <Section id="capacity" tag={`Section ${STREAM_CEILINGS.section}`} title="How many streams play in real time">
             <p className={P}>
-              The ceiling is the most streams that all held {REAL_TIME_FPS} fps at once. At 1080p, 96 streams held{" "}
-              {n(BOUNDARY_TESTS.rows[0].slowestFps)} fps on the slowest one and 112 fell to{" "}
-              {n(BOUNDARY_TESTS.rows[1].slowestFps)}; no count in between was tested. At 4K, 27 passed at{" "}
-              {n(BOUNDARY_TESTS.rows[2].slowestFps)} fps and 28 failed at {n(BOUNDARY_TESTS.rows[3].slowestFps)}.
+              The ceiling is the most streams that all held {REAL_TIME_FPS} fps at once, found with a fine sweep. At
+              1080p, {BOUNDARY_TESTS.rows[0].streams} streams held {n(BOUNDARY_TESTS.rows[0].slowestFps)} fps on the
+              slowest one and {BOUNDARY_TESTS.rows[1].streams} fell to {n(BOUNDARY_TESTS.rows[1].slowestFps)}, with{" "}
+              {BOUNDARY_TESTS.rows[1].passingStreams} of the {BOUNDARY_TESTS.rows[1].streams} still at {REAL_TIME_FPS} fps
+              or better. At 4K, {BOUNDARY_TESTS.rows[2].streams} passed at {n(BOUNDARY_TESTS.rows[2].slowestFps)} fps and{" "}
+              {BOUNDARY_TESTS.rows[3].streams} failed at {n(BOUNDARY_TESTS.rows[3].slowestFps)}. 8K held{" "}
+              {BOUNDARY_TESTS.rows[4].streams} ({n(BOUNDARY_TESTS.rows[4].slowestFps)} fps) and failed at{" "}
+              {BOUNDARY_TESTS.rows[5].streams}; 16K held {BOUNDARY_TESTS.rows[6].streams} (
+              {n(BOUNDARY_TESTS.rows[6].slowestFps)} fps) and failed at {BOUNDARY_TESTS.rows[7].streams}. The first pass
+              tested only widely spaced levels and reported about {FIRST_PASS_BOUNDARIES.rows[0].streams} for 1080p.
             </p>
             <ChartFigure
-              caption={`Most simultaneous streams per resolution, all three cards together. 1080p, 4K and 8K are real-time counts; the 16K bar is two streams decoded at once, with no frame rate logged. Host CPU was ${n(BOUNDARY_TESTS.hostIdlePercentAt1080pCeiling)}% idle at the 1080p ceiling.`}
+              caption={`Most simultaneous streams per resolution, all three cards together, from the fine sweep. Only the 4K clip has gradient and noise content; the 1080p, 8K and 16K clips are flat. Host CPU was ${n(BOUNDARY_TESTS.hostIdlePercentAt96Streams1080p)}% idle at 96 streams of 1080p.`}
               table={
                 <DataTable
                   label="Real-time stream ceilings by resolution"
@@ -529,20 +598,21 @@ export function CinematicAfterburner() {
                   display: `${row.streams} ${row.streams === 1 ? "stream" : "streams"}`,
                   tone: row.realTime ? "accent" : "muted",
                 }))}
-                max={100}
-                ticks={[0, 25, 50, 75, 100]}
+                max={120}
+                ticks={[0, 30, 60, 90, 120]}
                 unit="streams"
               />
             </ChartFigure>
             <ChartFigure
-              caption={`The slowest stream decides. 4K also passed at ${BOUNDARY_TESTS.alsoPassed4K.join(", ")} streams; the report gives no rate for those runs.`}
+              caption={`The slowest stream decides. Each resolution's last pass and first fail. The first pass had 1080p at ${FIRST_PASS_BOUNDARIES.rows[0].streams} (${n(FIRST_PASS_BOUNDARIES.rows[0].slowestFps)} fps) and ${FIRST_PASS_BOUNDARIES.rows[1].streams} (${n(FIRST_PASS_BOUNDARIES.rows[1].slowestFps)} fps), and 4K at ${FIRST_PASS_BOUNDARIES.rows[2].streams} (${n(FIRST_PASS_BOUNDARIES.rows[2].slowestFps)} fps) and ${FIRST_PASS_BOUNDARIES.rows[3].streams} (${n(FIRST_PASS_BOUNDARIES.rows[3].slowestFps)} fps).`}
               table={
                 <DataTable
                   label="Pass and fail boundaries"
-                  head={["Run", "Slowest stream", "Result"]}
+                  head={["Run", "Slowest stream", "Streams at 24 fps or better", "Result"]}
                   rows={BOUNDARY_TESTS.rows.map((row) => [
                     `${row.resolution}, ${row.streams} streams`,
-                    `${n(row.slowestFps)} fps`,
+                    `${n(row.slowestFps, 2)} fps`,
+                    `${row.passingStreams} of ${row.streams}`,
                     row.passed ? "Pass" : "Fail",
                   ])}
                 />
@@ -550,10 +620,10 @@ export function CinematicAfterburner() {
             >
               <FpsChart
                 label={`Slowest stream at each boundary: ${BOUNDARY_TESTS.rows
-                  .map((row) => `${row.resolution} ${row.streams} streams ${n(row.slowestFps)} fps, ${row.passed ? "pass" : "fail"}`)
+                  .map((row) => `${row.resolution} ${row.streams} streams ${n(row.slowestFps, 2)} fps, ${row.passed ? "pass" : "fail"}`)
                   .join("; ")}.`}
-                domain={[20, 30]}
-                ticks={[20, 22, 24, 26, 28, 30]}
+                domain={[18, 30]}
+                ticks={[18, 20, 22, 24, 26, 28, 30]}
                 line={REAL_TIME_FPS}
                 legend={[
                   { shape: "dot", tone: "accent", text: "Pass, every stream at 24 fps or better" },
@@ -562,7 +632,7 @@ export function CinematicAfterburner() {
                 rows={BOUNDARY_TESTS.rows.map((row) => ({
                   key: `${row.resolution}-${row.streams}`,
                   label: `${row.resolution}, ${row.streams} streams`,
-                  summary: `${n(row.slowestFps)} fps, ${row.passed ? "pass" : "fail"}`,
+                  summary: `${n(row.slowestFps, 2)} fps, ${row.passed ? "pass" : "fail"}`,
                   marks: [
                     {
                       value: row.slowestFps,
@@ -578,13 +648,71 @@ export function CinematicAfterburner() {
               A 32K clip ({DECODE_32K.width.toLocaleString("en-US")} by {DECODE_32K.height.toLocaleString("en-US")}) was
               also generated and decoded successfully. That was a test of resolution, not a count of streams.
             </p>
+
+            <Sub id="clips" tag={CLIPS.section} title="What the test clips were">
+              <p className={P}>
+                All five clips are {CLIPS.codec} ({CLIPS.fourCC}). Only the 4K clip has the gradient and noise content
+                that is hard to compress; the others are flat or solid-color patterns, so their ceilings are likely more
+                favorable than real footage would give, and the ceilings should not be compared across resolutions as
+                if the content were the same.
+              </p>
+              <div className="mt-5">
+                <DataTable
+                  label="Test clips"
+                  head={["Clip", "Dimensions", "Frames", "Bitrate", "Content"]}
+                  rows={CLIPS.rows.map((row) => [
+                    row.clip,
+                    `${row.width.toLocaleString("en-US")} by ${row.height.toLocaleString("en-US")}`,
+                    `${row.frames} at ${row.fps} fps`,
+                    `${n(row.mbps)} Mb/s`,
+                    row.note ? `${row.content}. ${row.note}` : row.content,
+                  ])}
+                />
+              </div>
+            </Sub>
+
+            <Sub id="totals" tag={FIXED_TOTAL.section} title="The fixed total holds at 1080p and 4K">
+              <p className={P}>
+                Total frames per second across all streams stayed flat as streams were added: about{" "}
+                {FIXED_TOTAL.rows[0].totalFps} fps at 4K (within {FIXED_TOTAL.rows[0].within}, N={FIXED_TOTAL.rows[0].fromN}{" "}
+                to {FIXED_TOTAL.rows[0].toN}) and about {FIXED_TOTAL.rows[1].totalFps.toLocaleString("en-US")} at 1080p
+                (within {FIXED_TOTAL.rows[1].within}, N={FIXED_TOTAL.rows[1].fromN} to {FIXED_TOTAL.rows[1].toN}).
+                Dividing a total by {FIXED_TOTAL.divisor} gives a close but slightly optimistic estimate of the real
+                ceiling: {n(FIXED_TOTAL.rows[0].estimateFromTotal)} for 4K against a real boundary of{" "}
+                {FIXED_TOTAL.rows[0].boundary}, and {n(FIXED_TOTAL.rows[1].estimateFromTotal)} for 1080p against{" "}
+                {FIXED_TOTAL.rows[1].boundary}. The gap is per-stream variance, not an error in the idea.
+              </p>
+              <p className={P}>
+                {FIXED_TOTAL.notAPlateau.resolutions.join(" and ")} do not show the pattern in the tested range: their
+                total throughput was still rising with the stream count ({FIXED_TOTAL.notAPlateau.example.resolution},{" "}
+                {n(FIXED_TOTAL.notAPlateau.example.fromFps)} to {n(FIXED_TOTAL.notAPlateau.example.toFps)} fps across N=
+                {FIXED_TOTAL.notAPlateau.example.fromN} to {FIXED_TOTAL.notAPlateau.example.toN}), so they had not reached
+                a fixed-budget plateau.
+              </p>
+              <p className={NOTE}>{FIXED_TOTAL.statsNote}</p>
+            </Sub>
+
+            <Sub id="links" tag={LINK_STATE.section} title="The PCIe links did not change under load">
+              <p className={P}>
+                Link width and speed were identical idle and during a 27-stream 4K decode, so the x16 against x8
+                asymmetry is a fixed property of the slots, not a load effect.
+              </p>
+              <div className="mt-5">
+                <DataTable
+                  label="PCIe link state, idle against load"
+                  head={["Card", "Slot", "Idle", "During 27 x 4K decode"]}
+                  rows={LINK_STATE.rows.map((row) => [row.card, `Slot ${row.slot} (x${row.lanes})`, row.idle, row.underLoad])}
+                />
+              </div>
+              <p className={NOTE}>{LINK_STATE.notCaptured}</p>
+            </Sub>
           </Section>
 
           {/* ── 3. CPU isolation ── */}
           <Section id="cpu" tag={`Section ${CPU_ISOLATION.section}`} title="A saturated CPU barely moves the decode">
             <p className={P}>
               All {MACHINE.logicalCores} logical cores were pinned with busy loops ({CPU_ISOLATION.saturatedLoad})
-              while the cards ran at their 1080p and 4K ceilings. Every stream stayed above {REAL_TIME_FPS} fps.
+              while the cards ran 96 streams of 1080p and 27 of 4K. Every stream stayed above {REAL_TIME_FPS} fps.
             </p>
             <ChartFigure
               caption={`The slowest 1080p stream dropped ${percentDrop(CPU_ISOLATION.rows[0].baseline.min, CPU_ISOLATION.rows[0].saturated.min)}% and the slowest 4K stream ${percentDrop(CPU_ISOLATION.rows[1].baseline.min, CPU_ISOLATION.rows[1].saturated.min)}%.`}
@@ -617,20 +745,28 @@ export function CinematicAfterburner() {
               />
             </ChartFigure>
             <p className={NOTE}>
-              At the 4K ceiling the three cards read {CPU_ISOLATION.perCardBusy4K.join(", ")}% busy, so all three were
-              carrying the load.
+              Per-second sampling of each card, three runs each. At 96 streams of 1080p the first second after launch
+              reads unevenly ({BUSY_SETTLE.firstSecond1080p.map((triple) => triple.join("/")).join(", ")}% across the
+              three runs) and settles to {BUSY_SETTLE.settled1080p.join("/")}% by second {BUSY_SETTLE.settledBySecond},
+              so it is a ramp-up transient. At 4K ×{BUSY_SETTLE.fourK.streams} it is different: in{" "}
+              {BUSY_SETTLE.fourK.runsWithOneX8CardIdle} of {BUSY_SETTLE.fourK.runs} runs one x8 card (
+              {BUSY_SETTLE.fourK.idleCard}) dropped to 0% busy for most of the run while the other two carried the
+              full load, and in the third run both x8 cards dropped to 0%, leaving the x16 card doing almost all the
+              work. So the 27-stream ceiling was sometimes reached with only one or two of the three cards, and the
+              true all-three-cards 4K capacity may be higher. That is an open question, not a settled number.
             </p>
           </Section>
 
           {/* ── 4. mixed ── */}
           <Section id="mixed" tag={`Section ${MIXED_LOAD.section}`} title="When resolutions mix, 8K falls behind first">
             <p className={P}>
-              One batch ran 8K, 4K and 1080p at once, each at half its solo ceiling. Added up, that is about{" "}
-              {MIXED_LOAD.ceilingsOfWork} ceilings of work, so something had to give. 4K and 1080p stayed just above{" "}
+              One batch ran 8K, 4K and 1080p at once, each at half its first-pass solo ceiling. Added up, that is about{" "}
+              {MIXED_LOAD.ceilingsOfWork} ceilings of work ({MIXED_LOAD.ceilingsOfWorkCorrected} against the corrected
+              1080p ceiling), so something had to give. 4K and 1080p stayed just above{" "}
               {REAL_TIME_FPS} fps; 8K fell to {n(MIXED_LOAD.rows[0].fps.min)} to {n(MIXED_LOAD.rows[0].fps.max)} fps.
             </p>
             <ChartFigure
-              caption="Each bar runs from the slowest stream to the fastest; the mark is the average. Only 8K fell below real time, on every stream. It is one batch."
+              caption="Each bar runs from the slowest stream to the fastest; the mark is the average. Only 8K fell below real time, on every stream. It is one batch, and it was over capacity by design."
               table={
                 <DataTable
                   label="Mixed-resolution batch"
@@ -675,6 +811,67 @@ export function CinematicAfterburner() {
                 })}
               />
             </ChartFigure>
+
+            <Sub id="mixed-budget" tag={MIXED_IN_BUDGET.section} title="Redone within capacity, it is still an 8K problem">
+              <p className={P}>
+                That batch could not show a pure mixing penalty, because it asked for more than the cards had. The redo
+                ran exactly one third of each tier&apos;s solo ceiling at once: {MIXED_IN_BUDGET.rows[0].streams} of{" "}
+                {MIXED_IN_BUDGET.rows[0].soloCeiling} at 8K, {MIXED_IN_BUDGET.rows[1].streams} of{" "}
+                {MIXED_IN_BUDGET.rows[1].soloCeiling} at 4K and {MIXED_IN_BUDGET.rows[2].streams} of{" "}
+                {MIXED_IN_BUDGET.rows[2].soloCeiling} at 1080p. 4K and 1080p had 50 to 65 percent headroom and no
+                penalty. 8K ran right at the {REAL_TIME_FPS} fps edge, with one of its two streams failing. So the
+                mixing penalty is specific to 8K at this allocation, not a uniform effect across the tiers.
+              </p>
+              <ChartFigure
+                caption="Each bar runs from the slowest stream to the fastest; the mark is the average. Exactly one third of each solo ceiling."
+                table={
+                  <DataTable
+                    label="Mixed-resolution batch within capacity"
+                    head={["Tier", "Streams", "Min / avg / max fps", "Streams at 24 fps or better"]}
+                    rows={MIXED_IN_BUDGET.rows.map((row) => [
+                      row.resolution,
+                      `${row.streams} of ${row.soloCeiling}`,
+                      `${n(row.fps.min)} / ${n(row.fps.avg)} / ${n(row.fps.max)}`,
+                      row.passing,
+                    ])}
+                  />
+                }
+              >
+                <FpsChart
+                  label={`Mixed batch within capacity, slowest to fastest stream: ${MIXED_IN_BUDGET.rows
+                    .map((row) => `${row.resolution} ${n(row.fps.min)} to ${n(row.fps.max)} fps`)
+                    .join("; ")}. 8K's slowest stream is below 24 fps.`}
+                  domain={[20, 42]}
+                  ticks={[20, 24, 28, 32, 36, 40]}
+                  line={REAL_TIME_FPS}
+                  legend={[
+                    { shape: "span", tone: "accent", text: "Slowest to fastest stream" },
+                    { shape: "dot", tone: "accent", text: "Average, real time held" },
+                    { shape: "cross", tone: "danger", text: "Average, slowest stream below real time" },
+                  ]}
+                  rows={MIXED_IN_BUDGET.rows.map((row) => {
+                    const ok = isRealTime(row.fps.min);
+                    return {
+                      key: row.resolution,
+                      label: `${row.resolution}, ${row.streams} of ${row.soloCeiling}`,
+                      summary: `${n(row.fps.min)} / ${n(row.fps.avg)} / ${n(row.fps.max)}`,
+                      span: { lo: row.fps.min, hi: row.fps.max, tone: ok ? "accent" : "danger" },
+                      marks: [
+                        {
+                          value: row.fps.avg,
+                          shape: ok ? "dot" : "cross",
+                          tone: ok ? "accent" : "danger",
+                          name: "Average",
+                        },
+                      ],
+                    };
+                  })}
+                />
+              </ChartFigure>
+              <p className={NOTE}>
+                A second allocation gave 8K {MIXED_IN_BUDGET.second.eightKStreams} of 6 streams and 1080p fewer. {MIXED_IN_BUDGET.second.note}
+              </p>
+            </Sub>
           </Section>
 
           {/* ── 5. endurance, scrubbing, editors ── */}
@@ -682,7 +879,7 @@ export function CinematicAfterburner() {
             <dl className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
                 <dt className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
-                  {ENDURANCE.section} · {ENDURANCE.minutes} minutes at the ceiling
+                  {ENDURANCE.section} · {ENDURANCE.minutes} minutes at 96 streams
                 </dt>
                 <dd className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {ENDURANCE.streams} streams of {ENDURANCE.resolution}, sampled every {ENDURANCE.sampleEverySeconds} seconds.
@@ -876,6 +1073,10 @@ export function CinematicAfterburner() {
                   unit="seconds"
                 />
               </ChartFigure>
+              <BgraNote>
+                These short sessions forced 32-bit BGRA output. The verification pass re-ran them with native output
+                and found no cliff at all (the section after the ceiling, below).
+              </BgraNote>
               <p className={NOTE}>
                 A few long-lived sessions doing substantial work removed the degradation entirely. Raising the
                 harness&apos;s own in-flight limit from {CONCURRENCY_SWEEP.inFlightLimit.from} to{" "}
@@ -883,15 +1084,16 @@ export function CinematicAfterburner() {
               </p>
             </Sub>
 
-            <Sub id="ceiling" tag={`Section ${CEILING_CONFIGS.section}`} title="The data recovery ceiling">
+            <Sub id="ceiling" tag={`Section ${CEILING_CONFIGS.section}`} title="The 16 MB/s ceiling was a BGRA limit">
               <p className={P}>
                 With long-lived sessions, four configurations converged on {spanText(CEILING_CONFIGS.converges)} MB/s
                 for all three cards together. Six sessions did not beat three; they split the same capacity.
               </p>
               <BgraNote>
                 Every figure in this table was measured with the decoder forced to 32-bit BGRA output, which slows
-                hardware decode {NATIVE_VS_BGRA.hardwarePenalty} times (Section {NATIVE_VS_BGRA.section}). It is a
-                ceiling of that pipeline, not a proven limit of the cards, and it was not re-run with native output.
+                hardware decode {NATIVE_VS_BGRA.hardwarePenalty} times (Section {NATIVE_VS_BGRA.section}). The
+                verification pass showed that this conversion, not the cards, produced the ceiling: the same pipeline
+                with native output is about {NATIVE_SWEEP.longLived.advantage} times faster at matched density.
               </BgraNote>
               <div className="mt-5">
                 <DataTable
@@ -910,6 +1112,41 @@ export function CinematicAfterburner() {
                 The pipeline was also rebuilt entirely in memory, with no file and no container, and separately run
                 from threads inside one process. Both gave the same throughput as before (Section 3.2).
               </p>
+            </Sub>
+
+            <Sub id="native" tag={NATIVE_SWEEP.section} title="With native output there is no cliff">
+              <p className={P}>
+                The short-session pipeline was rebuilt to decode to the hardware&apos;s native pixel format (
+                {NATIVE_SWEEP.nativeFormat} for ProRes 4444) instead of forcing BGRA. Every configuration came back 100%
+                bit-exact. At low concurrency native is a consistent 1.3 to 1.4 times faster. At 9 and 12 sessions BGRA
+                collapses while native does not degrade at all. Extending the native sweep to{" "}
+                {NATIVE_SWEEP.extended.levels.join(", ")} sessions keeps it flat at {spanText(NATIVE_SWEEP.extended.combinedMBps)}{" "}
+                MB/s combined, {NATIVE_SWEEP.extended.exact} of {NATIVE_SWEEP.extended.of} bit-exact.
+              </p>
+              <div className="mt-5">
+                <DataTable
+                  label="Native output against forced BGRA, aggregate MB/s"
+                  head={["Resolution", "Sessions", "BGRA", "Native", "Native advantage"]}
+                  rows={NATIVE_SWEEP.rows.map((row) => [
+                    row.resolution,
+                    row.n,
+                    row.bgraNote ? `${n(row.bgraMBps, 2)} MB/s (${row.bgraNote})` : `${n(row.bgraMBps, 2)} MB/s`,
+                    `${n(row.nativeMBps, 2)} MB/s`,
+                    `${row.advantage}x`,
+                  ])}
+                />
+              </div>
+              <p className={P}>
+                The same check on the few long-lived sessions that produced the original 16 MB/s (
+                {NATIVE_SWEEP.longLived.sessions} sessions, {NATIVE_SWEEP.longLived.payloadMB} MB payloads each) gave{" "}
+                {n(NATIVE_SWEEP.longLived.nativeMBps)} MB/s decode-only with native output against{" "}
+                {n(NATIVE_SWEEP.longLived.bgraMBps)} MB/s with BGRA at matched (1x) density, about{" "}
+                {NATIVE_SWEEP.longLived.advantage} times. One caveat: the original 16 MB/s used a 3x-density scheme that
+                has only been calibrated for native output on the luma channel, not chroma, so a native 3x-density
+                number has not been measured. A linear projection puts it near {NATIVE_SWEEP.longLived.projectedNative3xMBps}{" "}
+                MB/s; that is a projection, not a result.
+              </p>
+              <p className={NOTE}>{NATIVE_SWEEP.calibration}</p>
             </Sub>
 
             <Sub id="cards" tag={`Section ${PER_CARD_BUSY.section}`} title="The x16 card works harder">
@@ -1072,7 +1309,9 @@ export function CinematicAfterburner() {
               </ChartFigure>
               <BgraNote>
                 Both project rows come from the BGRA-forced comparison in Section {SOFTWARE_VS_HARDWARE.section}. The
-                hardware figure is the ceiling above, measured that way.
+                hardware figure is the ceiling above, measured that way. The verification pass found native output about{" "}
+                {NATIVE_SWEEP.longLived.advantage} times faster in this pipeline, so the hardware rows understate what
+                native output gives.
               </BgraNote>
               <p className={NOTE}>
                 Encoding is software only on this machine; the Afterburner does not accelerate ProRes encode. At{" "}

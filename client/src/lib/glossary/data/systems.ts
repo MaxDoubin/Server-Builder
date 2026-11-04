@@ -386,4 +386,13 @@ export const SYSTEMS: Term[] = [
       "The socket number is not a performance tier; it only says what physically seats. A board and a processor can share an LGA number and still be incompatible over chipset, firmware or power, so the supported-CPU list is what decides.",
     see: ["CPU", "DIMM"],
   },
+  {
+    term: "BGRA",
+    expansion: "blue, green, red, alpha",
+    field: "systems",
+    definition:
+      "A 32-bit pixel format that stores each pixel as four bytes in blue, green, red, alpha order. Video and graphics interfaces offer it because the bytes are easy to read directly, at the price of a conversion whenever the decoder's own output format is something else.",
+    confusion:
+      "Asking for BGRA is a request, not a free default. A decoder that produces another format natively has to convert to hand it over, and on the Afterburner cards that conversion cut one 4K stream's decode rate by 42 percent and produced a throughput ceiling and a cliff that native output did not have.",
+  },
 ];

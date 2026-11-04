@@ -61,7 +61,9 @@ import {
   ARCHITECTURE_B,
   BASELINE,
   BOUNDARY_TESTS,
+  BUSY_SETTLE,
   CEILING_CONFIGS,
+  CLIPS,
   CODEC_PROFILES,
   CONCURRENCY_SWEEP,
   CORRECTNESS,
@@ -70,9 +72,15 @@ import {
   DECODE_32K,
   EDITORS,
   ENDURANCE,
+  FIRST_PASS_BOUNDARIES,
+  FIRST_PASS_CEILINGS,
+  FIXED_TOTAL,
   FPGA,
+  LINK_STATE,
   MACHINE,
+  MIXED_IN_BUDGET,
   MIXED_LOAD,
+  NATIVE_SWEEP,
   NATIVE_VS_BGRA,
   PER_CARD_BUSY,
   PIPELINE_FINDINGS,
@@ -80,6 +88,7 @@ import {
   REAL_TIME_FPS,
   SCRUBBING,
   SOFTWARE_VS_HARDWARE,
+  STILL_OPEN,
   STREAM_CEILINGS,
   TECHNIQUE,
   isRealTime,
@@ -358,9 +367,10 @@ const sections = [
   STREAM_CEILINGS, BOUNDARY_TESTS, DECODE_32K, CPU_ISOLATION, MIXED_LOAD, ENDURANCE, SCRUBBING, EDITORS,
   PIXEL_FORMAT, FPGA, TECHNIQUE, CORRECTNESS, ARCHITECTURE_B, PIPELINE_FINDINGS, CONCURRENCY_SWEEP,
   CEILING_CONFIGS, PER_CARD_BUSY, SOFTWARE_VS_HARDWARE, NATIVE_VS_BGRA, CODEC_PROFILES, CORRUPTION, BASELINE,
+  CLIPS, LINK_STATE, NATIVE_SWEEP, FIXED_TOTAL, BUSY_SETTLE, MIXED_IN_BUDGET, FIRST_PASS_BOUNDARIES,
 ];
 for (const table of sections) {
-  if (!/^(\d\.\d|Part \d)$/.test(table.section)) fail(`a table carries the section "${table.section}"`);
+  if (!/^(\d\.\d|Part \d|Addendum \d)$/.test(table.section)) fail(`a table carries the section "${table.section}"`);
 }
 
 /* The helpers the page formats with. */
@@ -371,23 +381,36 @@ if (spanText({ lo: 1034, hi: 1034 }, 0) !== "1,034") fail("spanText does not gro
 
 /* 1.1: the ceilings, and the boundaries that decide them. */
 const ceiling = Object.fromEntries(STREAM_CEILINGS.rows.map((row) => [row.resolution, row.streams]));
-if (ceiling["1080p"] !== 96 || ceiling["4K"] !== 27 || ceiling["8K"] !== 6 || ceiling["16K"] !== 2) {
-  fail("the headline ceilings are 96, 27, 6 and 2");
+if (ceiling["1080p"] !== 106 || ceiling["4K"] !== 27 || ceiling["8K"] !== 6 || ceiling["16K"] !== 2) {
+  fail("the headline ceilings are 106, 27, 6 and 2");
 }
 for (let i = 1; i < STREAM_CEILINGS.rows.length; i += 1) {
   if (STREAM_CEILINGS.rows[i].streams >= STREAM_CEILINGS.rows[i - 1].streams) fail("a higher resolution has a higher ceiling");
 }
-// 16K is two streams decoded at once with no rate logged, so it must never be presented as a real-time count.
-if (STREAM_CEILINGS.rows.find((row) => row.resolution === "16K")?.realTime !== false) fail("16K has no logged frame rate and is not a real-time count");
-if (STREAM_CEILINGS.rows.filter((row) => row.resolution !== "16K").some((row) => !row.realTime)) fail("1080p, 4K and 8K are real-time counts");
+// The fine sweep logged a slowest-stream rate at every tier's edge, so all four are real-time counts.
+if (STREAM_CEILINGS.rows.some((row) => !row.realTime)) fail("the fine sweep logged a rate for every tier, so all four are real-time counts");
 for (const row of BOUNDARY_TESTS.rows) {
   if (row.passed !== isRealTime(row.slowestFps)) fail(`${row.resolution} x${row.streams}: marked ${row.passed ? "pass" : "fail"} at ${row.slowestFps} fps`);
   if (row.passed && row.streams !== ceiling[row.resolution]) fail(`${row.resolution}: the passing run is not the ceiling`);
   if (!row.passed && row.streams <= ceiling[row.resolution]) fail(`${row.resolution}: a failing run sits at or under the ceiling`);
+  if (row.passed && row.passingStreams !== row.streams) fail(`${row.resolution} x${row.streams}: a pass has every stream at 24 fps`);
+  if (!row.passed && row.passingStreams >= row.streams) fail(`${row.resolution} x${row.streams}: a fail has at least one stream under 24 fps`);
+}
+for (const resolution of ["1080p", "4K", "8K", "16K"] as const) {
+  const runs = BOUNDARY_TESTS.rows.filter((row) => row.resolution === resolution);
+  if (runs.length !== 2 || runs.filter((row) => row.passed).length !== 1) fail(`${resolution}: one pass and one fail bound the ceiling`);
 }
 const fail4K = BOUNDARY_TESTS.rows.find((row) => row.resolution === "4K" && !row.passed);
 if (fail4K?.streams !== ceiling["4K"] + 1) fail("the 4K boundary is exact: 27 passes and 28 fails");
-if (BOUNDARY_TESTS.alsoPassed4K.some((count) => count >= ceiling["4K"])) fail("the other 4K passes sit under the ceiling");
+// The first pass tested only widely spaced 1080p levels, so its 96 sits under the fine sweep's edge.
+for (const [resolution, streams] of Object.entries(FIRST_PASS_CEILINGS)) {
+  if (streams > ceiling[resolution]) fail(`${resolution}: the first pass's ${streams} is above the fine sweep's ceiling`);
+}
+if (ceiling["1080p"] <= FIRST_PASS_CEILINGS["1080p"]) fail("the fine sweep found the 1080p edge above the first pass's 96");
+for (const row of FIRST_PASS_BOUNDARIES.rows) {
+  if (row.passed !== isRealTime(row.slowestFps)) fail(`first pass ${row.resolution} x${row.streams}: marked ${row.passed ? "pass" : "fail"} at ${row.slowestFps} fps`);
+  if (row.passed && row.streams !== FIRST_PASS_CEILINGS[row.resolution]) fail(`first pass ${row.resolution}: the passing run is not its ceiling`);
+}
 if (DECODE_32K.width !== 30720 || DECODE_32K.height !== 17280) fail("32K is 30720 by 17280");
 
 /* 1.2: the printed drop is the slowest stream's. */
@@ -395,17 +418,17 @@ for (const row of CPU_ISOLATION.rows) {
   if (percentDrop(row.baseline.min, row.saturated.min) !== row.reportedDropPercent) {
     fail(`${row.workload}: ${row.baseline.min} to ${row.saturated.min} is not a ${row.reportedDropPercent}% drop`);
   }
-  if (row.streams !== ceiling[row.resolution]) fail(`${row.workload}: isolation ran at the ceiling`);
+  if (row.streams !== FIRST_PASS_CEILINGS[row.resolution]) fail(`${row.workload}: isolation ran at the first-pass ceiling`);
   for (const pair of [row.baseline, row.saturated]) {
     if (!isRealTime(pair.min)) fail(`${row.workload}: both conditions stayed above real time`);
     if (pair.min > pair.avg) fail(`${row.workload}: a minimum above its average`);
   }
 }
-if (CPU_ISOLATION.perCardBusy1080p.length !== 3 || CPU_ISOLATION.perCardBusy4K.length !== 3) fail("three cards, three busy figures");
+if (CPU_ISOLATION.firstPassBusy1080p.length !== 3 || CPU_ISOLATION.firstPassBusy4K.length !== 3) fail("three cards, three busy figures");
 
 /* 1.3: half of each solo ceiling, and real time judged on the slowest stream. */
 for (const row of MIXED_LOAD.rows) {
-  if (row.soloCeiling !== ceiling[row.resolution]) fail(`${row.resolution}: mixed batch's solo ceiling is not 1.1's`);
+  if (row.soloCeiling !== FIRST_PASS_CEILINGS[row.resolution]) fail(`${row.resolution}: mixed batch's solo ceiling is not the first pass's`);
   if (row.streams !== Math.floor(row.soloCeiling / 2)) fail(`${row.resolution}: ${row.streams} is not half of ${row.soloCeiling}`);
   if (!(row.fps.min <= row.fps.avg && row.fps.avg <= row.fps.max)) fail(`${row.resolution}: min, avg and max out of order`);
   if ((row.verdict !== "no") !== isRealTime(row.fps.min)) fail(`${row.resolution}: the verdict disagrees with the slowest stream`);
@@ -414,10 +437,14 @@ if (MIXED_LOAD.rows.find((row) => row.resolution === "8K")?.verdict !== "no") fa
 {
   const asked = MIXED_LOAD.rows.reduce((sum, row) => sum + row.streams / row.soloCeiling, 0);
   if (round(asked, 2) !== MIXED_LOAD.ceilingsOfWork) fail(`the mixed batch asked for ${round(asked, 2)} ceilings of work, not ${MIXED_LOAD.ceilingsOfWork}`);
+  const askedCorrected = MIXED_LOAD.rows.reduce((sum, row) => sum + row.streams / ceiling[row.resolution], 0);
+  if (round(askedCorrected, 2) !== MIXED_LOAD.ceilingsOfWorkCorrected) {
+    fail(`against the corrected ceilings the mixed batch asked for ${round(askedCorrected, 2)}, not ${MIXED_LOAD.ceilingsOfWorkCorrected}`);
+  }
 }
 
 /* 1.4 to 1.7. */
-if (ENDURANCE.streams !== ceiling["1080p"] || ENDURANCE.streamsAlive !== ENDURANCE.streams) fail("endurance ran the 1080p ceiling and lost no stream");
+if (ENDURANCE.streams !== FIRST_PASS_CEILINGS["1080p"] || ENDURANCE.streamsAlive !== ENDURANCE.streams) fail("endurance ran 96 streams of 1080p and lost none");
 if (ENDURANCE.cpuSpeedLimit !== 100) fail("no throttling means CPU_Speed_Limit stayed at 100");
 if (!near(SCRUBBING.randomFps, SCRUBBING.sequentialFps, SCRUBBING.sequentialFps * 0.01)) fail("scrubbing had no measurable penalty");
 for (const run of [EDITORS.burst, EDITORS.sustained]) {
@@ -438,6 +465,8 @@ if (FPGA.reasons.length < 3) fail("the FPGA section lists its reasons");
 if (FPGA.ioKitSelectors !== 7) fail("the IOKit user client has 7 selectors");
 if (MACHINE.cards.length !== 3 || MACHINE.cards.filter((card) => card.lanes === 16).length !== 1) fail("three cards, one in an x16 slot");
 if (MACHINE.logicalCores !== 2 * MACHINE.physicalCores) fail("16 physical cores, 32 logical");
+if (MACHINE.cards.map((card) => card.slot).join(",") !== "5,6,7") fail("the three cards sit in slots 5, 6 and 7, in card order");
+if (new Set(MACHINE.cards.map((card) => card.registryId)).size !== 3) fail("three distinct registry IDs");
 
 /* 3.1 to 3.3. */
 if (CORRECTNESS.parallelExact !== CORRECTNESS.parallelFiles) fail("48 of 48 were bit-exact");
@@ -511,6 +540,84 @@ if (libraries.filter((row) => row.mbps.lo > (best?.mbps.hi ?? 0)).length !== lib
   fail("every library but zlib beat the project's best");
 }
 
+/* ================================ the verification addendum's own tables */
+
+{
+  // Clips: each tier is twice the one before in both dimensions, all at 24 fps, and only 4K has gradient and noise.
+  for (let i = 1; i < CLIPS.rows.length; i += 1) {
+    if (CLIPS.rows[i].width !== 2 * CLIPS.rows[i - 1].width || CLIPS.rows[i].height !== 2 * CLIPS.rows[i - 1].height) {
+      fail(`${CLIPS.rows[i].clip} is not twice ${CLIPS.rows[i - 1].clip} in each dimension`);
+    }
+  }
+  if (CLIPS.rows.filter((row) => row.content === "gradient and noise").map((row) => row.clip).join() !== "4K") fail("only the 4K clip has gradient and noise content");
+  if (CLIPS.rows.some((row) => row.fps !== 24)) fail("the clips are 24 fps");
+  if (CLIPS.codec !== "ProRes 422 HQ" || CLIPS.fourCC !== "apch") fail("the clips are ProRes 422 HQ, apch");
+  const clip32 = CLIPS.rows.find((row) => row.clip === "32K");
+  if (clip32?.width !== DECODE_32K.width || clip32?.height !== DECODE_32K.height) fail("the 32K clip row matches the 32K decode");
+  if (clip32?.content !== "not re-verified") fail("the 32K clip's content was not re-verified");
+}
+
+for (const row of LINK_STATE.rows) {
+  const card = MACHINE.cards.find((c) => c.name === row.card);
+  if (!card || card.slot !== row.slot || card.lanes !== row.lanes) fail(`${row.card}: link row disagrees with the machine table`);
+  if (!row.idle.startsWith(`x${row.lanes} `) || !row.underLoad.startsWith(`x${row.lanes} `)) fail(`${row.card}: link width is the same idle and under load`);
+}
+if (LINK_STATE.rows.length !== 3 || LINK_STATE.rows.filter((row) => row.lanes === 16).length !== 1) fail("three links, one x16");
+
+for (const row of FIXED_TOTAL.rows) {
+  if (round(row.totalFps / FIXED_TOTAL.divisor, 1) !== row.estimateFromTotal) fail(`${row.resolution}: ${row.totalFps} / 24 is not ${row.estimateFromTotal}`);
+  if (row.estimateFromTotal < ceiling[row.resolution]) fail(`${row.resolution}: the estimate from the total should sit at or above the real ceiling`);
+  if (!(row.fromN < row.toN)) fail(`${row.resolution}: the sweep range is out of order`);
+}
+if (!(FIXED_TOTAL.notAPlateau.example.toFps > FIXED_TOTAL.notAPlateau.example.fromFps)) fail("8K's total was still rising");
+if (FIXED_TOTAL.notAPlateau.resolutions.join() !== "8K,16K") fail("8K and 16K are the tiers without a plateau");
+
+if (BUSY_SETTLE.firstSecond1080p.length !== 3 || BUSY_SETTLE.firstSecond1080p.some((triple) => triple.length !== 3)) fail("three runs, three cards each");
+if (BUSY_SETTLE.settled1080p.join("/") !== "99/100/100") fail("the 1080p busy figures settle at 99, 100 and 100");
+if (BUSY_SETTLE.fourK.runsWithOneX8CardIdle + BUSY_SETTLE.fourK.runsWithBothX8CardsIdle !== BUSY_SETTLE.fourK.runs) fail("every 4K run had at least one x8 card idle");
+if (BUSY_SETTLE.fourK.streams !== ceiling["4K"]) fail("the busy sampling ran the 4K ceiling");
+{
+  const idle = MACHINE.cards.find((card) => card.registryId === BUSY_SETTLE.fourK.idleCard);
+  if (!idle || idle.lanes !== 8) fail("the card that went idle is an x8 card");
+}
+
+for (const row of MIXED_IN_BUDGET.rows) {
+  if (row.streams * 3 !== row.soloCeiling) fail(`${row.resolution}: ${row.streams} is not a third of ${row.soloCeiling}`);
+  if (row.soloCeiling !== FIRST_PASS_CEILINGS[row.resolution]) fail(`${row.resolution}: the third was taken from the first-pass ceiling`);
+  if (!(row.fps.min <= row.fps.avg && row.fps.avg <= row.fps.max)) fail(`${row.resolution}: min, avg and max out of order`);
+}
+if (MIXED_IN_BUDGET.rows.reduce((sum, row) => sum + row.streams, 0) !== MIXED_IN_BUDGET.totalStreams) fail("the in-budget batch's stream count");
+if (MIXED_IN_BUDGET.second.totalStreams >= MIXED_IN_BUDGET.totalStreams) fail("the second allocation ran fewer streams in total");
+{
+  const [eightK, fourK, p1080] = MIXED_IN_BUDGET.rows;
+  if (isRealTime(eightK.fps.min) || eightK.passing !== "1 of 2") fail("one of the two 8K streams fell under 24 fps");
+  for (const row of [fourK, p1080]) {
+    if (!isRealTime(row.fps.min)) fail(`${row.resolution}: every stream held 24 fps in the in-budget batch`);
+    if (row.fps.min / REAL_TIME_FPS - 1 < 0.5) fail(`${row.resolution}: the slowest stream has at least 50% headroom`);
+    if (row.fps.avg / REAL_TIME_FPS - 1 > 0.65) fail(`${row.resolution}: the average has at most 65% headroom`);
+  }
+}
+
+for (const row of NATIVE_SWEEP.rows) {
+  const printed = round(row.nativeMBps / row.bgraMBps, row.advantage < 2 ? 2 : 1);
+  if (printed !== row.advantage) fail(`${row.resolution} N=${row.n}: native over BGRA is ${printed}, not ${row.advantage}`);
+}
+{
+  const p1080 = NATIVE_SWEEP.rows.filter((row) => row.resolution === "1080p");
+  for (let i = 1; i < p1080.length; i += 1) {
+    if (p1080[i].nativeMBps < p1080[i - 1].nativeMBps) fail(`native output degraded between N=${p1080[i - 1].n} and N=${p1080[i].n}`);
+  }
+  const at6 = p1080.find((row) => row.n === 6)!;
+  for (const row of p1080.filter((r) => r.n > 6)) {
+    if (row.bgraMBps >= at6.bgraMBps / 2) fail(`BGRA at N=${row.n} did not collapse`);
+  }
+}
+if (NATIVE_SWEEP.extended.levels.some((level, i, all) => i > 0 && level <= all[i - 1]) || NATIVE_SWEEP.extended.levels[0] <= 12) fail("the extended native sweep runs above N=12, in order");
+if (NATIVE_SWEEP.extended.exact !== NATIVE_SWEEP.extended.of) fail("280 of 280 bit-exact");
+if (round(NATIVE_SWEEP.longLived.nativeMBps / NATIVE_SWEEP.longLived.bgraMBps, 1) !== NATIVE_SWEEP.longLived.advantage) fail("10.4 over 5.5 is about 1.9");
+if (NATIVE_SWEEP.longLived.projectedIsMeasured !== false) fail("the 3x-density native figure is a projection, not a measurement");
+if (STILL_OPEN.length !== 4) fail("the addendum lists four open items");
+
 /* ================================================================ report */
 
 if (problems.length > 0) {
@@ -526,6 +633,6 @@ console.log(
     `come back the same when read one corner pixel per block instead of by averaging; every block is one solid color with a ` +
     `header of magic byte, index and length; frames are placed by their header, small noise is averaged away and large noise ` +
     `is not, a damaged header costs exactly its own frame and a patch elsewhere a handful of bytes. And the report's figures ` +
-    `agree with themselves: ceilings of 96, 27, 6 and 2 against their pass and fail runs, the printed drops and ratios against ` +
-    `the rates they came from, and the 2.2 times correction, the 16 MB/s ceiling's BGRA condition and LZ4's 7 times recomputed.`,
+    `agree with themselves: ceilings of 106, 27, 6 and 2 against their pass and fail runs, the printed drops and ratios against ` +
+    `the rates they came from, and the 2.2 times correction, the 16 MB/s ceiling's BGRA condition and LZ4's 7 times recomputed, with the verification addendum's tables (clips, links, totals, busy sampling, in-budget mix, native sweep) recomputed the same way.`,
 );
