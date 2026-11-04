@@ -54,6 +54,7 @@ import {
   visible,
   TAG,
   MAX_OBJECTS,
+  PKCS12_MESSAGE,
 } from "./asn1";
 
 /* ------------------------------------------------------------------ types */
@@ -254,6 +255,10 @@ export function decodeCertificates(read: ReadResult): DecodeOutcome {
         sawCsr = true;
         continue;
       }
+      if (kind === "pkcs12") {
+        push({ ok: false, label: obj.label, error: PKCS12_MESSAGE });
+        continue;
+      }
       push(parseCertificate(obj.der, obj.label, obj.label === "TRUSTED CERTIFICATE"));
     } else if (obj.label === "CERTIFICATE REQUEST" || obj.label === "NEW CERTIFICATE REQUEST") {
       sawCsr = true;
@@ -328,7 +333,7 @@ export function keyFindings(key: PublicKeyInfo): Finding[] {
   if (key.keyType === "RSA" || key.keyType === "RSA-PSS") {
     const bits = key.bits ?? 0;
     if (bits === 0) out.push({ tone: "danger", text: "The RSA modulus is zero, so this is not a usable key." });
-    else if (bits < 2048) out.push({ tone: "danger", text: `The RSA key is ${bits} bits. NIST SP 800-131A disallowed RSA keys under 2048 bits after 2013, and 1024 bit keys are within reach of a well funded attacker.` });
+    else if (bits < 2048) out.push({ tone: "danger", text: `The RSA key is ${bits} bits. NIST SP 800-131A disallowed RSA keys under 2048 bits for signatures after 2013, and the Baseline Requirements have barred them from publicly trusted certificates since the end of 2013.` });
     else out.push({ tone: "ok", text: `RSA ${bits} bit key.` });
     if (bits % 8 !== 0) out.push({ tone: "warn", text: `The modulus is ${bits} bits, not a multiple of 8. The Baseline Requirements require that for publicly trusted certificates, and an odd size usually means a broken key generator.` });
   } else if (key.keyType === "EC") {
@@ -572,7 +577,7 @@ export function analyzeChain(certs: CertificateInfo[]): ChainReport {
     const aia = last.extensions.list.find((e) => e.oid === "1.3.6.1.5.5.7.1.1")?.rows.find((r) => r.label === "caIssuers");
     ending.push({
       tone: certs.length === 1 && !last.isCA ? "warn" : "info",
-      text: `The list ends at a certificate issued by ${last.issuer.commonNames[0] ?? (last.issuer.rfc4514 || "an unnamed issuer")}, which is not included. That is normal if the issuer is a root in the client's trust store. If it is an intermediate, the server must send it: some browsers fetch a missing intermediate${aia ? ` from the caIssuers URL (${aia.value.replace(/^URI: /, "")})` : ""}, but OpenSSL, curl and most other clients do not.`,
+      text: `The list ends at a certificate issued by ${last.issuer.commonNames.length > 0 ? visible(last.issuer.commonNames[0]).text : last.issuer.rfc4514 || "an unnamed issuer"}, which is not included. That is normal if the issuer is a root in the client's trust store. If it is an intermediate, the server must send it: some browsers fetch a missing intermediate${aia ? ` from the caIssuers URL (${aia.value.replace(/^URI: /, "")})` : ""}, but OpenSSL, curl and most other clients do not.`,
     });
   }
   return { links, ending, notes };

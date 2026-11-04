@@ -803,12 +803,15 @@ export function readPemText(input: string): ReadResult {
     }
     // RFC 1421 style headers (Proc-Type, DEK-Info) sit before a blank line in
     // legacy encrypted keys. Drop any line holding a colon.
+    // A literal backslash-n, as in a certificate copied out of JSON or a
+    // Kubernetes manifest, cannot occur in Base64, so it is read as a line break.
     const body = text
       .slice(bodyStart, endMarker)
       .split(/\r?\n/)
       .filter((line) => !line.includes(":"))
       .join("")
-      .replace(/\s+/g, "");
+      .replace(/\s+/g, "")
+      .replace(/\\[nr]/g, "");
     const der = decodeBase64(body);
     if (!der || der.length === 0) {
       problem(`Block ${blocks} ("${shown}") is not valid Base64. A character may have been lost when it was copied.`);
@@ -851,6 +854,24 @@ export function readPemText(input: string): ReadResult {
   return { objects, notices, error: NO_PEM_ERROR };
 }
 
+/** True when every byte of the first kilobyte is printable ASCII or ordinary whitespace, as in a PEM or hex file. */
+function looksLikeText(bytes: Uint8Array): boolean {
+  const n = Math.min(bytes.length, 1024);
+  for (let i = 0; i < n; i++) {
+    const b = bytes[i];
+    if (b === 0x09 || b === 0x0a || b === 0x0d || (b >= 0x20 && b <= 0x7e)) continue;
+    return false;
+  }
+  return true;
+}
+
+const BER_FILE_ERROR =
+  "The file starts like ASN.1 but uses BER indefinite lengths, which a DER certificate never does. PKCS#12 (.pfx, .p12) files from some tools do. A PKCS#12 bundle is encrypted, so extract the certificate first, for example with openssl pkcs12 -in file.p12 -clcerts -nokeys -out cert.pem.";
+
+/** Shown when the input is a PKCS#12 (PFX) bundle, which holds keys and needs its password. */
+export const PKCS12_MESSAGE =
+  "This is a PKCS#12 (.pfx or .p12) bundle, which is encrypted and may hold a private key. Extract the certificate first, for example with openssl pkcs12 -in file.p12 -clcerts -nokeys -out cert.pem, and paste that.";
+
 /**
  * Reads an uploaded file: binary DER, or text in UTF-8, Latin-1 or UTF-16
  * (some Windows tools save PEM as UTF-16).
@@ -865,7 +886,13 @@ export function readBinary(bytes: Uint8Array): ReadResult {
       const node = parseDer(bytes, 0, bytes.length);
       if (node.end === bytes.length) return { objects: [{ label: "DER", der: bytes }], notices: [], error: null };
     } catch {
-      // Not DER; fall through to text.
+      // Not one complete DER object. Binary content that starts like DER is
+      // still handed on, so the decoder can say where it goes wrong (a file cut
+      // short by a failed download, for example), instead of guessing at text.
+    }
+    if (!looksLikeText(bytes)) {
+      if (bytes[1] === 0x80) return { objects: [], notices: [], error: BER_FILE_ERROR };
+      return { objects: [{ label: "DER", der: bytes }], notices: [], error: null };
     }
   }
   let text: string;
@@ -874,7 +901,7 @@ export function readBinary(bytes: Uint8Array): ReadResult {
   else text = new TextDecoder("utf-8").decode(bytes);
   const result = readPemText(text);
   if (result.error === NO_PEM_ERROR) {
-    return { ...result, error: "The file is neither DER nor PEM. It may be a PKCS#12 (.pfx or .p12) bundle, which is encrypted and needs its password." };
+    return { ...result, error: "The file is neither DER nor PEM. Certificates and requests are usually .pem, .crt, .cer, .der or .csr files." };
   }
   return result;
 }
@@ -2071,7 +2098,7 @@ export async function verifySignature(
 
 /* --------------------------------------------------------------- sniffing */
 
-export type DerKind = "certificate" | "csr" | "pkcs7" | "unknown";
+export type DerKind = "certificate" | "csr" | "pkcs7" | "pkcs12" | "unknown";
 
 /**
  * Guesses what a DER object is from its shape alone, so each decoder can
@@ -2084,6 +2111,11 @@ export function sniffDer(der: Uint8Array): DerKind {
     if (!isUniversal(root, TAG.SEQUENCE)) return "unknown";
     const [first, second] = root.children;
     if (isUniversal(first, TAG.OID) && isContext(second, 0)) return pkcs7Certificates(der) ? "pkcs7" : "unknown";
+    // RFC 7292 4: PFX ::= SEQUENCE { version INTEGER { v3(3) }, authSafe ContentInfo, macData MacData OPTIONAL },
+    // and authSafe's content type is id-data, 1.2.840.113549.1.7.1.
+    if (isUniversal(first, TAG.INTEGER) && root.children.length <= 3 && isUniversal(second, TAG.SEQUENCE) && isUniversal(second.children[0], TAG.OID)) {
+      return decodeOid(contentOf(der, second.children[0])) === "1.2.840.113549.1.7.1" ? "pkcs12" : "unknown";
+    }
     if (root.children.length !== 3 || !isUniversal(first, TAG.SEQUENCE)) return "unknown";
     const fields = first.children;
     if (fields.length === 4 && isUniversal(fields[0], TAG.INTEGER) && isContext(fields[3], 0)) return "csr";

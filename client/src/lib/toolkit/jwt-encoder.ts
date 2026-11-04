@@ -359,9 +359,10 @@ export function setNumericClaim(payloadText: string, claim: "iat" | "nbf" | "exp
 export function setHeaderAlg(headerText: string, alg: JwsAlg): string | null {
   const parsed = parseJsonObject(headerText, "header");
   if (!parsed.ok || integerRewrites(headerText).length) return null;
-  const next: JsonObject = "alg" in parsed.value ? {} : { alg };
-  for (const [k, v] of Object.entries(parsed.value)) next[k] = k === "alg" ? alg : v;
-  return JSON.stringify(next, null, 2);
+  const entries: [string, unknown][] = Object.entries(parsed.value).map(([k, v]) => [k, k === "alg" ? alg : v]);
+  if (!Object.prototype.hasOwnProperty.call(parsed.value, "alg")) entries.unshift(["alg", alg]);
+  // fromEntries defines own properties, so a "__proto__" member is kept; plain assignment would swallow it.
+  return JSON.stringify(Object.fromEntries(entries), null, 2);
 }
 
 /* ---------------------------------------------------------------- secrets */
@@ -1064,7 +1065,7 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
   if (key.kind === "pem" && info.family === "hmac") {
     notes.push({
       tone: "danger",
-      text: `The token asks for ${known}, an HMAC, but the key is a public key. This is the RS256 to HS256 key confusion attack: a verifier that let alg decide would use the public key's bytes as the HMAC secret, and since the public key is public, anyone could sign such a token. A correct verifier fixes the algorithm per key, as this one does.`,
+      text: `The token asks for ${known}, an HMAC, but the key is a public key. This is the RS256 to HS256 key confusion attack: a verifier that let alg decide would use the public key's bytes as the HMAC secret, and since the public key is public, anyone could sign such a token. A correct verifier takes the algorithm family from the key it holds and never from the header alone, as this one does (RFC 8725 section 3.1).`,
     });
     return reject(`Rejected: a public key never verifies ${known}.`);
   }

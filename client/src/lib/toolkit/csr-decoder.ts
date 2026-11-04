@@ -45,6 +45,7 @@ import {
   visible,
   TAG,
   MAX_OBJECTS,
+  PKCS12_MESSAGE,
 } from "./asn1";
 import { type Finding, keyFindings } from "./certificate-decoder";
 
@@ -167,6 +168,10 @@ export function decodeCsrs(read: ReadResult): CsrDecodeOutcome {
     const kind = sniffDer(obj.der);
     if (kind === "certificate" || kind === "pkcs7") {
       sawCertificate = true;
+      continue;
+    }
+    if (kind === "pkcs12") {
+      entries.push({ ok: false, label: obj.label, error: PKCS12_MESSAGE });
       continue;
     }
     entries.push(parseCsr(obj.der, obj.label));
@@ -318,7 +323,7 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
   if (alg.weak) {
     out.push({
       tone: "warn",
-      text: `The request is signed with ${alg.name}. The CA signs the certificate with its own algorithm, so this does not weaken the result, but many CAs reject ${alg.hash} requests outright and it points to an old toolchain. Regenerate with SHA-256.`,
+      text: `The request is signed with ${alg.name}. The CA signs the certificate with its own algorithm, so this does not weaken the result, but some CAs reject ${alg.hash} requests outright and it points to an old toolchain. Regenerate with SHA-256.`,
     });
   } else if (alg.family !== "unknown") out.push({ tone: "ok", text: `Signed with ${alg.name}.` });
 
@@ -339,7 +344,15 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
     // ub-common-name counts characters, not UTF-16 code units.
     const cnChars = Array.from(cn).length;
     if (cnChars > 64) out.push({ tone: "danger", text: `The common name is ${cnChars} characters. X.520 caps it at 64 (ub-common-name in RFC 5280), so CAs reject it. Leave the long name in the SAN only.` });
-    if (sans.length > 0 && !sanValues.includes(cn.toLowerCase())) {
+    // A common name that is not shaped like a host name or an address (a person, a device, a product) is
+    // outside the Baseline Requirements rule that a TLS server CN repeat one of the SAN values.
+    const hostLike = !/[\s,;=@]/.test(cn);
+    if (sans.length > 0 && !hostLike) {
+      out.push({
+        tone: "info",
+        text: `The common name ${shownCn} is not a host name, so it is not compared with the SAN list. That is normal for a person or device certificate. For a TLS server, the host names belong in the SAN list.`,
+      });
+    } else if (sans.length > 0 && !sanValues.includes(cn.toLowerCase())) {
       const covering = dnsSans.find((n) => wildcardVerdict(n.raw) === "ok" && wildcardCovers(n.raw, cn));
       out.push({
         tone: "warn",
@@ -368,9 +381,9 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
     } else if (verdict === "multiple") {
       out.push({ tone: "danger", text: `${shown} has more than one wildcard. Only one is allowed, as the whole leftmost label.` });
     } else if (verdict === "too-broad") {
-      out.push({ tone: "danger", text: `${shown} is a wildcard directly under a top-level domain. No CA will issue it, and the same applies under any public suffix such as co.uk.` });
+      out.push({ tone: "danger", text: `${shown} is a wildcard directly under a top-level domain. Public CAs do not issue it, and the same applies under a public suffix such as co.uk.` });
     }
-    if (/_/.test(host)) out.push({ tone: "danger", text: `${shown} contains an underscore, which is not allowed in a host name and has been banned from publicly trusted certificates since 2019.` });
+    if (/_/.test(host)) out.push({ tone: "danger", text: `${shown} contains an underscore, which is not allowed in a host name label, and the Baseline Requirements no longer permit it in publicly trusted certificates.` });
     if (/[^\x21-\x7e]/.test(host)) out.push({ tone: "danger", text: `${shown} contains characters outside printable ASCII. An internationalized name must be written in its xn-- (A-label) form.` });
     if (verdict === "none" && parseIpv4(host)) {
       // An address written in the CN. A SAN copy of it is judged below.
@@ -379,7 +392,7 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
       }
     } else if (verdict === "none" || verdict === "ok") {
       const bare = host.replace(/^\*\./, "");
-      if (isInternalName(bare)) out.push({ tone: "info", text: `${shown} is not a public domain name. Public CAs stopped certifying internal names in 2015, so this needs a private CA.` });
+      if (isInternalName(bare)) out.push({ tone: "info", text: `${shown} is not a public domain name. The Baseline Requirements phased out publicly trusted certificates for internal names by October 2016, so this needs a private CA.` });
     }
   }
   for (const ip of ipSans) {
@@ -404,7 +417,7 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
   if (csr.challengePassword !== null) {
     out.push({
       tone: "info",
-      text: "A challengePassword attribute is present. It sits in the request as plain text, so anyone who sees the CSR can read it. SCEP servers use it as a one-time enrollment secret; most other CAs ignore it.",
+      text: "A challengePassword attribute is present. It sits in the request as plain text, so anyone who sees the CSR can read it. SCEP servers use it as a shared enrollment secret; most other CAs ignore it.",
     });
   }
   return out;
@@ -432,10 +445,32 @@ export const MAX_TEMPLATE_SANS = 100;
 
 const HOST_LABEL = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/;
 
+/**
+ * A name fit for a dNSName: letters, digits and hyphens in labels of 1 to 63
+ * characters (RFC 1035 2.3.1, RFC 1123 2.1), at most 253 characters in all, no
+ * trailing dot, and a last label that is not all digits (RFC 1123 2.1, RFC 3696
+ * section 2), which is what keeps 300.1.1.1 from passing as a name. A leading
+ * "*." is accepted, and judged separately by wildcardVerdict.
+ */
 export function isHostName(name: string): boolean {
-  const body = name.replace(/^\*\./, "").replace(/\.$/, "");
+  const body = name.replace(/^\*\./, "");
   if (body.length === 0 || body.length > 253) return false;
-  return body.split(".").every((l) => HOST_LABEL.test(l));
+  const labels = body.split(".");
+  if (!labels.every((l) => HOST_LABEL.test(l))) return false;
+  return !/^[0-9]+$/.test(labels[labels.length - 1]);
+}
+
+/** RFC 5322 atext plus the dot: the characters of an email local part this tool writes into a rfc822Name. */
+const EMAIL_LOCAL = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+$/;
+
+/** An ASCII address of the form local@domain, with a host name after the @ (RFC 5280 4.2.1.6 rfc822Name is an IA5String). */
+function isEmailAddress(text: string): boolean {
+  const at = text.lastIndexOf("@");
+  if (at < 1) return false;
+  const local = text.slice(0, at);
+  const domain = text.slice(at + 1);
+  if (local.length > 64 || local.startsWith(".") || local.endsWith(".") || local.includes("..")) return false;
+  return EMAIL_LOCAL.test(local) && !domain.startsWith("*") && domain.includes(".") && isHostName(domain);
 }
 
 /** Reads a free-form SAN list (commas, spaces or new lines) and types each entry. */
@@ -462,7 +497,7 @@ export function parseSanList(text: string): { entries: SanEntry[]; errors: strin
     if (prefix === "uri" || (!prefix && /^[a-z][a-z0-9+.-]*:\/\//i.test(token))) {
       if (/^[a-z][a-z0-9+.-]*:[\x21-\x7e]+$/i.test(token)) entry = { type: "URI", value: token };
     } else if (prefix === "email" || (!prefix && token.includes("@"))) {
-      if (/^[\x21-\x3f\x41-\x7e]+@[\x21-\x3f\x41-\x7e]+\.[\x21-\x3f\x41-\x7e]+$/.test(token)) entry = { type: "email", value: token };
+      if (isEmailAddress(token)) entry = { type: "email", value: token };
     } else if (prefix === "ip" || (!prefix && (parseIpv4(token) || token.includes(":")))) {
       const bare = token.replace(/^\[|\]$/g, "");
       if (parseIpv4(bare) || parseIpv6(bare)) entry = { type: "IP", value: bare };
@@ -470,7 +505,14 @@ export function parseSanList(text: string): { entries: SanEntry[]; errors: strin
       entry = { type: "DNS", value: token.toLowerCase() };
     }
     if (!entry) {
-      errors.push(`"${visible(raw).text}" is not a valid host name, IP address, email address or URI.`);
+      const shown = visible(raw).text;
+      let hint = "";
+      if ((!prefix || prefix === "ip") && /^[0-9]+(?:\.[0-9]+){3}$/.test(token)) {
+        hint = " It is written like an IPv4 address, but each of the four parts must be 0 to 255, with no leading zeros.";
+      } else if (!prefix && token.length > 1 && token.endsWith(".") && isHostName(token.slice(0, -1))) {
+        hint = " Certificates list host names without the trailing dot.";
+      }
+      errors.push(`"${shown}" is not a valid host name, IP address, email address or URI.${hint}`);
       continue;
     }
     const key = `${entry.type}:${entry.value}`;
@@ -542,10 +584,12 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
     }
   }
 
-  if (cn.length > 64) errors.push(`The common name is ${cn.length} characters; the limit is 64. Leave it out or shorten it, and keep the long name in the SANs.`);
+  // ub-common-name and ub-organization-name (RFC 5280 Appendix A) count characters, not UTF-16 code units.
+  const cnChars = Array.from(cn).length;
+  if (cnChars > 64) errors.push(`The common name is ${cnChars} characters; the limit is 64. Leave it out or shorten it, and keep the long name in the SANs.`);
   if (visible(cn + org).hidden) errors.push("The subject fields contain control, zero width or bidirectional characters, which would hide what the command really asks for.");
   if (country && !/^[A-Z]{2}$/.test(country)) errors.push("The country must be a two-letter ISO 3166 code, such as US.");
-  if (org.length > 64) errors.push("The organization is longer than the 64 character limit.");
+  if (Array.from(org).length > 64) errors.push("The organization is longer than the 64 character limit.");
   if (!cn && entries.length === 0) errors.push("Enter a common name or at least one SAN.");
   if (cn && entries.length > 0 && !entries.some((e) => e.value === cn.toLowerCase())) {
     warnings.push(`The common name ${cn} is not in the SAN list. Add it there; most CAs require it.`);
@@ -559,7 +603,11 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
   if (org) subjParts.push(`/O=${subjEscape(org)}`);
   if (cn) subjParts.push(`/CN=${subjEscape(cn)}`);
   const subj = subjParts.join("") || "/";
-  const sanText = entries.map((e) => `${e.type}:${e.value}`).join(",");
+  // OpenSSL reads every -addext argument as a line of configuration text, so
+  // a # (comment), $ (variable), quote or backslash in a value needs the same
+  // escaping as in csr.cnf. Without it a URI such as https://a.example/x#top
+  // is cut at the # and every name after it is silently dropped.
+  const sanText = entries.map((e) => `${e.type}:${configEscape(e.value)}`).join(",");
   // Without -utf8 (or utf8 = yes in a config file) OpenSSL reads each byte of
   // a field as one Latin-1 character, so every non-ASCII letter would be
   // stored as two wrong characters.

@@ -603,6 +603,15 @@ const LEGACY_ATTRIBUTES: Record<string, string> = {
   sameparty: "SameParty belonged to Chrome's First-Party Sets trial, which ended. Browsers ignore it.",
 };
 
+/**
+ * Look a key up in a plain object literal without reaching Object.prototype,
+ * so an attribute named constructor or __proto__ is not mistaken for one of
+ * the entries.
+ */
+function ownEntry<T>(table: Record<string, T>, key: string): T | undefined {
+  return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined;
+}
+
 /** RFC 9110 section 5.6.2 tchar. */
 const TOKEN_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 
@@ -715,7 +724,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     const attrName = trimWsp(avEq === -1 ? av : av.slice(0, avEq));
     const attrValue = trimWsp(avEq === -1 ? "" : av.slice(avEq + 1));
     if (attrName === "" && attrValue === "") continue; // a stray or trailing semicolon
-    const kind = KNOWN_ATTRIBUTES[attrName.toLowerCase()] ?? "unknown";
+    const kind = ownEntry(KNOWN_ATTRIBUTES, attrName.toLowerCase()) ?? "unknown";
     const record: AttributeRecord = { name: attrName, value: attrValue, hasEquals: avEq !== -1, kind, status: "applied", note: "" };
     attributes.push(record);
     if (utf8Length(attrValue) > MAX_ATTRIBUTE_VALUE_BYTES) {
@@ -725,7 +734,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     }
     if (kind === "unknown") {
       record.status = "ignored";
-      record.note = LEGACY_ATTRIBUTES[attrName.toLowerCase()] ?? "Not an attribute browsers recognize, so it is ignored.";
+      record.note = ownEntry(LEGACY_ATTRIBUTES, attrName.toLowerCase()) ?? "Not an attribute browsers recognize, so it is ignored.";
     }
   }
 
