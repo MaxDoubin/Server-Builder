@@ -341,7 +341,7 @@ export function IocExtractor() {
             </div>
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               {mode === "defanged"
-                ? "Safe to paste into a ticket or chat: hxxp, [.] on every dot, [@], and [:] in IPv6. Hashes, CVE IDs and wallet addresses are unchanged."
+                ? "Written so it will not turn into a link in a ticket or chat: hxxp, [.] on every dot, [@], and [:] in IPv6. Hashes, CVE IDs and wallet addresses are unchanged."
                 : "Live values, for a blocklist, a SIEM query or a lookup tool. Do not paste these where they can be clicked."}
             </p>
           </ToolPanel>

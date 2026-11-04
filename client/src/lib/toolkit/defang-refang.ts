@@ -198,6 +198,28 @@ function liveFor(token: string, groups: (string | undefined)[]): string {
   return ":";
 }
 
+const WHITESPACE = /\s/;
+
+/**
+ * True when the whitespace-delimited word around `at` holds a backslash that
+ * is not followed by a dot, which marks a Windows path: in
+ * C:\Users\bob\.aws\credentials the "\." starts a hidden folder, and
+ * reading it as a defanged dot would invent the host bob.aws. A word with
+ * only backslash-dot pairs (evil\.com, a\.b\.example\.org) is still a defang.
+ * The caller caches the verdict per word, so the scan stays linear.
+ */
+function pathWordAround(text: string, at: number): { start: number; end: number; isPath: boolean } {
+  let start = at;
+  while (start > 0 && !WHITESPACE.test(text.charAt(start - 1))) start--;
+  let end = at + 1;
+  while (end < text.length && !WHITESPACE.test(text.charAt(end))) end++;
+  let isPath = false;
+  for (let i = start; i < end - 1 && !isPath; i++) {
+    if (text.charCodeAt(i) === 92 && text.charCodeAt(i + 1) !== 46) isPath = true;
+  }
+  return { start, end, isPath };
+}
+
 export interface Normalized {
   /** The text with every defang token rewritten to its live form. */
   text: string;
@@ -216,8 +238,13 @@ export function normalizeDefanged(original: string): Normalized {
   let n = 0;
   let last = 0;
   let replacements = 0;
+  let word = { start: 0, end: 0, isPath: false };
   DEFANG_TOKEN.lastIndex = 0;
   for (let m = DEFANG_TOKEN.exec(original); m !== null; m = DEFANG_TOKEN.exec(original)) {
+    if (m[0] === "\\.") {
+      if (m.index < word.start || m.index >= word.end) word = pathWordAround(original, m.index);
+      if (word.isPath) continue;
+    }
     for (let i = last; i < m.index; i++) {
       starts[n] = i;
       ends[n] = i + 1;
@@ -676,7 +703,14 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     // checking both forms is exact.
     const authority = text.slice(k + 3, authEnd);
     if (!parseUrl(`${scheme}://${authority}`) && !parseUrl(`${scheme}://${trimUrlBody(authority)}`)) continue;
-    const body = trimUrlBody(text.slice(k + 3, e));
+    let body = trimUrlBody(text.slice(k + 3, e));
+    // _http://evil.example_ : Markdown emphasis closes with the underscore
+    // that opened it, and that underscore is not part of the address.
+    if (s > 0 && text.charCodeAt(s - 1) === 95 && body.charCodeAt(body.length - 1) === 95) {
+      let end = body.length;
+      while (end > 0 && body.charCodeAt(end - 1) === 95) end--;
+      body = trimUrlBody(body.slice(0, end));
+    }
     const parts = parseUrl(`${scheme}://${body}`);
     if (!parts) continue;
     const b = k + 3 + body.length;
