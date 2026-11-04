@@ -395,12 +395,19 @@ export interface BudgetRow {
 }
 
 /**
- * Addendum item 7: the mixed test redone at exactly 100% of capacity, one
- * third of each tier's solo ceiling (2 x 8K, 9 x 4K, 32 x 1080p).
+ * Addendum item 7: the mixed test redone within capacity, one third of each
+ * tier's first-pass solo ceiling (2 of 6 at 8K, 9 of 27 at 4K, 32 of 96 at
+ * 1080p). That sums to 1.00 of the first-pass ceilings. The fine sweep later
+ * moved the 1080p ceiling to 106, against which the same allocation is about
+ * 0.97 of capacity, so it is within budget either way but not exactly at it.
  */
 export const MIXED_IN_BUDGET = {
   section: "Addendum 7",
   totalStreams: 43,
+  /** 2/6 + 9/27 + 32/96, as the batch was sized. */
+  ceilingsOfWork: 1.0,
+  /** The same allocation against the corrected 1080p ceiling of 106: 2/6 + 9/27 + 32/106. */
+  ceilingsOfWorkCorrected: 0.97,
   rows: [
     { resolution: "8K", streams: 2, soloCeiling: 6, fps: { min: 23.0, avg: 24.0, max: 25.0 }, passing: "1 of 2" },
     { resolution: "4K", streams: 9, soloCeiling: 27, fps: { min: 36.1, avg: 37.4, max: 39.3 }, passing: "9 of 9" },

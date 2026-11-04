@@ -587,6 +587,13 @@ for (const row of MIXED_IN_BUDGET.rows) {
   if (!(row.fps.min <= row.fps.avg && row.fps.avg <= row.fps.max)) fail(`${row.resolution}: min, avg and max out of order`);
 }
 if (MIXED_IN_BUDGET.rows.reduce((sum, row) => sum + row.streams, 0) !== MIXED_IN_BUDGET.totalStreams) fail("the in-budget batch's stream count");
+{
+  const asSized = MIXED_IN_BUDGET.rows.reduce((sum, row) => sum + row.streams / row.soloCeiling, 0);
+  if (round(asSized, 2) !== MIXED_IN_BUDGET.ceilingsOfWork) fail(`the in-budget batch was sized to ${round(asSized, 2)} first-pass ceilings, not ${MIXED_IN_BUDGET.ceilingsOfWork}`);
+  const corrected = MIXED_IN_BUDGET.rows.reduce((sum, row) => sum + row.streams / ceiling[row.resolution], 0);
+  if (round(corrected, 2) !== MIXED_IN_BUDGET.ceilingsOfWorkCorrected) fail(`against the corrected ceilings the in-budget batch is ${round(corrected, 2)}, not ${MIXED_IN_BUDGET.ceilingsOfWorkCorrected}`);
+  if (corrected > 1) fail("the in-budget batch stays within capacity against the corrected ceilings");
+}
 if (MIXED_IN_BUDGET.second.totalStreams >= MIXED_IN_BUDGET.totalStreams) fail("the second allocation ran fewer streams in total");
 {
   const [eightK, fourK, p1080] = MIXED_IN_BUDGET.rows;

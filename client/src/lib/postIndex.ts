@@ -48,7 +48,7 @@ export const postIndex: PostMeta[] = [
     tags: ["apple","mac-pro","hardware","performance"],
     excerpt: "I measured three Afterburner cards in one Mac Pro: 27 real-time 4K streams, decode that CPU load barely touched, an FPGA I chose not to flash, and files recovered bit for bit through the decoder.",
     coverImage: "/images/blog/three-apple-afterburner-cards.jpg",
-    wordCount: 10030,
+    wordCount: 10076,
   },
   {
     slug: "dell-hba330-vs-h330",

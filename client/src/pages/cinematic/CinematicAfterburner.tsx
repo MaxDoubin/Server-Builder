@@ -815,15 +815,17 @@ export function CinematicAfterburner() {
             <Sub id="mixed-budget" tag={MIXED_IN_BUDGET.section} title="Redone within capacity, it is still an 8K problem">
               <p className={P}>
                 That batch could not show a pure mixing penalty, because it asked for more than the cards had. The redo
-                ran exactly one third of each tier&apos;s solo ceiling at once: {MIXED_IN_BUDGET.rows[0].streams} of{" "}
+                ran one third of each tier&apos;s first-pass solo ceiling at once: {MIXED_IN_BUDGET.rows[0].streams} of{" "}
                 {MIXED_IN_BUDGET.rows[0].soloCeiling} at 8K, {MIXED_IN_BUDGET.rows[1].streams} of{" "}
                 {MIXED_IN_BUDGET.rows[1].soloCeiling} at 4K and {MIXED_IN_BUDGET.rows[2].streams} of{" "}
-                {MIXED_IN_BUDGET.rows[2].soloCeiling} at 1080p. 4K and 1080p had 50 to 65 percent headroom and no
+                {MIXED_IN_BUDGET.rows[2].soloCeiling} at 1080p, which sums to {n(MIXED_IN_BUDGET.ceilingsOfWork, 2)} of those
+                ceilings and {n(MIXED_IN_BUDGET.ceilingsOfWorkCorrected, 2)} against the corrected 1080p ceiling, so it is
+                within budget either way. 4K and 1080p had 50 to 65 percent headroom and no
                 penalty. 8K ran right at the {REAL_TIME_FPS} fps edge, with one of its two streams failing. So the
                 mixing penalty is specific to 8K at this allocation, not a uniform effect across the tiers.
               </p>
               <ChartFigure
-                caption="Each bar runs from the slowest stream to the fastest; the mark is the average. Exactly one third of each solo ceiling."
+                caption="Each bar runs from the slowest stream to the fastest; the mark is the average. One third of each first-pass solo ceiling."
                 table={
                   <DataTable
                     label="Mixed-resolution batch within capacity"

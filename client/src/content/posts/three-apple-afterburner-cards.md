@@ -6,7 +6,7 @@ My Mac Pro 7,1 holds three Apple Afterburner cards, Apple's FPGA-based PCIe acce
 
 - **Capacity.** 106 streams of 1080p, 27 of 4K, 6 of 8K and 2 of 16K held real time (24 fps or better) across three cards, found with a fine sweep. Only the 4K clip is realistic content, so these counts are not comparable with each other, and at 4K the 27 was sometimes reached with only one or two of the three cards working. This is not the same measurement as Apple's published figures.
 - **CPU isolation.** With all 32 logical cores pinned by busy loops, the slowest stream lost 3.4 percent at 1080p and 0.8 percent at 4K, and stayed above 24 fps.
-- **Mixed resolutions.** Half of each solo limit at once asked for about one and a half times the work of any single limit, and the 8K streams fell to 19.5 fps on average. Redone at exactly one third of each solo limit, 4K and 1080p had 50 to 65 percent headroom and one of the two 8K streams still fell under 24 fps, so the penalty is specific to 8K.
+- **Mixed resolutions.** Half of each solo limit at once asked for about one and a half times the work of any single limit, and the 8K streams fell to 19.5 fps on average. Redone at one third of each first-pass solo limit (about 0.97 of capacity against the corrected 1080p limit), 4K and 1080p had 50 to 65 percent headroom and one of the two 8K streams still fell under 24 fps, so the penalty is specific to 8K.
 - **Output format.** On one 4K stream, forcing 32-bit BGRA output made decode 42 percent slower than the decoder's native format. In the file-recovery pipeline, native output ran about 1.3 to 1.4 times faster at low concurrency and about 1.9 times faster in long-lived sessions at matched density.
 - **FPGA.** I mapped the driver's interface and built a flash tool, tested only against a simulator, and never wrote to a card. Whether these chips accept an unencrypted bitstream is unknown.
 - **Files through video.** Bit-exact recovery from 500 KB to 1 GB, and a 97,416-byte Mach-O executable that ran after recovery. With output forced to BGRA, recovery topped out near 16 MB/s, and a cliff appeared past nine sessions. The verification pass showed both came from the forced conversion, not the cards: with native output the same sessions stay flat from 9 to 96. LZ4 in Apple's Compression framework, on one CPU thread with random data, decompressed about 7.5 times faster than my best result.
@@ -134,7 +134,7 @@ In decoded pixels, again assuming UHD sizes, the batch ran at about 7.2 billion 
 
 ### Redone within capacity: still an 8K problem
 
-I did rerun it, sized to add up to exactly one limit: one third of each tier's solo ceiling, 2 of 6 at 8K, 9 of 27 at 4K and 32 of 96 at 1080p, 43 streams in all.
+I did rerun it, sized to add up to one limit: one third of each tier's first-pass solo ceiling, 2 of 6 at 8K, 9 of 27 at 4K and 32 of 96 at 1080p, 43 streams in all. That is exactly 1.00 of the first-pass ceilings. Against the corrected 1080p ceiling of 106 it is about 0.97 (2/6 + 9/27 + 32/106), so it is within budget either way, though not precisely at it.
 
 | Tier | Streams | fps: slowest / avg / fastest | Streams at 24 fps or better |
 |---|---|---|---|
@@ -386,7 +386,7 @@ After the first version of this report I ran a seven-item test list meant to rem
 | 4. Native output | Rebuilt the file-recovery pipeline for native output | No cliff. The 16 MB/s figure and the cliff past nine sessions came from forced BGRA |
 | 5. Fine stream sweep | 1080p 96 to 112, 4K 20 to 32, 8K 1 to 8, 16K 1 to 3 | The 1080p limit is 106. The fixed total holds at 1080p and 4K, not at 8K or 16K |
 | 6. Per-card busy | Per-second sampling, three runs each | The early 1080p readings were a ramp-up transient. At 4K one or two cards were sometimes idle |
-| 7. Mixed within capacity | One third of each solo ceiling, 43 streams | The penalty is an 8K effect |
+| 7. Mixed within capacity | One third of each first-pass solo ceiling, 43 streams | The penalty is an 8K effect |
 
 On item 6: at 96 streams of 1080p the first second after launch reads unevenly across runs (23/13/9, 98/12/18 and 87/16/72 percent per card) and settles to 99/100/100 by the third second, which reconciles the early readings with the later ones. At 4K with 27 streams it is different. In two of three runs one x8 card (`0x100000b71`) dropped to 0 percent busy for most of the run while the other two carried the full load, and in the third run both x8 cards dropped to 0, leaving the x16 card doing nearly all the work. So the 27-stream ceiling was sometimes reached with only one or two of the three cards, and the true all-three-cards 4K capacity may be higher. I count that as an open question, not a settled number.
 
