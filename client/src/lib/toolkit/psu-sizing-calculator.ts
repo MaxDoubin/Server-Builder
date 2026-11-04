@@ -178,10 +178,10 @@ export const PRESETS: Record<ComponentKind, ComponentPreset> = {
     rated: 300,
     typical: 240,
     peak: 300,
-    hint: "Typical is 80 percent of board power. Training jobs hold a GPU near full board power for hours, so raise it for that. Spikes shorter than a millisecond are handled separately below.",
+    hint: "Typical is 80 percent of board power. Training jobs hold a GPU near full board power for hours, so raise it for that. Short spikes above board power are handled separately below.",
   },
   ram: { kind: "ram", label: "DDR5 RDIMM", typical: 6, peak: 12, hint: "Per module. Larger and faster modules draw more." },
-  nvme: { kind: "nvme", label: "NVMe U.2 SSD", typical: 12, peak: 25, hint: "Enterprise U.2 drives commonly allow up to 25 W in their highest power state." },
+  nvme: { kind: "nvme", label: "NVMe U.2 SSD", typical: 12, peak: 25, hint: "Enterprise U.2 drives draw up to about 25 W in their highest power state; the datasheet lists each power state." },
   ssd: { kind: "ssd", label: "SATA SSD", typical: 3, peak: 6, hint: "Per drive." },
   hdd: {
     kind: "hdd",

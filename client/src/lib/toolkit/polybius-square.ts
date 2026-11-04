@@ -100,7 +100,8 @@ export function buildSquare(options: SquareOptions): Square {
   let keyPart = "";
   let keywordIgnored = 0;
   for (const ch of keyword) {
-    if (/\s/.test(ch)) continue;
+    // Whitespace, and a decomposed accent that belongs to the letter before it.
+    if (/\s/.test(ch) || /^\p{M}$/u.test(ch)) continue;
     const folded = foldChar(ch, { size, merge });
     if (!folded) {
       keywordIgnored += 1;
@@ -164,6 +165,10 @@ export function encode(input: string, square: Square): EncodeResult {
   let merged = 0;
   let accents = 0;
   let at = 0;
+  // A decomposed accent ("e" then U+0301) arrives as its own code point. It
+  // belongs to the letter before it, so it is dropped and counted the way a
+  // precomposed "\u00e9" is, rather than reported as a skipped character.
+  let prev: "letter" | "accented" | "other" = "other";
 
   for (const ch of text) {
     const offset = at;
@@ -171,16 +176,24 @@ export function encode(input: string, square: Square): EncodeResult {
     if (/\s/.test(ch)) {
       if (current.length) words.push(current);
       current = [];
+      prev = "other";
+      continue;
+    }
+    if (/^\p{M}$/u.test(ch) && prev !== "other") {
+      if (prev === "letter") accents += 1;
+      prev = "accented";
       continue;
     }
     const folded = foldChar(ch, square);
     const cell = folded ? square.index.get(folded.char) : undefined;
     if (!folded || cell === undefined) {
       skipped.set(ch, (skipped.get(ch) ?? 0) + 1);
+      prev = "other";
       continue;
     }
     if (folded.merged) merged += 1;
     if (folded.accent) accents += 1;
+    prev = folded.accent ? "accented" : "letter";
     const letter: Letter = {
       char: folded.char,
       cell,
@@ -339,6 +352,16 @@ function count(n: number): string {
 
 export function decode(input: string, square: Square): DecodeResult {
   const { text, truncated } = capInput(input);
+  const result = decodeText(text, square, truncated);
+  // A cut through the middle of a pair is the likeliest cause of an error in
+  // a capped input, so say the input was cut rather than leave it a puzzle.
+  if (!result.ok && truncated) {
+    return { ...result, error: `${result.error} Only the first ${MAX_INPUT_CHARS.toLocaleString("en-US")} characters were read.` };
+  }
+  return result;
+}
+
+function decodeText(text: string, square: Square, truncated: boolean): DecodeResult {
   const scanned = scan(text, square);
   if (!scanned.ok) return scanned;
 

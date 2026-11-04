@@ -296,7 +296,7 @@ export function CookieAnalyzer() {
     ? "Nothing analyzed."
     : analysis.reports.length === 0
       ? "Paste one or more Set-Cookie headers to analyze them."
-      : `${analysis.reports.length} ${analysis.reports.length === 1 ? "cookie" : "cookies"} analyzed: ${analysis.reports.length - refused} stored, ${refused} refused, ${risks} ${risks === 1 ? "risk" : "risks"} flagged.`;
+      : `${analysis.reports.length} ${analysis.reports.length === 1 ? "cookie" : "cookies"} analyzed: ${analysis.reports.length - refused} accepted, ${refused} refused, ${risks} ${risks === 1 ? "risk" : "risks"} flagged.`;
 
   return (
     <ToolShell slug="cookie-analyzer">
@@ -359,7 +359,7 @@ export function CookieAnalyzer() {
               {urlParsed && !urlParsed.ok
                 ? urlParsed.error
                 : url
-                  ? `Checking against ${url.scheme}://${url.host}${url.path}${url.assumedScheme ? " (https assumed)" : ""}. ${url.secure ? (url.scheme === "https" ? "Secure origin." : "Loopback host, which browsers treat as secure.") : "Plain http: Secure cookies are refused."}`
+                  ? `Checking against ${url.scheme}://${url.host}${url.path}${url.assumedScheme ? " (https assumed)" : ""}. ${url.secure ? (url.scheme === "https" ? "Secure origin." : "Loopback host, which most browsers treat as a secure origin.") : "Plain http: Secure cookies are refused."}`
                   : "With the URL, Domain matching, the default path and the secure-origin rule are checked too."}
             </p>
           </div>

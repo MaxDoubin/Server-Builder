@@ -28,6 +28,13 @@ export const MAX_DEPTH = 512;
 /** Warnings of each kind kept for display. The totals are always counted in full. */
 export const MAX_LISTED_WARNINGS = 100;
 
+/**
+ * Longest formatted output built. Indentation multiplies with depth, so a
+ * two megabyte array nested 500 levels deep would pretty-print to billions
+ * of characters, past what a JavaScript string can hold.
+ */
+export const MAX_OUTPUT_CHARS = 50_000_000;
+
 /** 2^53 - 1, the largest integer a double holds with every smaller integer also exact. */
 const MAX_SAFE = 9007199254740991n;
 
@@ -71,7 +78,10 @@ export interface JsonNumber extends NodeBase {
   kind: "number";
   /** Exactly as written. Never converted, so never rounded. */
   raw: string;
-  /** Set when JSON.parse would not read this number back as written. */
+  /**
+   * Set when the number is outside the range where a double is exact
+   * (magnitude past 2^53 - 1), overflows to Infinity, or underflows to 0.
+   */
   issue: NumberIssue | null;
 }
 
@@ -113,9 +123,14 @@ export interface NumberIssue {
 export function classifyNumber(raw: string): NumberIssue | null {
   const integerForm = !/[.eE]/.test(raw);
   if (integerForm) {
-    const digits = raw.charCodeAt(0) === 0x2d ? raw.length - 1 : raw.length;
+    const negative = raw.charCodeAt(0) === 0x2d;
+    const digits = negative ? raw.length - 1 : raw.length;
     // Fifteen digits is at most 999,999,999,999,999, well inside 2^53.
     if (digits < 16) return null;
+    // The largest double is about 1.8e308, 309 digits. Anything longer
+    // overflows, and is decided here because BigInt parsing slows down
+    // quadratically on a literal millions of digits long.
+    if (digits > 309) return { kind: "overflow", exact: negative ? "-Infinity" : "Infinity", printed: "null" };
     let big: bigint;
     try {
       big = BigInt(raw);
@@ -252,8 +267,8 @@ export function errorSnippet(text: string, offset: number): ErrorSnippet {
     afterStart = at + atChar.length;
     if (cp === 0x0a || cp === 0x0d) atLabel = "line break";
     else if (cp === 0x09) atLabel = "tab";
-    else if (cp < 0x20 || (cp >= 0x7f && cp <= 0x9f)) atLabel = codePointLabel(cp);
     else if (cp === 0x20) atLabel = "space";
+    else if (isInvisible(cp)) atLabel = codePointLabel(cp);
   } else {
     atLabel = "end of input";
   }
@@ -354,6 +369,46 @@ function isWordChar(c: number): boolean {
   return isWordStart(c) || isDigit(c);
 }
 
+/** Names for the invisible or space-like characters that most often break pasted JSON. */
+const INVISIBLE_NAMES: Record<number, string> = {
+  0xa0: "no-break space",
+  0x200b: "zero-width space",
+  0x200c: "zero-width non-joiner",
+  0x200d: "zero-width joiner",
+  0x2028: "line separator",
+  0x2029: "paragraph separator",
+  0x202f: "narrow no-break space",
+  0x2060: "word joiner",
+  0x3000: "ideographic space",
+  0xfeff: "byte order mark",
+};
+
+/**
+ * True for a character that draws as nothing or as a blank, other than the
+ * four JSON whitespace characters: controls, Unicode spaces, zero-width
+ * marks and lone surrogates. Quoting one in a message would show nothing.
+ */
+export function isInvisible(cp: number): boolean {
+  return (
+    cp < 0x20 ||
+    (cp >= 0x7f && cp <= 0xa0) ||
+    cp === 0xad ||
+    cp === 0x1680 ||
+    (cp >= 0x2000 && cp <= 0x200f) ||
+    (cp >= 0x2028 && cp <= 0x202f) ||
+    (cp >= 0x205f && cp <= 0x206f) ||
+    cp === 0x3000 ||
+    cp === 0xfeff ||
+    (cp >= 0xd800 && cp <= 0xdfff)
+  );
+}
+
+/** U+00A0 (no-break space), or just U+0085 when the character has no common name. */
+function invisibleLabel(cp: number): string {
+  const name = INVISIBLE_NAMES[cp];
+  return name ? `${codePointLabel(cp)} (${name})` : codePointLabel(cp);
+}
+
 /** A short, quoted rendering of a character for an error message. */
 export function describeChar(text: string, offset: number): string {
   if (offset >= text.length) return "the end of the input";
@@ -361,10 +416,13 @@ export function describeChar(text: string, offset: number): string {
   if (cp === 0x0a || cp === 0x0d) return "a line break";
   if (cp === 0x09) return "a tab";
   if (cp === 0x20) return "a space";
-  if (cp < 0x20 || (cp >= 0x7f && cp <= 0x9f) || cp === 0xfeff || (cp >= 0xd800 && cp <= 0xdfff)) {
-    return codePointLabel(cp);
-  }
+  if (isInvisible(cp)) return invisibleLabel(cp);
   return `'${String.fromCodePoint(cp)}'`;
+}
+
+/** Curly quotes, which word processors and chat apps substitute for straight ones. */
+function isCurlyQuote(c: number): boolean {
+  return c === 0x201c || c === 0x201d || c === 0x2018 || c === 0x2019;
 }
 
 function clip(text: string, max = 40): string {
@@ -468,6 +526,12 @@ class Parser {
     if (c === 0x2c) return "Unexpected ',': a value was expected here. Two commas in a row, or a comma before the first item, leaves a gap.";
     if (c === 0x3a) return "Unexpected ':': a value was expected here.";
     if (c === 0xfeff) return "A byte order mark (U+FEFF) can only appear at the very start of the input.";
+    if (isCurlyQuote(c)) {
+      return `Unexpected curly quote ${describeChar(this.s, this.i)}. JSON strings need straight double quotes (").`;
+    }
+    if (isInvisible(c)) {
+      return `Unexpected ${describeChar(this.s, this.i)}. Between tokens JSON allows only space, tab, line feed and carriage return.`;
+    }
     return `Unexpected ${describeChar(this.s, this.i)}: a value was expected here.`;
   }
 
@@ -502,6 +566,9 @@ class Parser {
           throw new Stop(`Object keys must be double-quoted strings: write "${clip(word)}", not ${clip(word)}.`, this.i);
         }
         if (this.isComment(this.i)) throw new Stop("Comments are not allowed in JSON.", this.i);
+        if (isCurlyQuote(c)) {
+          throw new Stop(`Object keys need straight double quotes ("), not the curly quote ${describeChar(this.s, this.i)}.`, this.i);
+        }
         throw new Stop(
           `Expected a double-quoted key${commaAt >= 0 ? "" : " or '}'"}, found ${describeChar(this.s, this.i)}.`,
           this.i,
@@ -544,6 +611,9 @@ class Parser {
       if (hasUnpairedSurrogate(keyNode.value)) this.surrogate(true);
       const value = this.value(depth);
       this.path.pop();
+      if (value.kind === "number" && this.i < this.n && isWordChar(this.s.charCodeAt(this.i))) {
+        throw new Stop(this.gluedMessage(value.raw), this.i);
+      }
       members.push({ key: keyNode.value, keyRaw: keyNode.raw, value, duplicate });
       this.ws();
       if (this.i >= this.n) {
@@ -587,8 +657,12 @@ class Parser {
         throw new Stop("Trailing comma: JSON does not allow a comma before ']'.", commaAt);
       }
       this.path.push(items.length);
-      items.push(this.value(depth));
+      const item = this.value(depth);
+      items.push(item);
       this.path.pop();
+      if (item.kind === "number" && this.i < this.n && isWordChar(this.s.charCodeAt(this.i))) {
+        throw new Stop(this.gluedMessage(item.raw), this.i);
+      }
       this.ws();
       if (this.i >= this.n) {
         throw new Stop(`Unexpected end of input: the array opened at ${this.where(start)} is never closed with ']'.`, this.i);
@@ -610,6 +684,11 @@ class Parser {
       if (this.isComment(this.i)) throw new Stop("Comments are not allowed in JSON.", this.i);
       throw new Stop(`Expected ',' or ']' after an item in the array, found ${describeChar(this.s, this.i)}.`, this.i);
     }
+  }
+
+  /** A number followed directly by letters, as in 10px or 1a. */
+  gluedMessage(raw: string): string {
+    return `Unexpected ${describeChar(this.s, this.i)} directly after the number ${clip(raw)}. A JSON number cannot carry a unit or suffix; if this is text, quote the whole value.`;
   }
 
   surrogate(inKey: boolean): void {
@@ -807,6 +886,9 @@ export function parseJson(input: string): ParseResult {
     parser.ws();
     if (parser.i >= parser.n) return fail("The input is empty. A JSON text holds exactly one value.", parser.i);
     const root = parser.value(0);
+    if (root.kind === "number" && parser.i < parser.n && isWordChar(text.charCodeAt(parser.i))) {
+      return fail(parser.gluedMessage(root.raw), parser.i);
+    }
     parser.ws();
     if (parser.i < parser.n) {
       const rest = text.slice(root.end, parser.i);
@@ -876,6 +958,26 @@ export function orderedMemberIndexes(node: JsonObject, sortKeys: boolean): numbe
  * writes them.
  */
 export function formatJson(root: JsonNode, indent: string, sortKeys: boolean): string {
+  return formatJsonCapped(root, indent, sortKeys, Infinity) ?? "";
+}
+
+class TooLong {}
+
+/**
+ * formatJson with a ceiling: null when the output would pass maxChars. The
+ * check runs as the text grows, so a refused document costs at most maxChars
+ * of work and never reaches the engine's string length limit.
+ */
+export function formatJsonCapped(root: JsonNode, indent: string, sortKeys: boolean, maxChars: number): string | null {
+  try {
+    return formatInto(root, indent, sortKeys, maxChars);
+  } catch (err) {
+    if (err instanceof TooLong || err instanceof RangeError) return null;
+    throw err;
+  }
+}
+
+function formatInto(root: JsonNode, indent: string, sortKeys: boolean, maxChars: number): string {
   let out = "";
   const pretty = indent !== "";
   const colon = pretty ? ": " : ":";
@@ -899,8 +1001,10 @@ export function formatJson(root: JsonNode, indent: string, sortKeys: boolean): s
           if (k > 0) out += ",";
           out += inner + members[k].keyRaw + colon;
           write(members[k].value, level + 1);
+          if (out.length > maxChars) throw new TooLong();
         }
         out += pretty ? `\n${pad(level)}}` : "}";
+        if (out.length > maxChars) throw new TooLong();
         return;
       }
       case "array": {
@@ -914,8 +1018,10 @@ export function formatJson(root: JsonNode, indent: string, sortKeys: boolean): s
           if (k > 0) out += ",";
           out += inner;
           write(node.items[k], level + 1);
+          if (out.length > maxChars) throw new TooLong();
         }
         out += pretty ? `\n${pad(level)}]` : "]";
+        if (out.length > maxChars) throw new TooLong();
         return;
       }
       case "string":

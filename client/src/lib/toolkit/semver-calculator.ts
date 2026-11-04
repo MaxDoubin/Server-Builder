@@ -668,6 +668,7 @@ function diagnoseToken(token: string): string {
     return "npm ranges have no &&. Separate comparators with a space to require all of them, and use || for either.";
   }
   if (t.includes(",")) return "Commas do not separate comparators. Use a space to require both, or || for either.";
+  if (t.includes("|")) return "A single | is not an operator. Use || between alternatives, as in 1.x || 2.x.";
   if (/^(latest|next|beta|canary|alpha|rc|stable)$/i.test(t)) {
     return `"${clip(t)}" looks like an npm dist-tag. A tag points at whatever version was last published under it; it is not a range.`;
   }
@@ -722,7 +723,8 @@ function diagnoseToken(token: string): string {
   }
   if (dash >= 0) {
     if (parts.length < 3) {
-      return `In "${clip(t)}", a prerelease tag needs all three numbers before it, for example ${parts[0]}.${parts[1] ?? "0"}.0-${clip(pre, 20)}.`;
+      const whole = (id: string | undefined) => (id === undefined || /^(x|X|\*)$/.test(id) ? "0" : id);
+      return `In "${clip(t)}", a prerelease tag needs all three numbers before it, for example ${whole(parts[0])}.${whole(parts[1])}.0-${clip(pre, 20)}.`;
     }
     const err = identifierError(pre, "prerelease");
     if (err) return `In "${clip(t)}": ${err}`;

@@ -149,7 +149,16 @@ export function parseQuantity(raw: string): QuantityResult {
     return fail(`That is ${text.length} characters. This tool reads quantities up to ${MAX_QUANTITY_LENGTH}.`);
   }
   let body = text;
-  if (body[0] === "-") return fail("Requests and limits cannot be negative.");
+  if (body[0] === "-") {
+    // apimachinery accepts a minus sign, and validation then rejects any
+    // value below zero. -0 is still zero, so it is allowed here.
+    const rest = body.slice(1);
+    if (rest !== "" && rest[0] !== "-" && rest[0] !== "+") {
+      const unsigned = parseQuantity(rest);
+      if (unsigned.ok && unsigned.value.nano === 0n) return { ok: true, value: { ...unsigned.value, text } };
+    }
+    return fail("Requests and limits cannot be negative.");
+  }
   if (body[0] === "+") body = body.slice(1);
 
   const m = /^([0-9]*)(?:\.([0-9]*))?([\s\S]*)$/.exec(body);
@@ -209,7 +218,7 @@ export function parseQuantity(raw: string): QuantityResult {
   const roundedToNano = top % den !== 0n;
 
   if (nano > INT64_MAX * NANO) {
-    return fail("That is larger than Kubernetes can store. A quantity tops out at 2^63 - 1 units, about 9.2 x 10^18.");
+    return fail("Kubernetes reads requests and limits as 64-bit integers, so this tool refuses anything above 2^63 - 1 units, about 9.2 x 10^18.");
   }
   // apimachinery: a binary value between 0 and 1 is kept in decimal form.
   if (format === "BinarySI" && nano > 0n && nano < NANO) format = "DecimalSI";
@@ -315,7 +324,9 @@ export function exactDecimal(nano: bigint): string {
 }
 
 function trimFixed(value: number, digits: number): string {
-  return value.toFixed(digits).replace(/\.?0+$/, "");
+  const fixed = value.toFixed(digits);
+  // Only trailing zeros after a decimal point go: 100 stays 100.
+  return fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
 }
 
 /** A ratio of two BigInts as a number with a few significant digits. */
@@ -391,7 +402,7 @@ export function cpuNotes(q: Quantity): string[] {
   if (q.suffix in BINARY_SUFFIX) {
     notes.push(`A binary suffix on CPU multiplies by a power of 1024: this is ${formatCpu(milli)}. CPU is normally written in cores or with m.`);
   } else if (milli > 512000n) {
-    notes.push(`That is ${formatCpu(milli)}. Check the suffix: k on CPU means thousands of cores.`);
+    notes.push(`That is ${formatCpu(milli)}. Check the suffix: on CPU, k, M and G multiply a number of cores by a thousand, a million and a billion.`);
   }
   return notes;
 }
@@ -416,8 +427,9 @@ export function inspectQuantity(q: Quantity): QuantityReport {
   const bytes = toBytes(q.nano);
   let counterpart: QuantityReport["counterpart"] = null;
   const other = COUNTERPART[q.suffix];
-  if (other) {
-    const numberPart = q.text.replace(/^\+/, "").slice(0, q.text.replace(/^\+/, "").length - q.suffix.length);
+  if (other && q.nano > 0n) {
+    const unsigned = q.text.replace(/^\+/, "");
+    const numberPart = unsigned.slice(0, unsigned.length - q.suffix.length);
     const parsed = parseQuantity(`${numberPart}${other}`);
     if (parsed.ok) {
       const otherBytes = toBytes(parsed.value.nano);
@@ -621,7 +633,9 @@ export function computeQos(containers: ContainerResult[]): QosClass {
 /** Plain reasons for the QoS class, one per cause, container by container. */
 export function qosReasons(qos: QosClass, containers: ContainerResult[]): string[] {
   if (qos === "BestEffort") {
-    return ["No container sets a CPU or memory request or limit above zero, so nothing is reserved and this pod is first in line for eviction."];
+    return [
+      "No container sets a CPU or memory request or limit above zero. Nothing is reserved for it, its containers get oom_score_adj 1000, and under memory pressure it is among the first pods the kubelet evicts.",
+    ];
   }
   if (qos === "Guaranteed") {
     const reasons = ["Every container sets CPU and memory limits, and each request equals its limit."];
@@ -789,13 +803,16 @@ export function analyzeNode(n: NodeInput): NodeResult {
     }
     return p.value.nano;
   };
-  const cpuCap = toMilli(qty("cpuCapacity", false));
-  const memCap = toBytes(qty("memoryCapacity", false));
-  const kubeCpu = toMilli(qty("kubeReservedCpu", true));
-  const kubeMem = toBytes(qty("kubeReservedMemory", true));
-  const sysCpu = toMilli(qty("systemReservedCpu", true));
-  const sysMem = toBytes(qty("systemReservedMemory", true));
-  const evict = toBytes(qty("evictionHardMemory", true));
+  // The kubelet subtracts the reservations as exact quantities, and the
+  // scheduler then reads the result with MilliValue() and Value(), so the
+  // rounding to millicores and bytes happens once, on the difference.
+  const cpuCapNano = qty("cpuCapacity", false);
+  const memCapNano = qty("memoryCapacity", false);
+  const allocCpuNano = cpuCapNano - qty("kubeReservedCpu", true) - qty("systemReservedCpu", true);
+  const allocMemNano =
+    memCapNano - qty("kubeReservedMemory", true) - qty("systemReservedMemory", true) - qty("evictionHardMemory", true);
+  const cpuCap = toMilli(cpuCapNano);
+  const memCap = toBytes(memCapNano);
   const usedCpu = toMilli(qty("usedCpu", true));
   const usedMem = toBytes(qty("usedMemory", true));
   const maxPods = parseCount(n.maxPods, "a maximum pod count", 1, MAX_PODS_PER_NODE);
@@ -803,16 +820,16 @@ export function analyzeNode(n: NodeInput): NodeResult {
   const usedPods = n.usedPods.trim() === "" ? ({ ok: true, value: 0n } as const) : parseCount(n.usedPods, "a pod count", 0, MAX_PODS_PER_NODE);
   if (!usedPods.ok) fieldErrors.usedPods = usedPods.message;
 
-  const allocCpu = cpuCap - kubeCpu - sysCpu;
-  const allocMem = memCap - kubeMem - sysMem - evict;
+  const allocCpu = allocCpuNano > 0n ? toMilli(allocCpuNano) : 0n;
+  const allocMem = allocMemNano > 0n ? toBytes(allocMemNano) : 0n;
   const allocPods = maxPods.ok ? maxPods.value : 0n;
   const errors: string[] = [];
   const fieldsOk = Object.keys(fieldErrors).length === 0;
   if (fieldsOk) {
-    if (cpuCap === 0n) errors.push("CPU capacity is zero.");
-    if (memCap === 0n) errors.push("Memory capacity is zero.");
-    if (cpuCap > 0n && allocCpu <= 0n) errors.push("The CPU reservations use up the whole node, so nothing is allocatable.");
-    if (memCap > 0n && allocMem <= 0n) errors.push("The memory reservations and eviction threshold use up the whole node, so nothing is allocatable.");
+    if (cpuCapNano === 0n) errors.push("CPU capacity is zero.");
+    if (memCapNano === 0n) errors.push("Memory capacity is zero.");
+    if (cpuCapNano > 0n && allocCpuNano <= 0n) errors.push("The CPU reservations use up the whole node, so nothing is allocatable.");
+    if (memCapNano > 0n && allocMemNano <= 0n) errors.push("The memory reservations and eviction threshold use up the whole node, so nothing is allocatable.");
   }
   const availCpu = allocCpu - usedCpu;
   const availMem = allocMem - usedMem;

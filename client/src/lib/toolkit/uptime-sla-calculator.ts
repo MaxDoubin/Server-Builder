@@ -123,9 +123,20 @@ export interface Availability {
   unavailability: Exact;
 }
 
+/**
+ * Drops one trailing percent sign and the white space before it. Written as
+ * a scan and not /\s*%$/, which retries from every position in a long run of
+ * white space and takes quadratic time on a pasted blob: sixty thousand
+ * spaces cost about twelve seconds.
+ */
+export function stripPercent(raw: string): string {
+  const text = raw.trim();
+  return text.endsWith("%") ? text.slice(0, -1).trimEnd() : text;
+}
+
 /** Parses "99.95", "99.95%" or " 99.95 % " into an exact availability. */
 export function parseAvailability(raw: string): Parsed<Availability> {
-  const text = raw.trim().replace(/\s*%$/, "");
+  const text = stripPercent(raw);
   const parsed = parseDecimal(text);
   if (parsed.kind !== "ok") return parsed;
   const p = parsed.value;

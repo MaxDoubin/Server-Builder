@@ -20,10 +20,11 @@ import {
   MAX_DEPTH,
   MAX_INPUT_CHARS,
   MAX_LISTED_WARNINGS,
+  MAX_OUTPUT_CHARS,
   computeStats,
   describeNumberIssue,
   errorSnippet,
-  formatJson,
+  formatJsonCapped,
   indentString,
   nodeAt,
   orderedMemberIndexes,
@@ -38,6 +39,7 @@ import {
   utf8Length,
   type IndentChoice,
   type JsonNode,
+  type NumberIssueKind,
 } from "@/lib/toolkit/json-formatter";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
@@ -81,6 +83,17 @@ const EXPAND_ALL_ROWS = 3_000;
 
 /** Files larger than this are refused before being read. */
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
+
+/** Characters of a key or a number literal drawn in a tree row or the warnings table. */
+const LABEL_PREVIEW_CHARS = 120;
+
+/** Short badge for a number that a double does not hold as written. */
+const NUMBER_BADGE: Record<NumberIssueKind, string> = {
+  "unsafe-integer": "past 2^53 - 1",
+  "beyond-safe": "past 2^53 - 1",
+  overflow: "overflows a double",
+  underflow: "underflows to 0",
+};
 
 const INDENTS: { value: IndentChoice; label: string }[] = [
   { value: "2", label: "2 spaces" },
@@ -128,6 +141,10 @@ const EXAMPLES: { label: string; value: string }[] = [
 ];
 
 /* --------------------------------------------------------------- helpers */
+
+function clipText(text: string, max = LABEL_PREVIEW_CHARS): string {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+}
 
 function keyOf(path: number[]): string {
   return path.join("/");
@@ -248,8 +265,8 @@ function TreeRow({
     if (position >= shown) shown = position + 1;
   }
 
-  const unsafe = node.kind === "number" && node.issue !== null;
-  const shownLabel = isIndex ? label : JSON.stringify(label);
+  const issue = node.kind === "number" ? node.issue : null;
+  const shownLabel = isIndex ? label : clipText(JSON.stringify(label));
 
   return (
     <li>
@@ -284,12 +301,12 @@ function TreeRow({
             {nodeKey === "" ? "root" : shownLabel}
           </span>
           <span className="text-[hsl(var(--brand-ash))]">: </span>
-          <span className={`break-all ${unsafe ? "text-[hsl(var(--brand-danger))]" : VALUE_COLOR[node.kind]}`}>
+          <span className={`break-all ${issue ? "text-[hsl(var(--brand-danger))]" : VALUE_COLOR[node.kind]}`}>
             {previewOf(node)}
           </span>
-          {unsafe ? (
+          {issue ? (
             <span className="ml-2 whitespace-nowrap text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-danger))]">
-              not exact in JS
+              {NUMBER_BADGE[issue.kind]}
             </span>
           ) : null}
           {duplicate ? (
@@ -381,7 +398,14 @@ export function JsonFormatter() {
   const ok = result && result.ok ? result : null;
   const failed = result && !result.ok ? result : null;
 
-  const output = useMemo(() => (ok ? formatJson(ok.root, indentString(indent), sortKeys) : ""), [ok, indent, sortKeys]);
+  // Null when the formatted text would pass MAX_OUTPUT_CHARS, which deep
+  // nesting with a wide indent can do from a small input.
+  const formatted = useMemo(
+    () => (ok ? formatJsonCapped(ok.root, indentString(indent), sortKeys, MAX_OUTPUT_CHARS) : ""),
+    [ok, indent, sortKeys],
+  );
+  const outputTooLong = formatted === null;
+  const output = formatted ?? "";
   const stats = useMemo(() => (ok ? computeStats(ok.root) : null), [ok]);
   const inputBytes = useMemo(() => utf8Length(deferred), [deferred]);
   const outputBytes = useMemo(() => utf8Length(output), [output]);
@@ -397,6 +421,16 @@ export function JsonFormatter() {
   const selectedNode = ok ? nodeAt(ok.root, selectedPath) : null;
   const selectedSegments = ok && selectedNode ? segmentsAt(ok.root, selectedPath) : null;
   const pointer = selectedSegments ? toPointer(selectedSegments) : "";
+  // Built once per selection, not on every render: the root is selected by
+  // default, and formatting a large document on each keystroke in the
+  // pointer box would make typing lag.
+  const selectedJson = useMemo(
+    () =>
+      selectedNode
+        ? formatJsonCapped(selectedNode, indentString(indent === "none" ? "2" : indent), sortKeys, MAX_OUTPUT_CHARS)
+        : null,
+    [selectedNode, indent, sortKeys],
+  );
   const selectedMember = useMemo(() => {
     const path = pathOf(selected);
     if (!ok || path.length === 0) return null;
@@ -690,15 +724,28 @@ export function JsonFormatter() {
         {ok && stats ? (
           <>
             <ToolPanel title={indent === "none" ? "Minified" : "Formatted"}>
-              <pre data-testid="output-json" className={PRE_CLASS}>
-                {shownOutput}
-              </pre>
+              {outputTooLong ? (
+                <p
+                  role="alert"
+                  data-testid="text-output-too-long"
+                  className="rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]"
+                >
+                  With this indent the output would pass {MAX_OUTPUT_CHARS.toLocaleString("en-US")} characters, the most
+                  this tool builds. Indentation repeats on every line and grows with depth, so a deeply nested document
+                  can expand far past its own size. Choose 2 spaces, Tab or Minify.
+                </p>
+              ) : (
+                <pre data-testid="output-json" className={PRE_CLASS}>
+                  {shownOutput}
+                </pre>
+              )}
               {output.length > OUTPUT_PREVIEW_CHARS ? (
                 <p className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
                   Showing the first {OUTPUT_PREVIEW_CHARS.toLocaleString("en-US")} of{" "}
                   {output.length.toLocaleString("en-US")} characters. Copy and download take the whole text.
                 </p>
               ) : null}
+              {outputTooLong ? null : (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <CopyButton value={output} label="Copy the formatted JSON" testId="button-copy-output">
                   <span>Copy</span>
@@ -715,6 +762,7 @@ export function JsonFormatter() {
                   <span className="font-mono-tight text-xs text-[hsl(var(--brand-danger))]">{downloadError}</span>
                 ) : null}
               </div>
+              )}
             </ToolPanel>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -732,13 +780,21 @@ export function JsonFormatter() {
               </ToolPanel>
               <ToolPanel title="Size (UTF-8)">
                 <ToolResult label="Input" value={formatBytes(inputBytes)} testId="text-size-before" />
-                <ToolResult label="Output" value={formatBytes(outputBytes)} testId="text-size-after" />
                 <ToolResult
-                  label="Change"
-                  value={`${change > 0 ? "+" : ""}${change.toFixed(1)}%`}
-                  testId="text-size-change"
+                  label="Output"
+                  value={outputTooLong ? "over the cap" : formatBytes(outputBytes)}
+                  testId="text-size-after"
                 />
-                <ToolResult label="Output lines" value={outputLines.toLocaleString("en-US")} />
+                {outputTooLong ? null : (
+                  <>
+                    <ToolResult
+                      label="Change"
+                      value={`${change > 0 ? "+" : ""}${change.toFixed(1)}%`}
+                      testId="text-size-change"
+                    />
+                    <ToolResult label="Output lines" value={outputLines.toLocaleString("en-US")} />
+                  </>
+                )}
                 {ok.bom ? <ToolResult label="Byte order mark" value="skipped" /> : null}
               </ToolPanel>
             </div>
@@ -752,9 +808,11 @@ export function JsonFormatter() {
                         <span className="text-[hsl(var(--brand-danger))]">
                           {warnings.numberCount} {pluralise(warnings.numberCount, "number")}
                         </span>{" "}
-                        will not survive JSON.parse exactly. A JavaScript number is an IEEE 754 double, which
-                        holds every integer only up to 2^53 - 1 (9,007,199,254,740,991). The output above keeps
-                        the digits; a consumer that parses them into doubles does not.
+                        {warnings.numberCount === 1 ? "falls" : "fall"} outside the range a JavaScript number holds
+                        safely. A JavaScript number is an IEEE 754 double, which keeps integers distinct only up to
+                        2^53 - 1 (9,007,199,254,740,991) in magnitude; past that, or past about 1.8e308, values
+                        change when parsed. The output above keeps the digits; a consumer that parses them into
+                        doubles may not.
                       </p>
                       <div className="mt-3 overflow-x-auto">
                         <table className="w-full min-w-[560px] border-collapse text-left">
@@ -786,10 +844,10 @@ export function JsonFormatter() {
                                     </button>
                                   </td>
                                   <td className="max-w-[220px] break-all py-2 pr-4 font-mono-tight text-xs text-[hsl(var(--brand-amber))]">
-                                    {w.raw}
+                                    {clipText(w.raw)}
                                   </td>
                                   <td className="py-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                                    {describeNumberIssue(w.raw, w.issue)}
+                                    {clipText(describeNumberIssue(w.raw, w.issue), 400)}
                                   </td>
                                 </tr>
                               );
@@ -811,8 +869,9 @@ export function JsonFormatter() {
                         <span className="text-[hsl(var(--brand-amber))]">
                           {warnings.duplicateCount} duplicate {pluralise(warnings.duplicateCount, "key")}
                         </span>
-                        . RFC 8259 says names should be unique and leaves duplicates undefined: JSON.parse keeps
-                        the last, other parsers keep the first or refuse the document.
+                        . RFC 8259 says names should be unique and calls the behavior unpredictable when they are
+                        not: JSON.parse keeps the last, while other parsers keep the first, keep both or reject the
+                        document.
                       </p>
                       <ul className="mt-2 space-y-1">
                         {warnings.duplicates.map((w, i) => {
@@ -840,8 +899,8 @@ export function JsonFormatter() {
                           {warnings.surrogateCount} {pluralise(warnings.surrogateCount, "string")}
                         </span>{" "}
                         {warnings.surrogateCount === 1 ? "holds" : "hold"} half of a UTF-16 surrogate pair on
-                        its own. The grammar allows it, but the text is not valid Unicode, and a strict decoder
-                        will reject it or replace it with U+FFFD.
+                        its own. The grammar allows it, but it stands for no Unicode character, so software that
+                        converts the string to UTF-8 will reject it or replace it with U+FFFD.
                       </p>
                       <ul className="mt-2 space-y-1">
                         {warnings.surrogates.map((w, i) => {
@@ -946,15 +1005,13 @@ export function JsonFormatter() {
                         key, and JSON.parse would return the last member with it.
                       </p>
                     ) : null}
-                    <div className="mt-4">
-                      <CopyButton
-                        value={formatJson(selectedNode, indentString(indent === "none" ? "2" : indent), sortKeys)}
-                        label="Copy the selected value as JSON"
-                        testId="button-copy-selected"
-                      >
-                        <span>Copy value</span>
-                      </CopyButton>
-                    </div>
+                    {selectedJson !== null ? (
+                      <div className="mt-4">
+                        <CopyButton value={selectedJson} label="Copy the selected value as JSON" testId="button-copy-selected">
+                          <span>Copy value</span>
+                        </CopyButton>
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <p className="font-mono-tight text-xs text-[hsl(var(--brand-ash))]">Select a node in the tree.</p>

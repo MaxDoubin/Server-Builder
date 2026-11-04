@@ -1021,6 +1021,9 @@ function imageTag(image: string): string | null {
 
 const SECRET_NAME = /(?:^|_)(?:PASSWORD|PASSWD|SECRET|TOKEN|API_?KEY|PRIVATE_?KEY|ACCESS_?KEY|CREDENTIALS?)(?:_|$)/i;
 
+/** POSTGRES_PASSWORD_FILE and its kin hold a path to the secret, which is the safe way to pass one. */
+const SECRET_BY_REFERENCE = /_(?:FILE|PATH|DIR|FILENAME)$/i;
+
 /* ============================================================ run parser */
 
 interface Flag {
@@ -1260,7 +1263,7 @@ function convertRun(parsed: Extract<ParsedRun, { ok: true }>, ctx: Context, serv
     if (listKey !== undefined) {
       if (name === "env") {
         const [envName, envValue] = splitKv(value);
-        if (SECRET_NAME.test(envName) && envValue && !hasVariable(envValue)) {
+        if (SECRET_NAME.test(envName) && !SECRET_BY_REFERENCE.test(envName) && envValue && !hasVariable(envValue)) {
           sink.note(
             "warn",
             `${envName} looks like a secret and its value is written into the Compose file. Keep it out of version control with an env_file, or use Compose secrets.`,

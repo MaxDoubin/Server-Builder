@@ -30,9 +30,9 @@ import {
   flagRuns,
   formatOffset,
   groupZones,
-  instantOf,
   isoWithOffset,
   listZones,
+  localDaySpan,
   nextTransition,
   offsetSeconds,
   overlapFlags,
@@ -112,15 +112,37 @@ function hourOption(hour: number): string {
   return `${pad(hour)}:00`;
 }
 
+function sameDate(a: Civil, b: Civil): boolean {
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
+/**
+ * The two wall clock readings at an offset change. When the change crosses
+ * midnight (Santiago falls back from 00:00 to 23:00 the day before, Samoa
+ * skipped all of 2011-12-30) both readings carry their dates.
+ */
+function transitionEnds(t: Transition): { before: string; after: string; sameDay: boolean } {
+  const sameDay = sameDate(t.localBefore, t.localAfter);
+  return {
+    before: sameDay ? hm(t.localBefore) : `${ymdString(t.localBefore)} ${hm(t.localBefore)}`,
+    after: sameDay ? hm(t.localAfter) : `${ymdString(t.localAfter)} ${hm(t.localAfter)}`,
+    sameDay,
+  };
+}
+
 /** What a change in offset does to the clock, in the zone's own words. */
 function describeTransition(t: Transition): { headline: string; detail: string; effect: string } {
   const forward = t.shift > 0;
+  const ends = transitionEnds(t);
+  const when = ends.sameDay ? " that day" : "";
   return {
-    headline: `${dateLabel(t.localBefore)}, ${hm(t.localBefore)} ${t.beforeName} becomes ${hm(t.localAfter)} ${t.afterName}`,
+    headline: ends.sameDay
+      ? `${dateLabel(t.localBefore)}, ${ends.before} ${t.beforeName} becomes ${ends.after} ${t.afterName}`
+      : `${dateLabel(t.localBefore)} ${hm(t.localBefore)} ${t.beforeName} becomes ${dateLabel(t.localAfter)} ${hm(t.localAfter)} ${t.afterName}`,
     detail: `Clocks go ${forward ? "forward" : "back"} ${describeShift(t.shift)}. Offset ${formatOffset(t.before)} to ${formatOffset(t.after)}.`,
     effect: forward
-      ? `Local times from ${hm(t.localBefore)} up to ${hm(t.localAfter)} do not exist that day.`
-      : `Local times from ${hm(t.localAfter)} up to ${hm(t.localBefore)} happen twice that day.`,
+      ? `Local times from ${ends.before} up to ${ends.after} do not exist${when}.`
+      : `Local times from ${ends.after} up to ${ends.before} happen twice${when}.`,
   };
 }
 
@@ -146,14 +168,13 @@ function AmbiguityNote({
   const gap = resolution.kind === "gap";
 
   let what: string;
-  if (gap) {
-    what = t
-      ? `At ${hm(t.localBefore)} ${t.beforeName} (${utc(t.epoch)}) clocks jump to ${hm(t.localAfter)} ${t.afterName}, so every reading from ${hm(t.localBefore)} up to ${hm(t.localAfter)} never appears on a wall clock there.`
-      : "Clocks jump forward across it.";
+  if (t) {
+    const ends = transitionEnds(t);
+    what = gap
+      ? `At ${ends.before} ${t.beforeName} (${utc(t.epoch)}) clocks jump to ${ends.after} ${t.afterName}, so every reading from ${ends.before} up to ${ends.after} never appears on a wall clock there.`
+      : `At ${ends.before} ${t.beforeName} (${utc(t.epoch)}) clocks fall back to ${ends.after} ${t.afterName}, so every reading from ${ends.after} up to ${ends.before} appears once on each side of the change.`;
   } else {
-    what = t
-      ? `At ${hm(t.localBefore)} ${t.beforeName} (${utc(t.epoch)}) clocks fall back to ${hm(t.localAfter)} ${t.afterName}, so every reading from ${hm(t.localAfter)} up to ${hm(t.localBefore)} appears once on each side of the change.`
-      : "Clocks fall back across it.";
+    what = gap ? "Clocks jump forward across it." : "Clocks fall back across it.";
   }
 
   return (
@@ -184,7 +205,7 @@ export function TimezoneConverter() {
   const zoneChoices = useMemo(() => {
     const device = deviceZone();
     const all = listZones();
-    return all.includes(device) ? all : [...all, device].sort();
+    return all.includes(device) ? all : [all[0], ...[...all.slice(1), device].sort()];
   }, []);
   const groups = useMemo(() => groupZones(zoneChoices), [zoneChoices]);
 
@@ -200,17 +221,20 @@ export function TimezoneConverter() {
 
   const parsed = useMemo(() => (text.trim() === "" ? null : parseCivil(text)), [text]);
   const wall: Wall | null = parsed && parsed.ok ? parsed.value : null;
-  const rangeError =
-    wall && !wallInZoneRange(wall)
-      ? `This tool covers years ${MIN_ZONE_YEAR} to ${MAX_ZONE_YEAR}. Earlier dates predate standardized time zones in many places, and later ones depend on rules that governments will probably change.`
-      : null;
+  const rangeMessage = `This tool covers years ${MIN_ZONE_YEAR} to ${MAX_ZONE_YEAR}. Earlier dates predate standardized time zones in many places, and later ones depend on rules that governments will probably change.`;
+  const rangeError = wall && !wallInZoneRange(wall) ? rangeMessage : null;
   const usable = wall && !rangeError ? wall : null;
-  const inputError = parsed && !parsed.ok ? parsed.message : rangeError;
+  // parseCivil words its year error for years 1 to 9999; this tool's span is narrower.
+  const inputError =
+    parsed && !parsed.ok ? (parsed.message.startsWith("Years run") ? rangeMessage : parsed.message) : rangeError;
 
   const resolution = useMemo(() => (usable ? resolveWall(fromZone, usable) : null), [usable, fromZone]);
   const epoch = resolution ? chooseInstant(resolution, mode) : null;
 
-  const rowZones = useMemo(() => [fromZone, ...zones.filter((z) => z !== fromZone)], [fromZone, zones]);
+  const allRowZones = useMemo(() => [fromZone, ...zones.filter((z) => z !== fromZone)], [fromZone, zones]);
+  // Switching the source to a zone that is not listed can push the list one past the cap.
+  const rowZones = useMemo(() => allRowZones.slice(0, MAX_ZONES), [allRowZones]);
+  const hiddenZones = allRowZones.slice(MAX_ZONES);
 
   const sourceWall = useMemo(() => (epoch !== null ? wallAt(fromZone, epoch) : null), [epoch, fromZone]);
 
@@ -244,8 +268,10 @@ export function TimezoneConverter() {
 
   const plan = useMemo(() => {
     if (epoch === null || !sourceWall) return null;
-    const midnight = instantOf(fromZone, { ...sourceWall, hour: 0, minute: 0, second: 0 }).epoch;
-    const grid = buildGrid(rowZones, midnight, 24, { start: hoursStart, end: hoursEnd });
+    const day = localDaySpan(fromZone, sourceWall);
+    const midnight = day.start;
+    const columns = day.columns;
+    const grid = buildGrid(rowZones, midnight, columns, { start: hoursStart, end: hoursEnd });
     const flags = overlapFlags(grid);
     const runs = flagRuns(flags).map((run) => {
       const startEpoch = grid[0].cells[run.from].epoch;
@@ -257,8 +283,8 @@ export function TimezoneConverter() {
       };
     });
     const best = bestCoverage(grid);
-    const selected = Math.max(0, Math.min(23, Math.floor((epoch - midnight) / 3600)));
-    return { grid, flags, runs, best, selected };
+    const selected = Math.max(0, Math.min(columns - 1, Math.floor((epoch - midnight) / 3600)));
+    return { grid, flags, runs, best, selected, columns, hours: (day.end - day.start) / 3600 };
   }, [epoch, sourceWall, rowZones, fromZone, hoursStart, hoursEnd]);
 
   /* ----------------------------------------------------------- the copy */
@@ -339,7 +365,7 @@ export function TimezoneConverter() {
             </p>
           ) : (
             <p id={errorId} className="mt-3 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              Zone rules come from this browser's copy of the IANA time zone database, so results follow whatever
+              {parsed === null ? "Enter a date and time to convert. " : ""}Zone rules come from this browser's copy of the IANA time zone database, so results follow whatever
               rules your browser ships. Years {MIN_ZONE_YEAR} to {MAX_ZONE_YEAR} are supported.
             </p>
           )}
@@ -511,6 +537,12 @@ export function TimezoneConverter() {
                 <span>Copy ISO 8601</span>
               </CopyButton>
             </div>
+            {hiddenZones.length > 0 ? (
+              <p role="status" className="mt-4 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
+                The list holds {MAX_ZONES} zones, so {hiddenZones.join(", ")} is hidden while {fromZone} is the source.
+                Remove a zone to bring it back.
+              </p>
+            ) : null}
             <p className="mt-4 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               Names are the browser's own. Where it has no common abbreviation it shows an offset such as GMT+9, and
               abbreviations are not unique: CST can mean Central Standard, China Standard or Cuba Standard Time. The
@@ -522,8 +554,10 @@ export function TimezoneConverter() {
         {plan && sourceWall ? (
           <ToolPanel title="Meeting planner">
             <p className="max-w-3xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Twenty-four consecutive hours starting at midnight on {dateLabel(sourceWall)} in {fromZone}. Each cell is
-              the local hour in that row's zone.
+              Every hour of {dateLabel(sourceWall)} in {fromZone}, from local midnight to the next
+              {plan.hours === 24 ? "" : `, which is ${plan.hours} hours long because the UTC offset changes that day`}. Each
+              cell is the local time in that row's zone at the start of the hour. A cell counts as working hours only
+              when the whole hour fits inside them.
             </p>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:max-w-[520px]">
               <div>
@@ -572,7 +606,7 @@ export function TimezoneConverter() {
             <div className="relative mt-5 overflow-x-auto pb-1">
               <table className="w-full min-w-[980px] border-collapse text-center" data-testid="table-planner">
                 <caption className="sr-only">
-                  Local hour in each zone for 24 hours from midnight in {fromZone}, marked as working hours, awake or night
+                  Local hour in each zone for each hour of the day in {fromZone}, marked as working hours, awake or night
                 </caption>
                 <thead>
                   <tr>

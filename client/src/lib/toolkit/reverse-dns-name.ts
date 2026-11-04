@@ -253,6 +253,11 @@ function decimalOctet(label: string, index: number): Result<number> {
  * Read an RFC 2317 child label. The RFC leaves the format to the operator;
  * start/prefix (its examples) and start-prefix are read, plus a dash range
  * such as 64-127 when the numbers can only mean that.
+ *
+ * A dash label fits both readings only when it ends in 31 (0-31, 16-31,
+ * 24-31, 28-31). The start-prefix reading is taken first because it is the
+ * form this tool generates, so its own output reads back unchanged; a host
+ * label that only fits the range reading switches to the range.
  */
 function readClassless(
   label: string,
@@ -279,7 +284,7 @@ function readClassless(
     }
     return { ok: true, value: { start: a, prefix: asPrefix, note: null, rangeAlternative: null } };
   }
-  if (asPrefix !== null) {
+  if (asPrefix !== null && asPrefix !== asRange) {
     return {
       ok: true,
       value: {
@@ -294,6 +299,17 @@ function readClassless(
     ok: true,
     value: { start: a, prefix: asRange, note: `Read ${label} as the range ${a} to ${b}, a /${asRange}.`, rangeAlternative: null },
   };
+}
+
+/**
+ * A warning when a generated child label also reads as a range: the dash
+ * form of a /31 at 0, 16, 24 or 28 (0-31 is also "0 to 31"). Null otherwise.
+ */
+export function classlessLabelWarning(info: Classless): string | null {
+  const r = readClassless(info.label);
+  if (!r.ok || r.value.rangeAlternative === null) return null;
+  const end = info.start + 2 ** (32 - r.value.rangeAlternative) - 1;
+  return `${info.label} can also be read as the range ${info.start} to ${end}. The slash form, ${info.start}/${info.prefix}, has only one reading.`;
 }
 
 function parseInAddr(labels: string[], name: string): Result<ReverseInput> {
@@ -420,6 +436,9 @@ export function parseReverseInput(raw: string): Result<ReverseInput> {
   const slash = text.lastIndexOf("/");
   if (slash !== -1) {
     addressText = text.slice(0, slash);
+    if (addressText.includes("/")) {
+      return fail("There is more than one slash. Write the address, then at most one /prefix length, such as 192.0.2.0/26.");
+    }
     const p = text.slice(slash + 1).trim();
     if (!/^\d{1,3}$/.test(p) || (p.length > 1 && p.startsWith("0"))) {
       return fail(`The prefix length after the slash ("${quote(p)}") must be a plain number.`);

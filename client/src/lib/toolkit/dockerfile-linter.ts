@@ -586,13 +586,20 @@ export function parseDockerfile(text: string): ParseResult {
   return { instructions, directives, lines };
 }
 
+/** The line of the last entry whose offset is at or before `offset`. Entries are in order. */
 function lineAtOffset(starts: { offset: number; line: number }[], offset: number): number {
-  let line = starts.length > 0 ? starts[0].line : 1;
-  for (const s of starts) {
-    if (s.offset <= offset) line = s.line;
-    else break;
+  if (starts.length === 0) return 1;
+  let lo = 0;
+  let hi = starts.length - 1;
+  let found = 0;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (starts[mid].offset <= offset) {
+      found = mid;
+      lo = mid + 1;
+    } else hi = mid - 1;
   }
-  return line;
+  return starts[found].line;
 }
 
 /* ============================================================ shell lexer */
@@ -665,7 +672,9 @@ export function shellCommands(text: string): ShellCmd[] {
   const endCmd = (sep: string) => {
     endWord();
     skipTarget = false;
-    while (words.length > 0 && RESERVED.has(words[0].text)) words = words.slice(1);
+    let lead = 0;
+    while (lead < words.length && RESERVED.has(words[lead].text)) lead++;
+    if (lead > 0) words = words.slice(lead);
     if (words.length > 0) cmds.push({ words, sep, pos: words[0].pos });
     words = [];
   };
@@ -1220,7 +1229,16 @@ export function lintDockerfile(input: string): LintResult {
       };
       scan(inst.args, (offset) => lineAtOffset(inst.lineStarts, offset));
       for (const h of inst.heredocs) {
-        scan(h.body, (offset) => h.line + (h.body.slice(0, offset).match(/\n/g)?.length ?? 0));
+        // Matches arrive in order, so count the newlines between them once.
+        let at = 0;
+        let ln = h.line;
+        scan(h.body, (offset) => {
+          for (let k = h.body.indexOf("\n", at); k >= 0 && k < offset; k = h.body.indexOf("\n", at)) {
+            ln++;
+            at = k + 1;
+          }
+          return ln;
+        });
       }
     }
   }
@@ -1496,6 +1514,19 @@ function lintRun(inst: Instruction, stage: Stage, report: Reporter): void {
   let rmListsAt = -1;
   let hasUpdate = false;
   let usesIndex = false;
+  let cleansApk: boolean | undefined;
+
+  // For each command that pipes into the next, the first shell or interpreter
+  // further along the same pipeline. Computed once, right to left, so a long
+  // pipeline costs linear time.
+  const shellAfter: (string | null)[] = new Array<string | null>(cmds.length).fill(null);
+  for (let k = cmds.length - 2; k >= 0; k--) {
+    if (cmds[k].sep !== "|" && cmds[k].sep !== "|&") continue;
+    const next = called(cmds[k + 1]);
+    if (next && SHELLS.has(next.name)) shellAfter[k] = "a shell";
+    else if (next && INTERPRETERS.has(next.name)) shellAfter[k] = next.name;
+    else shellAfter[k] = shellAfter[k + 1];
+  }
 
   for (let c = 0; c < cmds.length; c++) {
     const cmd = cmds[c];
@@ -1549,11 +1580,11 @@ function lintRun(inst: Instruction, stage: Stage, report: Reporter): void {
     if (call.name === "apk") {
       const parsed = parseOptions(call.args, { short: "", long: [] });
       if (parsed.positional[0]?.text === "add" && !parsed.opts.includes("--no-cache")) {
-        const cleans = cmds.some((other) => {
+        cleansApk ??= cmds.some((other) => {
           const oc = called(other);
           return oc !== null && oc.name === "rm" && oc.args.some((w) => w.text.includes("/var/cache/apk"));
         });
-        if (!cleans) report("apk-no-cache", line, "apk add has no --no-cache.", kw);
+        if (!cleansApk) report("apk-no-cache", line, "apk add has no --no-cache.", kw);
       }
     }
 
@@ -1582,16 +1613,8 @@ function lintRun(inst: Instruction, stage: Stage, report: Reporter): void {
         report("tls-verify-off", line, `${call.name} ${call.name === "curl" ? "-k" : "--no-check-certificate"} skips certificate verification.`, kw);
       }
       // curl ... | sh, including longer pipelines.
-      let j = c;
-      while (cmds[j] && (cmds[j].sep === "|" || cmds[j].sep === "|&") && cmds[j + 1]) {
-        const next = called(cmds[j + 1]);
-        if (next && (SHELLS.has(next.name) || INTERPRETERS.has(next.name))) {
-          const target = SHELLS.has(next.name) ? "a shell" : next.name;
-          report("pipe-to-shell", line, `${call.name} output is piped into ${target}.`, kw);
-          break;
-        }
-        j++;
-      }
+      const target = shellAfter[c];
+      if (target) report("pipe-to-shell", line, `${call.name} output is piped into ${target}.`, kw);
     }
 
     if (call.name === "git") {

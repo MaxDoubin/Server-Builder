@@ -127,15 +127,6 @@ export function isValidZone(zone: string): boolean {
   return zone !== "" && partsFormatter(zone) !== null;
 }
 
-/** The zone the browser reports for this device, or UTC when it reports nothing usable. */
-export function deviceZone(): string {
-  try {
-    const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return zone && isValidZone(zone) ? zone : "UTC";
-  } catch {
-    return "UTC";
-  }
-}
 
 /**
  * Browsers list zones under the older canonical spelling of a few renamed
@@ -162,6 +153,24 @@ const CURRENT_NAMES: [legacy: string, current: string][] = [
   ["Pacific/Ponape", "Pacific/Pohnpei"],
   ["Pacific/Truk", "Pacific/Chuuk"],
 ];
+
+/** The current IANA spelling of a zone name, when the browser reports a legacy alias such as Asia/Calcutta. */
+export function currentZoneName(zone: string): string {
+  for (const [legacy, current] of CURRENT_NAMES) {
+    if (zone === legacy && isValidZone(current)) return current;
+  }
+  return zone;
+}
+
+/** The zone the browser reports for this device, under its current name, or UTC when it reports nothing usable. */
+export function deviceZone(): string {
+  try {
+    const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return zone && isValidZone(zone) ? currentZoneName(zone) : "UTC";
+  } catch {
+    return "UTC";
+  }
+}
 
 /** Every zone the browser knows, sorted, with UTC first. Falls back to a short list on old browsers. */
 export function listZones(): string[] {
@@ -446,9 +455,16 @@ export function validWorkHours(hours: WorkHours): boolean {
   return Number.isInteger(hours.start) && Number.isInteger(hours.end) && hours.start >= 0 && hours.end <= 24 && hours.start < hours.end;
 }
 
-export function classifyMinute(minuteOfDay: number, hours: WorkHours): HourState {
-  if (minuteOfDay >= hours.start * 60 && minuteOfDay < hours.end * 60) return "work";
-  if (minuteOfDay >= AWAKE_START_MINUTE && minuteOfDay < AWAKE_END_MINUTE) return "awake";
+/**
+ * Classifies a span of local time that starts at minuteOfDay and lasts
+ * spanMinutes (one grid cell, an hour by default). The whole span has to sit
+ * inside a band to count: in a +05:30 zone the cell that starts at 16:30 runs
+ * to 17:30, so with work ending at 17:00 it is not a working hour.
+ */
+export function classifyMinute(minuteOfDay: number, hours: WorkHours, spanMinutes = 60): HourState {
+  const end = minuteOfDay + spanMinutes;
+  if (minuteOfDay >= hours.start * 60 && end <= hours.end * 60) return "work";
+  if (minuteOfDay >= AWAKE_START_MINUTE && end <= AWAKE_END_MINUTE) return "awake";
   return "night";
 }
 
@@ -473,6 +489,21 @@ export function buildGrid(zones: string[], startEpoch: number, columns: number, 
       return { epoch, wall, state: classifyMinute(wall.hour * 60 + wall.minute, hours) };
     }),
   }));
+}
+
+/**
+ * The instant a zone's local date begins and how many hour columns cover it.
+ * A day is 23 or 25 hours long on a DST change day (23.5 or 24.5 on Lord Howe
+ * Island), so the column count follows the real length instead of assuming 24.
+ * When local midnight is skipped, the day starts at the first instant after it.
+ */
+export function localDaySpan(zone: string, wall: Wall): { start: number; end: number; columns: number } {
+  const day = { year: wall.year, month: wall.month, day: wall.day, hour: 0, minute: 0, second: 0 };
+  const start = instantOf(zone, day).epoch;
+  const next = secondsToCivil(civilToSeconds(day) + 86400);
+  const end = instantOf(zone, next).epoch;
+  const columns = Math.max(1, Math.min(48, Math.ceil((end - start) / 3600)));
+  return { start, end, columns };
 }
 
 /** For each column, whether every zone is inside working hours. */

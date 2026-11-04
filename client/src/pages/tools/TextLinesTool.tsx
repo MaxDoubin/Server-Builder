@@ -310,15 +310,19 @@ export function TextLinesTool() {
       setPending(true);
 
       if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(() => {
-        if (requestRef.current !== id) return;
-        disposeWorker();
-        setPending(false);
-        setAsyncState({
-          result: null,
-          failure: `Stopped after ${WORKER_BUDGET_MS / 1000} seconds without finishing. A regular expression with nested quantifiers, such as (a+)+$, can take exponential time on a line it almost matches. Simplify the pattern or remove the step.`,
-        });
-      }, WORKER_BUDGET_MS);
+      // Only a regular expression can run away. Every other step is bounded
+      // by the line cap, so a slow device just takes longer and is not cut off.
+      if (hasGrep) {
+        timerRef.current = window.setTimeout(() => {
+          if (requestRef.current !== id) return;
+          disposeWorker();
+          setPending(false);
+          setAsyncState({
+            result: null,
+            failure: `Stopped after ${WORKER_BUDGET_MS / 1000} seconds without finishing. A regular expression with nested quantifiers, such as (a+)+$, can take exponential time on a line it almost matches. Simplify the pattern or remove the step. A very large input can also be slow.`,
+          });
+        }, WORKER_BUDGET_MS);
+      }
 
       worker.onmessage = (event: MessageEvent) => {
         const data = event.data as
@@ -360,7 +364,7 @@ export function TextLinesTool() {
       }
     }, 150);
     return () => window.clearTimeout(debounce);
-  }, [useWorker, text, steps, pools, ensureWorker, disposeWorker]);
+  }, [useWorker, hasGrep, text, steps, pools, ensureWorker, disposeWorker]);
 
   const result: RunResult | null = useWorker ? asyncState.result : syncResult;
   const failure = useWorker ? asyncState.failure : null;

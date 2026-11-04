@@ -744,6 +744,9 @@ export interface ReadResult {
   error: string | null;
 }
 
+const NO_PEM_ERROR =
+  "No PEM block was found. A PEM object starts with a line such as -----BEGIN CERTIFICATE----- and ends with the matching END line.";
+
 const PEM_BEGIN = /-----BEGIN ([\x21-\x2c\x2e-\x7e](?:[\x20-\x2c\x2e-\x7e]*[\x21-\x2c\x2e-\x7e])?)-----/g;
 
 /**
@@ -764,12 +767,21 @@ export function readPemText(input: string): ReadResult {
   let match: RegExpExecArray | null;
   let blocks = 0;
   let privateKeys = 0;
+  // Problems are listed one by one only up to a point, so that a megabyte
+  // of broken blocks cannot turn into tens of thousands of messages.
+  let problems = 0;
+  const problem = (message: string) => {
+    problems++;
+    if (problems <= MAX_OBJECTS) notices.push({ tone: "danger", text: message });
+  };
+  let cutOff: string | null = null;
   while ((match = PEM_BEGIN.exec(text)) !== null) {
     const label = match[1];
+    const shown = label.length > 80 ? `${label.slice(0, 80)}...` : label;
     const bodyStart = match.index + match[0].length;
     const endMarker = text.indexOf("-----END ", bodyStart);
     if (endMarker < 0) {
-      notices.push({ tone: "danger", text: `The "${label}" block has a BEGIN line but no END line, so it was cut off.` });
+      cutOff = `The "${shown}" block has a BEGIN line but no END line, so it was cut off.`;
       break;
     }
     const endClose = text.indexOf("-----", endMarker + 9);
@@ -782,7 +794,7 @@ export function readPemText(input: string): ReadResult {
       continue;
     }
     if (endLabel !== label) {
-      notices.push({ tone: "danger", text: `A block begins with "${label}" but ends with "${endLabel}". The two labels must match.` });
+      problem(`A block begins with "${shown}" but ends with "${visible(endLabel.slice(0, 80)).text}". The two labels must match.`);
       continue;
     }
     if (objects.length >= MAX_OBJECTS) {
@@ -799,15 +811,20 @@ export function readPemText(input: string): ReadResult {
       .replace(/\s+/g, "");
     const der = decodeBase64(body);
     if (!der || der.length === 0) {
-      notices.push({
-        tone: "danger",
-        text: `Block ${blocks} ("${label}") is not valid Base64. A character may have been lost when it was copied.`,
-      });
+      problem(`Block ${blocks} ("${shown}") is not valid Base64. A character may have been lost when it was copied.`);
       continue;
     }
     objects.push({ label, der });
   }
 
+  if (problems > MAX_OBJECTS) {
+    notices.push({ tone: "danger", text: `${problems - MAX_OBJECTS} more blocks had the same kinds of problems and are not listed one by one.` });
+  }
+  if (cutOff !== null) {
+    // With nothing complete before it, the cut-off block is the whole story.
+    if (blocks === 0) return { objects, notices, error: cutOff };
+    notices.push({ tone: "danger", text: cutOff });
+  }
   if (privateKeys > 0) {
     notices.push({
       tone: "danger",
@@ -831,11 +848,7 @@ export function readPemText(input: string): ReadResult {
   if (der && der.length > 0 && der[0] === 0x30) {
     return { objects: [{ label: "BASE64", der }], notices, error: null };
   }
-  return {
-    objects,
-    notices,
-    error: "No PEM block was found. A PEM object starts with a line such as -----BEGIN CERTIFICATE----- and ends with the matching END line.",
-  };
+  return { objects, notices, error: NO_PEM_ERROR };
 }
 
 /**
@@ -860,7 +873,7 @@ export function readBinary(bytes: Uint8Array): ReadResult {
   else if (bytes[0] === 0xfe && bytes[1] === 0xff) text = new TextDecoder("utf-16be").decode(bytes.subarray(2));
   else text = new TextDecoder("utf-8").decode(bytes);
   const result = readPemText(text);
-  if (result.error && result.objects.length === 0) {
+  if (result.error === NO_PEM_ERROR) {
     return { ...result, error: "The file is neither DER nor PEM. It may be a PKCS#12 (.pfx or .p12) bundle, which is encrypted and needs its password." };
   }
   return result;
@@ -878,7 +891,15 @@ export function pkcs7Certificates(der: Uint8Array): Uint8Array[] | null {
     return null;
   }
   const [typeNode, wrapper] = root.children;
-  if (!isUniversal(typeNode, TAG.OID) || decodeOid(contentOf(der, typeNode)) !== "1.2.840.113549.1.7.2") return null;
+  if (!isUniversal(typeNode, TAG.OID)) return null;
+  let contentType: string;
+  try {
+    contentType = decodeOid(contentOf(der, typeNode));
+  } catch {
+    // A malformed OBJECT IDENTIFIER: not a PKCS#7 object this tool can read.
+    return null;
+  }
+  if (contentType !== "1.2.840.113549.1.7.2") return null;
   const signedData = wrapper?.children[0];
   if (!isContext(wrapper, 0) || !isUniversal(signedData, TAG.SEQUENCE)) return [];
   const certSet = signedData.children.find((c) => isContext(c, 0) && c.constructed);
@@ -1393,7 +1414,7 @@ export function parsePublicKey(buf: Uint8Array, node: DerNode | undefined, at: n
     info.rsa = { bits: n, modulusHex: colonHex(stripLeadingZeros(modulus)), exponent };
     info.rows.push({ label: "Modulus size", value: `${n} bits` });
     info.rows.push({ label: "Public exponent", value: `${exponent} (0x${exponent.toString(16)})` });
-    if (exponent < 3n || exponent % 2n === 0n) info.issues.push("The public exponent is even or below 3, so this is not a working RSA key.");
+    if (exponent < 3n || exponent % 2n === 0n) info.issues.push("The public exponent is even or below 3, so this is not a valid RSA key.");
     else if (exponent < 65537n) info.issues.push(`The public exponent is ${exponent}. That is valid, but the Baseline Requirements (6.1.6) recommend at least 65537, and an exponent of 3 has enabled signature forgeries against verifiers with loose padding checks.`);
     if (oid === "1.2.840.113549.1.1.10") info.rows.push({ label: "Restriction", value: "Key restricted to RSASSA-PSS signatures (RFC 4055)" });
   } else if (oid === "1.2.840.10045.2.1") {
@@ -1418,7 +1439,7 @@ export function parsePublicKey(buf: Uint8Array, node: DerNode | undefined, at: n
     } else if (isUniversal(params, TAG.SEQUENCE)) {
       info.summary = "ECDSA with explicit curve parameters";
       info.rows.push({ label: "Curve", value: "Explicit parameters" });
-      info.issues.push("The curve is spelled out as explicit parameters instead of named. RFC 5480 says CAs must use named curves, and explicit parameters were the basis of CVE-2020-0601, where Windows accepted a forged curve.");
+      info.issues.push("The curve is spelled out as explicit parameters instead of named. RFC 5480 (section 2.1.1) forbids explicit parameters in PKIX, and they were the basis of CVE-2020-0601, where Windows accepted a forged curve.");
     } else {
       info.summary = "ECDSA with no named curve";
       info.issues.push("The EC key does not name its curve.");

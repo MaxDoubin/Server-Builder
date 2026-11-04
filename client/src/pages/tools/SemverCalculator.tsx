@@ -94,7 +94,7 @@ function stability(v: SemVer): string {
   if (v.major === 0n) {
     return "Initial development. Section 4: with major version zero anything may change at any time, so the public API should not be considered stable.";
   }
-  return "Release. Section 8: the major version goes up only for changes that break backward compatibility.";
+  return "Release. Section 8: any backward incompatible change to the public API must increase the major version.";
 }
 
 function Identifiers({ ids, kind }: { ids: string[]; kind: "prerelease" | "build" }) {

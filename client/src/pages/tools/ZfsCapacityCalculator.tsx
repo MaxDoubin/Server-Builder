@@ -18,7 +18,9 @@ import {
   FILL_LINE,
   LAYOUTS,
   type Layout,
+  MAX_SLOP,
   MAX_VDEVS,
+  MIN_SLOP,
   RECORDSIZES,
   SIZE_UNITS,
   type SizeUnit,
@@ -271,7 +273,14 @@ export function ZfsCapacityCalculator() {
             key: "slop",
             label: "Less slop space",
             bytes: result.slop,
-            note: "1/32 of the pool, between 128 MiB and 128 GiB",
+            note:
+              result.afterPadding < 2 * MIN_SLOP
+                ? "half the pool, which is under 256 MiB"
+                : result.slop === MIN_SLOP
+                  ? "raised to the 128 MiB floor"
+                  : result.slop === MAX_SLOP
+                    ? "1/32 of the pool, capped at 128 GiB"
+                    : "1/32 of the pool",
             total: false,
           },
           { key: "usable", label: "Usable", bytes: result.usable, note: "what ordinary writes can fill", total: true },
@@ -624,8 +633,8 @@ export function ZfsCapacityCalculator() {
               </div>
               {result.slopBeyondFillLine ? (
                 <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]">
-                  On a pool this small the 128 MiB slop floor is more than a fifth of the space, so the pool fills
-                  before it reaches the 80 percent line.
+                  On a pool this small the slop reserve (at least 128 MiB, or half of a pool under 256 MiB) is more
+                  than a fifth of the space, so the pool fills before it reaches the 80 percent line.
                 </p>
               ) : null}
             </ToolPanel>
@@ -725,7 +734,7 @@ export function ZfsCapacityCalculator() {
                             ? `With full ${formatBinarySize(recordsize)} records the pool holds about ${formatPercent(-vsAccounting)} less file data than AVAIL suggests.`
                             : `At this width ${formatBinarySize(recordsize)} records pad the same as 128 KiB, so AVAIL is a fair guide.`
                       }`
-                    : "For mirrors and single disks zpool list already shows one copy, so the two agree apart from slop."}
+                    : "For mirrors and single disks zpool list already counts one copy, so the two differ only by slop space."}
                 </p>
                 <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                   Approximate: labels, the reserved partition and metaslab rounding take a further fraction of a

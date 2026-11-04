@@ -379,15 +379,35 @@ const CERT_TYPES: Record<string, string> = {
   "sk-ssh-ed25519-cert-v01@openssh.com": "sk-ssh-ed25519@openssh.com",
 };
 
+/**
+ * Names that OpenSSH also reads as a key type, mapped to the type ssh-keygen
+ * writes. sshkey.c lists the rsa-sha2-* signature algorithms and the webauthn
+ * ECDSA-SK variant as key implementations of the same key type, so both
+ * sshkey_read() (the line's type field) and the blob parser accept them.
+ */
+const TYPE_ALIASES: Record<string, string> = {
+  "rsa-sha2-256": "ssh-rsa",
+  "rsa-sha2-512": "ssh-rsa",
+  "rsa-sha2-256-cert-v01@openssh.com": "ssh-rsa-cert-v01@openssh.com",
+  "rsa-sha2-512-cert-v01@openssh.com": "ssh-rsa-cert-v01@openssh.com",
+  "webauthn-sk-ecdsa-sha2-nistp256@openssh.com": "sk-ecdsa-sha2-nistp256@openssh.com",
+  "webauthn-sk-ecdsa-sha2-nistp256-cert-v01@openssh.com": "sk-ecdsa-sha2-nistp256-cert-v01@openssh.com",
+};
+
+/** The type name ssh-keygen would write for this name, or null when OpenSSH does not read it as a key type. */
+export function canonicalType(type: string): string | null {
+  if (Object.prototype.hasOwnProperty.call(PLAIN_TYPES, type) || Object.prototype.hasOwnProperty.call(CERT_TYPES, type)) return type;
+  return Object.prototype.hasOwnProperty.call(TYPE_ALIASES, type) ? TYPE_ALIASES[type] : null;
+}
+
 export function typeInfo(type: string): TypeInfo | null {
-  const plain = PLAIN_TYPES[type];
-  if (plain) return { ...plain, cert: false, plain: type };
-  const wrapped = CERT_TYPES[type];
-  if (wrapped) {
-    const base = PLAIN_TYPES[wrapped];
-    return { ...base, label: `${base.label}-CERT`, cert: true, plain: wrapped };
-  }
-  return null;
+  const name = canonicalType(type);
+  if (name === null) return null;
+  const plain = PLAIN_TYPES[name];
+  if (plain) return { ...plain, cert: false, plain: name };
+  const wrapped = CERT_TYPES[name];
+  const base = PLAIN_TYPES[wrapped];
+  return { ...base, label: `${base.label}-CERT`, cert: true, plain: wrapped };
 }
 
 export function isKeyType(token: string): boolean {

@@ -230,7 +230,8 @@ export function ProtobufDecoder() {
 
   const input = useMemo(() => parseInput(text, format), [text, format]);
   const bytes = input && input.ok ? input.bytes : null;
-  const start = bytes && skip < bytes.length ? skip : 0;
+  // Equal to the length is allowed: a gRPC frame around an empty message.
+  const start = bytes && skip <= bytes.length ? skip : 0;
   const decoded = useMemo(() => (bytes ? decodeMessage(bytes, start) : null), [bytes, start]);
   const framing = useMemo(
     () => (bytes && decoded?.error && start === 0 ? detectFraming(bytes) : null),
@@ -618,9 +619,10 @@ function FieldDetail({
 
         {field.tagOverlong || field.varint?.overlong || field.len?.prefixOverlong ? (
           <p className={`mt-4 rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${TONE.warn}`}>
-            A varint here is longer than it needs to be: it ends in a 0x00 continuation byte. Parsers accept
-            this, but no standard encoder writes it, so the bytes were probably produced by hand or by a fuzzer,
-            or they are not protobuf.
+            A varint here is longer than it needs to be: its last byte is 0x00, which adds nothing to the value.
+            Parsers accept this. Standard encoders write the shortest form, so a padded varint usually means the
+            bytes were written by hand or by an encoder that reserves fixed space for a length, or they are not
+            protobuf.
           </p>
         ) : null}
 
@@ -698,7 +700,13 @@ function LenDetail({
   onView: (view: LenView) => void;
 }) {
   const len = field.len as NonNullable<PbField["len"]>;
-  const packed = packedVarints(bytes, field.valueOffset, field.end);
+  // Memoized: a 1 MiB payload is a million varint reads, and this panel
+  // re-renders whenever the tree is toggled or another row is selected.
+  const packed = useMemo(() => packedVarints(bytes, field.valueOffset, field.end), [bytes, field.valueOffset, field.end]);
+  const packedSint = useMemo(
+    () => (view === "packed-varint" ? packedVarints(bytes, field.valueOffset, field.end, "sint").values : []),
+    [view, bytes, field.valueOffset, field.end],
+  );
   const stringPreview = useMemo(
     () => (view === "string" ? escapePreview(bytes, field.valueOffset, field.end, DETAIL_TEXT, len.utf8) : { text: "", truncated: false }),
     [view, bytes, field.valueOffset, field.end, len.utf8],
@@ -793,7 +801,7 @@ function LenDetail({
             count={packed.count}
             rows={[
               { label: "As unsigned", values: packed.values },
-              { label: "As ZigZag (sint)", values: packedVarints(bytes, field.valueOffset, field.end, "sint").values },
+              { label: "As ZigZag (sint)", values: packedSint },
             ]}
           />
         ) : (

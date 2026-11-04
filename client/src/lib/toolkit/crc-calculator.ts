@@ -267,7 +267,7 @@ export interface CatalogEntry extends CrcParams {
   /** CRC of "123456789", as published. */
   check: bigint;
   group: "common" | "more";
-  /** Where it is used, only when that is well established. */
+  /** A short note: where it is used when that is well established, or how it differs from a close relative. */
   usedBy: string;
 }
 
@@ -452,7 +452,7 @@ export function parseParams(fields: ParamFields): ParamsParse {
   const warnings: string[] = [];
   if ((poly.value & 1n) === 0n) {
     warnings.push(
-      "The polynomial is even, so it has no x^0 term and the lowest bit of every CRC it produces is always 0. It is accepted, but real CRC polynomials are odd.",
+      "The polynomial is even, so it has no x^0 term, and the x^0 bit of the register is always 0 once a byte has been processed. That wastes a bit of the CRC and weakens error detection. Real CRC polynomials are odd. It is accepted here anyway.",
     );
   }
   return {

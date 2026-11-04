@@ -15,6 +15,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import {
   MAX_INPUT,
   canonicalCommand,
+  concatVerdict,
   decodeTypedEscapes,
   fillTemplate,
   quoteAll,
@@ -344,15 +345,7 @@ function QuotePanel() {
   const safeLine = fillTemplate(template, report ? report.posix : "");
   const unsafe = useMemo(() => splitCommandLine(unsafeLine), [unsafeLine]);
   const safe = useMemo(() => splitCommandLine(safeLine), [safeLine]);
-  const safeArgs = safe.ok ? safe.commands.reduce((a, c) => a + c.argv.length, 0) : 0;
-  const unsafeDiffers =
-    !unsafe.ok ||
-    !safe.ok ||
-    unsafe.commands.length !== safe.commands.length ||
-    unsafe.commands.reduce((a, c) => a + c.items.length, 0) !== safe.commands.reduce((a, c) => a + c.items.length, 0) ||
-    unsafe.dynamic !== safe.dynamic ||
-    JSON.stringify(unsafe.commands.map((c) => c.argv.map((w) => w.value))) !==
-      JSON.stringify(safe.commands.map((c) => c.argv.map((w) => w.value)));
+  const verdict = useMemo(() => concatVerdict(unsafe, safe, decoded.value), [unsafe, safe, decoded.value]);
 
   return (
     <div className="space-y-6">
@@ -534,20 +527,10 @@ function QuotePanel() {
               </div>
             </div>
             <p
-              className={`mt-5 break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${unsafeDiffers ? ISSUE_CLASS.danger : ISSUE_CLASS.info}`}
+              className={`mt-5 break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${verdict.tone === "danger" ? ISSUE_CLASS.danger : ISSUE_CLASS.info}`}
               data-testid="text-injection-verdict"
             >
-              {unsafeDiffers
-                ? `Pasted in as is, the shell reads this string as syntax: ${
-                    !unsafe.ok
-                      ? "it does not even parse"
-                      : unsafe.commands.length > 1
-                        ? `${unsafe.commands.length} commands instead of ${safe.ok ? safe.commands.length : 1}`
-                        : unsafe.dynamic && !(safe.ok && safe.dynamic)
-                          ? "parts of it would be expanded at run time"
-                          : "the arguments come out different"
-                  }. Quoted, it is ${safeArgs === 1 ? "one argument" : "exactly the intended arguments"}. Whoever controls the string controls the command.`
-                : "For this string, concatenation and quoting happen to give the same argv. Change one character, a space, a quote or a semicolon, and that stops being true, which is why the quoting has to be unconditional."}
+              {verdict.text}
             </p>
           </ToolPanel>
         </div>

@@ -177,6 +177,20 @@ export function monthsToReach(used: number, growth: Growth, target: number): num
   return Math.log(target / used) / Math.log1p(growth.rate);
 }
 
+/**
+ * Null when a compound monthly rate (0.05 for 5%) can be projected, else the
+ * reason it cannot. Two readings close together can imply an infinite rate,
+ * or one that underflows to -100%, and either would make every threshold
+ * read as already reached or the halving time read as 0.
+ */
+export function compoundRateProblem(rate: number): string | null {
+  if (!Number.isFinite(rate) || rate * 100 > MAX_COMPOUND_PCT) {
+    return `That is more than ${MAX_COMPOUND_PCT}% a month, past what this models. Check the readings and their units, or project it as linear.`;
+  }
+  if (!(rate > -1)) return "That is a shrink of 100% a month or more, which would leave less than nothing.";
+  return null;
+}
+
 export interface TwoPointEstimate {
   months: number;
   days: number;

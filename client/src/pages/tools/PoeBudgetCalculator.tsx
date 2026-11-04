@@ -286,7 +286,9 @@ export function PoeBudgetCalculator() {
         (budgetMw !== null
           ? `, against a ${wattsText(budgetMw)} budget. ${
               result.actualOver && result.measuredDevices > 0
-                ? "Over budget even on measured draw."
+                ? result.allocOver
+                  ? "Over budget by class and by draw."
+                  : "Over budget by draw, although the class reservations fit."
                 : result.allocOver
                   ? "Over budget by class."
                   : "Within budget."

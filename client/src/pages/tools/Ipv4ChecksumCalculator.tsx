@@ -98,7 +98,7 @@ const ERROR_BOX =
 const WARN_BOX =
   "rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]";
 const PRE =
-  "min-w-0 flex-1 overflow-x-auto rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs text-[hsl(var(--brand-signal))]";
+  "min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] p-4 font-mono-tight text-xs text-[hsl(var(--brand-signal))]";
 
 function h(value: number): string {
   return `0x${hex16(value)}`;
@@ -279,11 +279,20 @@ function FoldPanel({ detail, verifyLabel, verifySum }: { detail: SumDetail; veri
   );
 }
 
-function CopyRow({ value, label, testId }: { value: string; label: string; testId: string }) {
+/** Bytes shown in a copy row before the rest is summarized; the copy button always copies all of them. */
+const MAX_SHOWN_BYTES = 256;
+
+function CopyRow({ bytes, label, testId }: { bytes: Uint8Array; label: string; testId: string }) {
+  const value = toHexWords(bytes);
+  const hidden = bytes.length - MAX_SHOWN_BYTES;
+  const shown =
+    hidden > 0
+      ? `${toHexWords(bytes.subarray(0, MAX_SHOWN_BYTES))}\n... and ${hidden.toLocaleString("en-US")} more ${pluralise(hidden, "byte")}, included when copied`
+      : value;
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
       <pre className={PRE} data-testid={testId}>
-        {value}
+        {shown}
       </pre>
       <CopyButton value={value} label={label} testId={`button-copy-${testId}`} />
     </div>
@@ -471,7 +480,7 @@ export function Ipv4ChecksumCalculator() {
                       />
                     </div>
                     <h3 className={`mt-5 ${LABEL}`}>Header with the computed checksum</h3>
-                    <CopyRow value={toHexWords(header.corrected)} label="Copy corrected header" testId="text-corrected-header" />
+                    <CopyRow bytes={header.corrected} label="Copy corrected header" testId="text-corrected-header" />
                     {header.warnings.length ? (
                       <ul className="mt-4 space-y-2">
                         {header.warnings.map((warning) => (
@@ -667,9 +676,9 @@ export function Ipv4ChecksumCalculator() {
                       <ToolResult label="Pseudo-header sum" value={h(transport.pseudoSum)} />
                     </div>
                     <h3 className={`mt-5 ${LABEL}`}>Pseudo-header (summed, never sent)</h3>
-                    <CopyRow value={toHexWords(transport.pseudoHeader)} label="Copy pseudo-header" testId="text-pseudo-header" />
+                    <CopyRow bytes={transport.pseudoHeader} label="Copy pseudo-header" testId="text-pseudo-header" />
                     <h3 className={`mt-5 ${LABEL}`}>Segment with the computed checksum</h3>
-                    <CopyRow value={toHexWords(transport.corrected)} label="Copy corrected segment" testId="text-corrected-segment" />
+                    <CopyRow bytes={transport.corrected} label="Copy corrected segment" testId="text-corrected-segment" />
                     {transport.warnings.length ? (
                       <ul className="mt-4 space-y-2">
                         {transport.warnings.map((warning) => (

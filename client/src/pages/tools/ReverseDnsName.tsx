@@ -15,6 +15,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { familyBits, formatIp, networkOf } from "@/lib/toolkit/ip-address-classifier";
 import {
   CLASSLESS_MIN,
+  classlessLabelWarning,
   classlessZoneFiles,
   delegationFor,
   digCommands,
@@ -41,8 +42,9 @@ const QUICK_PREFIXES: Record<4 | 6, number[]> = {
   6: [32, 48, 56, 62, 64],
 };
 
+/** Input styling without a width, so each field sets exactly one width class. */
 const INPUT =
-  "w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none";
+  "rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none";
 const LABEL = "font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]";
 const PILL =
   "inline-flex min-h-[44px] items-center rounded-full border px-4 font-mono-tight transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]";
@@ -205,7 +207,7 @@ export function ReverseDnsName() {
             aria-describedby={error ? "rdns-error" : "rdns-hint"}
             placeholder="192.0.2.65 or 65.2.0.192.in-addr.arpa"
             data-testid="input-reverse"
-            className={`mt-3 ${INPUT}`}
+            className={`mt-3 w-full ${INPUT}`}
           />
           {error ? (
             <p id="rdns-error" role="alert" data-testid="text-reverse-error" className={`mt-3 ${ERROR_BOX}`}>
@@ -466,13 +468,21 @@ export function ReverseDnsName() {
                         aria-invalid={!nameservers.ok}
                         aria-describedby={!nameservers.ok ? "rdns-ns-error" : undefined}
                         data-testid="input-nameservers"
-                        className={`mt-2 ${INPUT}`}
+                        className={`mt-2 w-full ${INPUT}`}
                       />
                     </div>
                   </div>
                   {!nameservers.ok ? (
                     <p id="rdns-ns-error" role="alert" className={ERROR_BOX}>
                       {nameservers.error}
+                    </p>
+                  ) : null}
+                  {classlessLabelWarning(classless) ? (
+                    <p
+                      data-testid="text-label-warning"
+                      className="rounded-lg border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-amber))]"
+                    >
+                      {classlessLabelWarning(classless)}
                     </p>
                   ) : null}
 

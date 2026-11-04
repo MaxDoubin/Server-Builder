@@ -457,9 +457,9 @@ export const IPV4_SPECIAL: SpecialEntry[] = [
   entry(4, "v4-nat64-discovery", ["192.0.0.170/32", "192.0.0.171/32"], "NAT64/DNS64 Discovery", ["RFC 8880", "RFC 7050 section 2.2"], [F, F, F, F, T],
     "The addresses ipv4only.arpa resolves to. A host behind DNS64 asks for the AAAA record of that name, and the synthesized answer reveals the NAT64 prefix in use. They are a marker, not a destination."),
   entry(4, "v4-test-net-1", ["192.0.2.0/24"], "Documentation (TEST-NET-1)", ["RFC 5737"], [F, F, F, F, F],
-    "Reserved for examples in documentation. It is not routed on the internet, so an example cannot point at someone's real host. Seeing it in live traffic usually means a sample configuration was deployed without being edited."),
+    "Reserved for examples in documentation. It is not routed on the internet, so an example cannot point at someone's real host. Seeing it in live traffic often means a sample configuration was deployed without being edited."),
   entry(4, "v4-as112-dname", ["192.31.196.0/24"], "AS112-v4", ["RFC 7535"], [T, T, T, T, F],
-    "Anycast block for AS112 servers that take part in DNAME redirection. Any zone that should be answered locally, such as the reverse zones for private space, can be pointed at them with a DNAME, and the queries that leak out get a negative answer."),
+    "Anycast block for the AS112 servers that answer the empty zone empty.as112.arpa. The operator of a zone that should only ever be answered locally can add a DNAME pointing it there, and queries that leak out then get a negative answer from a nearby node, with no change to the AS112 servers themselves."),
   entry(4, "v4-amt", ["192.52.193.0/24"], "AMT", ["RFC 7450"], [T, T, T, T, F],
     "Relay discovery for Automatic Multicast Tunneling, which lets hosts on unicast-only networks receive multicast."),
   entry(4, "v4-6to4-relay", ["192.88.99.0/24"], "Deprecated (6to4 Relay Anycast)", ["RFC 7526"], NONE,
@@ -540,7 +540,7 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
     "The first ORCHID block. Replaced by ORCHIDv2 at 2001:20::/28, and the registry no longer gives it attributes.",
     { deprecated: true }),
   entry(6, "v6-orchidv2", ["2001:20::/28"], "ORCHIDv2", ["RFC 7343"], [T, T, T, T, F],
-    "Overlay Routable Cryptographic Hash Identifiers: values derived from a hash of a public key, used by the Host Identity Protocol as stable identifiers in the address format."),
+    "Overlay Routable Cryptographic Hash Identifiers: values derived from a hash of a public key, shaped like IPv6 addresses so applications can use them where an address would go. The Host Identity Protocol uses them as Host Identity Tags, which name a host rather than a location in the network."),
   entry(6, "v6-det", ["2001:30::/28"], "Drone Remote ID Protocol Entity Tags (DETs) Prefix", ["RFC 9374"], [T, T, T, T, F],
     "Identifiers for unmanned aircraft under the Drone Remote ID Protocol, built on the ORCHIDv2 format."),
   entry(6, "v6-documentation", ["2001:db8::/32"], "Documentation", ["RFC 3849"], [F, F, F, F, F],
@@ -820,7 +820,8 @@ export function classify(ip: IpAddress): Classification {
     result.details.push({ label: "Flags", value: flagNames.join("; ") });
     // ff02::1:ff00:0/104, RFC 4291 section 2.7.1
     if (inBlock(6, value, SOLICITED_NODE, 104)) {
-      result.wellKnown = `Solicited-node group for any unicast address ending in ${hex((value >> 16n) & 0xffn, 2)}:${hex(value & 0xffffn, 4)} (RFC 4291 section 2.7.1). Neighbor discovery sends address resolution here instead of broadcasting.`;
+      // The group is ff02::1:ff00:0/104 plus the low-order 24 bits of the unicast or anycast address.
+      result.wellKnown = `Solicited-node group for every unicast or anycast address whose low-order 24 bits are 0x${hex(value & 0xffffffn, 6)} (RFC 4291 section 2.7.1). Neighbor discovery sends address resolution here instead of broadcasting.`;
     }
   }
   return result;

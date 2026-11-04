@@ -72,8 +72,8 @@ export interface RunResult {
 export const MAX_LINES = 100000;
 export const MAX_COUNT = 1000000;
 export const MAX_STEPS = 20;
-/** How long a chain with a regex may run in the worker before it is stopped. */
-export const WORKER_BUDGET_MS = 2000;
+/** How long a chain with a regex may run in the worker before it is stopped. Chains without one are not timed. */
+export const WORKER_BUDGET_MS = 4000;
 
 /**
  * Run the chain. Never throws for any input: a bad step is reported in its

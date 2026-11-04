@@ -80,16 +80,19 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
     };
   }
 
-  const tokens: string[] = [];
+  // A \x escape becomes a 0x prefix, so "\x45\x0" and "0x45, 0x0" read alike.
+  const tokens: { digits: string; prefixed: boolean }[] = [];
   for (const rawLine of stripOffsets(raw.split(/\r?\n/))) {
-    const line = rawLine.replace(/\\x/g, " ");
+    const line = rawLine.replace(/\\x/g, " 0x");
     for (const token of line.split(/[\s,:;\-]+/)) {
-      if (token === "") continue;
-      tokens.push(token.replace(/^0x/i, ""));
+      const prefixed = /^0x/i.test(token);
+      const body = prefixed ? token.slice(2) : token;
+      if (body === "") continue;
+      tokens.push({ digits: body, prefixed });
     }
   }
 
-  const digits = tokens.join("");
+  const digits = tokens.map((t) => t.digits).join("");
   if (digits === "") return { ok: false, error: "Enter some hex bytes." };
 
   const bad = digits.search(/[^0-9a-fA-F]/);
@@ -102,13 +105,31 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
       error: `${describeChar(digits, bad)} is not a hex digit (0 to 9, a to f).${hint}`,
     };
   }
-  if (digits.length % 2 !== 0) {
+  // Separated groups must each hold whole bytes. Joining "45 0 0" into 4500
+  // would silently drop a byte, so an odd group is an error, except a
+  // one-digit 0x or \x byte such as 0x0, which C and Python write for 00.
+  let even = "";
+  for (const t of tokens) {
+    if (t.prefixed && t.digits.length === 1) {
+      even += `0${t.digits}`;
+      continue;
+    }
+    if (tokens.length > 1 && t.digits.length % 2 !== 0) {
+      const shown = t.digits.length > 12 ? `${t.digits.slice(0, 12)}...` : t.digits;
+      return {
+        ok: false,
+        error: `The group "${shown}" has ${t.digits.length} hex ${t.digits.length === 1 ? "digit" : "digits"}, an odd count. When bytes are separated, each group must hold whole bytes (two digits each, as in 0a or 4500), so the byte boundaries are unclear.`,
+      };
+    }
+    even += t.digits;
+  }
+  if (even.length % 2 !== 0) {
     return {
       ok: false,
-      error: `That is ${digits.length} hex digits, an odd count. Every byte is exactly two digits, so one is missing or extra.`,
+      error: `That is ${even.length} hex ${even.length === 1 ? "digit" : "digits"}, an odd count. Every byte is exactly two digits, so one is missing or extra.`,
     };
   }
-  const length = digits.length / 2;
+  const length = even.length / 2;
   if (length > maxBytes) {
     return {
       ok: false,
@@ -117,7 +138,7 @@ export function parseHex(raw: string, maxBytes: number = MAX_BYTES): HexParse {
   }
 
   const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) bytes[i] = parseInt(digits.slice(i * 2, i * 2 + 2), 16);
+  for (let i = 0; i < length; i++) bytes[i] = parseInt(even.slice(i * 2, i * 2 + 2), 16);
   return { ok: true, bytes };
 }
 
@@ -393,6 +414,23 @@ export interface Ipv4HeaderResult {
 
 export type Ipv4HeaderOutcome = Ipv4HeaderResult | { ok: false; error: string };
 
+const ETHERNET_HINT =
+  "This looks like a whole Ethernet frame: bytes 12 and 13 are 0800, the IPv4 EtherType. Remove the first 14 bytes (the two MAC addresses and the EtherType) so the input starts at the IPv4 header.";
+
+/**
+ * "verified" when bytes 12 and 13 are EtherType 0x0800 and an IPv4 header
+ * with a correct checksum starts at byte 14; "signature" when only the
+ * EtherType and the version nibble fit; "no" otherwise.
+ */
+function looksLikeEthernet(bytes: Uint8Array): "verified" | "signature" | "no" {
+  if (bytes.length < 34 || bytes[12] !== 0x08 || bytes[13] !== 0x00 || bytes[14] >> 4 !== 4) return "no";
+  const innerLength = (bytes[14] & 0x0f) * 4;
+  if (innerLength >= 20 && bytes.length >= 14 + innerLength && verifies(bytes.subarray(14, 14 + innerLength))) {
+    return "verified";
+  }
+  return "signature";
+}
+
 /** RFC 791 section 3.1. The checksum covers the header only, never the payload. */
 export function analyzeIpv4Header(bytes: Uint8Array): Ipv4HeaderOutcome {
   if (bytes.length < 20) {
@@ -402,35 +440,39 @@ export function analyzeIpv4Header(bytes: Uint8Array): Ipv4HeaderOutcome {
     };
   }
   const version = bytes[0] >> 4;
-  if (version === 6) {
-    return {
-      ok: false,
-      error: "The first nibble is 6, so this is an IPv6 header. IPv6 has no header checksum and leaves integrity to the link layer and the transport checksum.",
-    };
-  }
+  // A whole Ethernet II frame starts with two MAC addresses, then the
+  // EtherType at bytes 12 and 13 (0x0800 for IPv4). A destination MAC can
+  // begin with any nibble, 4 and 6 included, so this is checked first.
+  const ethernet = looksLikeEthernet(bytes);
   if (version !== 4) {
-    // A whole Ethernet frame starts with two MAC addresses, then the
-    // EtherType at bytes 12 and 13 (0x0800 for IPv4).
-    const ethernet = bytes.length >= 34 && bytes[12] === 0x08 && bytes[13] === 0x00 && bytes[14] >> 4 === 4;
+    if (ethernet !== "no") return { ok: false, error: ETHERNET_HINT };
+    if (version === 6) {
+      return {
+        ok: false,
+        error: "The first nibble is 6, so this is an IPv6 header. IPv6 has no header checksum and leaves integrity to the link layer and the transport checksum.",
+      };
+    }
     return {
       ok: false,
-      error: ethernet
-        ? "This looks like a whole Ethernet frame: bytes 12 and 13 are 0800, the IPv4 EtherType. Remove the first 14 bytes (the two MAC addresses and the EtherType) so the input starts at the IPv4 header."
-        : `The first nibble is ${version}, not 4, so this is not an IPv4 header. It should start with 4, usually 45.`,
+      error: `The first nibble is ${version}, not 4, so this is not an IPv4 header. It should start with 4, usually 45.`,
     };
   }
+  // With version 4 at byte 0 the input may still be a frame whose MAC
+  // starts with 4x, so the hint is added only when the header at byte 14
+  // has a correct checksum of its own.
+  const frameHint = ethernet === "verified" ? ` ${ETHERNET_HINT}` : "";
   const ihl = bytes[0] & 0x0f;
   if (ihl < 5) {
     return {
       ok: false,
-      error: `The IHL nibble is ${ihl}, which would make the header ${ihl * 4} bytes. The minimum is 5, meaning 20 bytes.`,
+      error: `The IHL nibble is ${ihl}, which would make the header ${ihl * 4} bytes. The minimum is 5, meaning 20 bytes.${frameHint}`,
     };
   }
   const headerLength = ihl * 4;
   if (bytes.length < headerLength) {
     return {
       ok: false,
-      error: `The IHL nibble is ${ihl}, so the header is ${headerLength} bytes including options, but only ${bytes.length} were pasted.`,
+      error: `The IHL nibble is ${ihl}, so the header is ${headerLength} bytes including options, but only ${bytes.length} were pasted.${frameHint}`,
     };
   }
 
@@ -472,6 +514,7 @@ export function analyzeIpv4Header(bytes: Uint8Array): Ipv4HeaderOutcome {
   if (flagsWord & 0x8000) {
     warnings.push("The reserved flag bit is set. RFC 791 requires it to be zero.");
   }
+  if (!valid && frameHint) warnings.push(ETHERNET_HINT);
 
   // RFC 1624: the TTL shares a word with the protocol, so decrementing TTL
   // lowers that word by 0x0100.

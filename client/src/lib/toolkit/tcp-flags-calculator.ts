@@ -243,11 +243,18 @@ function fromLetters(letters: string): ParsedFlags {
     // Lowercase f, s, r, p, u and w are accepted as their uppercase letter,
     // since they mean nothing else. Lowercase e is AE, not ECE.
     const char = raw === "e" || raw === "." ? raw : raw.toUpperCase();
-    const bit = LETTER_BITS[char];
+    const bit = Object.prototype.hasOwnProperty.call(LETTER_BITS, char) ? LETTER_BITS[char] : undefined;
     if (bit === undefined) {
       return {
         ok: false,
         error: `${quoteChar(raw)} is not a tcpdump flag letter. tcpdump uses F, S, R, P, U, E, W, a dot for ACK, and a lowercase e for AE.`,
+      };
+    }
+    // tcpdump prints each letter at most once, so a repeat is a typo.
+    if (value & bit) {
+      return {
+        ok: false,
+        error: `${quoteChar(raw)} appears twice. tcpdump prints each flag letter at most once, as in [S.] or [FPU].`,
       };
     }
     value |= bit;
@@ -330,6 +337,18 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   // prints them (lowercase e is AE), and at least one uppercase letter or
   // the dot, so that a lowercase "fe" reads as forgotten hex rather than
   // quietly meaning FIN plus AE.
+  // F, E and e are also hex digits, so "FF", "FE" or a lone "F" could be
+  // either; guessing would silently read 0xff as FIN.
+  if (/^[FEe]+$/.test(text)) {
+    // tcpdump never repeats a letter, so "FF" or "EE" can only be hex.
+    const repeated = new Set(text).size !== text.length;
+    return {
+      ok: false,
+      error: repeated
+        ? `"${text}" looks like hex. Write it with a 0x prefix, as in 0x${text}.`
+        : `"${text}" could be hex or tcpdump letters. Write 0x${text} for hex, [${text}] for tcpdump's notation, or the flag names.`,
+    };
+  }
   if (/^[FSRPUEWe.]+$/.test(text) && /[FSRPUEW.]/.test(text) && text.length <= 9) return fromLetters(text);
 
   // A prefix with nothing valid after it ("0x", "0xg1", "0b102") would
@@ -359,6 +378,12 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
     // and "__proto__" on Object.prototype and quietly read them as no flags.
     const bit = Object.prototype.hasOwnProperty.call(NAME_BITS, token) ? NAME_BITS[token] : undefined;
     if (bit === undefined) {
+      if (/^\d+$/.test(token)) {
+        return {
+          ok: false,
+          error: `"${token.length > 12 ? `${token.slice(0, 12)}...` : token}" is a number mixed with names or signs. Type a number on its own, as in 18 or 0x12, or use only flag names.`,
+        };
+      }
       if (/^[0-9a-f]{1,4}$/.test(token)) {
         return { ok: false, error: `"${token}" looks like hex. Write it with a 0x prefix, as in 0x${token}.` };
       }

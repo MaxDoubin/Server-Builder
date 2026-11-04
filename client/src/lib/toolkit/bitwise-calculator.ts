@@ -581,7 +581,7 @@ export const RECIPES: Recipe[] = [
     idiom: "Test a flag",
     title: "Zero flag in x86 FLAGS",
     blurb:
-      "0x0246 has the interrupt, zero and parity flags set. ANDing with a mask for bit 6 leaves 0x0040 when the zero flag is set and 0 when it is clear.",
+      "0x0246 has the interrupt, zero and parity flags set, plus bit 1, which is reserved and always reads as 1. ANDing with a mask for bit 6 leaves 0x0040 when the zero flag is set and 0 when it is clear.",
     op: "and",
     width: 16,
     signed: false,

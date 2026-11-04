@@ -78,6 +78,8 @@ function slug(label: string): string {
 }
 
 function utc(ms: number): string {
+  // toISOString throws outside the Date range, so check before calling it.
+  if (!Number.isFinite(ms) || Math.abs(ms) > 8.64e15) return "out of range";
   return new Date(ms).toISOString().replace(".000Z", "Z").replace("T", " ");
 }
 

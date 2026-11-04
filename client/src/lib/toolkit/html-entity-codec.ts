@@ -200,6 +200,21 @@ function isSurrogate(cp: number): boolean {
   return cp >= 0xd800 && cp <= 0xdfff;
 }
 
+/** Code points in a string, counting a surrogate pair once, without building an array. */
+export function countCodePoints(s: string): number {
+  let n = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    const c = s.charCodeAt(i);
+    // A low surrogate right after a high one is the second half of a pair.
+    if (c >= 0xdc00 && c <= 0xdfff && i > 0) {
+      const p = s.charCodeAt(i - 1);
+      if (p >= 0xd800 && p <= 0xdbff) continue;
+    }
+    n += 1;
+  }
+  return n;
+}
+
 export function codePointLabel(cp: number): string {
   return `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
 }

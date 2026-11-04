@@ -306,13 +306,16 @@ export function parseRfc5322Date(input: string): Result<ParsedDate> {
   const zone = m[7].trim();
   let offset = 0;
   let zoneKnown = true;
-  const numeric = /^([+-])(\d{2})(\d{2})$/.exec(zone);
+  // Some servers write a zone name after the offset without parentheses,
+  // as in "+0000 UTC". The offset is what counts; the name is ignored.
+  const numeric = /^([+-])(\d{2})(\d{2})(?:\s+([A-Za-z]{1,5}))?$/.exec(zone);
   if (numeric) {
+    if (numeric[4]) notes.push(`zone name ${numeric[4]} after the offset ignored`);
     const mins = Number(numeric[2]) * 60 + Number(numeric[3]);
     if (Number(numeric[3]) > 59) return fail(`zone ${zone} has more than 59 minutes`);
     offset = numeric[1] === "-" ? -mins : mins;
     // RFC 5322 section 3.3: -0000 says the time is UTC and the local zone is unknown.
-    if (zone === "-0000") zoneKnown = false;
+    if (numeric[1] === "-" && mins === 0) zoneKnown = false;
   } else if (zone === "") {
     zoneKnown = false;
     notes.push("no time zone, read as UTC");
@@ -620,7 +623,9 @@ function firstToken(clause: string): string | null {
  * many servers also note the TLS version or cipher in a comment.
  */
 export function hopUsedTls(protocol: string | null, text: string): boolean | null {
-  if (/\bTLS(?:v?1[._]?\d)?\b|version=TLS|using TLS|cipher=/i.test(text)) return true;
+  // Case sensitive and tied to a version number or a keyword, so a host
+  // named tls.example.com in the same comment does not count as TLS.
+  if (/\bTLSv?1(?:[._]\d)?\b|version=TLS|using TLS|cipher=/.test(text)) return true;
   if (!protocol) return null;
   const p = protocol.toUpperCase();
   const m = /^(?:UTF8)?(?:E?SMTP|LMTP)(S?)(A?)$/.exec(p);
@@ -647,7 +652,7 @@ export function parseReceived(value: string): Omit<ReceivedHop, "index" | "delay
     if (parsed.ok) time = parsed.value.ms;
     else dateError = parsed.error;
   } else {
-    dateError = "there is no semicolon and date at the end of the line";
+    dateError = semi >= 0 ? "nothing follows the final semicolon, where the date belongs" : "there is no semicolon and date at the end of the line";
   }
 
   const fromParts = from ? stripComments(from) : null;
@@ -675,7 +680,9 @@ export function parseReceived(value: string): Omit<ReceivedHop, "index" | "delay
     heloIp,
     byIps: by ? extractIps(by) : [],
     fromHosts,
-    tls: hopUsedTls(protocol, `${from ?? ""} ${withClause ?? ""}`),
+    // Servers note TLS in comments: Postfix in the from clause, Gmail after
+    // the id, Exchange after the protocol, Exim right after the protocol.
+    tls: hopUsedTls(protocol, stripComments(head).comments.join(" ")),
     dateText,
     time,
     dateError,
@@ -784,6 +791,25 @@ function tokenizeAuth(value: string): { segments: AuthToken[][]; comments: strin
     while (j < value.length && !/[\s=;"()]/.test(value[j])) j++;
     segments[seg].push({ t: "word", v: value.slice(i, j) });
     i = j;
+  }
+  // RFC 8601 section 2.2 allows CFWS around the "/" of a method version and
+  // the "." of a property, as in "dkim / 1 = fail policy . expired = 1".
+  // Comments are already gone, so rejoin a lone "/" or "." with its neighbors.
+  for (let s = 0; s < segments.length; s++) {
+    const seg = segments[s];
+    const merged: AuthToken[] = [];
+    for (let k = 0; k < seg.length; k++) {
+      const tok = seg[k];
+      const prev = merged[merged.length - 1];
+      const next = seg[k + 1];
+      if (tok.t === "word" && (tok.v === "/" || tok.v === ".") && prev?.t === "word" && next?.t === "word") {
+        prev.v = `${prev.v}${tok.v}${next.v}`;
+        k++;
+        continue;
+      }
+      merged.push({ ...tok });
+    }
+    segments[s] = merged;
   }
   return { segments, comments };
 }
@@ -1429,7 +1455,7 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
       const signer = domainOf(r.identity);
       if (r.result === "pass") add("ok", `DKIM pass${signer ? ` for ${signer}` : ""}.`);
       else if (r.result === "fail") {
-        add("danger", `DKIM fail${who}: a signature was present but did not verify, so the signed content changed after signing or the signature is forged.`);
+        add("danger", `DKIM fail${who}: a signature was present but did not verify. The signed content changed after signing, the published key no longer matches, or the signature is forged.`);
       } else if (r.result === "none") add("warn", "DKIM none: the message carried no signature that was checked.");
       else add("warn", `DKIM ${r.result}${who}: the signature could not be evaluated cleanly.`);
     } else if (r.method === "dmarc") {
@@ -1469,10 +1495,12 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
   if (fromFields.length > 1) {
     add(
       "danger",
-      `There are ${fromFields.length} From fields. RFC 5322 allows exactly one, and DMARC receivers usually reject such messages, because which one a mail client shows is anybody's guess (RFC 7489 section 6.6.1).`,
+      `There are ${fromFields.length} From fields. RFC 5322 section 3.6 allows exactly one. DMARC needs a single author domain to evaluate (RFC 7489 section 6.6.1), many receivers reject such messages outright, and mail clients differ in which one they display.`,
     );
   }
-  if (fromList.length > 1) add("info", "From names more than one mailbox, which RFC 5322 allows only together with a Sender field.");
+  if (fromList.length > 1 && lower("sender").length === 0) {
+    add("warn", "From names more than one mailbox and there is no Sender field. RFC 5322 section 3.6.2 requires a Sender field in that case.");
+  }
 
   if (from?.display && from.domain) {
     const inner = /(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/.exec(from.display);
@@ -1552,7 +1580,7 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
       }
     }
   }
-  for (const name of ["subject", "date", "message-id", "to", "reply-to", "sender"]) {
+  for (const name of ["subject", "date", "message-id", "to", "cc", "bcc", "reply-to", "sender", "in-reply-to", "references"]) {
     const n = lower(name).length;
     if (n > 1) add("warn", `There are ${n} ${fields.find((f) => f.name.toLowerCase() === name)?.name} fields. RFC 5322 section 3.6 allows at most one.`);
   }
@@ -1564,7 +1592,10 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
   } else {
     const m = /<([^<>]*)>/.exec(midRaw);
     const id = m ? m[1] : midRaw.trim();
-    messageId = { value: midRaw, domain: domainOf(id.includes("@") ? id : null)?.replace(/[\]>]/g, "") ?? null };
+    const at = id.lastIndexOf("@");
+    // id-right may be a domain or a domain literal such as [192.0.2.1] (RFC 5322 section 3.6.4).
+    const right = at >= 0 ? trimSet(id.slice(at + 1), "<>. \t") : "";
+    messageId = { value: midRaw, domain: right === "" ? null : right.toLowerCase() };
   }
 
   const xoip = firstValue("x-originating-ip");

@@ -88,8 +88,14 @@ export interface CertificateInfo {
   signature: Uint8Array;
   sha1: string;
   sha256: string;
-  /** Issuer and subject are the same name. */
+  /** Issuer and subject are the same name (RFC 5280 6.1: self-issued). */
   selfIssued: boolean;
+  /**
+   * Self-issued and, as far as the key identifiers show, signed by its own
+   * key. A self-issued certificate whose authority key ID differs from its
+   * subject key ID is a key rollover certificate signed by an older key.
+   */
+  selfSigned: boolean;
   isCA: boolean;
   /** Common name, first DNS name, or the whole subject, with invisible characters escaped. */
   displayName: string;
@@ -183,6 +189,9 @@ export function parseCertificate(der: Uint8Array, label = "CERTIFICATE", allowTr
     const certDer = allowTrailing ? der.subarray(0, root.end) : der;
     const isCA = extensions.basicConstraints?.ca === true;
     const dns = extensions.san?.find((n) => n.type === "DNS");
+    const selfIssued = compareNames(issuer, subject) !== "different";
+    const aki = extensions.authorityKeyId;
+    const ski = extensions.subjectKeyId;
     const cert: CertificateInfo = {
       der: certDer,
       label,
@@ -201,7 +210,8 @@ export function parseCertificate(der: Uint8Array, label = "CERTIFICATE", allowTr
       signature,
       sha1: colonHex(sha1(certDer)),
       sha256: colonHex(sha256(certDer)),
-      selfIssued: compareNames(issuer, subject) !== "different",
+      selfIssued,
+      selfSigned: selfIssued && !(aki !== null && ski !== null && aki !== ski),
       isCA,
       displayName: subject.commonNames.length > 0 ? visible(subject.commonNames[0]).text : (dns?.value ?? (subject.rfc4514 || "(empty subject)")),
     };
@@ -385,10 +395,10 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
       alg.hash === "MD5"
         ? "MD5 collisions are practical, and in 2008 researchers used one to forge a CA certificate that browsers trusted."
         : alg.hash === "MD2"
-          ? "MD2 has published collision and preimage attacks far below its design strength."
+          ? "MD2 has a published preimage attack far below its design strength, and RFC 6149 moved it to Historic status in 2011."
           : "SHA-1 collisions are practical (the SHAttered attack, 2017), and browsers stopped accepting SHA-1 certificates from public CAs in 2017.";
     out.push(
-      cert.selfIssued
+      cert.selfSigned
         ? { tone: "info", text: `Self-signed with ${alg.name}. A trust anchor is trusted by its key, not its self-signature, so the weak hash matters less here than anywhere else.` }
         : { tone: "danger", text: `Signed with ${alg.name}. ${why}` },
     );
@@ -402,7 +412,7 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
   if (s.negative) out.push({ tone: "warn", text: "The serial number is negative. RFC 5280 4.1.2.2 requires a positive integer, and strict parsers reject this." });
   else if (s.decimal === "0") out.push({ tone: "warn", text: "The serial number is zero. RFC 5280 requires a positive integer." });
   if (s.octets > 20) out.push({ tone: "warn", text: `The serial number is ${s.octets} octets. RFC 5280 caps it at 20, and some software refuses longer ones.` });
-  else if (s.octets < 8 && !cert.selfIssued) out.push({ tone: "info", text: `The serial number is only ${s.octets} byte${s.octets === 1 ? "" : "s"}. Publicly trusted CAs must put at least 64 bits of random output in every serial; a small private CA counting from 1 is common.` });
+  else if (s.octets < 8 && !cert.selfSigned) out.push({ tone: "info", text: `The serial number is only ${s.octets} byte${s.octets === 1 ? "" : "s"}. Publicly trusted CAs must put at least 64 bits of random output in every serial; a small private CA counting from 1 is common.` });
 
   // Version and structure.
   if (cert.version < 3) {
@@ -424,7 +434,7 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
     const san = ext.san;
     if (!san || san.length === 0) {
       if (cert.subject.commonNames.length > 0) {
-        out.push({ tone: "warn", text: "No subjectAltName. Browsers match host names only against the SAN and have ignored the common name since Chrome 58 in 2017, so this certificate will fail name checks." });
+        out.push({ tone: "warn", text: "No subjectAltName. Current browsers match host names only against the SAN (Chrome stopped reading the common name in version 58, in 2017), so this certificate will fail their name checks." });
       }
     } else {
       const dns = san.filter((n) => n.type === "DNS" || n.type === "IP").map((n) => n.raw.toLowerCase());
@@ -458,7 +468,7 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
   } else if (ku?.includes("keyCertSign")) {
     out.push({ tone: "danger", text: "keyUsage asserts keyCertSign but basicConstraints does not say CA:TRUE. RFC 5280 4.2.1.3 requires the CA flag whenever keyCertSign is set." });
   }
-  if (!cert.selfIssued && cert.version === 3 && !ext.authorityKeyId) {
+  if (!cert.selfSigned && cert.version === 3 && !ext.authorityKeyId) {
     out.push({ tone: "info", text: "No authorityKeyIdentifier. RFC 5280 4.2.1.1 requires it on every certificate that is not self-signed, and it is what lets a client pick the right issuer when a CA has rolled its key." });
   }
   if (isLeaf && ext.extKeyUsage?.includes("2.5.29.37.0")) {
@@ -468,8 +478,10 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
     out.push({ tone: "info", text: "OCSP Must-Staple is set: a client that honors it rejects this certificate unless the server staples a fresh OCSP response." });
   }
 
-  if (cert.selfIssued) {
-    out.push({ tone: "info", text: "Self-issued: the issuer and subject are the same name. It is trusted only where it is installed as a trust anchor." });
+  if (cert.selfSigned) {
+    out.push({ tone: "info", text: "Self-signed: the issuer and subject are the same name and the key identifiers do not point to another key. It is trusted only where it is installed as a trust anchor." });
+  } else if (cert.selfIssued) {
+    out.push({ tone: "info", text: "Self-issued but signed by a different key: the issuer and subject are the same name, while the authority key ID differs from the subject key ID. A CA issues this kind of certificate to link an old key to a new one when it rolls its key." });
   }
   return out;
 }
@@ -524,7 +536,7 @@ export function analyzeChain(certs: CertificateInfo[]): ChainReport {
       let text: string;
       if (compareNames(parent.issuer, child.subject) !== "different") {
         text = `Certificate ${i + 2} was issued by ${i + 1}, not the other way round, so the list is in reverse order. A server sends its own certificate first and then each issuer in turn; TLS 1.2 (RFC 5246 7.4.2) requires that order.`;
-      } else if (child.selfIssued) {
+      } else if (child.selfSigned) {
         text = `Certificate ${i + 1} is self-signed, so no issuer belongs after it.`;
       } else if (k >= 0) {
         text = `The issuer of ${i + 1} is not the subject of ${i + 2}. It is certificate ${k + 1}, so the list is out of order. TLS 1.2 (RFC 5246 7.4.2) requires each certificate to certify the one before it.`;
@@ -551,7 +563,7 @@ export function analyzeChain(certs: CertificateInfo[]): ChainReport {
   }
 
   const last = certs[certs.length - 1];
-  if (last.selfIssued) {
+  if (last.selfSigned) {
     ending.push({
       tone: "info",
       text: `The list ends at a self-signed certificate, ${last.displayName}. ${certs.length > 1 ? "Servers normally leave the root out: a client must already trust it, and sending it only adds bytes to every handshake." : "It is trusted only where someone installed it as a trust anchor."}`,

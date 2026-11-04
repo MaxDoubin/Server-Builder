@@ -436,7 +436,14 @@ export function PolybiusSquare() {
       const ctx = ctxRef.current;
       ctxRef.current = null;
       knockRef.current = null;
-      if (ctx) ctx.close().catch(() => undefined);
+      if (ctx) {
+        // Older WebKit returns nothing from close(), so wrap it before .catch.
+        try {
+          void Promise.resolve(ctx.close()).catch(() => undefined);
+        } catch {
+          // Already closed.
+        }
+      }
     };
   }, [halt]);
 
@@ -485,6 +492,7 @@ export function PolybiusSquare() {
         gain?.disconnect();
         gain = null;
         clock = null;
+        if (gen !== genRef.current || !mountedRef.current) return;
         setAudioNote("Audio could not start in this browser, so playback is visual only.");
       }
     }
@@ -1019,7 +1027,7 @@ export function PolybiusSquare() {
                 <span className="text-[hsl(var(--brand-bone))]">Stage 2, transposition, not performed here.</span> The
                 real cipher writes the stage 1 letters in rows under a second keyword, then reads them out column by
                 column in the alphabetical order of that keyword&apos;s letters. Each plaintext letter&apos;s two halves
-                end up in different columns, far apart in the ciphertext. Fractionation followed by this transposition is
+                end up in different columns, usually far apart in the ciphertext. Fractionation followed by this transposition is
                 where the cipher&apos;s strength came from.
               </p>
               <p className={NOTE_BOX}>

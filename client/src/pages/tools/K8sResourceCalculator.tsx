@@ -491,8 +491,9 @@ export function K8sResourceCalculator() {
                 {report.counterpart ? (
                   <p className="mt-4 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]" data-testid="text-counterpart">
                     {report.counterpart.text} would be {groupDigits(report.counterpart.bytes)} bytes, which is{" "}
-                    {report.counterpart.relation} than {report.quantity.text}. The gap grows with each step: about 2.4% at
-                    k and Ki, 7.4% at G and Gi, 10% at T and Ti.
+                    {report.counterpart.relation} than {report.quantity.text}. Each binary unit is larger than the decimal
+                    unit with the same letter, and the gap grows with each step: Ki is 2.4% more than k, Mi 4.9% more
+                    than M, Gi 7.4% more than G, and Ti 10% more than T.
                   </p>
                 ) : null}
                 {report.cpuNotes.length || report.memoryNotes.length ? (
@@ -808,7 +809,11 @@ export function K8sResourceCalculator() {
                               {f.perNode.toString()}
                             </td>
                             <td className={TD_CLASS}>
-                              {f.perNode === 0n ? "does not fit" : f.binding === "pods" ? "pod count" : f.binding}
+                              {f.perNode === 0n
+                                ? `does not fit (${f.binding === "pods" ? "no free pod slot" : f.binding})`
+                                : f.binding === "pods"
+                                  ? "pod count"
+                                  : f.binding}
                             </td>
                             <td className={TD_CLASS}>{r.replicas}</td>
                             <td className={TD_CLASS}>{f.nodesAlone === null ? "none fit" : f.nodesAlone.toString()}</td>
@@ -873,10 +878,9 @@ export function K8sResourceCalculator() {
                     {cluster.unschedulable.length ? (
                       <div className="mt-3">
                         <Notice tone="danger">
-                          {cluster.unschedulable.join(", ")}{" "}
-                          {cluster.unschedulable.length === 1 ? "requests" : "request"} more than one empty node can give,
-                          so the pod would stay Pending with Insufficient cpu or memory. No number of these nodes is
-                          enough.
+                          Not even one pod of {cluster.unschedulable.join(", ")} fits on an empty node after the
+                          DaemonSets, so those pods would stay Pending, with a scheduler event such as Insufficient cpu,
+                          Insufficient memory or Too many pods. No number of these nodes is enough.
                         </Notice>
                       </div>
                     ) : cluster.packedSkipped ? (

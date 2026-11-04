@@ -122,10 +122,25 @@ export type Parsed<T> =
 
 const DECIMAL = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
 
+/**
+ * Trim the ends; refuse spaces inside the number rather than closing them
+ * up, so "1 2" is an error and not silently 12. Underscores between digits,
+ * as in 1_000, are accepted as digit separators.
+ */
+function compact(text: string): { t: string; innerSpace: boolean } {
+  const trimmed = text.trim();
+  return { t: trimmed.replace(/(\d)_(?=\d)/g, "$1"), innerSpace: /\s/.test(trimmed) };
+}
+
 /** One disk's capacity, typed as a plain decimal in the chosen unit. */
 export function parseDiskSize(text: string, unit: SizeUnit): Parsed<number> {
-  const t = text.trim().replace(/[\s_]/g, "");
+  const { t, innerSpace } = compact(text);
   if (t === "") return { kind: "empty", message: "Enter the capacity of one disk." };
+  if (innerSpace) {
+    return /^[\d.\s]+$/.test(t)
+      ? { kind: "error", message: "Leave out spaces inside the number, such as 12 or 3.84." }
+      : { kind: "error", message: "Type only the number, such as 12 or 3.84, and pick the unit from the list." };
+  }
   if (t.length > 32) return { kind: "error", message: "That is too long to be a disk size." };
   if (t.includes(",")) {
     return {
@@ -151,8 +166,13 @@ export function parseDiskSize(text: string, unit: SizeUnit): Parsed<number> {
 
 /** A whole number in [min, max], with messages that name the field. */
 export function parseCount(text: string, min: number, max: number, what: string): Parsed<number> {
-  const t = text.trim().replace(/[\s_]/g, "");
+  const { t, innerSpace } = compact(text);
   if (t === "") return { kind: "empty", message: `Enter the number of ${what}.` };
+  if (innerSpace) {
+    return /^[\d\s]+$/.test(t)
+      ? { kind: "error", message: `Leave out spaces inside the number of ${what}.` }
+      : { kind: "error", message: `The number of ${what} must be a whole number.` };
+  }
   if (!/^\d+$/.test(t)) return { kind: "error", message: `The number of ${what} must be a whole number.` };
   if (t.length > 9) return { kind: "error", message: `Enter at most ${max.toLocaleString("en-US")} ${what}.` };
   const n = Number(t);
@@ -420,14 +440,15 @@ export function formatBinarySize(bytes: number): string {
 }
 
 /**
- * A byte count the way zpool list and zfs list print it, after
- * zfs_nicenum_format() in OpenZFS lib/libzfs/libzfs_util.c: binary units
- * with a bare suffix (T means TiB), and the most decimals, from 2 down to
- * 0, that keep the whole string within 5 characters.
+ * A byte count the way zpool list and zfs list print it: zfs_nicebytes(),
+ * which is zfs_nicenum_format(..., ZFS_NICENUM_BYTES) in OpenZFS
+ * lib/libzfs/libzfs_util.c. Binary units with a bare suffix (T means TiB),
+ * B below 1 KiB, and the most decimals, from 2 down to 0, that keep the
+ * whole string within 5 characters.
  */
 export function zfsNicenum(num: number): string {
-  const units = ["", "K", "M", "G", "T", "P", "E"];
-  if (!Number.isFinite(num) || num < 0) return "0";
+  const units = ["B", "K", "M", "G", "T", "P", "E"];
+  if (!Number.isFinite(num) || num < 0) return "0B";
   const whole = Math.floor(num);
   let n = whole;
   let index = 0;

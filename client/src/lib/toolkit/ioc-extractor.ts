@@ -24,6 +24,7 @@ import {
   gluedToWord,
   lineOf,
   lineStarts,
+  percentPrefix,
   tooLongMessage,
   type DefangStyle,
 } from "./defang-refang";
@@ -328,11 +329,14 @@ export function extractIocs(input: string, options: ExtractOptions): ExtractResu
 
   // Hashes and Bitcoin addresses are whole alphanumeric runs: a 64 digit hex
   // string is one SHA-256, never two MD5s, and nothing glued to a letter counts.
+  // The two hex digits of a percent-encoded octet before a run ("%2F" in an
+  // encoded path) are not part of it.
   const run = /[A-Za-z0-9]+/g;
   for (let m = run.exec(text); m !== null; m = run.exec(text)) {
-    const token = m[0];
-    if (gluedToWord(codePointBefore(text, m.index)) || gluedToWord(codePointAfter(text, m.index + token.length))) continue;
-    const offset = starts[m.index];
+    if (gluedToWord(codePointBefore(text, m.index)) || gluedToWord(codePointAfter(text, m.index + m[0].length))) continue;
+    const skip = percentPrefix(text, m.index);
+    const token = m[0].slice(skip);
+    const offset = starts[m.index + skip];
     const hashType = HASH_TYPE[token.length];
     if (hashType && HEX.test(token)) {
       // All digits or no digits at all is a number or a word, not a digest:
@@ -353,18 +357,21 @@ export function extractIocs(input: string, options: ExtractOptions): ExtractResu
     }
   }
 
-  // CVE IDs: CVE-YYYY-NNNN with four or more sequence digits (the 2014 ID
-  // syntax change), leading zeros only in a four digit sequence, and no year
+  // CVE IDs: CVE-YYYY-NNNN with 4 to 19 sequence digits (the 2014 ID syntax
+  // change, and the ^CVE-[0-9]{4}-[0-9]{4,19}$ pattern of the CVE JSON 5
+  // record schema), leading zeros only in a four digit sequence, and no year
   // before 1999, when the list began. Web pages and PDF reports often set the
   // hyphens as U+2010 to U+2013 or U+2212, which copy out intact.
   const cve = /CVE[-\u2010-\u2013\u2212](\d{4})[-\u2010-\u2013\u2212](\d{4,})/gi;
   for (let m = cve.exec(text); m !== null; m = cve.exec(text)) {
     const before = text.charAt(m.index - 1);
     const after = text.charAt(m.index + m[0].length);
-    if (/[A-Za-z0-9]/.test(before) || /[A-Za-z]/.test(after)) continue;
+    // "%2FCVE-..." in an encoded URL path is preceded by an octet, not a word.
+    const encoded = m.index >= 3 && percentPrefix(text, m.index - 2) === 2;
+    if ((/[A-Za-z0-9]/.test(before) && !encoded) || /[A-Za-z]/.test(after)) continue;
     if (gluedToWord(codePointBefore(text, m.index)) || gluedToWord(codePointAfter(text, m.index + m[0].length))) continue;
     if (Number(m[1]) < 1999) continue;
-    if (m[2].length > 4 && m[2].charAt(0) === "0") continue;
+    if (m[2].length > 19 || (m[2].length > 4 && m[2].charAt(0) === "0")) continue;
     add("cve", `CVE-${m[1]}-${m[2]}`, starts[m.index], false, null);
   }
 

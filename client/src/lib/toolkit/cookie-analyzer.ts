@@ -626,15 +626,20 @@ function badValueChars(value: string): string[] {
   return [...found];
 }
 
+/**
+ * A name-based guess at whether a cookie carries a session or sign-in
+ * credential. Short fragments only count at a word boundary, so "assessment",
+ * "sidebar_state", "author" and "lasso" are not mistaken for sess, sid, auth
+ * and sso.
+ */
 export function looksLikeAuthName(name: string): boolean {
   const n = name.replace(/^__(host|secure)-/i, "").toLowerCase();
   if (/csrf|xsrf/.test(n)) return false;
   return (
-    // "sess" only as a word of its own (sess, sessid, session), so "assessment" does not count.
-    /session|(^|[^a-z])sess(id)?([^a-z]|$)|^sess|sessid/.test(n) ||
-    /auth|token|jwt|login|remember|refresh|identity|saml|oidc|sso/.test(n) ||
-    /(^|[^a-z])sid([^a-z]|$)/.test(n) ||
-    /^sid|sid$/.test(n)
+    /session|sessid|(^|[^a-z])sess([^a-z]|$)/.test(n) ||
+    /auth(?!or($|[^i]))|token|jwt|login|remember|refresh|identity|saml|oidc|(^|[^a-z])sso/.test(n) ||
+    // sid as a word (connect.sid, sid), or at the end the way SID, HSID, APISID and SIDCC are written.
+    /(^|[^a-z])sid([^a-z]|$)|sid(cc|ts)?$/.test(n)
   );
 }
 
@@ -1119,6 +1124,11 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
 
   if (domainRefused) {
     // The Domain already explains the refusal; its scope never takes effect.
+  } else if (!hostOnly && effectiveDomain && effectiveDomain.endsWith(".") && !(ctx.url && ctx.url.host === effectiveDomain)) {
+    findings.push({
+      tone: "warn",
+      text: `Domain=${effectiveDomain} ends with a dot. The domain-match rule of section 5.1.3 is a plain suffix comparison, so it matches only a host name written with the same trailing dot, and a response from an ordinary host name is refused. Remove the dot.`,
+    });
   } else if (!hostOnly && effectiveDomain && isIpAddress(effectiveDomain)) {
     findings.push({
       tone: "info",

@@ -63,17 +63,32 @@ export const DEFAULT_OPTIONS: DiffOptions = { whitespace: "exact", ignoreCase: f
 
 // The characters C's isspace() accepts, other than the newline that ends a line.
 const WS_RUN = /[ \t\v\f\r]+/g;
-const WS_TRAIL = /[ \t\v\f\r]+$/;
+
+function isWsCode(code: number): boolean {
+  return code === 32 || code === 9 || code === 11 || code === 12 || code === 13;
+}
+
+/**
+ * Removes white space at the end of a line. This is a scan from the end and
+ * not /[ \t]+$/, because that pattern retries from every position in a long
+ * run of spaces that is followed by a visible character, which takes
+ * quadratic time: 100,000 spaces and an x cost about thirty seconds.
+ */
+function trimTrailingWs(s: string): string {
+  let end = s.length;
+  while (end > 0 && isWsCode(s.charCodeAt(end - 1))) end -= 1;
+  return end === s.length ? s : s.slice(0, end);
+}
 
 /** The form of a line that two lines are compared by. */
 export function normalizeLine(line: string, options: DiffOptions): string {
   let s = line;
   switch (options.whitespace) {
     case "trailing":
-      s = s.replace(WS_TRAIL, "");
+      s = trimTrailingWs(s);
       break;
     case "change":
-      s = s.replace(WS_TRAIL, "").replace(WS_RUN, " ");
+      s = trimTrailingWs(s).replace(WS_RUN, " ");
       break;
     case "all":
       s = s.replace(WS_RUN, "");
@@ -106,6 +121,14 @@ export function splitText(text: string): TextSide {
   let crlf = 0;
   for (const l of lines) if (l.endsWith("\r")) crlf += 1;
   return { lines, noEol, crlf };
+}
+
+/** How many lines splitText would produce, counted without building them, so a huge paste costs no memory here. */
+export function countLines(text: string): number {
+  if (text === "") return 0;
+  let n = 1;
+  for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) n += 1;
+  return text.endsWith("\n") ? n - 1 : n;
 }
 
 /** A friendly refusal when an input is past the limits, or null. */
@@ -612,12 +635,28 @@ export interface PairInfo {
   layout: Map<number, [number, number][]>;
   /** True when word highlighting stopped early, at the pair cap or the step budget. */
   capped: boolean;
+  /** True when some change was too large to pair by similarity and its lines were paired in order. */
+  inOrder: boolean;
 }
 
 /** Below this similarity a deleted and an inserted line are not treated as one edited line. */
 export const PAIR_THRESHOLD = 0.3;
 /** Change blocks larger than this many line pairs are aligned in order instead of by similarity. */
 export const ALIGN_MAX_CELLS = 40_000;
+/**
+ * Line pairs all blocks together may compare by similarity. Rewriting 10,000
+ * lines in blocks of 200 would otherwise cost seconds; past this budget the
+ * remaining blocks are paired in order, which is cheap.
+ */
+export const ALIGN_TOTAL_CELLS = 250_000;
+
+/** What alignBlock spends from, shared by every block of one diff. */
+export interface AlignMeter {
+  /** Line pairs that may still be compared by similarity. */
+  left: number;
+  /** Set when a block was paired in order because a cap was reached. */
+  inOrder: boolean;
+}
 
 const WORD = /[\p{L}\p{N}_]+/gu;
 
@@ -650,17 +689,19 @@ function similarity(a: { counts: Map<string, number>; total: number }, b: { coun
  * found by dynamic programming over the block. Returns [del, ins] index
  * pairs into the two lists, ascending.
  */
-export function alignBlock(dels: string[], ins: string[], options: DiffOptions): [number, number][] {
+export function alignBlock(dels: string[], ins: string[], options: DiffOptions, meter?: AlignMeter): [number, number][] {
   const n = dels.length;
   const m = ins.length;
   if (n === 0 || m === 0) return [];
   const wa = dels.map((l) => wordCounts(l, options));
   const wb = ins.map((l) => wordCounts(l, options));
-  if (n * m > ALIGN_MAX_CELLS) {
+  if (n * m > ALIGN_MAX_CELLS || (meter && n * m > meter.left)) {
+    if (meter) meter.inOrder = true;
     const pairs: [number, number][] = [];
     for (let k = 0; k < Math.min(n, m); k += 1) if (similarity(wa[k], wb[k]) >= PAIR_THRESHOLD) pairs.push([k, k]);
     return pairs;
   }
+  if (meter) meter.left -= n * m;
   const sim = new Float64Array(n * m);
   for (let i = 0; i < n; i += 1) for (let j = 0; j < m; j += 1) sim[i * m + j] = similarity(wa[i], wb[j]);
   const w = m + 1;
@@ -702,6 +743,7 @@ export function pairChanges(diff: LineDiff, options: DiffOptions, words: boolean
   const layout = new Map<number, [number, number][]>();
   let budget = WORD_MAX_PAIRS;
   const meter = { left: WORD_TOTAL_STEPS };
+  const alignMeter: AlignMeter = { left: ALIGN_TOTAL_CELLS, inOrder: false };
   let capped = false;
   const ops = diff.ops;
   let p = 0;
@@ -722,6 +764,7 @@ export function pairChanges(diff: LineDiff, options: DiffOptions, words: boolean
       dels.map((q) => diff.old.lines[ops[q].a]),
       ins.map((q) => diff.new.lines[ops[q].b]),
       options,
+      alignMeter,
     );
 
     // Unpaired lines between two pairs share rows in order, as most
@@ -754,7 +797,7 @@ export function pairChanges(diff: LineDiff, options: DiffOptions, words: boolean
     zip(dels.length, ins.length);
     layout.set(blockStart, rows);
   }
-  return { seg, partner, layout, capped };
+  return { seg, partner, layout, capped, inOrder: alignMeter.inOrder };
 }
 
 function cellFor(diff: LineDiff, op: Op, p: number, info: PairInfo): Cell {

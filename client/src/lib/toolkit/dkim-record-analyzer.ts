@@ -482,6 +482,16 @@ function readNode(ctx: DerContext, offset: number, limit: number, depth: number)
     );
   }
 
+  // X.690 section 10.2 (DER uses the primitive form for strings) and
+  // sections 8.1 to 8.6 and 8.19 (these types are always primitive); SEQUENCE
+  // and SET are always constructed (sections 8.9 and 8.11).
+  if (cls === 0 && constructed && tag >= 1 && tag <= 6) {
+    return fail(`The ${UNIVERSAL_NAMES[tag]} at byte ${offset} uses the constructed form, which DER forbids (X.690 section 10.2).`);
+  }
+  if (cls === 0 && !constructed && (tag === 16 || tag === 17)) {
+    return fail(`The ${UNIVERSAL_NAMES[tag]} at byte ${offset} is marked primitive, but a ${UNIVERSAL_NAMES[tag]} is always constructed.`);
+  }
+
   const node: DerNode = { cls, constructed, tag, offset, header: p - offset, length, children: [] };
   if (constructed) {
     let q = p;
@@ -639,10 +649,12 @@ function readRsa(
 }
 
 /**
- * Reads the decoded p= bytes. RFC 6376 describes the RSA key as an
- * RSAPublicKey, but the key generators in common use (and the RFC's own
- * appendix C) publish a SubjectPublicKeyInfo, and verifiers accept both, so
- * both are read here. An Ed25519 key is the bare 32 byte value (RFC 8463).
+ * Reads the decoded p= bytes. RFC 6376 section 3.6.1 describes the RSA key
+ * as an RSAPublicKey, but the key generators in common use (and the RFC's
+ * own appendix C, which uses openssl -pubout) publish a SubjectPublicKeyInfo,
+ * and some verifiers read only that form. Both are decoded here, and the
+ * analysis warns about the bare form. An Ed25519 key is the bare 32 byte
+ * value (RFC 8463).
  */
 export function decodePublicKey(bytes: Uint8Array, keyType: string): Result<PublicKeyInfo> {
   if (bytes.length === 0) return fail("The key is empty.");
@@ -1018,6 +1030,13 @@ export function analyzeKeyRecord(input: string): Outcome<KeyRecord> {
           danger("k= says ed25519, but p= holds an RSA key. Either the key or the k= tag is wrong.");
         }
 
+        if (key.algorithm === "rsa" && key.encoding === "pkcs1") {
+          findings.push({
+            tone: "warn",
+            text: "p= holds a bare RSAPublicKey (two INTEGERs with no algorithm identifier). That matches the wording of RFC 6376 section 3.6.1, but key generators publish the SubjectPublicKeyInfo form, as in the RFC's own appendix C, and some verifiers can read only that form. Publish the SubjectPublicKeyInfo form (openssl rsa -pubout) to be safe.",
+          });
+        }
+
         if (key.algorithm === "ed25519" && key.encoding === "spki" && key.keyHex) {
           const raw = new Uint8Array(key.keyHex.match(/../g)!.map((h) => parseInt(h, 16)));
           danger(
@@ -1364,7 +1383,7 @@ export function analyzeSignature(input: string, nowMs: number): Outcome<Signatur
     if (unsigned.length) {
       findings.push({
         tone: "info",
-        text: `Not signed: ${unsigned.join(", ")}. RFC 6376 section 5.4.1 recommends covering them; an unsigned field can be changed in transit without breaking the signature.`,
+        text: `Not signed: ${unsigned.join(", ")}. RFC 6376 section 5.4.1 recommends covering ${unsigned.length === 1 ? "it" : "them"} when present; an unsigned field can be changed in transit without breaking the signature.`,
       });
     }
     const discouraged = ["return-path", "received", "comments", "keywords"].filter((h) => lower.includes(h));
@@ -1553,7 +1572,7 @@ export function crossCheck(key: KeyRecord, sig: SignatureInfo): Finding[] {
   if (!key.services.includes("*") && !key.services.includes("email")) {
     findings.push({ tone: "danger", text: "The key's s= excludes email, so it cannot verify a mail signature." });
   }
-  if (key.strict && sig.auidDomain && sig.domain && sig.auidDomain !== sig.domain) {
+  if (key.strict && sig.auidDomain && sig.domain && sig.auidDomain.endsWith(`.${sig.domain}`)) {
     findings.push({
       tone: "danger",
       text: `The key carries t=s, but the signature's i= domain ${sig.auidDomain} is a subdomain of ${sig.domain}. t=s forbids that.`,

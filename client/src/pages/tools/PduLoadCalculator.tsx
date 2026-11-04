@@ -607,7 +607,12 @@ export function PduLoadCalculator() {
             ) : hasLoad ? (
               <p className="mt-5 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-signal))]">
                 Every {three ? "line" : "circuit"} is under the {derate ? "continuous" : "breaker"} limit
-                {three ? " and the lines are balanced" : ""}.
+                {three
+                  ? analysis.imbalance && analysis.imbalance.suppressed
+                    ? ". The lines are uneven, but the load is too light for that to matter yet"
+                    : " and the lines are within the imbalance target"
+                  : ""}
+                .
               </p>
             ) : null}
 
@@ -777,7 +782,7 @@ export function PduLoadCalculator() {
               <p className={`${HINT_CLASS} mt-3`}>
                 {topology === "delta"
                   ? "In a delta each connection is a phase of the delta. When the three loads are equal, each line current above is √3 times the phase current here."
-                  : "In a wye the line-to-neutral rows are phase currents and equal the line currents they sit on. A row across two lines draws that current from each of them."}
+                  : "In a wye a line-to-neutral row is a phase current, and it equals the line current only when nothing else is on that line. A row across two lines draws that current from each of them."}
               </p>
             </ToolPanel>
           ) : null}

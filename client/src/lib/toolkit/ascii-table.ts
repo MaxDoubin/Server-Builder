@@ -696,7 +696,7 @@ export interface SearchResult {
   interpretations: Interpretation[];
   /** Codes whose name, nickname, abbreviation or entity contains the query. */
   nameMatches: number[];
-  /** Readings that do not land on a row of the charset showing, each explained. */
+  /** Readings, and name matches, that do not land on a row of the charset showing, each explained. */
   outOfRange: string[];
   error: string | null;
 }
@@ -798,11 +798,19 @@ function explainCodePoint(cp: number, charset: Charset, subject: string): { line
   return { line: `${subject} is not in ASCII, Latin-1 or Windows-1252.`, upper: false };
 }
 
-/** Parse digits that have already matched a radix pattern; anything over 0x10FFFF is simply "too big". */
-function parseDigits(digits: string, radix: number): number {
+const RADIX_PREFIX: Record<number, string> = { 2: "0b", 8: "0o", 10: "", 16: "0x" };
+
+/**
+ * Parse digits that have already matched a radix pattern. The value is a
+ * Number for comparing against the table, Infinity past 2^53 where a Number
+ * stops being exact; the text is the exact decimal value, from BigInt, for
+ * telling the reader how far out of range a long number is.
+ */
+function parseDigits(digits: string, radix: number): { value: number; exact: string } {
   const trimmed = digits.replace(/^0+(?=.)/, "");
-  if (trimmed.length > 24) return Number.POSITIVE_INFINITY;
-  return parseInt(trimmed, radix);
+  const big = BigInt(`${RADIX_PREFIX[radix] ?? ""}${trimmed}`);
+  const exact = big.toLocaleString("en-US");
+  return { value: big <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(big) : Number.POSITIVE_INFINITY, exact };
 }
 
 /**
@@ -834,10 +842,10 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   // matched; readings past one byte only when nothing did.
   const upperHalf: string[] = [];
   const beyond: string[] = [];
-  const addNumber = (value: number, via: string, shown: string) => {
+  const addNumber = ({ value, exact }: { value: number; exact: string }, via: string, shown: string) => {
     if (value <= maxCode) add(value, via);
     else if (value <= 255) upperHalf.push(`${shown} as ${via} is ${value}, in the upper half. Show Latin-1 or Windows-1252 to see it.`);
-    else beyond.push(`${shown} as ${via} is ${Number.isFinite(value) ? value.toLocaleString("en-US") : "far"}, beyond one byte.`);
+    else beyond.push(`${shown} as ${via} is ${exact}, beyond one byte.`);
   };
   /** A Unicode character, named by itself or by its number: find the byte that holds it here. */
   const addCodePoint = (cp: number, via: string, subject: string) => {
@@ -851,23 +859,32 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   };
 
   const chars = Array.from(q);
+  // A letter typed as a base letter plus a combining accent (e then U+0301)
+  // is one character to the reader; NFC composes it into the single code
+  // point the tables use. Only a sequence is composed: NFC would also turn a
+  // lone Kelvin sign into K, which is a different character.
+  const composed = chars.length > 1 ? q.normalize("NFC") : q;
+  const single = Array.from(composed).length === 1 ? composed : null;
 
   // One character: the character itself.
-  if (chars.length === 1) {
-    const cp = q.codePointAt(0) as number;
+  if (single !== null) {
+    const cp = single.codePointAt(0) as number;
     const byte = byteForCodePoint(cp, charset);
     addCodePoint(cp, byte !== null && byte !== cp ? "Windows-1252 character" : "character", codePointLabel(cp));
   }
 
   // Prefixed and suffixed numbers.
+  let prefixed = false;
   for (const form of NUMBER_FORMS) {
     const m = form.re.exec(q);
     if (!m) continue;
-    const value = parseDigits(m[1], form.radix);
+    prefixed = true;
+    const parsed = parseDigits(m[1], form.radix);
     if (form.kind === "byte") {
-      addNumber(value, form.via, q);
+      addNumber(parsed, form.via, q);
       continue;
     }
+    const value = parsed.value;
     if (!Number.isFinite(value) || value > 0x10ffff) {
       beyond.push(`${q} is past U+10FFFF, the last Unicode code point${form.kind === "html" ? ", so HTML parsers replace it with U+FFFD" : ""}.`);
       continue;
@@ -888,8 +905,9 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   }
 
   // Bare digits: every base they are valid in. Letters a to f alone count as
-  // hex only from two characters, so a single "a" stays the letter a.
-  if (/^[0-9a-f]+$/i.test(q)) {
+  // hex only from two characters, so a single "a" stays the letter a. A
+  // prefix pins the base, so 0b101 is binary only, not also hex 0xB101.
+  if (!prefixed && /^[0-9a-f]+$/i.test(q)) {
     if (/^[0-9]+$/.test(q)) addNumber(parseDigits(q, 10), "decimal", q);
     if (/^[0-7]+$/.test(q)) addNumber(parseDigits(q, 8), "octal", q);
     if (/[0-9]/.test(q) || q.length >= 2) addNumber(parseDigits(q, 16), "hex", q);
@@ -937,17 +955,39 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
   }
 
   // Names, from two characters up; one letter would match nearly everything.
+  const names: string[] = [];
   if (chars.length >= 2) {
     const needle = q.toLowerCase();
+    const nameHit = (row: CodeRow) =>
+      [row.name, row.abbr, row.caret, row.cEscape, ...row.aliases, ...row.entities].some(
+        (f) => f !== null && f.toLowerCase().includes(needle),
+      );
     for (const row of rows) {
-      const fields = [row.name, row.abbr, row.caret, row.cEscape, ...row.aliases, ...row.entities];
-      if (fields.some((f) => f !== null && f.toLowerCase().includes(needle))) result.nameMatches.push(row.code);
+      if (nameHit(row)) result.nameMatches.push(row.code);
+    }
+    // Names that only a charset not showing has: say where they are rather
+    // than report no match. Rows 0xA0 to 0xFF are shared by both 8-bit sets.
+    const hidden =
+      charset === "ascii"
+        ? [...LATIN1_ROWS, ...CP1252_ROWS.filter((r) => r.differsInCp1252)]
+        : (charset === "latin1" ? CP1252_ROWS : LATIN1_ROWS).filter((r) => r.differsInCp1252);
+    const count = hidden.filter(nameHit).length;
+    if (count > 0) {
+      const them = count === 1 ? "it" : "them";
+      const lead = `The name ${result.nameMatches.length > 0 ? "also " : ""}matches ${count === 1 ? "1 code" : `${count} codes`}`;
+      names.push(
+        charset === "ascii"
+          ? `${lead} in the upper half, 128 to 255. Show Latin-1 or Windows-1252 to see ${them}.`
+          : charset === "latin1"
+            ? `${lead} that only Windows-1252 has, at 128 to 159. Show Windows-1252 to see ${them}.`
+            : `${lead} that only Latin-1 has, the C1 controls at 128 to 159. Show Latin-1 to see ${them}.`,
+      );
     }
   }
 
   // "1000001" shows binary 65 without three lines about the other bases.
   const nothing = result.interpretations.length === 0 && result.nameMatches.length === 0;
-  result.outOfRange = nothing ? [...upperHalf, ...beyond] : upperHalf;
+  result.outOfRange = nothing ? [...upperHalf, ...names, ...beyond] : [...upperHalf, ...names];
   return result;
 }
 

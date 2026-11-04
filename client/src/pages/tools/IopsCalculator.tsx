@@ -366,7 +366,7 @@ export function IopsCalculator() {
                   hint={
                     readPct !== null
                       ? `${pct(readPct)} reads and ${pct(100 - readPct)} writes, counted by request.`
-                      : "The rest are writes. Databases often run 70/30; backups and logging are mostly writes."
+                      : "The rest are writes. Databases often run 70/30; backup targets and logging are mostly writes."
                   }
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -444,7 +444,7 @@ export function IopsCalculator() {
                     testId="text-iops-throughput"
                   />
                   <ToolResult
-                    label="Common formula"
+                    label="Common functional IOPS formula"
                     value={`${formatIops(main.shortcut)} IOPS`}
                     testId="text-iops-shortcut"
                   />

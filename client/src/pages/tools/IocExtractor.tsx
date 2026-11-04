@@ -12,6 +12,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { pluralise } from "@/lib/plural";
+import { MAX_URL_CHARS } from "@/lib/toolkit/defang-refang";
 import {
   IOC_TYPES,
   MAX_DISTINCT,
@@ -244,7 +245,8 @@ export function IocExtractor() {
                 {text.length.toLocaleString("en-US")} of {MAX_INPUT_CHARS.toLocaleString("en-US")} characters. Reads
                 hxxp, hxxps, fxp, [.], (.), {"{.}"}, [dot], \., [@], [at], [:] and [://]. Domains are ASCII or punycode
                 (xn--) names whose last label is a delegated TLD, so a name written with non-ASCII letters is not read
-                until it is converted. An address range such as 10.0.0.1-10.0.0.9 counts as two addresses.
+                until it is converted. An address range such as 10.0.0.1-10.0.0.9 counts as two addresses. A URL longer
+                than {MAX_URL_CHARS.toLocaleString("en-US")} characters is not read as a URL, though its host still is.
               </p>
             )}
             <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -366,8 +368,9 @@ export function IocExtractor() {
             {ok.badChecksums > 0 ? (
               <p className={WARN_BOX}>
                 {ok.badChecksums} {pluralise(ok.badChecksums, "string")} shaped like a Bitcoin address failed the checksum and{" "}
-                {ok.badChecksums === 1 ? "was" : "were"} left out. A real address never fails it, so this is usually a typo or
-                a truncated copy.
+                {ok.badChecksums === 1 ? "was" : "were"} left out. A correctly copied address always passes, so{" "}
+                {ok.badChecksums === 1 ? "this is" : "these are"} either a mistyped or truncated address or another kind of
+                token with the same shape.
               </p>
             ) : null}
             {ok.truncated ? (

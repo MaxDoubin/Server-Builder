@@ -45,7 +45,7 @@ export interface VarintValue {
   value: bigint;
   /** Bytes the varint occupies. */
   length: number;
-  /** True when the encoding is longer than needed (ends in a 0x00 continuation byte). */
+  /** True when the encoding is longer than needed: more than one byte, the last of them 0x00. */
   overlong: boolean;
 }
 
@@ -128,7 +128,8 @@ function nibble(code: number): number {
   return code - 55;
 }
 
-type Attempt = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
+/** size is set when the text is well formed but decodes to more than the cap. */
+type Attempt = { ok: true; bytes: Uint8Array } | { ok: false; error: string; size?: true };
 
 function parseHex(text: string): Attempt {
   // \x and 0x prefixes become separators, then one pass collects the digits
@@ -154,7 +155,11 @@ function parseHex(text: string): Attempt {
     return { ok: false, error: `There are ${n} hex digits, an odd number, so the last byte is incomplete.` };
   }
   if (n / 2 > MAX_INPUT_BYTES) {
-    return { ok: false, error: `That is ${(n / 2).toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.` };
+    return {
+      ok: false,
+      size: true,
+      error: `That hex is ${(n / 2).toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.`,
+    };
   }
   const out = new Uint8Array(n / 2);
   for (let i = 0; i < out.length; i++) out[i] = (digits[i * 2] << 4) | digits[i * 2 + 1];
@@ -163,14 +168,22 @@ function parseHex(text: string): Attempt {
 
 function parseBase64(text: string): Attempt {
   const cleaned = text.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
-  const body = cleaned.replace(/=+$/, "");
-  if (cleaned.length - body.length > 2) return { ok: false, error: "Base64 has at most two padding characters." };
+  // A loop, not /=+$/: that regex backtracks quadratically on a long run of
+  // "=" followed by any other character.
+  let padding = 0;
+  while (padding < cleaned.length && cleaned.charCodeAt(cleaned.length - 1 - padding) === 61) padding++;
+  const body = cleaned.slice(0, cleaned.length - padding);
+  if (padding > 2) return { ok: false, error: "Base64 has at most two padding characters." };
   const bad = body.search(/[^A-Za-z0-9+/]/);
   if (bad >= 0) return { ok: false, error: `"${body[bad]}" is not a Base64 character.` };
   if (body.length % 4 === 1) return { ok: false, error: "The Base64 text is one character short of a whole byte." };
   const size = Math.floor((body.length * 3) / 4);
   if (size > MAX_INPUT_BYTES) {
-    return { ok: false, error: `That is ${size.toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.` };
+    return {
+      ok: false,
+      size: true,
+      error: `That Base64 is ${size.toLocaleString("en-US")} bytes. The decoder reads up to ${MAX_INPUT_BYTES.toLocaleString("en-US")}.`,
+    };
   }
   const out = new Uint8Array(size);
   let n = 0;
@@ -201,11 +214,13 @@ export function parseInput(text: string, format: InputFormat): InputResult | nul
   }
   if (format === "hex") {
     const r = parseHex(text);
-    return r.ok ? { ok: true, bytes: r.bytes, format: "hex", alsoValid: false } : { ok: false, error: `Not valid hex: ${r.error}` };
+    if (r.ok) return { ok: true, bytes: r.bytes, format: "hex", alsoValid: false };
+    return { ok: false, error: r.size ? r.error : `Not valid hex: ${r.error}` };
   }
   if (format === "base64") {
     const r = parseBase64(text);
-    return r.ok ? { ok: true, bytes: r.bytes, format: "base64", alsoValid: false } : { ok: false, error: `Not valid Base64: ${r.error}` };
+    if (r.ok) return { ok: true, bytes: r.bytes, format: "base64", alsoValid: false };
+    return { ok: false, error: r.size ? r.error : `Not valid Base64: ${r.error}` };
   }
   const hex = parseHex(text);
   if (hex.ok) {
@@ -214,6 +229,9 @@ export function parseInput(text: string, format: InputFormat): InputResult | nul
     const other = text.length <= ALSO_VALID_MAX_CHARS ? parseBase64(text) : null;
     return { ok: true, bytes: hex.bytes, format: "hex", alsoValid: other !== null && other.ok && other.bytes.length > 0 };
   }
+  // Well-formed hex that is simply too long: say so, rather than also
+  // reporting why the same text is not Base64.
+  if (hex.size) return { ok: false, error: hex.error };
   const b64 = parseBase64(text);
   if (b64.ok) return { ok: true, bytes: b64.bytes, format: "base64", alsoValid: false };
   return { ok: false, error: `Not valid hex (${hex.error}) or Base64 (${b64.error})` };
@@ -363,7 +381,7 @@ function parseFields(
     ctx.examined++;
     const tagAt = pos;
     const tag = readVarint(bytes, pos, end);
-    if (isError(tag)) return fail(tagAt, `Field tag at offset ${tagAt} is cut off. ${tag.message}`);
+    if (isError(tag)) return fail(tagAt, tag.message.replace(/^The varint/, "The field tag"));
     if (tag.value > 0xffffffffn) {
       return fail(tagAt, `The tag at offset ${tagAt} is larger than 32 bits, so it cannot hold a field number of 29 bits and a wire type.`);
     }

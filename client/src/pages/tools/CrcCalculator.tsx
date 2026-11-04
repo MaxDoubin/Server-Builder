@@ -78,7 +78,8 @@ const PARAMETER_TERMS: { term: string; meaning: string }[] = [
   },
   {
     term: "init",
-    meaning: "The register's value before any data. Starting from all ones makes leading zero bytes count.",
+    meaning:
+      "The register's value before any data. A nonzero init, such as all ones, makes leading zero bytes change the CRC. With an init of 0 they cannot.",
   },
   {
     term: "refin",
@@ -90,7 +91,7 @@ const PARAMETER_TERMS: { term: string; meaning: string }[] = [
   },
   {
     term: "xorout",
-    meaning: "A value XORed into the result last. All ones inverts it, so the CRC of a message of zero bytes is not 0.",
+    meaning: "A value XORed into the result last, after any reflection. All ones inverts every bit of the CRC.",
   },
 ];
 
@@ -414,7 +415,7 @@ export function CrcCalculator() {
               ) : null}
               {shownEntry.usedBy ? (
                 <p className="break-words">
-                  <span className="text-[hsl(var(--brand-ash))]">Used by </span>
+                  <span className="text-[hsl(var(--brand-ash))]">About </span>
                   {shownEntry.usedBy}
                 </p>
               ) : null}

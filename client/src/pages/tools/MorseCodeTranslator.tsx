@@ -20,6 +20,7 @@ import {
   MAX_INPUT_CHARS,
   MAX_LISTED_PROBLEMS,
   MAX_PLAY_SYMBOLS,
+  MAX_PLAY_UNITS,
   MAX_TONE_HZ,
   MAX_WPM,
   MIN_TONE_HZ,
@@ -104,6 +105,15 @@ function formatSeconds(seconds: number): string {
   // Round once, then split, so 119.6 s reads 2 min 0 s rather than 1 min 60 s.
   const total = Math.round(seconds);
   return `${Math.floor(total / 60)} min ${total % 60} s`;
+}
+
+/** Why playback stops early, in words. Only called for a truncated plan. */
+function truncationNote(plan: Plan, total: number): string {
+  const caps = `Playback is capped at ${MAX_PLAY_SYMBOLS.toLocaleString("en-US")} characters and ${MAX_PLAY_UNITS.toLocaleString(
+    "en-US",
+  )} dot units`;
+  if (plan.partial) return `${caps}, so it stops partway through the first character.`;
+  return `${caps}, so it stops after ${plan.symbols.length.toLocaleString("en-US")} of ${total.toLocaleString("en-US")} characters.`;
 }
 
 /** A character as the reader can see it, with its code point so invisible ones are identifiable. */
@@ -622,8 +632,8 @@ export function MorseCodeTranslator() {
               </p>
             ) : null}
             {mainPlan.truncated ? (
-              <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                Playback stops after the first {MAX_PLAY_SYMBOLS.toLocaleString("en-US")} characters.
+              <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="text-play-cap">
+                {truncationNote(mainPlan, count)}
               </p>
             ) : null}
 
@@ -723,7 +733,7 @@ export function MorseCodeTranslator() {
                 count === 0
                   ? "nothing to send"
                   : mainPlan.truncated
-                    ? `${formatSeconds(mainPlan.duration)} for the first ${MAX_PLAY_SYMBOLS.toLocaleString("en-US")} characters`
+                    ? `${formatSeconds(mainPlan.duration)} for the part that plays`
                     : formatSeconds(mainPlan.duration)
               }
               testId="text-duration"

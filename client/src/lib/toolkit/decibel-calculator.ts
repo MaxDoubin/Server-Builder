@@ -31,6 +31,9 @@ export const MAX_ENTRIES = 200;
 export const MAX_COUNT = 1_000_000;
 /** Longest source list read, in characters. */
 export const MAX_LIST_CHARS = 20_000;
+/** Sound distances outside this span, in any one unit, are refused so a ratio of two of them stays finite. */
+export const MIN_SOUND_DISTANCE = 1e-6;
+export const MAX_SOUND_DISTANCE = 1e9;
 
 /* ------------------------------------------------------------ parsing */
 
@@ -108,6 +111,15 @@ export function parseLoss(text: string, what: string): Parsed<number> {
     };
   }
   return parsed;
+}
+
+/** A distance for the inverse square law. Only the ratio of two of these matters, so the unit does not. */
+export function parseSoundDistance(text: string, what: string): Parsed<number> {
+  const n = parseNumber(text, what, { min: 0, minExclusive: true, max: MAX_SOUND_DISTANCE });
+  if (n.ok && n.value < MIN_SOUND_DISTANCE) {
+    return { ok: false, error: `${capitalize(what)} must be at least ${show(MIN_SOUND_DISTANCE)}.` };
+  }
+  return n;
 }
 
 export interface LevelEntry {
@@ -452,6 +464,29 @@ export const MIN_FREQUENCY_HZ = 1e3;
 export const MAX_FREQUENCY_HZ = 3e12;
 /** Distances past this are refused, in meters (1e15 m is about a tenth of a light-year). */
 export const MAX_DISTANCE_M = 1e15;
+/** Distances under this are refused, in meters: a millimeter is already far inside the near field of any antenna. */
+export const MIN_DISTANCE_M = 1e-3;
+
+/** A frequency with its unit, as hertz, inside the supported band. */
+export function parseFrequency(text: string, unit: FrequencyUnit): Parsed<number> {
+  const n = parseNumber(text, "the frequency", { min: 0, minExclusive: true });
+  if (!n.ok) return n;
+  const hz = n.value * FREQUENCY_FACTOR[unit];
+  if (!(hz >= MIN_FREQUENCY_HZ && hz <= MAX_FREQUENCY_HZ)) {
+    return { ok: false, error: "Enter a frequency between 1 kHz and 3 THz." };
+  }
+  return { ok: true, value: hz };
+}
+
+/** A link distance with its unit, as meters, between 1 mm and 10^15 m. */
+export function parseLinkDistance(text: string, unit: DistanceUnit): Parsed<number> {
+  const n = parseNumber(text, "the distance", { min: 0, minExclusive: true });
+  if (!n.ok) return n;
+  const m = n.value * DISTANCE_FACTOR[unit];
+  if (!(m <= MAX_DISTANCE_M)) return { ok: false, error: "That distance is past 10^15 m, far beyond any link." };
+  if (!(m >= MIN_DISTANCE_M)) return { ok: false, error: "Enter a distance of at least 1 mm." };
+  return { ok: true, value: m };
+}
 
 export interface PathLoss {
   /** Free-space path loss in dB between isotropic antennas. */

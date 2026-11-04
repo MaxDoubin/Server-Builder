@@ -100,7 +100,7 @@ export const MODULES: Module[] = [
     connector: "LC duplex",
     lanes: "1 x 1G (1.25 GBd, 8b/10b)",
     definedBy: "IEEE 802.3z",
-    notes: "Also 220 m on older 160 MHz·km 62.5 µm fiber. OM3 and OM4 are not listed in the standard; 550 m is the figure it guarantees.",
+    notes: "Also 220 m on older 160 MHz·km 62.5 µm fiber. The standard does not name OM3 or OM4; they meet its 500 MHz·km fiber requirement, so 550 m applies to them.",
     tags: ["short", "gigabit", "om1", "om2"],
   },
   {
@@ -715,7 +715,7 @@ export const FIBER_TYPES: FiberType[] = [
   { name: "OM1", core: "62.5/125 µm", bandwidth: "200 MHz·km at 850 nm", jacket: "Orange" },
   { name: "OM2", core: "50/125 µm", bandwidth: "500 MHz·km at 850 nm", jacket: "Orange" },
   { name: "OM3", core: "50/125 µm, laser optimized", bandwidth: "2000 MHz·km (EMB) at 850 nm", jacket: "Aqua" },
-  { name: "OM4", core: "50/125 µm, laser optimized", bandwidth: "4700 MHz·km (EMB) at 850 nm", jacket: "Aqua, or violet in parts of Europe" },
+  { name: "OM4", core: "50/125 µm, laser optimized", bandwidth: "4700 MHz·km (EMB) at 850 nm", jacket: "Aqua; some vendors use violet" },
   { name: "OM5", core: "50/125 µm, wideband", bandwidth: "4700 at 850 nm, 2470 MHz·km at 953 nm", jacket: "Lime green" },
   { name: "OS2", core: "9/125 µm single-mode", bandwidth: "Not modal; 0.4 dB/km cabled", jacket: "Yellow" },
 ];

@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
   EXAMPLE_LISTING,
+  MAX_CHARS,
   MAX_LINES,
   parseListing,
   type Field,
@@ -259,7 +260,7 @@ export function LsExplainer() {
           />
           <p id="ls-input-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
             GNU, BSD, macOS and busybox layouts, with or without -i, -s, -h, -n, -g, -o and the --time-style
-            forms. Up to {MAX_LINES.toLocaleString("en-US")} lines.
+            forms. Reads up to {MAX_LINES.toLocaleString("en-US")} lines or {MAX_CHARS.toLocaleString("en-US")} characters.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
@@ -290,7 +291,7 @@ export function LsExplainer() {
         <div className="space-y-6" data-testid="output-ls">
           {parsed.truncated ? (
             <p className={`rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${NOTE_CLASS.warn}`}>
-              Only the first {MAX_LINES.toLocaleString("en-US")} lines were read.
+              Only the first {MAX_LINES.toLocaleString("en-US")} lines or {MAX_CHARS.toLocaleString("en-US")} characters were read.
             </p>
           ) : null}
 

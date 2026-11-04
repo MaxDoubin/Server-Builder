@@ -121,8 +121,9 @@ export function parseCount(
   if (text === "") {
     return opts.required ? { ok: false, message: `Enter the ${opts.label}.` } : { ok: true, value: null };
   }
+  if (text.length > 24) return { ok: false, message: "That is too long to be a number here." };
   // Commas only as thousands separators, so "1,5" is refused rather than read as 15.
-  if (text.length > 12 || !/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(text)) {
+  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(text)) {
     return { ok: false, message: `The ${opts.label} is a whole number, such as ${opts.example}.` };
   }
   const n = Number(text.replace(/,/g, ""));
@@ -297,11 +298,15 @@ export function analyzeBudget(sw: SwitchInput, input: DeviceLineInput[]): Budget
       }
     } else if (actualOver) {
       const partial = measuredDevices < devices;
+      // "Even" only when the class reservation is over too. The draw can be
+      // over on its own when a measured figure is above its class maximum.
       flags.push({
         level: "danger",
         text:
-          `Even the draw, ${wattsText(actualMw)}${partial ? " (measured where known, class maximum elsewhere)" : " as measured"}, ` +
-          `is ${wattsText(-(actualHeadroomMw as number))} over the ${wattsText(budget)} budget. ` +
+          `${allocOver ? "Even the draw" : "The draw"}, ${wattsText(actualMw)}` +
+          `${partial ? " (measured where known, class maximum elsewhere)" : " as measured"}, ` +
+          `is ${wattsText(-(actualHeadroomMw as number))} over the ${wattsText(budget)} budget` +
+          `${allocOver ? "" : `, although the class reservations of ${wattsText(allocMw)} fit`}. ` +
           `The switch cannot power all of these devices at once and will deny or cut power to some ports, lowest priority first.`,
       });
     } else if (allocOver) {

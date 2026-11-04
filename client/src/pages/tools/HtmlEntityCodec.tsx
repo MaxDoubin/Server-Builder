@@ -20,6 +20,7 @@ import {
   MAX_LISTED,
   TABLE_SIZE,
   codePointLabel,
+  countCodePoints,
   decodeEntities,
   encodeEntities,
   escapeHtmlAttribute,
@@ -108,7 +109,8 @@ const ISSUE_TEXT: Record<RefIssue, string> = {
   null: "A reference to NUL is never NUL: the parser substitutes U+FFFD.",
   "out-of-range": "Past U+10FFFF, the end of Unicode, so the parser substitutes U+FFFD.",
   surrogate: "A surrogate is not a character on its own, so the parser substitutes U+FFFD.",
-  "c1-remapped": "128 to 159 are read as Windows-1252 bytes, not as C1 control codes.",
+  "c1-remapped":
+    "Read as the Windows-1252 character at this byte, not as a C1 control code. 27 of the 32 numbers from 128 to 159 are remapped this way.",
   control: "A control character. Decoded, but a parse error.",
   noncharacter: "A Unicode noncharacter. Decoded, but a parse error.",
 };
@@ -381,7 +383,7 @@ export function HtmlEntityCodec() {
                     value={`${encoded.encoded.toLocaleString("en-US")}${format === "named" ? `, ${encoded.named.toLocaleString("en-US")} named` : ""}`}
                     testId="text-encoded-count"
                   />
-                  <ToolResult label="Output length" value={`${output.length.toLocaleString("en-US")} characters`} />
+                  <ToolResult label="Output length" value={`${countCodePoints(output).toLocaleString("en-US")} characters`} />
                 </>
               ) : null}
               {decoded ? (

@@ -254,6 +254,28 @@ class Warnings {
   }
 }
 
+/**
+ * The string without trailing spaces and tabs. A loop, not /[ \t]+$/: that
+ * regex backtracks quadratically on a long run of blanks followed by any
+ * other character, which would freeze the page on a hostile paste.
+ */
+function trimTrailingBlanks(line: string): string {
+  let end = line.length;
+  while (end > 0) {
+    const c = line.charCodeAt(end - 1);
+    if (c !== 32 && c !== 9) break;
+    end--;
+  }
+  return end === line.length ? line : line.slice(0, end);
+}
+
+/** Count of trailing "=" characters, for the same reason as above. */
+function trailingEquals(text: string): number {
+  let n = 0;
+  while (n < text.length && text.charCodeAt(text.length - 1 - n) === 61) n++;
+  return n;
+}
+
 function lineList(lines: number[]): string {
   const shown = lines.slice(0, 6).join(", ");
   return lines.length > 6 ? `${shown} and ${lines.length - 6} more` : shown;
@@ -325,7 +347,7 @@ export function decodeQuotedPrintable(input: string, options: QpDecodeOptions): 
 
   for (let li = 0; li < lines.length; li++) {
     const line = lines[li];
-    const stripped = line.replace(/[ \t]+$/, "");
+    const stripped = trimTrailingBlanks(line);
     const soft = stripped.endsWith("=");
     const content = soft ? stripped.slice(0, -1) : stripped;
     if (stripped.length > longest) longest = stripped.length;
@@ -404,7 +426,8 @@ export function decodeQuotedPrintable(input: string, options: QpDecodeOptions): 
     warnings: warnings.list,
     warningTotal: warnings.total,
     charsetNotes: decoded.ok ? decoded.notes : [decoded.error],
-    encodedLines: lines.length,
+    // A final line break ends the last line; it does not start another.
+    encodedLines: lines.length > 1 && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length,
     softBreaks,
     escapes,
     longestLine: longest,
@@ -544,8 +567,8 @@ type BytesOrError = { ok: true; bytes: Uint8Array; note?: string } | { ok: false
 
 /** RFC 2047 section 4.1: the B encoding is RFC 2045 Base64. */
 export function decodeBase64(text: string): BytesOrError {
-  const body = text.replace(/=+$/, "");
-  const padding = text.length - body.length;
+  const padding = trailingEquals(text);
+  const body = text.slice(0, text.length - padding);
   for (const ch of body) {
     if (!B64_VALUE.has(ch)) {
       return {
@@ -714,7 +737,7 @@ export function decodeHeader(input: string): HeaderDecodeResult {
       const before = prev ? (prev.kind === "text" ? prev.value.slice(-1) : "") : " ";
       const after = next ? (next.kind === "text" ? next.value.slice(0, 1) : "") : " ";
       if (before === '"' && after === '"') quoted++;
-      else if (!/[ \t(:"]/.test(before) || !/[ \t)"]/.test(after)) unspaced++;
+      else if (!/[ \t\r\n(:"]/.test(before) || !/[ \t\r\n)"]/.test(after)) unspaced++;
     }
     kept.push(seg);
   }

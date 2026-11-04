@@ -603,9 +603,9 @@ export function QuotedPrintableCodec() {
               value={`${otherHeader.output.length} characters, ${otherHeader.words.length} ${otherHeader.words.length === 1 ? "word" : "words"}`}
             />
             <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-              Q keeps ASCII letters readable and costs three characters for every other byte; B costs four
-              characters for every three bytes whatever they are. Mostly-ASCII text is shorter in Q, and text in
-              a non-Latin script is shorter in B.
+              Q writes letters, digits and spaces as one character each and every other byte as three; B writes
+              four characters for every three bytes whatever they are. Mostly-ASCII text is shorter in Q, and text
+              in a non-Latin script is shorter in B.
             </p>
           </ToolPanel>
         ) : null}

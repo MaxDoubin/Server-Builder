@@ -400,7 +400,9 @@ export function parseUrl(url: string): UrlParts | null {
     const colon = hostPort.indexOf(":");
     host = colon === -1 ? hostPort : hostPort.slice(0, colon);
     port = colon === -1 ? "" : hostPort.slice(colon);
-    if (host === "" || !/[A-Za-z0-9]/.test(host) || /[[\]\\<>"'`]/.test(host)) return null;
+    // A comma or semicolon cannot be part of a DNS name, so a host holding
+    // one is two list items run together, not one URL.
+    if (host === "" || !/[A-Za-z0-9]/.test(host) || /[[\]\\<>"'`,;]/.test(host)) return null;
     const bare = host.endsWith(".") ? host.slice(0, -1) : host;
     if (parseIPv4(bare)) {
       hostKind = "ipv4";
@@ -415,10 +417,19 @@ export function parseUrl(url: string): UrlParts | null {
   return { scheme, userinfo, host, hostKind, hostValue, rest: port + afterAuthority };
 }
 
-/** Lowercase scheme and host; path, query and fragment are case-sensitive and kept. */
+/**
+ * Lowercase scheme and host, and an IPv6 literal in RFC 5952 form, so
+ * http://[2001:0DB8::1]/ and http://[2001:db8::1]/ are one URL. Path, query
+ * and fragment are case-sensitive and kept as written.
+ */
 export function canonicalUrl(parts: UrlParts): string {
   const user = parts.userinfo === null ? "" : `${parts.userinfo}@`;
-  return `${parts.scheme.toLowerCase()}://${user}${parts.host.toLowerCase()}${parts.rest}`;
+  let host = parts.host.toLowerCase();
+  if (parts.hostKind === "ipv6") {
+    const zone = /%.*$/.exec(parts.host.slice(1, -1));
+    host = `[${parts.hostValue}${zone ? zone[0] : ""}]`;
+  }
+  return `${parts.scheme.toLowerCase()}://${user}${host}${parts.rest}`;
 }
 
 /* ------------------------------------------------------- neighboring text */
@@ -510,8 +521,22 @@ const LOCAL_CHAR = /[A-Za-z0-9._%+-]/;
 const HOST_CHAR = /[A-Za-z0-9_.-]/;
 const WORDISH = /[A-Za-z0-9_]/;
 
-/** Longest URL accepted. Longer runs are not treated as URLs, which bounds the work per candidate. */
-export const MAX_URL_CHARS = 4096;
+/**
+ * Longest URL accepted, counted after the "://". RFC 9110 section 4.1 asks
+ * software to support URIs of at least 8000 octets. A longer run is not read
+ * as a URL (its host is still found on its own), which bounds the work per
+ * candidate.
+ */
+export const MAX_URL_CHARS = 8000;
+
+/**
+ * Characters to skip at the start of a run that follows a "%": the two hex
+ * digits of a percent-encoded octet. In "u=https%3A%2F%2Fevil.com" the run
+ * after the last % is "2Fevil.com", and the host is evil.com, not 2fevil.com.
+ */
+export function percentPrefix(text: string, start: number): number {
+  return start > 0 && text.charCodeAt(start - 1) === 37 && /^[0-9A-Fa-f]{2}/.test(text.slice(start, start + 2)) ? 2 : 0;
+}
 
 /** URLs inside one URL's query string that are looked for, at most. */
 const MAX_NESTED_PER_URL = 8;
@@ -567,26 +592,49 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     return false;
   };
   const cover = (a: number, b: number) => mask.fill(1, a, b);
+  // The live characters of one defang token share a source offset. A match
+  // that ends partway through one ("1:[://]" reads as 1:://, and 1:: is valid
+  // IPv6) would rewrite the whole token while keeping only part of it, so a
+  // match has to start and end on token boundaries.
+  const { starts } = normalized;
+  const whole = (a: number, b: number): boolean =>
+    (a === 0 || starts[a] !== starts[a - 1]) && (b >= text.length || starts[b] !== starts[b - 1]);
 
   // 1. URLs. Every "://" is a candidate; one inside an earlier URL is a nested URL.
+  // The scheme of a candidate is the run of scheme characters just before
+  // its "://", at most seven long (the longest allowed scheme is five).
+  const schemeStart = (k: number): number => {
+    let s = k;
+    while (s > 0 && k - s <= 6 && SCHEME_CHAR.test(text.charAt(s - 1))) s--;
+    return s;
+  };
+  // A comma or semicolon directly before another URL's scheme separates two
+  // URLs in a list ("http://a.example/x,http://b.example/y"). Commas are
+  // legal in a path, so only that pattern ends a URL there.
+  const listBreak = new Uint8Array(text.length);
+  for (let k = text.indexOf("://"); k !== -1; k = text.indexOf("://", k + 3)) {
+    const s = schemeStart(k);
+    const sep = text.charCodeAt(s - 1);
+    if (s > 0 && (sep === 44 || sep === 59) && URL_SCHEMES.has(text.slice(s, k).toLowerCase())) listBreak[s - 1] = 1;
+  }
   // nextStop[i] is the first offset at or after i where a URL body must end,
   // so finding the end of a candidate costs nothing however long the line is.
   const nextStop = new Int32Array(text.length + 1);
   nextStop[text.length] = text.length;
-  for (let i = text.length - 1; i >= 0; i--) nextStop[i] = URL_BODY_STOP.test(text.charAt(i)) ? i : nextStop[i + 1];
+  for (let i = text.length - 1; i >= 0; i--) {
+    nextStop[i] = listBreak[i] || URL_BODY_STOP.test(text.charAt(i)) ? i : nextStop[i + 1];
+  }
   let outerEnd = -1;
   let nestedSeen = 0;
   for (let k = text.indexOf("://"); k !== -1; k = text.indexOf("://", k + 3)) {
     // The longest allowed scheme is five letters, so a longer run of scheme
     // characters before "://" (xhttp, foo.https) is not one of them.
-    let s = k;
-    while (s > 0 && k - s <= 6 && SCHEME_CHAR.test(text.charAt(s - 1))) s--;
+    const s = schemeStart(k);
     const scheme = text.slice(s, k);
     if (!URL_SCHEMES.has(scheme.toLowerCase())) continue;
     const nested = s < outerEnd;
     if (nested && ++nestedSeen > MAX_NESTED_PER_URL) continue;
     let e = Math.min(nextStop[k + 3], nested ? outerEnd : text.length);
-    if (e - (k + 3) > MAX_URL_CHARS) continue;
     if (nested) {
       // Inside a query string, the next parameter starts at "&".
       for (let i = k + 3; i < e; i++) {
@@ -601,13 +649,24 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     // the next "://", so these scans add up to one pass over the text, and a
     // candidate that cannot parse is dropped before its body is read. Without
     // this, a long run like "http://[http://[..." re-reads up to
-    // MAX_URL_CHARS characters for every candidate in it.
+    // MAX_URL_CHARS characters for every candidate in it. A comma or
+    // semicolon in the authority cannot belong to a DNS name, so the URL
+    // ends there ("http://a.example,foo").
     let authEnd = k + 3;
     while (authEnd < e) {
       const c = text.charCodeAt(authEnd);
       if (c === 47 || c === 63 || c === 35) break;
+      if (c === 44 || c === 59) {
+        e = authEnd;
+        break;
+      }
       authEnd++;
     }
+    if (e - (k + 3) > MAX_URL_CHARS) continue;
+    // "http://http://evil.example/" reads as host "http" with an empty port,
+    // which would hide the real URL inside a path. Skip the doubled scheme
+    // so the inner URL is read on its own.
+    if (authEnd > k + 3 && text.charCodeAt(authEnd - 1) === 58 && text.startsWith("//", authEnd)) continue;
     // Trimming the body can only reach into the authority when the whole
     // path was trimmable, and then it yields trimUrlBody(authority), so
     // checking both forms is exact.
@@ -617,6 +676,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     const parts = parseUrl(`${scheme}://${body}`);
     if (!parts) continue;
     const b = k + 3 + body.length;
+    if (!whole(s, b)) continue;
     const host: DerivedHost | null =
       parts.hostKind === "name" ? null : { type: parts.hostKind, value: parts.hostValue };
     matches.push(make("url", s, b, canonicalUrl(parts), nested, host));
@@ -642,7 +702,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     const local = text.slice(s, at);
     const domainText = text.slice(at + 1, e);
     if (local === "" || local.length > 64 || local.endsWith(".") || local.includes("..")) continue;
-    if (localGlued || domainGlued || masked(s, e)) continue;
+    if (localGlued || domainGlued || masked(s, e) || !whole(s, e)) continue;
     const domain = checkDomain(domainText);
     if (!domain.ok) continue;
     // RFC 5321 section 2.4 makes the local part case sensitive in principle,
@@ -666,7 +726,7 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     // At least one decimal digit: scoped names in code (abc::def, a::b) are
     // valid IPv6 text, while a real indicator with no digit at all is rare.
     if ((cand.match(/:/g) ?? []).length < 2 || !/[0-9]/.test(cand)) continue;
-    if (masked(a, b)) continue;
+    if (masked(a, b) || !whole(a, b)) continue;
     const value = parseIPv6(cand);
     if (value === null) continue;
     matches.push(make("ipv6", a, b, formatIPv6(value), false, null));
@@ -679,10 +739,16 @@ export function findNetworkIndicators(original: string, options: FindOptions = {
     let a = m.index;
     let b = a + m[0].length;
     if (gluedToWord(codePointBefore(text, a)) || gluedToWord(codePointAfter(text, b))) continue;
-    while (a < b && ".-_".includes(text.charAt(a))) a++;
+    a += percentPrefix(text, a);
+    const runEnd = b;
     while (b > a && ".-_".includes(text.charAt(b - 1))) b--;
+    // A leading underscore belongs to service labels such as _dmarc and
+    // _domainkey, so it stays, unless the run is also closed by one, the way
+    // Markdown marks emphasis (_evil.com_).
+    const closedByUnderscore = text.slice(b, runEnd).includes("_");
+    while (a < b && (".-".includes(text.charAt(a)) || (closedByUnderscore && text.charAt(a) === "_"))) a++;
     if (a >= b || !text.slice(a, b).includes(".")) continue;
-    if (masked(m.index, m.index + m[0].length)) continue;
+    if (masked(m.index, m.index + m[0].length) || !whole(a, b)) continue;
     const cand = text.slice(a, b);
     if (parseIPv4(cand)) {
       matches.push(make("ipv4", a, b, cand, false, null));
@@ -948,7 +1014,15 @@ export function transform(input: string, options: TransformOptions): TransformRe
     for (const piece of segment.split(/(\s+)/)) {
       if (piece !== "" && !/^\s+$/.test(piece)) {
         const live = refangAll(piece);
-        const next = options.direction === "refang" ? live : looseDefangWord(live, style);
+        let next = live;
+        if (options.direction === "defang") {
+          // A word with nothing to defang keeps its tokens as written, so a
+          // defang never turns "(.)" in a regex or "[at]" in prose live. So
+          // does a word whose tokens nest ("[(.)]" refangs to "[.]"), where
+          // the rewrite would not refang back to the same text.
+          const defanged = looseDefangWord(live, style);
+          next = defanged === live || refangAll(defanged) !== live ? piece : defanged;
+        }
         if (next !== piece) record(offset, "other", piece, next);
         out.push(next);
       } else {

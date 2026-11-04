@@ -57,8 +57,8 @@ const TONE_ORDER: Record<Note["tone"], number> = { danger: 0, warn: 1, info: 2, 
 
 /* -------------------------------------------------------------- defaults */
 
-// jwt.io's published example, so the first token on the page is one that
-// can be checked against an independent source.
+// The long-standing jwt.io example, so the first token on the page is one
+// that can be checked against an independent source.
 const DEFAULT_HEADER = JSON.stringify({ alg: "HS256", typ: "JWT" }, null, 2);
 const DEFAULT_PAYLOAD = JSON.stringify({ sub: "1234567890", name: "John Doe", iat: 1516239022 }, null, 2);
 const DEFAULT_SECRET = "your-256-bit-secret";
@@ -603,9 +603,9 @@ export function JwtEncoder() {
                 <div className="space-y-4">
                   <div
                     data-testid="text-verdict"
-                    className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${vResult.accepted ? TONE_STYLE.ok : TONE_STYLE.danger}`}
+                    className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${vResult.accepted ? TONE_STYLE.ok : vResult.checked ? TONE_STYLE.danger : TONE_STYLE.warn}`}
                   >
-                    <div className="uppercase tracking-[0.24em]">{vResult.accepted ? "Accepted" : "Rejected"}</div>
+                    <div className="uppercase tracking-[0.24em]">{vResult.accepted ? "Accepted" : vResult.checked ? "Rejected" : "Not checked"}</div>
                     <p className="mt-1">{vResult.verdict}</p>
                   </div>
                   <ColoredToken

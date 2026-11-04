@@ -112,11 +112,14 @@ export function balancedRealW(topology: Topology, voltage: number, lineCurrentA:
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; message: string };
 
-const PLAIN = /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$|^[+-]?\.\d+$/;
+/** Digits with optional thousands commas and decimals. A trailing point ("0.") is accepted so typing 0.95 never flashes an error. */
+const PLAIN = /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$|^[+-]?\.\d+$/;
+const WHOLE = /^(?:\d+|\d{1,3}(?:,\d{3})+)$/;
 
 /** A decimal number, with optional thousands commas. Null for an empty string. */
 export function parseDecimal(raw: string): Parsed<number | null> {
-  const text = raw.trim();
+  // U+2212 is the minus sign that datasheets and PDFs use in place of a hyphen.
+  const text = raw.trim().replace(/\u2212/g, "-");
   if (text === "") return { ok: true, value: null };
   if (text.length > 24) return { ok: false, message: "That is too long to be a number here." };
   if (!PLAIN.test(text)) return { ok: false, message: `"${text}" is not a number. Use digits, such as 30 or 12.5.` };
@@ -132,7 +135,7 @@ export function parseCount(
 ): Parsed<number> {
   const text = raw.trim();
   if (text === "") return { ok: false, message: `Enter the ${opts.label}.` };
-  if (text.length > 12 || !/^\d+$/.test(text.replace(/,/g, ""))) {
+  if (text.length > 12 || !WHOLE.test(text)) {
     return { ok: false, message: `The ${opts.label} is a whole number, such as ${opts.example}.` };
   }
   const n = Number(text.replace(/,/g, ""));
@@ -330,11 +333,14 @@ function amp(n: number): string {
 }
 
 export function analyzePdu(pdu: PduInput, input: DeviceInput[]): Analysis {
-  const topology = pdu.topology;
+  // The UI only offers the three topologies, but an unknown value must not throw.
+  const topology: Topology = Object.prototype.hasOwnProperty.call(TOPOLOGIES, pdu.topology) ? pdu.topology : "wye";
   const info = TOPOLOGIES[topology];
   const voltage = info.voltages.includes(pdu.voltage) ? pdu.voltage : info.defaultVoltage;
   const three = topology !== "single";
-  const limitA = pdu.breakerA === null ? null : continuousLimitA(pdu.breakerA, pdu.derate);
+  // A breaker rating that is not a positive finite number is treated as not set.
+  const breakerA = pdu.breakerA !== null && Number.isFinite(pdu.breakerA) && pdu.breakerA > 0 ? pdu.breakerA : null;
+  const limitA = breakerA === null ? null : continuousLimitA(breakerA, pdu.derate);
   const defaultPf = pdu.defaultPf >= MIN_PF && pdu.defaultPf <= 1 ? pdu.defaultPf : DEFAULT_PF;
 
   const lineCount = three ? 3 : 1;
@@ -421,12 +427,12 @@ export function analyzePdu(pdu: PduInput, input: DeviceInput[]): Analysis {
     let pctOfLimit: number | null = null;
     let pctOfBreaker: number | null = null;
     let headroomA: number | null = null;
-    if (pdu.breakerA !== null && limitA !== null) {
+    if (breakerA !== null && limitA !== null) {
       pctOfLimit = (amps / limitA) * 100;
-      pctOfBreaker = (amps / pdu.breakerA) * 100;
+      pctOfBreaker = (amps / breakerA) * 100;
       headroomA = limitA - amps;
       status =
-        cmp(amps) > cmp(pdu.breakerA)
+        cmp(amps) > cmp(breakerA)
           ? "trip"
           : cmp(amps) > cmp(limitA)
             ? "over"
@@ -479,16 +485,16 @@ export function analyzePdu(pdu: PduInput, input: DeviceInput[]): Analysis {
   }
 
   const flags: Flag[] = [];
-  if (pdu.breakerA !== null && limitA !== null) {
+  if (breakerA !== null && limitA !== null) {
     const limitText = pdu.derate
-      ? `${amp(limitA)} continuous limit (80% of the ${amp(pdu.breakerA)} breaker)`
+      ? `${amp(limitA)} continuous limit (80% of the ${amp(breakerA)} breaker)`
       : `${amp(limitA)} breaker rating`;
     for (const line of lines) {
       const who = three ? line.label : "The feed";
       if (line.status === "trip") {
         flags.push({
           level: "danger",
-          text: `${who} carries ${amp(line.amps)}, above the ${amp(pdu.breakerA)} breaker rating. Held for long, that trips the breaker.`,
+          text: `${who} carries ${amp(line.amps)}, above the ${amp(breakerA)} breaker rating. A sustained overload can trip the breaker, and the larger it is, the sooner it trips.`,
         });
       } else if (line.status === "over") {
         flags.push({
@@ -525,7 +531,7 @@ export function analyzePdu(pdu: PduInput, input: DeviceInput[]): Analysis {
     topology,
     voltage,
     vLN: topology === "wye" ? lineToNeutral(voltage) : null,
-    breakerA: pdu.breakerA,
+    breakerA,
     limitA,
     lines,
     neutralA,

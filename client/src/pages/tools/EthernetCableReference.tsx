@@ -311,7 +311,8 @@ function Matrix() {
       </div>
       <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
         Lengths are the full channel. <span className="text-[hsl(var(--brand-amber))]">Amber</span> means the figure
-        holds only after testing; a dot means the speed is not specified on that category.
+        carries a condition, given in the numbered note, that testing has to confirm; a dot means the speed is not
+        specified on that category.
       </p>
       <ol className="mt-3 space-y-2" data-testid="list-matrix-notes">
         {footnotes.map((note, i) => (

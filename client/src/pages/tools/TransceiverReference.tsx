@@ -64,7 +64,7 @@ const NAME_KEY: { code: string; meaning: string }[] = [
   { code: "F", meaning: "2 km on single-mode" },
   { code: "L", meaning: "Long reach, 10 km on single-mode" },
   { code: "E", meaning: "Extended reach, 30 to 40 km" },
-  { code: "Z", meaning: "About 80 km, a vendor term, not IEEE" },
+  { code: "Z", meaning: "About 80 km. In 1000BASE-ZX and 10GBASE-ZR a vendor term, not IEEE" },
   { code: "B", meaning: "Bidirectional on one fiber" },
   { code: "X", meaning: "8b/10b block coding, as in 1000BASE-X" },
   { code: "R", meaning: "64b/66b block coding family, as in 10GBASE-R and every rate above it" },

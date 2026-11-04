@@ -178,7 +178,7 @@ export function TcpFlagsCalculator() {
             ) : (
               <p id="tcp-flags-hint" className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {draftSource ? `Read as ${draftSource}. ` : ""}
-                Hex needs 0x, binary needs 0b or 8 digits, plain digits are decimal. Names (SYN ACK), tcpdump
+                Hex needs 0x. Binary needs 0b, or exactly 8, 9, 12 or 16 digits. Other plain digits are decimal. Names (SYN ACK), tcpdump
                 letters ([S.], with a lowercase e for AE) and a whole tcpdump line work too. A 16-bit value such as
                 0x5012 is read as bytes 12 and 13.
               </p>

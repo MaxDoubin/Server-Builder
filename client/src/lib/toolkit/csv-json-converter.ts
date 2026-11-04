@@ -28,8 +28,22 @@ export const MAX_INPUT_CHARS = 5_000_000;
 /** Distinct flattened columns kept when turning JSON into a table. */
 export const MAX_COLUMNS = 1000;
 
-/** Cells (rows times columns) written when turning JSON into a table. */
+/**
+ * Cells (rows times columns) written when a conversion pads rows out to the
+ * full width: JSON to a table, and CSV to JSON objects or Markdown. Without
+ * it a short header of 4,000 commas over 4,000 one-field rows (12 KB of
+ * input) becomes 16 million padded cells and hundreds of megabytes of text.
+ */
 export const MAX_CELLS = 2_000_000;
+
+/** Characters of JSON object output from CSV. Each row repeats every key, so long headers multiply. */
+export const MAX_OBJECT_OUTPUT_CHARS = 64_000_000;
+
+/** Longest dot path kept as a column name when flattening JSON. */
+export const MAX_PATH_CHARS = 1000;
+
+/** Total characters of column paths built while flattening, summed over every value. */
+export const MAX_PATH_WORK = 100_000_000;
 
 /** Individual problems listed per kind. Totals are always counted in full. */
 export const MAX_LISTED_ISSUES = 50;
@@ -300,34 +314,39 @@ export function inferColumnTypes(
   rows: string[][],
   width: number,
 ): { types: ColumnType[]; unsafeColumns: number[] } {
+  // Row by row rather than column by column, so the cost follows the cells
+  // that exist. A wide header over short rows would otherwise cost width
+  // times rows even though almost every cell is missing.
+  const notNumber = new Uint8Array(width);
+  const notBoolean = new Uint8Array(width);
+  const seen = new Uint8Array(width);
+  const unsafe = new Uint8Array(width);
+  for (const row of rows) {
+    const m = Math.min(row.length, width);
+    for (let j = 0; j < m; j++) {
+      if (notNumber[j] && notBoolean[j]) continue;
+      const v = row[j].trim();
+      if (v === "") continue;
+      seen[j] = 1;
+      if (!notNumber[j]) {
+        if (!JSON_NUMBER.test(v)) notNumber[j] = 1;
+        else if (classifyNumber(v)) {
+          notNumber[j] = 1;
+          unsafe[j] = 1;
+        }
+      }
+      if (!notBoolean[j] && !BOOLEAN.test(v)) notBoolean[j] = 1;
+    }
+  }
   const types: ColumnType[] = [];
   const unsafeColumns: number[] = [];
   for (let j = 0; j < width; j++) {
-    let allNumber = true;
-    let allBoolean = true;
-    let any = false;
-    let unsafe = false;
-    for (const row of rows) {
-      if (j >= row.length) continue;
-      const v = row[j].trim();
-      if (v === "") continue;
-      any = true;
-      if (allNumber) {
-        if (!JSON_NUMBER.test(v)) allNumber = false;
-        else if (classifyNumber(v)) {
-          allNumber = false;
-          unsafe = true;
-        }
-      }
-      if (allBoolean && !BOOLEAN.test(v)) allBoolean = false;
-      if (!allNumber && !allBoolean) break;
-    }
-    if (!any) types.push("empty");
-    else if (allNumber) types.push("number");
-    else if (allBoolean) types.push("boolean");
+    if (!seen[j]) types.push("empty");
+    else if (!notNumber[j]) types.push("number");
+    else if (!notBoolean[j]) types.push("boolean");
     else {
       types.push("string");
-      if (unsafe) unsafeColumns.push(j);
+      if (unsafe[j]) unsafeColumns.push(j);
     }
   }
   return { types, unsafeColumns };
@@ -418,7 +437,30 @@ export function writeCsv(
  * become <br>, since a table row has to stay on one line.
  */
 export function markdownCell(value: string): string {
-  return value.replace(/(\\*)\|/g, (_m, slashes: string) => `${slashes}${slashes}\\|`).replace(/\r\n|\r|\n/g, "<br>");
+  if (!/[|\r\n]/.test(value)) return value;
+  // A single pass. The obvious regex, /(\\*)\|/, backtracks through every
+  // run of backslashes that is not followed by a pipe, which is quadratic: a
+  // cell of 60,000 backslashes took four seconds.
+  let out = "";
+  let run = 0;
+  let from = 0;
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i);
+    if (c === 0x5c) {
+      run++;
+      continue;
+    }
+    if (c === 0x7c) {
+      out += value.slice(from, i) + "\\".repeat(run) + "\\|";
+      from = i + 1;
+    } else if (c === 0x0d || c === 0x0a) {
+      out += value.slice(from, i) + "<br>";
+      if (c === 0x0d && value.charCodeAt(i + 1) === 0x0a) i++;
+      from = i + 1;
+    }
+    run = 0;
+  }
+  return out + value.slice(from);
 }
 
 export function writeMarkdown(header: string[], rows: string[][], rightAlign: boolean[] = []): string {
@@ -437,28 +479,71 @@ export function writeMarkdown(header: string[], rows: string[][], rightAlign: bo
   return parts.join("\n");
 }
 
-/** Header names that are unique and never empty. */
+/** Up to five items, then a count of the rest. */
+function listSome(items: string[], total = items.length): string {
+  const shown = items.slice(0, 5).join(", ");
+  return total > 5 ? `${shown} and ${(total - 5).toLocaleString("en-US")} more` : shown;
+}
+
+/**
+ * Header names that are unique and never empty. A header's own text is
+ * claimed first, so a generated name such as a_2 never displaces a real
+ * column called a_2; later copies of a repeated name and empty headers then
+ * take the next free name.
+ */
 export function columnNames(header: string[] | null, width: number): { names: string[]; notes: string[] } {
-  const names: string[] = [];
+  const names: string[] = new Array<string>(width);
   const used = new Set<string>();
   const notes: string[] = [];
-  const dupes = new Map<string, number>();
-  for (let j = 0; j < width; j++) {
-    let base = header && j < header.length ? header[j] : "";
-    if (base === "") {
-      base = `column_${j + 1}`;
-      if (header && j < header.length) notes.push(`Column ${j + 1} has an empty header, so it is called ${base}.`);
-    } else if (used.has(base)) {
-      dupes.set(base, (dupes.get(base) ?? 1) + 1);
+  const headed = header ? Math.min(width, header.length) : 0;
+  for (let j = 0; j < headed; j++) {
+    const h = header![j];
+    if (h !== "" && !used.has(h)) {
+      used.add(h);
+      names[j] = h;
     }
-    let name = base;
-    let k = 2;
-    while (used.has(name)) name = `${base}_${k++}`;
-    used.add(name);
-    names.push(name);
   }
-  for (const [name, count] of dupes) {
-    notes.push(`The header "${clip(name)}" appears ${count} times; the later copies get _2, _3 and so on.`);
+  const renamed = new Map<string, string[]>();
+  const emptyCols: { column: number; name: string }[] = [];
+  let emptyCount = 0;
+  for (let j = 0; j < width; j++) {
+    if (names[j] !== undefined) continue;
+    const h = j < headed ? header![j] : "";
+    let name: string;
+    if (h === "") {
+      const base = `column_${j + 1}`;
+      name = base;
+      for (let k = 2; used.has(name); k++) name = `${base}_${k}`;
+      if (j < headed) {
+        emptyCount++;
+        if (emptyCols.length < 5) emptyCols.push({ column: j + 1, name });
+      }
+    } else {
+      name = `${h}_2`;
+      for (let k = 3; used.has(name); k++) name = `${h}_${k}`;
+      const list = renamed.get(h);
+      if (list) list.push(name);
+      else renamed.set(h, [name]);
+    }
+    used.add(name);
+    names[j] = name;
+  }
+  if (emptyCount === 1) {
+    notes.push(`Column ${emptyCols[0].column} has an empty header, so it is called ${clip(emptyCols[0].name, 48)}.`);
+  } else if (emptyCount > 1) {
+    const listed = emptyCols.map((e) => `column ${e.column} is ${clip(e.name, 48)}`);
+    notes.push(`${plural(emptyCount, "column")} have an empty header and got a generated name: ${listSome(listed, emptyCount)}.`);
+  }
+  let listed = 0;
+  for (const [h, list] of renamed) {
+    if (listed === 5) {
+      notes.push(`${plural(renamed.size - 5, "more header")} also repeat and were renamed the same way.`);
+      break;
+    }
+    listed++;
+    notes.push(
+      `The header "${clip(h)}" appears ${list.length + 1} times; the later ${list.length === 1 ? "copy is" : "copies are"} named ${listSome(list.map((n) => clip(n, 48)))}.`,
+    );
   }
   return { names, notes };
 }
@@ -561,7 +646,7 @@ export function convertCsv(input: string, opts: CsvOptions): Conversion {
   if (parsed.blankLines > 0) issues.push({ tone: "info", text: `Skipped ${plural(parsed.blankLines, "blank line")}.` });
 
   const header = opts.header ? parsed.rows[0] : null;
-  const data = opts.header ? parsed.rows.slice(1) : parsed.rows;
+  let data = opts.header ? parsed.rows.slice(1) : parsed.rows;
   const dataLines = opts.header ? parsed.lines.slice(1) : parsed.lines;
 
   let width = header ? header.length : 0;
@@ -586,12 +671,36 @@ export function convertCsv(input: string, opts: CsvOptions): Conversion {
   const { names, notes } = columnNames(header, width);
   for (const text of notes) issues.push({ tone: "info", text });
 
+  // Objects and Markdown pad every row to the full width, and objects repeat
+  // every key in every row, so both are capped by what they would write.
+  if (opts.shape !== "arrays" && data.length > 0) {
+    let keep = Math.floor(MAX_CELLS / Math.max(1, width));
+    let limit = `${MAX_CELLS.toLocaleString("en-US")} cells`;
+    if (opts.shape === "objects") {
+      let perRow = 8;
+      for (const name of names) perRow += name.length + 12;
+      const byChars = Math.floor(MAX_OBJECT_OUTPUT_CHARS / perRow);
+      if (byChars < keep) {
+        keep = byChars;
+        limit = `about ${MAX_OBJECT_OUTPUT_CHARS.toLocaleString("en-US")} characters of output`;
+      }
+    }
+    keep = Math.max(1, keep);
+    if (data.length > keep) {
+      issues.push({
+        tone: "warn",
+        text: `${plural(data.length, "data row")} at ${plural(width, "column")} would be too large to write. Only the first ${plural(keep, "row")} were converted, to stay under ${limit}.`,
+      });
+      data = data.slice(0, keep);
+    }
+  }
+
   const typing = opts.inferTypes ? inferColumnTypes(data, width) : null;
   const types = typing ? typing.types : null;
   if (typing && typing.unsafeColumns.length) {
     issues.push({
       tone: "info",
-      text: `${typing.unsafeColumns.map((j) => `"${clip(names[j])}"`).join(", ")} stayed text because ${typing.unsafeColumns.length === 1 ? "it holds" : "they hold"} numbers a double cannot hold exactly (past 2^53 - 1, or out of range). As text they survive digit for digit.`,
+      text: `${listSome(typing.unsafeColumns.map((j) => `"${clip(names[j])}"`), typing.unsafeColumns.length)} stayed text because ${typing.unsafeColumns.length === 1 ? "it holds" : "they hold"} numbers a double cannot hold exactly (past 2^53 - 1, or out of range). As text they survive digit for digit.`,
     });
   }
 
@@ -674,29 +783,82 @@ export function cellText(node: JsonNode): string {
   }
 }
 
+interface FlattenState {
+  /** Characters of path still allowed under MAX_PATH_WORK. */
+  budget: number;
+  /** Values left out because their path passed MAX_PATH_CHARS. */
+  longPaths: number;
+  overBudget: boolean;
+}
+
+/** Values a subtree would become: its scalars, plus each empty container. */
+function countLeaves(node: JsonNode): number {
+  let count = 0;
+  const stack: JsonNode[] = [node];
+  while (stack.length) {
+    const n = stack.pop()!;
+    if (n.kind === "object") {
+      if (n.members.length === 0) count++;
+      for (const m of n.members) stack.push(m.value);
+    } else if (n.kind === "array") {
+      if (n.items.length === 0) count++;
+      for (const item of n.items) stack.push(item);
+    } else count++;
+  }
+  return count;
+}
+
 /**
  * Flatten one JSON value into dot-path columns: {"a":{"b":1}} becomes a.b,
  * and an array inside an object becomes a.0, a.1. An empty object or array
  * is kept as the text {} or [] so its presence is not lost.
+ *
+ * Every value pays for its whole path, so long keys nested deeply with many
+ * values at the bottom multiply. A path past MAX_PATH_CHARS is left out with
+ * everything under it, and the total is held to MAX_PATH_WORK.
  */
-function flatten(node: JsonNode, prefix: string | null, set: (path: string, value: string) => void): void {
-  if (node.kind === "object") {
-    if (node.members.length === 0) {
-      if (prefix !== null) set(prefix, "{}");
+function flatten(
+  node: JsonNode,
+  prefix: string | null,
+  set: (path: string, value: string) => void,
+  st: FlattenState,
+): void {
+  if (st.overBudget) return;
+  if (prefix !== null && prefix.length > MAX_PATH_CHARS) {
+    st.longPaths += countLeaves(node);
+    return;
+  }
+  const emit = (path: string, value: string) => {
+    st.budget -= path.length + 1;
+    if (st.budget < 0) {
+      st.overBudget = true;
       return;
     }
-    for (const m of node.members) flatten(m.value, prefix === null ? m.key : `${prefix}.${m.key}`, set);
+    set(path, value);
+  };
+  if (node.kind === "object") {
+    if (node.members.length === 0) {
+      if (prefix !== null) emit(prefix, "{}");
+      return;
+    }
+    for (const m of node.members) {
+      flatten(m.value, prefix === null ? m.key : `${prefix}.${m.key}`, set, st);
+      if (st.overBudget) return;
+    }
     return;
   }
   if (node.kind === "array") {
     if (node.items.length === 0) {
-      if (prefix !== null) set(prefix, "[]");
+      if (prefix !== null) emit(prefix, "[]");
       return;
     }
-    node.items.forEach((item, k) => flatten(item, prefix === null ? String(k) : `${prefix}.${k}`, set));
+    for (let k = 0; k < node.items.length; k++) {
+      flatten(node.items[k], prefix === null ? String(k) : `${prefix}.${k}`, set, st);
+      if (st.overBudget) return;
+    }
     return;
   }
-  set(prefix ?? "value", cellText(node));
+  emit(prefix ?? "value", cellText(node));
 }
 
 /** A JSON array (of objects, of arrays, or of scalars) in, CSV or a Markdown table out. Never throws. */
@@ -763,10 +925,13 @@ export function convertJson(input: string, opts: JsonOptions): Conversion {
     } else header = null;
     columns = [];
     for (let j = 0; j < width; j++) columns.push(header && j < header.length && header[j] !== "" ? header[j] : `Column ${j + 1}`);
+    if (width === 0) issues.push({ tone: "info", text: "Every inner array is empty, so there are no columns." });
     if (!opts.header && opts.target === "csv") header = null;
   } else {
     const index = new Map<string, number>();
     const dropped = new Set<string>();
+    let droppedMore = false;
+    const st: FlattenState = { budget: MAX_PATH_WORK, longPaths: 0, overBudget: false };
     let collisions = 0;
     const collisionListed: string[] = [];
     let nonObjects = 0;
@@ -774,11 +939,13 @@ export function convertJson(input: string, opts: JsonOptions): Conversion {
     elements.forEach((element, k) => {
       if (element.kind !== "object") nonObjects++;
       const cells: string[] = [];
-      flatten(element, null, (path, value) => {
+      if (st.overBudget) return;
+      const set = (path: string, value: string) => {
         let j = index.get(path);
         if (j === undefined) {
           if (index.size >= MAX_COLUMNS) {
-            if (dropped.size < 100000) dropped.add(path);
+            if (dropped.size < 10000) dropped.add(path);
+            else if (!dropped.has(path)) droppedMore = true;
             return;
           }
           j = index.size;
@@ -789,9 +956,24 @@ export function convertJson(input: string, opts: JsonOptions): Conversion {
           if (collisionListed.length < 5) collisionListed.push(`row ${k + 1}, "${clip(path)}"`);
         }
         cells[j] = value;
-      });
+      };
+      flatten(element, null, set, st);
       built.push(cells);
     });
+    if (st.overBudget) {
+      return {
+        ok: false,
+        message: `Flattening this JSON would build more than ${MAX_PATH_WORK.toLocaleString("en-US")} characters of column paths, because long keys are nested deeply with many values under them. A table is the wrong shape for it; pick out the part you need first.`,
+        line: null,
+        column: null,
+      };
+    }
+    if (st.longPaths > 0) {
+      issues.push({
+        tone: "warn",
+        text: `${plural(st.longPaths, "value")} sat under a path longer than ${MAX_PATH_CHARS.toLocaleString("en-US")} characters and ${st.longPaths === 1 ? "was" : "were"} left out.`,
+      });
+    }
     columns = Array.from(index.keys());
     rows = built;
     if (nonObjects > 0) {
@@ -803,13 +985,13 @@ export function convertJson(input: string, opts: JsonOptions): Conversion {
     if (collisions > 0) {
       issues.push({
         tone: "warn",
-        text: `${plural(collisions, "value")} landed on a column another value in the same row already filled (${collisionListed.join(", ")}${collisions > collisionListed.length ? ", ..." : ""}). That happens with a duplicate key, or with a key that contains a dot, such as "a.b" next to {"a":{"b":...}}. The later value was kept, as JSON.parse would keep it.`,
+        text: `${plural(collisions, "value")} landed on a column another value in the same row already filled (${collisionListed.join(", ")}${collisions > collisionListed.length ? ", ..." : ""}). That happens with a duplicate key, or with a key that contains a dot, such as "a.b" next to {"a":{"b":...}}. The later value was kept, which is also what JSON.parse does with a duplicate key.`,
       });
     }
     if (dropped.size > 0) {
       issues.push({
         tone: "warn",
-        text: `Flattening produced more than ${MAX_COLUMNS.toLocaleString("en-US")} columns. The first ${MAX_COLUMNS.toLocaleString("en-US")} were kept and ${plural(dropped.size, "other path")} dropped.`,
+        text: `Flattening produced more than ${MAX_COLUMNS.toLocaleString("en-US")} columns. The first ${MAX_COLUMNS.toLocaleString("en-US")} were kept and ${droppedMore ? "more than " : ""}${plural(dropped.size, "other path")} dropped.`,
       });
     }
     if (rows.length * columns.length > MAX_CELLS) {

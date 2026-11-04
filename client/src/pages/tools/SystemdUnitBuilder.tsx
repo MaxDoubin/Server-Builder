@@ -301,7 +301,9 @@ export function SystemdUnitBuilder() {
 
   const errorsFor = (field: string): string[] =>
     build.findings.filter((f) => f.level === "error" && f.field === field).map((f) => f.message);
-  const messagesFor = (field: string): Finding[] => build.findings.filter((f) => f.field === field);
+  /** Warnings and notes for a field. Errors are shown by the field itself, which also sets aria-invalid. */
+  const messagesFor = (field: string): Finding[] =>
+    build.findings.filter((f) => f.field === field && f.level !== "error");
 
   const ordered = useMemo(() => {
     const rank: Record<Level, number> = { error: 0, warn: 1, info: 2 };
@@ -472,13 +474,11 @@ export function SystemdUnitBuilder() {
                     placeholder="myapp"
                   />
                 </div>
-                {messagesFor("user")
-                  .filter((m) => m.level !== "error")
-                  .map((m) => (
-                    <p key={m.message} className={HINT}>
-                      {m.message}
-                    </p>
-                  ))}
+                {messagesFor("user").map((m) => (
+                  <p key={m.message} className={HINT}>
+                    {m.message}
+                  </p>
+                ))}
                 <Field
                   id="sdu-workdir"
                   label="WorkingDirectory"
@@ -527,7 +527,7 @@ export function SystemdUnitBuilder() {
                     {m}
                   </p>
                 ))}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field
                     id="sdu-restart-sec"
                     label="RestartSec"
@@ -771,7 +771,7 @@ export function SystemdUnitBuilder() {
                 label="Families (empty for no restriction)"
                 value={h.restrictAddressFamilies}
                 onChange={(v) => setH("restrictAddressFamilies", v)}
-                errors={[]}
+                errors={errorsFor("restrictAddressFamilies")}
                 placeholder="AF_UNIX AF_INET AF_INET6"
               />
             </HardeningRow>
@@ -797,7 +797,7 @@ export function SystemdUnitBuilder() {
                     label="Capabilities"
                     value={h.capabilityBoundingSet}
                     onChange={(v) => setH("capabilityBoundingSet", v)}
-                    errors={[]}
+                    errors={errorsFor("capabilityBoundingSet")}
                     placeholder="CAP_NET_BIND_SERVICE"
                   />
                 </div>
@@ -810,7 +810,7 @@ export function SystemdUnitBuilder() {
                 label="Capabilities"
                 value={h.ambientCapabilities}
                 onChange={(v) => setH("ambientCapabilities", v)}
-                errors={[]}
+                errors={errorsFor("ambientCapabilities")}
                 placeholder="CAP_NET_BIND_SERVICE"
               />
             </HardeningRow>
@@ -821,7 +821,7 @@ export function SystemdUnitBuilder() {
                 label="Paths, separated by spaces"
                 value={h.readWritePaths}
                 onChange={(v) => setH("readWritePaths", v)}
-                errors={[]}
+                errors={errorsFor("readWritePaths")}
                 placeholder="/var/lib/myapp -/var/cache/myapp"
               />
             </HardeningRow>

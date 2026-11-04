@@ -1467,3 +1467,63 @@ export function fillTemplate(template: string, value: string): string {
   // split/join, not replace: replace() would read $& and $1 in the value.
   return template.split("{}").join(value);
 }
+
+export interface ConcatVerdict {
+  /** "danger" when pasting the string in raw changes what would run. */
+  tone: "danger" | "info";
+  text: string;
+}
+
+/**
+ * Compares a template filled with the raw string against the same template
+ * filled with the single-quoted string, and says in one passage what the raw
+ * version does that the quoted one does not. The verdict is computed from the
+ * two splits, so it stays true for templates that put the string inside
+ * double quotes, where single quoting does not help.
+ */
+export function concatVerdict(unsafe: SplitResult, safe: SplitResult, value: string): ConcatVerdict {
+  const count = (r: SplitResult, f: (c: ParsedCommand) => number) => (r.ok ? r.commands.reduce((a, c) => a + f(c), 0) : 0);
+  const argvJson = (r: SplitResult) => JSON.stringify(r.ok ? r.commands.map((c) => c.argv.map((w) => w.value)) : null);
+  if (!safe.ok) {
+    return {
+      tone: "info",
+      text: "The quoted line does not parse either, so the template has quotes of its own that do not close. Fix the template before comparing.",
+    };
+  }
+  // splitCommandLine reads CRLF as LF, so compare against the same reading.
+  const want = value.replace(/\r\n/g, "\n");
+  const intact = safe.commands.some((c) => c.argv.some((w) => w.value === want));
+  if (!intact) {
+    return {
+      tone: "info",
+      text: "In this template the quoted string does not arrive as one argument. Single quotes are literal inside double quotes, so the quote characters become part of the argument. Quoting has to match where the string lands: keep {} outside any quotes in the template.",
+    };
+  }
+  const commandsDiffer = unsafe.ok && unsafe.commands.length !== safe.commands.length;
+  const differs =
+    !unsafe.ok ||
+    commandsDiffer ||
+    count(unsafe, (c) => c.items.length) !== count(safe, (c) => c.items.length) ||
+    unsafe.dynamic !== safe.dynamic ||
+    argvJson(unsafe) !== argvJson(safe);
+  if (!differs) {
+    return {
+      tone: "info",
+      text: "For this string, concatenation and quoting happen to give the same argv. Change one character, a space, a quote or a semicolon, and that stops being true, which is why the quoting has to be unconditional.",
+    };
+  }
+  let reason: string;
+  if (!unsafe.ok) reason = "the line does not even parse";
+  else if (commandsDiffer) reason = `it becomes ${unsafe.commands.length} commands instead of ${safe.commands.length}`;
+  else if (unsafe.dynamic && !safe.dynamic) reason = "parts of it are expanded when the command runs";
+  else {
+    const a = count(unsafe, (c) => c.argv.length);
+    const b = count(safe, (c) => c.argv.length);
+    reason = a !== b ? `it becomes ${a} ${a === 1 ? "argument" : "arguments"} instead of ${b}` : "the arguments come out different";
+  }
+  const control = !unsafe.ok || commandsDiffer || unsafe.dynamic;
+  return {
+    tone: "danger",
+    text: `Pasted in as is, the shell does not take this string literally: ${reason}. Quoted, it arrives as one intact argument.${control ? " Whoever controls the string controls the command." : ""}`,
+  };
+}

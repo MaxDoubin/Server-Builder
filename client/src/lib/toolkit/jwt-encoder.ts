@@ -401,18 +401,27 @@ export function secretNotes(text: string, format: SecretFormat, bytes: Uint8Arra
       text: `This secret is ${bytes.length} ${bytes.length === 1 ? "byte" : "bytes"}. RFC 7518 section 3.2 requires at least ${alg.hashBytes} bytes (${alg.hashBytes * 8} bits) for ${alg.id}. Anyone holding one token can test guesses against it offline, with no rate limit.`,
     });
   }
-  if (format === "text" && KNOWN_WEAK_SECRETS.has(text.trim().toLowerCase())) {
+  const trimmed = text.trim();
+  const looksHex = format === "text" && trimmed.length % 2 === 0 && /^(?:[0-9a-f]{32,}|[0-9A-F]{32,})$/.test(trimmed);
+  const looksBase64 = format === "text" && !looksHex && /^[A-Za-z0-9+/_-]{40,}={0,2}$/.test(trimmed);
+  if (format === "text" && KNOWN_WEAK_SECRETS.has(trimmed.toLowerCase())) {
     notes.push({
       tone: "danger",
       text: "This secret appears in tutorials and public wordlists. Cracking tools try it first, so a token signed with it can be forged by anyone.",
     });
-  } else if (format === "text" && bytes.length >= alg.hashBytes && /^[\x20-\x7e]+$/.test(text) && !/^[A-Za-z0-9+/_-]{40,}={0,2}$/.test(text.trim())) {
+  } else if (format === "text" && bytes.length >= alg.hashBytes && /^[\x20-\x7e]+$/.test(text) && !looksHex && !looksBase64) {
     notes.push({
       tone: "info",
       text: "If a person chose this secret, it carries far fewer bits than its byte count suggests. Random bytes, Base64 encoded, give the full strength the length implies.",
     });
   }
-  if (format === "text" && /^[A-Za-z0-9+/_-]{40,}={0,2}$/.test(text.trim())) {
+  if (looksHex) {
+    notes.push({
+      tone: "info",
+      text: `This looks like hex used as text. Each hex digit becomes one byte of key but carries only 4 bits, so these ${trimmed.length} characters hold at most ${trimmed.length * 4} bits. If the issuer decodes the hex first, convert it to Base64 and choose the Base64 format, or the signatures will not match.`,
+    });
+  }
+  if (looksBase64) {
     notes.push({
       tone: "info",
       text: "This looks like Base64 but is being used as text, so each character is one byte of key. Libraries differ on this; if the issuer decodes the secret first, switch the format to Base64 or the signatures will not match.",
@@ -462,17 +471,23 @@ export function pemToDer(text: string, want: PemKind): Pem {
   if (text.length > MAX_PEM_CHARS) {
     return { ok: false, error: `That is ${text.length.toLocaleString("en-US")} characters. This page reads PEM blocks up to ${MAX_PEM_CHARS.toLocaleString("en-US")}.` };
   }
-  const m = /-----BEGIN ([A-Z0-9 #]+)-----([\s\S]*?)-----END ([A-Z0-9 #]+)-----/.exec(trimmed);
-  if (!m) {
+  // A paste can hold several blocks: openssl ecparam -genkey writes EC PARAMETERS
+  // before the key, and bundles put a certificate first. The block with the
+  // expected label wins; otherwise the first block decides the message.
+  const blocks: { label: string; end: string; body: string }[] = [];
+  const re = /-----BEGIN ([A-Z0-9 #]+)-----([\s\S]*?)-----END ([A-Z0-9 #]+)-----/g;
+  for (let m = re.exec(trimmed); m && blocks.length < 16; m = re.exec(trimmed)) blocks.push({ label: m[1], body: m[2], end: m[3] });
+  if (!blocks.length) {
     if (/^ssh-(rsa|ed25519)|^ecdsa-sha2-/.test(trimmed)) {
       return { ok: false, error: "This is an OpenSSH public key line. Convert it with: ssh-keygen -e -m PKCS8 -f key.pub" };
     }
     if (trimmed.startsWith("{")) return { ok: false, error: "This looks like a JWK. This page reads PEM; paste a key between BEGIN and END lines." };
     return { ok: false, error: "No PEM block found. A key starts with a line like -----BEGIN PUBLIC KEY----- and ends with the matching END line." };
   }
-  const label = m[1];
-  if (label !== m[3]) return { ok: false, error: `The block begins with ${label} but ends with ${m[3]}.` };
   const expected = want === "private" ? "PRIVATE KEY" : "PUBLIC KEY";
+  const block = blocks.find((b) => b.label === expected) ?? blocks.find((b) => CONVERT_HINTS[b.label]) ?? blocks[0];
+  const label = block.label;
+  if (label !== block.end) return { ok: false, error: `The block begins with ${label} but ends with ${block.end}.` };
   if (label !== expected) {
     if (CONVERT_HINTS[label]) return { ok: false, error: CONVERT_HINTS[label] };
     if (want === "private" && label === "PUBLIC KEY") {
@@ -484,10 +499,10 @@ export function pemToDer(text: string, want: PemKind): Pem {
         error: "This is a private key. Verifying needs only the public key, and a private key should not be pasted where a public one will do. Derive it with: openssl pkey -in key.pem -pubout",
       };
     }
-    return { ok: false, error: `This is a ${label} block, not a ${expected}.` };
+    return { ok: false, error: `This block is labeled ${label}, and a ${expected} block is needed.` };
   }
   // RFC 7468 allows whitespace inside the body; legacy headers ("Proc-Type:") only appear in other labels.
-  const body = m[2].replace(/\s+/g, "");
+  const body = block.body.replace(/\s+/g, "");
   if (body === "") return { ok: false, error: "The PEM block has nothing between its BEGIN and END lines." };
   const decoded = base64DecodeLoose(body);
   if (!decoded.ok) return { ok: false, error: `The PEM body is not valid Base64: ${decoded.error}.` };
@@ -649,7 +664,7 @@ export async function importPrivateKey(alg: AlgInfo, pemText: string, extractabl
     const key = await subtle().importKey("pkcs8", buf(pem.der), importParams(alg), extractable, ["sign"]);
     return { ok: true, key, notes: keyNotes(key) };
   } catch (e) {
-    return { ok: false, error: cryptoError(e, "The browser could not read this private key. The DER inside the PEM block is damaged or incomplete.") };
+    return { ok: false, error: cryptoError(e, "The browser could not import this private key. The DER inside the PEM block may be damaged or incomplete, or it may be a form this browser's WebCrypto does not accept.") };
   }
 }
 
@@ -664,7 +679,7 @@ export async function importPublicKey(alg: AlgInfo, pemText: string): Promise<Ke
     const key = await subtle().importKey("spki", buf(pem.der), importParams(alg), true, ["verify"]);
     return { ok: true, key, notes: keyNotes(key) };
   } catch (e) {
-    return { ok: false, error: cryptoError(e, "The browser could not read this public key. The DER inside the PEM block is damaged or incomplete.") };
+    return { ok: false, error: cryptoError(e, "The browser could not import this public key. The DER inside the PEM block may be damaged or incomplete, or it may be a form this browser's WebCrypto does not accept.") };
   }
 }
 
@@ -804,10 +819,10 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
       const secret = parseSecret(input.key.text, input.key.format);
       if (!secret.ok) return { ok: false, error: secret.error, notes };
       notes.push(...secretNotes(input.key.text, input.key.format, secret.bytes, alg));
-      if (input.key.format === "text" && /-----BEGIN [A-Z ]*PUBLIC KEY-----/.test(input.key.text)) {
+      if (input.key.format === "text" && /-----BEGIN (?:[A-Z ]*PUBLIC KEY|CERTIFICATE)-----/.test(input.key.text)) {
         notes.push({
           tone: "danger",
-          text: "The secret is a PEM public key. An HMAC token signed with public key text is the shape of the RS256 to HS256 key confusion attack. A verifier that ties the algorithm to its configured key rejects it.",
+          text: "The secret is PEM public key or certificate text. An HMAC token signed with public text is the shape of the RS256 to HS256 key confusion attack. A verifier that ties the algorithm to its configured key rejects it.",
         });
       }
       key = await importHmacKey(alg, secret.bytes, "sign");
@@ -875,9 +890,13 @@ export function checkClaims(payload: JsonObject, now: number, mode: "build" | "v
       continue;
     }
     if (v > 1e11) {
+      // 1e11 seconds is the year 5138. Between that and 1e14 a millisecond count is the likely mistake.
       notes.push({
         tone: "warn",
-        text: `${claim} is ${v}, which as seconds is ${formatUtc(v) === "out of range" ? "beyond any representable date" : `in the year ${new Date(v * 1000).getUTCFullYear()}`}. It looks like milliseconds; NumericDate is seconds (${formatUtc(v / 1000)} if divided by 1000).`,
+        text:
+          v < 1e14
+            ? `${claim} is ${v}, which as seconds is ${v < 8.64e12 ? `in the year ${new Date(v * 1000).getUTCFullYear()}` : "past the last date JavaScript can represent"}. It looks like milliseconds; NumericDate is seconds (${formatUtc(v / 1000)} if divided by 1000).`
+            : `${claim} is ${v}, far beyond any real date even as milliseconds. NumericDate is seconds since 1970; a number this large is usually microseconds or nanoseconds.`,
       });
       continue;
     }
@@ -969,8 +988,10 @@ export interface Verified {
   alg: string | null;
   /** True only when the signature checked out with the given key. */
   signatureValid: boolean;
-  /** Signature valid and nothing else (alg, crit, exp, nbf) rules the token out. */
+  /** Signature valid and nothing else (alg, crit, exp, nbf, a public secret) rules the token out. */
   accepted: boolean;
+  /** False when the token names an algorithm this page does not implement, so nothing was checked. */
+  checked: boolean;
   verdict: string;
   notes: Note[];
 }
@@ -993,7 +1014,7 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
   const notes: Note[] = [];
   const rawAlg = t.header.alg;
   const alg = typeof rawAlg === "string" ? rawAlg : null;
-  const reject = (verdict: string): Verified => ({ ok: true, token: t, alg, signatureValid: false, accepted: false, verdict, notes });
+  const reject = (verdict: string, checked = true): Verified => ({ ok: true, token: t, alg, signatureValid: false, accepted: false, checked, verdict, notes });
 
   for (const p of ["jku", "x5u"] as const) {
     if (p in t.header) {
@@ -1027,6 +1048,7 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
       near
         ? `Rejected: alg "${alg}" is not "${near.id}". Algorithm names are case-sensitive (RFC 7515 section 4.1.1).`
         : `Not checked: this page verifies HS256, HS384, HS512, RS256 and ES256, and the token says ${JSON.stringify(alg)}.`,
+      Boolean(near),
     );
   }
   const info = algInfo(known);
@@ -1064,15 +1086,18 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
     });
   }
 
+  // An HMAC keyed with public key or certificate text authenticates nothing,
+  // because anyone can download that text. That is the RS256 to HS256 forgery.
+  const publicSecret = key.kind === "secret" && key.format === "text" && /-----BEGIN (?:[A-Z ]*PUBLIC KEY|CERTIFICATE)-----/.test(key.text);
   let cryptoKey: CryptoKey;
   try {
     if (key.kind === "secret") {
       const secret = parseSecret(key.text, key.format);
       if (!secret.ok) return { ok: false, error: secret.error };
-      if (key.format === "text" && /-----BEGIN [A-Z ]*PUBLIC KEY-----/.test(key.text)) {
+      if (publicSecret) {
         notes.push({
           tone: "danger",
-          text: `The secret is PEM public key text. If this ${known} token verifies with it, the token was made the way an RS256 to HS256 key confusion forgery is made, and a server that verifies RS256 with that key must reject it.`,
+          text: `The secret is PEM public key or certificate text. A ${known} token that verifies with it was made the way an RS256 to HS256 key confusion forgery is made: anyone holding the public key can produce one, so the signature proves nothing about who issued it.`,
         });
       }
       if (secret.bytes.length < info.hashBytes) {
@@ -1106,10 +1131,29 @@ export async function verifyToken(tokenText: string, key: KeyInput, now: number)
   const timeProblem = claims.blocking;
   const critProblem = "crit" in t.header;
 
+  if (!valid && key.kind === "secret" && !publicSecret) {
+    const trimmed = key.text.trim();
+    if (key.format === "base64") {
+      notes.push({ tone: "info", text: "The secret was decoded from Base64. If the issuer uses the characters themselves as the key, switch the format to Text and check again." });
+    } else if (/^[A-Za-z0-9+/_-]{16,}={0,2}$/.test(trimmed)) {
+      notes.push({ tone: "info", text: "The secret looks like Base64 and was used as text. If the issuer decodes it first, switch the format to Base64 and check again." });
+    }
+  }
+
   let verdict: string;
   if (!valid) verdict = `Signature invalid: the ${known} signature does not match this key and these exact bytes.`;
+  else if (publicSecret) verdict = `Signature matches, but the token is rejected: the secret is public key text, so anyone could have made this ${known} signature.`;
   else if (critProblem) verdict = "Signature valid, but the token is rejected because of crit.";
   else if (timeProblem) verdict = `Signature valid, but the token is rejected: ${timeProblem}.`;
   else verdict = `Signature valid: ${known} with this key over these exact bytes.`;
-  return { ok: true, token: t, alg, signatureValid: valid, accepted: valid && !critProblem && timeProblem === null, verdict, notes };
+  return {
+    ok: true,
+    token: t,
+    alg,
+    signatureValid: valid,
+    accepted: valid && !publicSecret && !critProblem && timeProblem === null,
+    checked: true,
+    verdict,
+    notes,
+  };
 }

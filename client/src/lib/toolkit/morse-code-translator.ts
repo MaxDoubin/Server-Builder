@@ -13,6 +13,13 @@
 export const MAX_INPUT_CHARS = 10_000;
 /** Playback schedules at most this many characters, so a pasted book cannot queue hours of audio. */
 export const MAX_PLAY_SYMBOLS = 1_000;
+/**
+ * And at most this many dot units (dots, dashes and gaps at standard
+ * spacing), so one enormous unknown token cannot do the same. 1,000
+ * characters of English text come to about 10,000 units; 12,000 units is 48
+ * minutes at 5 WPM.
+ */
+export const MAX_PLAY_UNITS = 12_000;
 /** Problems listed individually before the rest are summarized as a count. */
 export const MAX_LISTED_PROBLEMS = 20;
 
@@ -284,9 +291,12 @@ export function encodeText(input: string): EncodeResult {
     }
 
     const upper = ch.toUpperCase();
-    // A character whose uppercase is longer than itself (German sharp s
-    // becomes SS) is not in the alphabet; do not quietly send two letters.
-    const key = Array.from(upper).length === 1 ? upper : ch;
+    // Fold case only when it round-trips. A character whose uppercase is
+    // longer than itself (German sharp s becomes SS) is not in the alphabet,
+    // and neither are the dotless i and the long s, which uppercase to a
+    // plain I and S but lowercase back to i and s. Do not quietly send them
+    // as letters they are not.
+    const key = Array.from(upper).length === 1 && upper.toLowerCase() === ch.toLowerCase() ? upper : ch;
     const code = ENCODE.get(key);
     if (code !== undefined) {
       current.push({ text: key, code });
@@ -520,39 +530,75 @@ export interface Plan {
   symbols: PlannedSymbol[];
   /** From the first key down to the last key up, in seconds. No trailing gap. */
   duration: number;
+  /** True when a cap stopped the plan before the end of the message. */
   truncated: boolean;
+  /** True when the first character alone passed the unit cap and was cut short. */
+  partial: boolean;
 }
 
-/** Lay the message out on a timeline: every key down, every key up. */
-export function planPlayback(words: MorseWord[], timing: Timing, maxSymbols = MAX_PLAY_SYMBOLS): Plan {
+/** Length of one character's signal in dot units: 1 per dot, 3 per dash, 1 per gap inside it. */
+function signalUnits(code: string): number {
+  let units = code.length > 0 ? code.length - 1 : 0;
+  for (const el of code) units += el === "-" ? 3 : 1;
+  return units;
+}
+
+/**
+ * Lay the message out on a timeline: every key down, every key up. Stops
+ * before the character that would pass maxSymbols characters or maxUnits
+ * dot units (counted at standard spacing, whatever the Farnsworth gaps are).
+ * A first character that alone passes maxUnits is cut short instead, so
+ * there is always something to hear.
+ */
+export function planPlayback(
+  words: MorseWord[],
+  timing: Timing,
+  maxSymbols = MAX_PLAY_SYMBOLS,
+  maxUnits = MAX_PLAY_UNITS,
+): Plan {
   const downs: KeyDown[] = [];
   const symbols: PlannedSymbol[] = [];
   let t = 0;
+  let units = 0;
   let truncated = false;
+  let partial = false;
 
   outer: for (let wi = 0; wi < words.length; wi++) {
-    if (wi > 0 && symbols.length > 0) t += timing.wordGap;
     const word = words[wi];
     for (let si = 0; si < word.length; si++) {
-      if (symbols.length >= maxSymbols) {
+      const sym = word[si];
+      const gapUnits = symbols.length === 0 ? 0 : si > 0 ? 3 : 7;
+      const cost = gapUnits + signalUnits(sym.code);
+      if (symbols.length >= maxSymbols || (symbols.length > 0 && units + cost > maxUnits)) {
         truncated = true;
         break outer;
       }
-      if (si > 0) t += timing.letterGap;
-      const sym = word[si];
+      if (symbols.length > 0) t += si > 0 ? timing.letterGap : timing.wordGap;
+      units += gapUnits;
       const start = t;
       const index = symbols.length;
+      let code = "";
       for (let ei = 0; ei < sym.code.length; ei++) {
+        const el = sym.code[ei];
+        const elUnits = (ei > 0 ? 1 : 0) + (el === "-" ? 3 : 1);
+        if (units + elUnits > maxUnits) {
+          truncated = true;
+          partial = true;
+          break;
+        }
         if (ei > 0) t += timing.intraGap;
-        const length = sym.code[ei] === "-" ? timing.dah : timing.unit;
+        const length = el === "-" ? timing.dah : timing.unit;
         downs.push({ on: t, off: t + length, symbol: index });
         t += length;
+        units += elUnits;
+        code += el;
       }
-      symbols.push({ text: sym.text, code: sym.code, start, end: t });
+      if (code !== "") symbols.push({ text: sym.text, code, start, end: t });
+      if (truncated) break outer;
     }
   }
 
-  return { downs, symbols, duration: t, truncated };
+  return { downs, symbols, duration: t, truncated, partial };
 }
 
 /** Whether the key is down at time t, and which character is being sent. Binary search, so it is cheap per frame. */

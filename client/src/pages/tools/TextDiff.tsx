@@ -12,6 +12,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEven
 import { ArrowLeftRight, Download, FileText, Upload } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
+  ALIGN_TOTAL_CELLS,
   EDIT_BUDGET,
   MAX_CHARS,
   MAX_LINES,
@@ -21,6 +22,7 @@ import {
   WORD_MAX_PAIRS,
   buildHunks,
   checkLimits,
+  countLines,
   diffLines,
   diffStats,
   pairChanges,
@@ -233,6 +235,8 @@ export function TextDiff() {
     };
   }, []);
 
+  const oldLineCount = useMemo(() => countLines(oldText), [oldText]);
+  const newLineCount = useMemo(() => countLines(newText), [newText]);
   const dOld = useDeferredValue(oldText);
   const dNew = useDeferredValue(newText);
   const stale = dOld !== oldText || dNew !== newText;
@@ -349,9 +353,10 @@ export function TextDiff() {
     label: string;
     setLabel: (v: string) => void;
     testId: string;
+    lines: number;
   }[] = [
-    { which: "old", title: "Original", text: oldText, setText: setOldText, label: oldLabel, setLabel: setOldLabel, testId: "input-original" },
-    { which: "new", title: "Changed", text: newText, setText: setNewText, label: newLabel, setLabel: setNewLabel, testId: "input-changed" },
+    { which: "old", title: "Original", text: oldText, setText: setOldText, label: oldLabel, setLabel: setOldLabel, testId: "input-original", lines: oldLineCount },
+    { which: "new", title: "Changed", text: newText, setText: setNewText, label: newLabel, setLabel: setNewLabel, testId: "input-changed", lines: newLineCount },
   ];
 
   return (
@@ -359,7 +364,7 @@ export function TextDiff() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {sides.map((s) => {
-            const lines = s.text === "" ? 0 : s.text.split("\n").length - (s.text.endsWith("\n") ? 1 : 0);
+            const lines = s.lines;
             return (
               <ToolPanel key={s.which} title={s.title}>
                 <label htmlFor={`diff-${s.which}-text`} className="block font-mono-tight text-sm text-[hsl(var(--brand-bone-dim))]">
@@ -504,7 +509,9 @@ export function TextDiff() {
             steps, the rest is shown as a block replacement: still correct, but not always the shortest. Word
             highlighting covers up to {WORD_MAX_PAIRS.toLocaleString("en-US")} changed pairs, on lines up to{" "}
             {WORD_MAX_LINE.toLocaleString("en-US")} characters, and stops early when the lines are numerous or
-            long enough to slow the page.
+            long enough to slow the page. Inside a change, deleted and inserted lines are matched up by
+            similarity for the first {ALIGN_TOTAL_CELLS.toLocaleString("en-US")} line pairs compared; after
+            that they are matched in order.
           </p>
         </ToolPanel>
 
@@ -692,6 +699,12 @@ export function TextDiff() {
                 <p className={`mt-3 ${WARN_CLASS}`} role="status">
                   Showing the first {RENDER_ROW_LIMIT.toLocaleString("en-US")} rows to keep the page responsive. The
                   copied and downloaded diff is complete.
+                </p>
+              ) : null}
+              {info?.inOrder ? (
+                <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
+                  Some changes were too large to match edited lines by similarity, so their lines are paired in
+                  order. The line diff itself is unaffected.
                 </p>
               ) : null}
               {info?.capped && words ? (

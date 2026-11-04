@@ -30,6 +30,7 @@ import {
   formatNines,
   parseAvailability,
   parseDuration,
+  stripPercent,
   subtractExact,
   toNumber,
   windowByKey,
@@ -161,7 +162,7 @@ function ChainDiagram({ tiers, results }: { tiers: Tier[]; results: ReturnType<t
                     key={c}
                     className="rounded-md border border-[hsl(var(--brand-iron)/0.8)] bg-[hsl(var(--brand-obsidian)/0.6)] px-2 py-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone-dim))]"
                   >
-                    {bad ? "?" : `${tier.availability.trim().replace(/\s*%$/, "")}%`}
+                    {bad ? "?" : `${stripPercent(tier.availability)}%`}
                   </div>
                 ))}
                 {r && r.copies > 1 ? (

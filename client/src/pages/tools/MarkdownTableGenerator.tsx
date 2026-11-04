@@ -14,6 +14,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import {
   FORMAT_LABELS,
   MAX_COLS,
+  MAX_IMPORT_CHARS,
   MAX_ROWS,
   addColumn,
   addRow,
@@ -178,7 +179,13 @@ export function MarkdownTableGenerator() {
   const markdown = useMemo(() => toMarkdown(table, padded), [table, padded]);
   const html = useMemo(() => toHtml(table, alignAs), [table, alignAs]);
   const warnings = useMemo(() => widthWarnings(table), [table]);
-  const effectiveFormat = format === "auto" ? (importText.trim() ? detectFormat(importText) : null) : format;
+  // Detection scans the whole paste, so it is memoized (cell edits re-render
+  // this page) and skipped for text over the import limit, which Load refuses.
+  const effectiveFormat = useMemo(() => {
+    if (format !== "auto") return format;
+    if (importText.length > MAX_IMPORT_CHARS || importText.trim() === "") return null;
+    return detectFormat(importText);
+  }, [format, importText]);
 
   const onCell = useCallback((row: number, col: number, value: string) => {
     setTable((current) => setCell(current, row, col, value));
@@ -322,7 +329,9 @@ export function MarkdownTableGenerator() {
         </ToolPanel>
 
         <ToolPanel title="Table">
-          <div className="overflow-x-auto pb-1">
+          {/* relative: the sr-only header below is absolutely positioned and would
+              otherwise escape this scroller and widen the whole page. */}
+          <div className="relative overflow-x-auto pb-1">
             <table className="w-max min-w-full border-separate border-spacing-0" data-testid="table-grid">
               <thead>
                 <tr>
@@ -412,7 +421,12 @@ export function MarkdownTableGenerator() {
             </button>
             <button
               type="button"
-              onClick={() => setTable((current) => emptyTable(current.header.length, current.rows.length))}
+              onClick={() =>
+                setTable((current) => ({
+                  ...emptyTable(current.header.length, current.rows.length),
+                  align: current.align,
+                }))
+              }
               data-testid="button-clear"
               className={CHIP_CLASS}
             >

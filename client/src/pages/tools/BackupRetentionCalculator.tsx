@@ -346,7 +346,7 @@ export function BackupRetentionCalculator() {
         "",
         ...results.map((r) =>
           r.available
-            ? `${schemeLabel(r.scheme, cadence).padEnd(32)} points ${range(r.policyMin, r.policyMax).padEnd(9)} on disk ${range(r.diskMin, r.diskMax).padEnd(9)} chain ${String(r.longestChain).padEnd(4)} stored ${stored(r.peakUnits)} per copy, ${stored(r.peakUnits * copyCount)} total`
+            ? `${schemeLabel(r.scheme, cadence).padEnd(32)} points ${range(r.policyMin, r.policyMax).padEnd(9)} on disk ${range(r.diskMin, r.diskMax).padEnd(9)} chain ${String(r.longestChain).padEnd(4)} needs ${stored(r.writePeakUnits)} per copy, ${stored(r.writePeakUnits * copyCount)} total`
             : `${schemeLabel(r.scheme, cadence).padEnd(32)} not applicable`,
         ),
       ].join("\n")
@@ -354,7 +354,7 @@ export function BackupRetentionCalculator() {
 
   const status = ready
     ? current && current.available
-      ? `${schemeLabel(current.scheme, cadence)}: ${range(current.diskMin, current.diskMax)} backups on disk, ${stored(current.peakUnits)} stored per copy at the peak.`
+      ? `${schemeLabel(current.scheme, cadence)}: ${range(current.diskMin, current.diskMax)} backups on disk, ${stored(current.writePeakUnits)} needed per copy at the peak.`
       : "This scheme does not apply to the current policy."
     : "Fix the highlighted field to see the storage estimate.";
 
@@ -418,7 +418,7 @@ export function BackupRetentionCalculator() {
                 parsed={change}
                 suffix="%"
                 testId="input-change-rate"
-                hint="Share of the data that changes each day. File servers often run 1 to 5 percent; databases with heavy index rebuilds run more."
+                hint="Share of the data that changes each day. Read it from existing backup job reports if you can; databases with index rebuilds change far more than file shares."
               />
             </div>
           </ToolPanel>
@@ -570,7 +570,7 @@ export function BackupRetentionCalculator() {
                         Longest chain
                       </th>
                       <th scope="col" className={TH_CLASS}>
-                        Stored per copy
+                        Needed per copy
                       </th>
                       <th scope="col" className={TH_CLASS}>
                         All copies
@@ -609,10 +609,10 @@ export function BackupRetentionCalculator() {
                             {r.longestChain}
                           </td>
                           <td className="py-3 pr-4 align-top font-mono-tight text-sm text-[hsl(var(--brand-signal))]">
-                            {stored(r.peakUnits)}
+                            {stored(r.writePeakUnits)}
                           </td>
                           <td className="py-3 align-top font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
-                            {stored(r.peakUnits * copyCount)}
+                            {stored(r.writePeakUnits * copyCount)}
                           </td>
                         </tr>
                       );
@@ -621,9 +621,10 @@ export function BackupRetentionCalculator() {
                 </table>
               </div>
               <p className={HINT_TEXT}>
-                Storage is the peak over {EVAL_DAYS} simulated days of steady state, after every tier has filled. On disk
-                counts the backups the policy keeps plus the older ones it cannot delete yet because a kept backup
-                depends on them.
+                Needed is the high-water mark over {EVAL_DAYS} simulated days of steady state, after every tier has
+                filled: the largest day's backups plus the next night's backup, which is written before retention
+                deletes anything. On disk counts the backups left after retention: the ones the policy keeps plus the
+                older ones it cannot delete yet because a kept backup depends on them.
               </p>
             </ToolPanel>
 
@@ -651,13 +652,18 @@ export function BackupRetentionCalculator() {
                     <ToolResult label="At the peak" value={countsText(current)} />
                     <ToolResult label="Longest restore chain" value={chainText(current)} testId="text-chain" />
                     <ToolResult label="Oldest restore point" value={ageText(current.oldestAge)} />
-                    <ToolResult label="Logical size at peak" value={logical(current.peakUnits)} />
+                    <ToolResult label="Logical size after retention, at the peak" value={logical(current.peakUnits)} />
                     <ToolResult label="Data reduction" value={`${reduction.toFixed(2)} : 1`} />
-                    <ToolResult label="Stored at peak, one copy" value={stored(current.peakUnits)} testId="text-stored" />
-                    <ToolResult label="Lowest point of the year" value={stored(current.minUnits)} />
+                    <ToolResult label="Stored after retention, at the peak" value={stored(current.peakUnits)} />
                     <ToolResult
-                      label={`Across ${copyCount} ${pluralise(copyCount, "copy", "copies")}`}
-                      value={stored(current.peakUnits * copyCount)}
+                      label="Needed while the next backup is written"
+                      value={stored(current.writePeakUnits)}
+                      testId="text-stored"
+                    />
+                    <ToolResult label="Lowest after retention" value={stored(current.minUnits)} />
+                    <ToolResult
+                      label={`Needed across ${copyCount} ${pluralise(copyCount, "copy", "copies")}`}
+                      value={stored(current.writePeakUnits * copyCount)}
                       testId="text-stored-total"
                     />
                   </div>
@@ -689,8 +695,8 @@ export function BackupRetentionCalculator() {
                   Three copies of the data, on two different kinds of storage, one of them offsite. Production is the
                   first copy, so the backups supply the other two.{" "}
                   {copyCount >= 2
-                    ? `The storage figures above are for ${copyCount} backup copies, which meets that.`
-                    : "The storage figures above are for one backup copy, which falls short: add a second on different storage."}
+                    ? `The storage figures above are for ${copyCount} backup copies, which meets the copy count. The other two conditions depend on where those copies are kept.`
+                    : "The storage figures above are for one backup copy, which falls short of the copy count: add a second on different storage."}
                 </p>
               </div>
               <div className="rounded-2xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.06)] p-5">
@@ -699,7 +705,7 @@ export function BackupRetentionCalculator() {
                 </div>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {lock.ok && lock.value > 0
-                    ? `With a ${lock.value}-day lock, an attacker holding the backup console's administrator credentials still cannot delete or overwrite the last ${lock.value} ${pluralise(lock.value, "day")} of backups. Every backup they depend on is held too, which is already counted above.`
+                    ? `With a ${lock.value}-day lock enforced by the storage, such as object lock in compliance mode or a hardened repository, the backup console's administrator credentials alone cannot delete or overwrite the last ${lock.value} ${pluralise(lock.value, "day")} of backups. Every backup they depend on is held too, which is already counted above.`
                     : "Ransomware operators often delete backups before they encrypt production. A copy that cannot be changed or deleted until a lock expires, such as object lock in compliance mode or a hardened repository, is what survives that."}
                 </p>
               </div>

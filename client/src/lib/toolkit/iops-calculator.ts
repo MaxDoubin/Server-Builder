@@ -98,7 +98,7 @@ export function diskCountProblem(id: RaidLevel, disks: number): string | null {
   const info = raidInfo(id);
   if (id === "raid1" && disks !== 2) {
     return disks > 2
-      ? "RAID 1 is a pair of disks. For four or more, choose RAID 10."
+      ? "RAID 1 here is a two-disk mirror with a write penalty of 2. For more disks, choose RAID 10 with an even count."
       : "RAID 1 needs exactly 2 disks.";
   }
   if (disks < info.minDisks) {
@@ -192,22 +192,36 @@ export type Parsed<T> =
 
 const DECIMAL = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
 
+/**
+ * Trim the ends and accept commas only as thousands separators between
+ * groups of three digits. Spaces inside the number are refused rather than
+ * closed up, so "1 0" is an error and not silently 10.
+ */
+function stripGrouping(text: string): { kind: "ok"; value: string } | { kind: "error"; message: string } {
+  const t = text.trim();
+  if (/\s/.test(t)) {
+    // Digits split by spaces get a message about the spaces; anything else,
+    // such as "5,000 IOPS", falls through to the plain-number message.
+    return /^[\d.,\s]+$/.test(t)
+      ? { kind: "error", message: "Leave out spaces inside the number." }
+      : { kind: "ok", value: t };
+  }
+  if (!t.includes(",")) return { kind: "ok", value: t };
+  if (!/^\d{1,3}(?:,\d{3})+(?:\.\d*)?$/.test(t)) {
+    return { kind: "error", message: "Use commas only between groups of three digits, and a period for decimals." };
+  }
+  return { kind: "ok", value: t.replace(/,/g, "") };
+}
+
 function parseDecimal(text: string, what: string, example: string): Parsed<number> {
   // Thousands separators are common when typing IOPS figures, so commas
   // between digit groups are accepted. A comma anywhere else is refused.
-  const t = text.trim().replace(/[\s_]/g, "");
+  const t = text.trim();
   if (t === "") return { kind: "empty", message: `Enter ${what}.` };
   if (t.length > 24) return { kind: "error", message: `That is too long to be ${what}.` };
-  let plain = t;
-  if (t.includes(",")) {
-    if (!/^\d{1,3}(?:,\d{3})+(?:\.\d*)?$/.test(t)) {
-      return {
-        kind: "error",
-        message: "Use commas only between groups of three digits, and a period for decimals.",
-      };
-    }
-    plain = t.replace(/,/g, "");
-  }
+  const grouped = stripGrouping(t);
+  if (grouped.kind === "error") return grouped;
+  const plain = grouped.value;
   if (!DECIMAL.test(plain)) return { kind: "error", message: `Type a plain number for ${what}, such as ${example}.` };
   const n = Number(plain);
   if (!Number.isFinite(n)) return { kind: "error", message: "That number could not be read." };
@@ -225,8 +239,12 @@ export function parseDiskIops(text: string): Parsed<number> {
 }
 
 export function parseDiskCount(text: string): Parsed<number> {
-  const t = text.trim().replace(/[\s_,]/g, "");
-  if (t === "") return { kind: "empty", message: "Enter the number of disks." };
+  const trimmed = text.trim();
+  if (trimmed === "") return { kind: "empty", message: "Enter the number of disks." };
+  if (trimmed.length > 24) return { kind: "error", message: `Enter at most ${MAX_DISKS.toLocaleString("en-US")} disks.` };
+  const grouped = stripGrouping(trimmed);
+  if (grouped.kind === "error") return grouped;
+  const t = grouped.value;
   if (!/^\d+$/.test(t)) return { kind: "error", message: "The number of disks must be a whole number." };
   if (t.length > 7 || Number(t) > MAX_DISKS) {
     return { kind: "error", message: `Enter at most ${MAX_DISKS.toLocaleString("en-US")} disks.` };
@@ -285,9 +303,17 @@ export function backendIops(front: number, readPct: number, penalty: number): nu
   return (front * costPer100(readPct, penalty)) / 100;
 }
 
-/** Ceiling that ignores the last few bits of floating point noise, so 20.000000000000004 is 20. */
+/**
+ * Ceiling that ignores the last few bits of floating point noise, so
+ * 20.000000000000004 is 20. Only a value within a few units in the last
+ * place of a whole number is snapped to it; anything further away is
+ * rounded up, however large it is.
+ */
 export function ceilSafe(x: number): number {
-  return Math.ceil(x - Math.max(1, Math.abs(x)) * 1e-12);
+  if (!Number.isFinite(x)) return x;
+  const nearest = Math.round(x);
+  if (Math.abs(x - nearest) <= Math.abs(x) * 8 * Number.EPSILON) return nearest;
+  return Math.ceil(x);
 }
 
 export interface Breakdown {

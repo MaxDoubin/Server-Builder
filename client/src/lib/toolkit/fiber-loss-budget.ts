@@ -105,7 +105,11 @@ export interface Transceiver {
    * power, which is the transmit minimum less the channel insertion loss.
    */
   rxSensDbm: number;
-  /** Dispersion and noise penalties reserved out of the gap, in dB. */
+  /**
+   * Dispersion and noise penalties reserved out of the gap, in dB. For the
+   * 1000BASE-X rows this is the standard's penalty allocation plus its
+   * unallocated margin, so that the budget equals the channel loss limit.
+   */
   penaltyDb: number;
   /** The standard's channel insertion loss limit, in dB. */
   channelLossDb: number;
@@ -139,7 +143,7 @@ export const TRANSCEIVERS: Transceiver[] = [
     channelLossNote: "550 m of 50 µm multimode",
     mmfReachM: { OM3: 550, OM4: 550, OM5: 550 },
     clause: "IEEE 802.3 Clause 38",
-    note: "Link power budget 7.5 dB, of which 3.94 dB is held back for modal noise and dispersion.",
+    note: "Link power budget 7.5 dB. At 550 m the standard allocates 3.57 dB to penalties such as modal noise and dispersion and leaves 0.37 dB unallocated, so planning against the 3.56 dB channel loss limit holds back 3.94 dB.",
   },
   {
     id: "1000base-lx",
@@ -154,7 +158,7 @@ export const TRANSCEIVERS: Transceiver[] = [
     channelLossNote: "5 km of single-mode",
     smfReachM: 5000,
     clause: "IEEE 802.3 Clause 38",
-    note: "Link power budget 8 dB. Many LX modules are sold as 10 km parts, which is the later 1000BASE-LX10.",
+    note: "Link power budget 8 dB. Planning against the 4.57 dB channel loss limit holds back 3.43 dB for penalties and unallocated margin. Many LX modules are sold as 10 km parts, which is the later 1000BASE-LX10.",
   },
   {
     id: "10gbase-sr",

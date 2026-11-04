@@ -264,6 +264,19 @@ export function isReservedIp(text: string): boolean {
   );
 }
 
+/**
+ * RFC 9525 6.3: a wildcard that is the whole leftmost label matches exactly
+ * one non-empty label in that position, compared without regard to case.
+ */
+export function wildcardCovers(wildcard: string, host: string): boolean {
+  if (wildcardVerdict(wildcard) !== "ok") return false;
+  const suffix = wildcard.slice(1).replace(/\.$/, "").toLowerCase();
+  const h = host.replace(/\.$/, "").toLowerCase();
+  if (!h.endsWith(suffix)) return false;
+  const label = h.slice(0, h.length - suffix.length);
+  return label.length > 0 && !label.includes(".") && !label.includes("*");
+}
+
 export type WildcardVerdict = "none" | "ok" | "partial" | "not-leftmost" | "multiple" | "too-broad";
 
 /** Classifies wildcard use against the Baseline Requirements' Wildcard Domain Name and RFC 9525 6.3. */
@@ -323,9 +336,11 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
   }
   for (const cn of cns) {
     const shownCn = visible(cn).text;
-    if (cn.length > 64) out.push({ tone: "danger", text: `The common name is ${cn.length} characters. X.520 caps it at 64 (ub-common-name in RFC 5280), so CAs reject it. Leave the long name in the SAN only.` });
+    // ub-common-name counts characters, not UTF-16 code units.
+    const cnChars = Array.from(cn).length;
+    if (cnChars > 64) out.push({ tone: "danger", text: `The common name is ${cnChars} characters. X.520 caps it at 64 (ub-common-name in RFC 5280), so CAs reject it. Leave the long name in the SAN only.` });
     if (sans.length > 0 && !sanValues.includes(cn.toLowerCase())) {
-      const covering = dnsSans.find((n) => wildcardVerdict(n.raw) === "ok" && cn.toLowerCase().endsWith(n.raw.slice(1).toLowerCase()) && !cn.slice(0, cn.length - n.raw.length + 1).includes("."));
+      const covering = dnsSans.find((n) => wildcardVerdict(n.raw) === "ok" && wildcardCovers(n.raw, cn));
       out.push({
         tone: "warn",
         text: covering
@@ -357,7 +372,12 @@ export function reviewCsr(csr: CsrInfo): Finding[] {
     }
     if (/_/.test(host)) out.push({ tone: "danger", text: `${shown} contains an underscore, which is not allowed in a host name and has been banned from publicly trusted certificates since 2019.` });
     if (/[^\x21-\x7e]/.test(host)) out.push({ tone: "danger", text: `${shown} contains characters outside printable ASCII. An internationalized name must be written in its xn-- (A-label) form.` });
-    if (verdict === "none" || verdict === "ok") {
+    if (verdict === "none" && parseIpv4(host)) {
+      // An address written in the CN. A SAN copy of it is judged below.
+      if (isReservedIp(host) && !ipSans.some((n) => n.raw === host)) {
+        out.push({ tone: "info", text: `${host} is a private or reserved address. A public CA cannot certify it; a private CA can.` });
+      }
+    } else if (verdict === "none" || verdict === "ok") {
       const bare = host.replace(/^\*\./, "");
       if (isInternalName(bare)) out.push({ tone: "info", text: `${shown} is not a public domain name. Public CAs stopped certifying internal names in 2015, so this needs a private CA.` });
     }
@@ -570,7 +590,9 @@ export function buildTemplate(input: TemplateInput): TemplateOutput {
     ...(entries.length ? ["", "[req_ext]", "subjectAltName = @alt_names", "", "[alt_names]", ...altLines] : []),
     "",
   ].join("\n");
-  const configCommand = `openssl req -new -newkey ${key.newkey} -nodes -keyout ${shellQuote(`${stem}.key`)} -out ${shellQuote(`${stem}.csr`)} -config csr.cnf`;
+  // OpenSSL refuses an empty [dn] section ("No objects specified in config
+  // file"), so an empty subject is given on the command line instead.
+  const configCommand = `openssl req -new -newkey ${key.newkey} -nodes -keyout ${shellQuote(`${stem}.key`)} -out ${shellQuote(`${stem}.csr`)} -config csr.cnf${dnLines.length === 0 ? " -subj '/'" : ""}`;
   const inspect = `openssl req -in ${shellQuote(`${stem}.csr`)} -noout -text -verify`;
   return { errors, warnings, sans: entries, oneLiner: lines.join("\n"), config, configCommand, inspect };
 }
@@ -584,6 +606,7 @@ export function templateFromCsr(csr: CsrInfo): Omit<TemplateInput, "key"> & { ke
   const k = csr.publicKey;
   let key: KeyOptionId = "p256";
   if (k.keyType === "RSA" || k.keyType === "RSA-PSS") key = (k.bits ?? 0) >= 4096 ? "rsa4096" : (k.bits ?? 0) >= 3072 ? "rsa3072" : "rsa2048";
-  else if (k.keyType === "EC" && k.curve?.webCrypto === "P-384") key = "p384";
+  // P-521 maps to P-384, the largest curve the generator offers.
+  else if (k.keyType === "EC" && (k.curve?.webCrypto === "P-384" || k.curve?.webCrypto === "P-521")) key = "p384";
   return { commonName: first("2.5.4.3"), organization: first("2.5.4.10"), country: first("2.5.4.6"), sans: sans.join("\n"), key };
 }

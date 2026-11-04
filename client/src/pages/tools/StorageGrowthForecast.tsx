@@ -19,6 +19,7 @@ import {
   annualRate,
   autoHorizon,
   capacityAt,
+  compoundRateProblem,
   crossings,
   dateAtMonths,
   doublingMonths,
@@ -84,6 +85,8 @@ function fmtNum(n: number): string {
 }
 
 function fmtMonths(t: number): string {
+  // One decimal would print a crossing a day away as "0.0 months".
+  if (t > 0 && t < 0.05) return "less than 0.1 months";
   return `${t.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${
     t === 1 ? "month" : "months"
   }`;
@@ -98,6 +101,20 @@ function fmtPct(ratio: number, digits = 1): string {
     return `${Math.abs(p) < 1e-6 ? p.toExponential(1) : String(Number(p.toPrecision(2)))}%`;
   }
   return `${p.toLocaleString("en-US", { maximumFractionDigits: digits })}%`;
+}
+
+/**
+ * Share of capacity in use. Truncated to one decimal rather than rounded, so
+ * 89.99% never prints as 90% beside a 90% threshold it has not reached, and
+ * 59.99 of 60 never prints as 100%. The small epsilon keeps 0.29 * 100
+ * (28.999...) reading as 29%, the same answer levelReached gives.
+ */
+function fmtUsedPct(ratio: number): string {
+  if (!Number.isFinite(ratio) || ratio * 100 >= 1e6) return "over 1,000,000%";
+  const p = ratio * 100;
+  if (p > 0 && p < 0.1) return fmtPct(ratio, 1);
+  const t = Math.floor(p * 10 + 1e-7) / 10;
+  return `${t.toLocaleString("en-US", { maximumFractionDigits: 1 })}%`;
 }
 
 /** "doubling every 23.4 months", capped so a tiny rate does not print a 20 digit number. */
@@ -309,7 +326,9 @@ export function StorageGrowthForecast() {
             );
           }
           if (twoPointModel === "compound" && e.rate !== null) {
-            growth = { model: "compound", perMonth: 0, rate: e.rate };
+            const problem = compoundRateProblem(e.rate);
+            if (problem) errors.earlierUsed = `These readings imply ${fmtPct(e.rate, 2)} a month compounded. ${problem}`;
+            else growth = { model: "compound", perMonth: 0, rate: e.rate };
           } else {
             if (twoPointModel === "compound") {
               notes.push("A percentage rate needs both readings above zero, so this projects the linear rate instead.");
@@ -485,7 +504,7 @@ export function StorageGrowthForecast() {
 
   const fullCrossing = forecast?.list[forecast.list.length - 1];
   const summary = forecast
-    ? `${fmtNum(forecast.used)} of ${fmtNum(forecast.total)} ${unit} used, ${fmtPct(forecast.used / forecast.total)}. ` +
+    ? `${fmtNum(forecast.used)} of ${fmtNum(forecast.total)} ${unit} used, ${fmtUsedPct(forecast.used / forecast.total)}. ` +
       forecast.list
         .map((c) => {
           const t = c.withExpansion ? c.withExpansion.first : c.base;
@@ -705,7 +724,7 @@ export function StorageGrowthForecast() {
                 error={errors.expandMonth}
                 hint={
                   parsed.asOf && !errors.expandMonth && /^\d+$/.test(expandMonthRaw.trim())
-                    ? `Month ${expandMonthRaw.trim()} is ${formatDate(addMonths(parsed.asOf, Number(expandMonthRaw.trim())))}. 0 means now.`
+                    ? `Month ${Number(expandMonthRaw.trim())} is ${formatDate(addMonths(parsed.asOf, Number(expandMonthRaw.trim())))}. 0 means now.`
                     : "Counted from the as-of date. 0 means now."
                 }
                 inputMode="numeric"
@@ -729,7 +748,7 @@ export function StorageGrowthForecast() {
             <ToolPanel title="Forecast">
               <ToolResult
                 label="In use now"
-                value={`${fmtNum(forecast.used)} of ${fmtNum(forecast.total)} ${unit} · ${fmtPct(forecast.used / forecast.total)}`}
+                value={`${fmtNum(forecast.used)} of ${fmtNum(forecast.total)} ${unit} · ${fmtUsedPct(forecast.used / forecast.total)}`}
                 testId="text-storage-utilization"
               />
               <ToolResult label="Growth" value={growthLine} testId="text-storage-growth" />
@@ -793,9 +812,11 @@ export function StorageGrowthForecast() {
               </div>
               {forecast.expansion && fullCrossing?.withExpansion?.beforeExpansion && fullCrossing.base !== 0 ? (
                 <p className={`${WARN_NOTE} mt-4`}>
-                  The volume fills before the new capacity arrives. Either bring the expansion forward to month{" "}
-                  {Math.max(0, Math.floor(fullCrossing.base as number))} or earlier, or plan for writes failing in
-                  between.
+                  {`The volume fills before the new capacity arrives. Either bring the expansion forward to ${
+                    Math.floor(fullCrossing.base as number) <= 0
+                      ? "month 0, now"
+                      : `month ${Math.floor(fullCrossing.base as number)} or earlier`
+                  }, or plan for writes failing in between.`}
                 </p>
               ) : null}
             </ToolPanel>
@@ -990,7 +1011,7 @@ export function StorageGrowthForecast() {
                           <td className={TD_CLASS}>
                             {fmtNum(r.capacity)} {unit}
                           </td>
-                          <td className={TD_CLASS}>{fmtPct(r.ratio)}</td>
+                          <td className={TD_CLASS}>{fmtUsedPct(r.ratio)}</td>
                           <td className={`whitespace-nowrap py-2 pr-4 font-mono-tight text-xs ${state.tone}`}>
                             {state.text}
                           </td>

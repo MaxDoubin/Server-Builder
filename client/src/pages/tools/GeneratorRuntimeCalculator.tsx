@@ -14,12 +14,11 @@ import {
   FUELS,
   LITERS_PER_GALLON,
   LOAD_POINTS,
-  MAX_TANK,
-  MAX_TARGET_HOURS,
   WET_STACKING_FRACTION,
   computeRuntime,
   convertVolume,
   draftNumber,
+  draftNumberSig,
   formatHours,
   formatQuantity,
   fuelById,
@@ -28,6 +27,9 @@ import {
   parseLoad,
   parseNumber,
   parseRating,
+  parseTank,
+  parseTargetHours,
+  parseUsablePercent,
   propaneVapor,
   tankForRuntime,
   typicalCurve,
@@ -163,10 +165,21 @@ function ChipGroup<K extends string>({
   );
 }
 
-/** Re-expresses a typed number in the other unit system, leaving unparsable text alone. */
+/**
+ * What the reader typed, and the unit system it was typed in. The text on
+ * screen is derived from this, so switching units and back returns exactly
+ * the typed text instead of a value rounded twice.
+ */
+interface Entry<T> {
+  value: T;
+  system: UnitSystem;
+}
+
+/** Re-expresses a typed number in another unit system, leaving unparsable text alone. */
 function convertDraft(text: string, convert: (n: number) => number): string {
   const n = parseNumber(text, "value");
-  return n.ok ? draftNumber(convert(n.value)) : text;
+  // Six figures, so the converted figure is within a part per million of the typed one.
+  return n.ok ? draftNumberSig(convert(n.value), 6) : text;
 }
 
 export function GeneratorRuntimeCalculator() {
@@ -175,8 +188,8 @@ export function GeneratorRuntimeCalculator() {
   const [loadText, setLoadText] = useState("60");
   const [fuelId, setFuelId] = useState<FuelId>("diesel");
   const [system, setSystem] = useState<UnitSystem>("us");
-  const [customCurve, setCustomCurve] = useState<string[] | null>(null);
-  const [tankText, setTankText] = useState("500");
+  const [customCurve, setCustomCurve] = useState<Entry<string[]> | null>(null);
+  const [tankEntry, setTankEntry] = useState<Entry<string>>({ value: "500", system: "us" });
   const [usableText, setUsableText] = useState(String(fuelById("diesel").usableDefault ?? 100));
   const [targetText, setTargetText] = useState("48");
 
@@ -192,31 +205,26 @@ export function GeneratorRuntimeCalculator() {
     () => (ratingKw !== null ? typicalCurve(fuel, ratingKw, system) : null),
     [fuel, ratingKw, system],
   );
-  const curveDrafts = useMemo(
-    () => customCurve ?? (typical ? typical.map(draftNumber) : ["", "", "", ""]),
-    [customCurve, typical],
-  );
+  const curveDrafts = useMemo(() => {
+    if (customCurve) {
+      if (customCurve.system === system) return customCurve.value;
+      const from = customCurve.system;
+      return customCurve.value.map((t) => convertDraft(t, (n) => convertVolume(n, fuel, from, system)));
+    }
+    return typical ? typical.map((v) => draftNumber(v)) : ["", "", "", ""];
+  }, [customCurve, typical, system, fuel]);
   const curve = useMemo(() => parseCurve(curveDrafts, unit), [curveDrafts, unit]);
 
-  const tank = useMemo(
-    () =>
-      parseNumber(tankText, "the tank size", { min: 0, minExclusive: true, max: MAX_TANK, unit: ` ${unit}` }),
-    [tankText, unit],
-  );
-  const usable = useMemo(
-    () => parseNumber(usableText, "the usable share", { min: 0, minExclusive: true, max: 100, unit: " percent" }),
-    [usableText],
-  );
-  const target = useMemo(
-    () =>
-      parseNumber(targetText, "the target runtime", {
-        min: 0,
-        minExclusive: true,
-        max: MAX_TARGET_HOURS,
-        unit: " hours",
-      }),
-    [targetText],
-  );
+  // Only liquid fuels have a tank, so the tank converts as a liquid even while
+  // natural gas is selected and the field is hidden.
+  const tankText = useMemo(() => {
+    if (tankEntry.system === system) return tankEntry.value;
+    const toMetric = system === "metric";
+    return convertDraft(tankEntry.value, (n) => (toMetric ? n * LITERS_PER_GALLON : n / LITERS_PER_GALLON));
+  }, [tankEntry, system]);
+  const tank = useMemo(() => parseTank(tankText, unit), [tankText, unit]);
+  const usable = useMemo(() => parseUsablePercent(usableText), [usableText]);
+  const target = useMemo(() => parseTargetHours(targetText), [targetText]);
 
   const tankReady = !hasTank || (tank.ok && usable.ok);
   const result = useMemo(() => {
@@ -242,18 +250,9 @@ export function GeneratorRuntimeCalculator() {
     if (nextFuel.usableDefault !== null) setUsableText(String(nextFuel.usableDefault));
   }
 
-  function chooseSystem(next: UnitSystem) {
-    if (next === system) return;
-    const convert = (n: number) => convertVolume(n, fuel, system, next);
-    if (customCurve) setCustomCurve(customCurve.map((t) => convertDraft(t, convert)));
-    // Only liquid fuels have a tank, so the tank converts as a liquid even
-    // while natural gas is selected and the field is hidden.
-    setTankText((t) => convertDraft(t, (n) => (next === "metric" ? n * LITERS_PER_GALLON : n / LITERS_PER_GALLON)));
-    setSystem(next);
-  }
-
   function editCurve(index: number, value: string) {
-    setCustomCurve((prev) => (prev ?? curveDrafts).map((v, i) => (i === index ? value : v)));
+    // The other three figures keep what is on screen now, in the current units.
+    setCustomCurve({ value: curveDrafts.map((v, i) => (i === index ? value : v)), system });
   }
 
   const vaporUnit = system === "us" ? "ft³" : "m³";
@@ -358,7 +357,7 @@ export function GeneratorRuntimeCalculator() {
                       { key: "metric" as UnitSystem, label: fuel.state === "liquid" ? "Liters" : "Cubic meters" },
                     ]}
                     value={system}
-                    onChange={chooseSystem}
+                    onChange={setSystem}
                     testPrefix="button-units"
                   />
                 </div>
@@ -373,7 +372,7 @@ export function GeneratorRuntimeCalculator() {
                   id="gen-tank"
                   label="Tank size, nominal"
                   value={tankText}
-                  onChange={setTankText}
+                  onChange={(value) => setTankEntry({ value, system })}
                   error={errorOf(tank)}
                   suffix={unit}
                   testId="input-tank"

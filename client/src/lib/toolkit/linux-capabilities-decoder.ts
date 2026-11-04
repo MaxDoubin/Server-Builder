@@ -608,7 +608,7 @@ export function parseCapText(text: string): TextResult {
     if (listText === "" || listText.toLowerCase() === "all") {
       caps = ALL_KNOWN_MASK;
     } else {
-      const list = parseNameList(listText.replace(/,+$/, ""));
+      const list = parseNameList(listText);
       if (!list.ok) return list;
       caps = list.mask;
     }
@@ -689,13 +689,14 @@ function fromFlagSets(flags: FlagSets): DecodedSet[] {
   ];
 }
 
-const PROC_LINE = /^\s*(CapInh|CapPrm|CapEff|CapBnd|CapAmb)\s*:\s*(.*?)\s*$/i;
-const CAPSH_CURRENT = /^\s*Current\s*:\s*(.*?)\s*$/;
-const CAPSH_BOUNDING = /^\s*Bounding set\s*=\s*(.*?)\s*$/;
-const CAPSH_AMBIENT = /^\s*Ambient set\s*=\s*(.*?)\s*$/;
+// Values are captured greedily and trimmed in code: a lazy (.*?)\s*$ backtracks quadratically on a long run of spaces.
+const PROC_LINE = /^\s*(CapInh|CapPrm|CapEff|CapBnd|CapAmb)\s*:(.*)$/i;
+const CAPSH_CURRENT = /^\s*Current\s*:(.*)$/;
+const CAPSH_BOUNDING = /^\s*Bounding set\s*=(.*)$/;
+const CAPSH_AMBIENT = /^\s*Ambient set\s*=(.*)$/;
 const CAPSH_IAB = /^\s*Current IAB\s*:/;
-const GETPCAPS_LONG = /^\s*Capabilities for\s+[`'"]*(\d+)[`'"]*\s*:\s*(.*?)\s*$/;
-const GETPCAPS_SHORT = /^\s*(\d+)\s*:\s+(\S.*?)\s*$/;
+const GETPCAPS_LONG = /^\s*Capabilities for\s+[`'"]*(\d+)[`'"]*\s*:(.*)$/;
+const GETPCAPS_SHORT = /^\s*(\d+)\s*:\s+(\S.*)$/;
 
 export function parseInput(raw: string): ParseOutcome {
   const text = raw.replace(/\r\n?/g, "\n");
@@ -727,8 +728,8 @@ export function parseInput(raw: string): ParseOutcome {
   if (procSets.size > 0) {
     const process: ProcessInfo = {};
     for (const line of lines) {
-      let m = /^\s*Name\s*:\s*(\S.*?)\s*$/.exec(line);
-      if (m && process.name === undefined) process.name = m[1];
+      let m = /^\s*Name\s*:\s*(\S.*)$/.exec(line);
+      if (m && process.name === undefined) process.name = m[1].trim();
       m = /^\s*Pid\s*:\s*(\d+)\s*$/.exec(line);
       if (m && process.pid === undefined) process.pid = Number(m[1]);
       m = /^\s*NoNewPrivs\s*:\s*([01])\s*$/.exec(line);
@@ -790,7 +791,7 @@ export function parseInput(raw: string): ParseOutcome {
   const pcaps: { pid: number; text: string }[] = [];
   for (const line of lines) {
     const m = GETPCAPS_LONG.exec(line) ?? GETPCAPS_SHORT.exec(line);
-    if (m) pcaps.push({ pid: Number(m[1]), text: m[2] });
+    if (m) pcaps.push({ pid: Number(m[1]), text: m[2].trim() });
   }
   if (pcaps.length > 0) {
     const first = pcaps[0];

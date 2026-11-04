@@ -43,6 +43,10 @@ export const MAX_RATING_KW = 20_000;
 export const MAX_TANK = 10_000_000;
 export const MAX_TARGET_HOURS = 10_000;
 export const MAX_CURVE_VALUE = 10_000_000;
+/** Below this a fuel rate is not a real engine, and a runtime computed from it overflows a clock. */
+export const MIN_CURVE_VALUE = 1e-6;
+/** Smallest usable share of a tank, in percent. */
+export const MIN_USABLE_PERCENT = 1;
 
 export interface Fuel {
   id: FuelId;
@@ -225,6 +229,30 @@ export function parseLoad(text: string, mode: LoadMode, ratingKw: number | null)
   return { ok: true, value: n.value / ratingKw };
 }
 
+/** Nominal tank volume in display units. */
+export function parseTank(text: string, unitLabel: string): Parsed<number> {
+  return parseNumber(text, "the tank size", {
+    min: 0,
+    minExclusive: true,
+    max: MAX_TANK,
+    unit: ` ${unitLabel}`,
+  });
+}
+
+/** The share of a tank that can be drawn, in percent. */
+export function parseUsablePercent(text: string): Parsed<number> {
+  return parseNumber(text, "the usable share", { min: MIN_USABLE_PERCENT, max: 100, unit: " percent" });
+}
+
+export function parseTargetHours(text: string): Parsed<number> {
+  return parseNumber(text, "the target runtime", {
+    min: 0,
+    minExclusive: true,
+    max: MAX_TARGET_HOURS,
+    unit: " hours",
+  });
+}
+
 /** Four positive consumption figures, with a warning when they do not rise with load. */
 export function parseCurve(texts: string[], unitLabel: string): Parsed<{ values: number[]; warning: string | null }> {
   const values: number[] = [];
@@ -237,6 +265,12 @@ export function parseCurve(texts: string[], unitLabel: string): Parsed<{ values:
       unit: ` ${unitLabel}/h`,
     });
     if (!n.ok) return n;
+    if (n.value < MIN_CURVE_VALUE) {
+      return {
+        ok: false,
+        error: `The fuel use at ${pct} percent load is too small to be real. Enter it in ${unitLabel} per hour, as the data sheet gives it.`,
+      };
+    }
     values.push(n.value);
   }
   let warning: string | null = null;
@@ -350,12 +384,21 @@ export function formatQuantity(value: number): string {
   return value.toLocaleString("en-US", { maximumSignificantDigits: 3 });
 }
 
-/** The plain text a curve input starts with: three figures, no grouping. */
-export function draftNumber(value: number): string {
+/** The plain text an input holds, rounded to the given significant figures, with no grouping. */
+export function draftNumberSig(value: number, digits: number): string {
   if (!Number.isFinite(value)) return "";
-  const rounded = roundSignificant(value);
+  const rounded = roundSignificant(value, Math.min(21, Math.max(1, Math.trunc(digits))));
   const text = String(rounded);
   return /e/i.test(text) ? rounded.toFixed(8).replace(/\.?0+$/, "") : text;
+}
+
+/**
+ * The plain text a curve input starts with: three figures, no grouping.
+ * Deliberately one parameter, so typical.map(draftNumber) cannot pass an
+ * array index in as the precision.
+ */
+export function draftNumber(value: number): string {
+  return draftNumberSig(value, 3);
 }
 
 /** Hours as "53.5 h", and a days, hours, minutes reading when it is a day or more. */

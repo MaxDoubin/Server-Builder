@@ -50,9 +50,10 @@ import {
   deviceZone,
   formatOffset,
   instantOf,
+  wallAt,
   zoneName,
   zoneRangeMessage,
-  type WallKind,
+  type Instant,
 } from "@/lib/toolkit/timezone-converter";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
@@ -114,14 +115,13 @@ function weeksAndDays(totalDays: number): string {
   return `${plural(weeks, "week")}, ${plural(days, "day")}`;
 }
 
-function kindNote(kind: WallKind, label: string, zone: string): string | null {
-  if (kind === "gap") {
-    return `${label} falls in an hour that is skipped when clocks jump forward in ${zone}. It is read as the instant just after the jump.`;
+function kindNote(instant: Instant, label: string, zone: string): string | null {
+  if (instant.kind === "normal") return null;
+  const reads = formatCivil(wallAt(zone, instant.epoch));
+  if (instant.kind === "gap") {
+    return `${label} falls in local time that is skipped when clocks jump forward in ${zone}. It is read with the offset from before the jump, which moves it forward by the length of the gap to ${reads} at ${formatOffset(instant.offset)}.`;
   }
-  if (kind === "ambiguous") {
-    return `${label} falls in an hour that happens twice when clocks fall back in ${zone}. It is read as the first of the two.`;
-  }
-  return null;
+  return `${label} falls in local time that happens twice when clocks fall back in ${zone}. It is read as the first of the two, ${reads} at ${formatOffset(instant.offset)}.`;
 }
 
 interface FactRow {
@@ -226,20 +226,33 @@ export function DateCalculator() {
 
   /* ---------------------------------------------------------------- facts */
 
+  // Each date gets its own row as soon as it is valid, even while the other field is blank.
+  const startUnix = useMemo(
+    () => (startField.civil ? instantOf(zone, startField.civil).epoch : null),
+    [startField.civil, zone],
+  );
+  const endUnix = useMemo(() => (endField.civil ? instantOf(zone, endField.civil).epoch : null), [endField.civil, zone]);
+
   const facts: FactRow[] = [];
-  if (diff) {
-    facts.push(factRow("Start", diff.a, diff.first.epoch));
-    facts.push(factRow("End", diff.b, diff.second.epoch));
-  }
+  if (startField.civil && startUnix !== null) facts.push(factRow("Start", startField.civil, startUnix));
+  if (endField.civil && endUnix !== null) facts.push(factRow("End", endField.civil, endUnix));
   if (addedWall) facts.push(factRow("Result", addedWall.wall, addedWall.epoch));
 
-  const explainKey = explain === "result" && !addedWall ? "start" : explain;
-  const explainTarget =
-    (explainKey === "result" ? addedWall?.wall : explainKey === "end" ? diff?.b : diff?.a) ??
-    diff?.a ??
-    diff?.b ??
-    addedWall?.wall ??
-    null;
+  const explainTargets: Record<"start" | "end" | "result", Civil | null> = {
+    start: startField.civil,
+    end: endField.civil,
+    result: addedWall ? addedWall.wall : null,
+  };
+  const explainKey: "start" | "end" | "result" = explainTargets[explain]
+    ? explain
+    : explainTargets.start
+      ? "start"
+      : explainTargets.end
+        ? "end"
+        : explainTargets.result
+          ? "result"
+          : explain;
+  const explainTarget = explainTargets[explainKey];
   const explainInfo = explainTarget ? isoWeek(explainTarget.year, explainTarget.month, explainTarget.day) : null;
 
   /* ---------------------------------------------------------------- copy */
@@ -267,8 +280,8 @@ export function DateCalculator() {
     setAmounts({ ...EMPTY_AMOUNTS, ...example.amounts });
   }
 
-  const startKind = diff ? kindNote(diff.first.kind, "Start", zone) : null;
-  const endKind = diff ? kindNote(diff.second.kind, "End", zone) : null;
+  const startKind = diff ? kindNote(diff.first, "Start", zone) : null;
+  const endKind = diff ? kindNote(diff.second, "End", zone) : null;
   const dstDiffers = diff !== null && diff.elapsed !== diff.clockSeconds;
 
   return (
@@ -411,15 +424,22 @@ export function DateCalculator() {
                   <ToolResult label="Months" value={seconds(diff.calendar.months)} />
                   <ToolResult label="Days" value={seconds(diff.calendar.days)} />
                   <ToolResult
-                    label="Time of day"
+                    label="Remaining hh:mm:ss"
                     value={`${String(diff.calendar.hours).padStart(2, "0")}:${String(diff.calendar.minutes).padStart(2, "0")}:${String(diff.calendar.seconds).padStart(2, "0")}`}
                   />
                   <ToolResult label="Whole months in total" value={seconds(diff.calendar.totalMonths)} />
+                  <ToolResult
+                    label="Whole days in total"
+                    value={seconds(Math.floor(diff.clockSeconds / 86400))}
+                    testId="text-calendar-days"
+                  />
+                  <ToolResult label="As weeks and days" value={weeksAndDays(Math.floor(diff.clockSeconds / 86400))} />
                 </div>
                 <p className={HINT_CLASS}>
                   Whole months are added to the earlier date first, clamping to the end of a short month, until the next
                   one would pass the later date. Whatever is left is days and time. Jan 31 to Mar 1 is 1 month and 1 day
-                  because Jan 31 plus one month is Feb 28.
+                  because Jan 31 plus one month is Feb 28. Day and week totals here count calendar days between the two
+                  clock readings.
                 </p>
               </ToolPanel>
 
@@ -492,8 +512,8 @@ export function DateCalculator() {
                       data-testid="list-holiday-problems"
                       className="mt-2 space-y-1 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]"
                     >
-                      {holidays.problems.map((problem) => (
-                        <li key={problem} className="break-words">
+                      {holidays.problems.map((problem, index) => (
+                        <li key={index} className="break-words">
                           Skipped: {problem}.
                         </li>
                       ))}
@@ -658,7 +678,7 @@ export function DateCalculator() {
                 {addedWall.kind !== "normal" && baseField.civil ? (
                   <p className={NOTE_CLASS}>
                     {addedWall.kind === "gap"
-                      ? `The calendar step landed on a time that is skipped in ${zone}, so it moved forward past the clock change.`
+                      ? `The calendar step landed on a time that is skipped in ${zone}, so it moved forward by the length of the skipped stretch.`
                       : `The calendar step landed on a time that happens twice in ${zone}. The first of the two was used.`}
                   </p>
                 ) : null}
@@ -762,9 +782,13 @@ export function DateCalculator() {
                     data-testid="select-explain"
                     className={SELECT_CLASS}
                   >
-                    <option value="start">Start date</option>
-                    <option value="end">End date</option>
-                    <option value="result" disabled={!addedWall}>
+                    <option value="start" disabled={!explainTargets.start}>
+                      Start date
+                    </option>
+                    <option value="end" disabled={!explainTargets.end}>
+                      End date
+                    </option>
+                    <option value="result" disabled={!explainTargets.result}>
                       Add or subtract result
                     </option>
                   </select>

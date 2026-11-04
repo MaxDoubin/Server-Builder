@@ -16,6 +16,7 @@ import {
   DEFAULT_STYLE,
   MAX_CHANGES_LISTED,
   MAX_INPUT_CHARS,
+  MAX_URL_CHARS,
   defangIndicator,
   firstDifferentLine,
   refangAll,
@@ -202,7 +203,8 @@ export function DefangRefang() {
               <p id="defang-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {text.length.toLocaleString("en-US")} of {MAX_INPUT_CHARS.toLocaleString("en-US")} characters. Refang reads
                 hxxp, hxxps, fxp, [.], (.), {"{.}"}, [dot], \., [@], [at], [:], [://] and [/] in any letter case. A name
-                written with non-ASCII letters is left as written, so convert it to its xn-- form first.
+                written with non-ASCII letters is left as written, so convert it to its xn-- form first. A URL longer than{" "}
+                {MAX_URL_CHARS.toLocaleString("en-US")} characters is not read as a URL; only its host is converted.
               </p>
             )}
             <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -257,7 +259,7 @@ export function DefangRefang() {
                 {scope === "strict"
                   ? "Only text that parses as a URL, an email address, an IP, or a name ending in a delegated TLD is touched. Sentences, version numbers and file names are left alone."
                   : direction === "defang"
-                    ? "Every dot between two letters or digits, every @ inside a word and every scheme is rewritten as well, which catches internal names like db01.corp and also rewrites report.pdf and 2.1."
+                    ? "Every dot between two letters or digits, every @ inside a word, and every http, https and ftp scheme is rewritten as well, which catches internal names like db01.corp and also rewrites report.pdf and 2.1."
                     : "Every defang token anywhere is reversed, including ones that are not part of an indicator, such as (.) in a regex."}
               </p>
 
@@ -296,6 +298,12 @@ export function DefangRefang() {
                         { id: "last", label: "Last dot only" },
                       ]}
                     />
+                  ) : null}
+                  {scope === "strict" && style.dotScope === "last" ? (
+                    <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="text-last-dot-note">
+                      The other dots stay live, so a shorter name can survive: www.example.co[.]uk still contains the
+                      registrable name example.co. Every dot is the safer choice.
+                    </p>
                   ) : null}
                   <Pills
                     label="URL separator"

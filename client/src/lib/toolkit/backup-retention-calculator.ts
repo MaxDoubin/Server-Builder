@@ -17,6 +17,12 @@
  *   - Weekly fulls run every Sunday; monthly fulls on the first Sunday of
  *     the month, so every monthly and yearly point is a full.
  *
+ * Retention is assumed to run after each night's backup is written, which
+ * is the usual order, so the repository's high-water mark is the previous
+ * day's set plus the new backup. That figure is reported separately from
+ * the peak after retention because a policy of N daily fulls needs room for
+ * N + 1 of them.
+ *
  * Size model, in units of one full backup before compression:
  *   - full: 1
  *   - incremental: the daily change fraction c
@@ -89,8 +95,13 @@ export interface SchemeOk {
   policyMax: number;
   diskMin: number;
   diskMax: number;
-  /** Logical size on disk at the peak, in units of one full backup. */
+  /** Logical size on disk at the peak, after retention has run, in units of one full backup. */
   peakUnits: number;
+  /**
+   * High-water mark: the largest previous-day set plus the new backup,
+   * the space needed while tonight's backup exists and retention has not run.
+   */
+  writePeakUnits: number;
   minUnits: number;
   peakWeekday: string;
   peakCounts: Record<PointKind, number>;
@@ -386,7 +397,7 @@ function forever(input: ModelInput): SchemeResult {
       scheme: "forever",
       available: false,
       reason:
-        "Rolling the oldest increment into the full rewrites the full, which a locked file does not allow. Immutable repositories need periodic fulls.",
+        "Rolling the oldest increment into the full rewrites the full, which a locked file does not allow, so file-based immutable repositories need periodic fulls. Object storage products that lock and reuse individual blocks work differently and are not modeled here.",
     };
   }
   const n = input.policy.days;
@@ -413,6 +424,8 @@ function forever(input: ModelInput): SchemeResult {
     diskMin: n,
     diskMax: n,
     peakUnits: units,
+    // The new incremental is written before the oldest one is merged into the full.
+    writePeakUnits: units + c,
     minUnits: units,
     peakWeekday: "any day",
     peakCounts: { F: 1, I: n - 1, D: 0 },
@@ -444,6 +457,8 @@ export function simulate(input: ModelInput): SchemeResult[] {
     peakDay: number;
     peakState: DiskState | null;
     longest: number;
+    prevUnits: number | null;
+    writePeak: number;
   }
   const tracks: Track[] = chained.map(() => ({
     policyMin: Infinity,
@@ -455,6 +470,8 @@ export function simulate(input: ModelInput): SchemeResult[] {
     peakDay: cal.evalStart,
     peakState: null,
     longest: 0,
+    prevUnits: null,
+    writePeak: 0,
   }));
 
   for (let E = cal.evalStart; E < cal.length; E++) {
@@ -468,6 +485,14 @@ export function simulate(input: ModelInput): SchemeResult[] {
       tr.diskMax = Math.max(tr.diskMax, s.count);
       tr.minUnits = Math.min(tr.minUnits, s.units);
       tr.longest = Math.max(tr.longest, s.longest);
+      // Day E's backup is written while all of day E-1's set is still on disk.
+      if (tr.prevUnits !== null) {
+        const kindArr = cal.kind[scheme];
+        const baseArr = cal.base[scheme];
+        const w = tr.prevUnits + sizeOf(kindArr[E], E, baseArr[E], c);
+        if (w > tr.writePeak) tr.writePeak = w;
+      }
+      tr.prevUnits = s.units;
       if (
         s.units > tr.peakUnits + 1e-12 ||
         (Math.abs(s.units - tr.peakUnits) <= 1e-12 && tr.peakState && s.count > tr.peakState.count)
@@ -524,6 +549,7 @@ export function simulate(input: ModelInput): SchemeResult[] {
       diskMin: tr.diskMin,
       diskMax: tr.diskMax,
       peakUnits: state.units,
+      writePeakUnits: Math.max(tr.writePeak, state.units),
       minUnits: tr.minUnits,
       peakWeekday: WEEKDAYS[E % 7],
       peakCounts: { F: state.counts[KIND_F], I: state.counts[KIND_I], D: state.counts[KIND_D] },

@@ -364,9 +364,11 @@ export function PsuSizingCalculator() {
 
   const status = result
     ? `${result.installed} ${result.installed === 1 ? "supply" : "supplies"} of ${watts(result.evaluatedW)}. Typical load ${pct(result.typical.loadFraction)} per supply, wall draw ${watts(result.typical.wallW)}.`
-    : noLoad
-      ? "Add at least one component that draws power."
-      : "Fix the highlighted field to see the sizing.";
+    : noLoad && badRows.length > 0
+      ? "Fix the highlighted part to see the sizing."
+      : noLoad
+        ? "Add at least one component that draws power."
+        : "Fix the highlighted field to see the sizing.";
 
   return (
     <ToolShell slug="psu-sizing-calculator">
@@ -646,7 +648,7 @@ export function PsuSizingCalculator() {
                   role={transient.ok ? undefined : "alert"}
                 >
                   {transient.ok
-                    ? "GPUs can spike well above board power for well under a millisecond. 1 ignores the spikes."
+                    ? "GPUs can draw well above board power for spikes lasting from microseconds to a few milliseconds. 1 ignores the spikes."
                     : transient.message}
                 </p>
               </div>

@@ -310,7 +310,7 @@ export function CertificateDecoder() {
         certs.slice(0, -1).map((c, i) => verifySignature(c.signatureAlgorithm, certs[i + 1].publicKey, c.tbs, c.signature)),
       );
       const self = await Promise.all(
-        certs.map((c) => (c.selfIssued ? verifySignature(c.signatureAlgorithm, c.publicKey, c.tbs, c.signature) : Promise.resolve(null))),
+        certs.map((c) => (c.selfSigned ? verifySignature(c.signatureAlgorithm, c.publicKey, c.tbs, c.signature) : Promise.resolve(null))),
       );
       if (!cancelled) setVerdicts({ key: chainKey, links, self });
     })();
@@ -369,7 +369,7 @@ export function CertificateDecoder() {
   /** The signature verdict for one certificate, from its issuer in the list or from itself. */
   function signatureVerdict(i: number): { tone: Tone; text: string } {
     const c = certs[i];
-    if (c.selfIssued) {
+    if (c.selfSigned) {
       const v = current?.self[i];
       return v ? { tone: VERIFY_TONE[v.status], text: `Self-signature: ${v.detail}` } : { tone: "info", text: "Checking the self-signature." };
     }
@@ -499,7 +499,7 @@ export function CertificateDecoder() {
                           {i + 1}. {c.displayName}
                         </span>
                         <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
-                          {c.selfIssued ? "self-signed" : c.isCA ? "CA" : "end entity"} ·{" "}
+                          {c.selfSigned ? "self-signed" : c.selfIssued ? "self-issued" : c.isCA ? "CA" : "end entity"} ·{" "}
                           <span className={state === "valid" ? "text-[hsl(var(--brand-signal))]" : state === "expired" ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-amber))]"}>
                             {state.replace(/-/g, " ")}
                           </span>
@@ -509,7 +509,7 @@ export function CertificateDecoder() {
                         Issued by {issuerName(c.issuer, "an empty name")}
                       </p>
                     </div>
-                    {link || c.selfIssued ? (
+                    {link || c.selfSigned ? (
                       <div className="mt-2 border-l border-[hsl(var(--brand-iron))] pl-4">
                         <FindingList findings={[...(link?.findings ?? []), sig]} />
                       </div>
@@ -569,7 +569,7 @@ export function CertificateDecoder() {
                 <ToolResult label="Public key" value={cert.publicKey.summary} testId="text-key" />
                 <ToolResult
                   label="Role"
-                  value={`${cert.isCA ? `CA${cert.extensions.basicConstraints?.pathLen != null ? `, pathLen ${cert.extensions.basicConstraints.pathLen}` : ""}` : cert.version < 3 ? "unknown (no extensions)" : "end entity"}${cert.selfIssued ? ", self-signed" : ""}`}
+                  value={`${cert.isCA ? `CA${cert.extensions.basicConstraints?.pathLen != null ? `, pathLen ${cert.extensions.basicConstraints.pathLen}` : ""}` : cert.version < 3 ? "unknown (no extensions)" : "end entity"}${cert.selfSigned ? ", self-signed" : cert.selfIssued ? ", self-issued" : ""}`}
                 />
                 <div className="mt-3">
                   <FindingList findings={[signatureVerdict(index)]} testId="text-signature-check" />

@@ -12,12 +12,7 @@
 import { useMemo, useState } from "react";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 import {
-  DISTANCE_FACTOR,
-  FREQUENCY_FACTOR,
-  MAX_DISTANCE_M,
   MAX_ENTRIES,
-  MAX_FREQUENCY_HZ,
-  MIN_FREQUENCY_HZ,
   OCTAVE_BANDS,
   POWER_UNITS,
   aWeighting,
@@ -33,9 +28,12 @@ import {
   levelAtDistance,
   linkBudget,
   parseDb,
+  parseFrequency,
   parseLevelList,
+  parseLinkDistance,
   parseLoss,
   parseNumber,
+  parseSoundDistance,
   subtractLevel,
   weightOctaveBands,
   type DistanceUnit,
@@ -282,14 +280,8 @@ function SoundView() {
   );
 
   const distLevelParsed = useMemo(() => parseDb(distLevel, "the known level"), [distLevel]);
-  const r1Parsed = useMemo(
-    () => parseNumber(r1, "the measured distance", { min: 0, minExclusive: true, max: 1e9 }),
-    [r1],
-  );
-  const r2Parsed = useMemo(
-    () => parseNumber(r2, "the new distance", { min: 0, minExclusive: true, max: 1e9 }),
-    [r2],
-  );
+  const r1Parsed = useMemo(() => parseSoundDistance(r1, "the measured distance"), [r1]);
+  const r2Parsed = useMemo(() => parseSoundDistance(r2, "the new distance"), [r2]);
   const atDistance =
     distLevelParsed.ok && r1Parsed.ok && r2Parsed.ok
       ? levelAtDistance(distLevelParsed.value, r1Parsed.value, r2Parsed.value, model)
@@ -587,7 +579,9 @@ function SoundView() {
       <ToolPanel title="Octave bands to dBA">
         <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
           Unweighted sound pressure levels per octave band, as an equipment data sheet lists them. Leave a band blank to
-          skip it. The starting values are illustrative.
+          skip it. The starting values are illustrative. A-weighting adjusts each band by how sensitive the ear is at
+          that frequency, so dBA is one number that tracks perceived loudness: low bands count for much less, and the
+          bands around 2 to 4 kHz count for slightly more.
         </p>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {OCTAVE_BANDS.map((band, i) => {
@@ -705,23 +699,8 @@ function RfView() {
     return n.ok ? convertPower(n.value, powerUnit) : n;
   }, [powerText, powerUnit]);
 
-  const freqParsed = useMemo(() => {
-    const n = parseNumber(freqText, "the frequency", { min: 0, minExclusive: true });
-    if (!n.ok) return n;
-    const hz = n.value * FREQUENCY_FACTOR[freqUnit];
-    if (hz < MIN_FREQUENCY_HZ || hz > MAX_FREQUENCY_HZ) {
-      return { ok: false as const, error: "Enter a frequency between 1 kHz and 3 THz." };
-    }
-    return { ok: true as const, value: hz };
-  }, [freqText, freqUnit]);
-
-  const distParsed = useMemo(() => {
-    const n = parseNumber(distText, "the distance", { min: 0, minExclusive: true });
-    if (!n.ok) return n;
-    const m = n.value * DISTANCE_FACTOR[distUnit];
-    if (m > MAX_DISTANCE_M) return { ok: false as const, error: "That distance is past 10^15 m, far beyond any link." };
-    return { ok: true as const, value: m };
-  }, [distText, distUnit]);
+  const freqParsed = useMemo(() => parseFrequency(freqText, freqUnit), [freqText, freqUnit]);
+  const distParsed = useMemo(() => parseLinkDistance(distText, distUnit), [distText, distUnit]);
 
   const path = freqParsed.ok && distParsed.ok ? freeSpacePathLoss(distParsed.value, freqParsed.value) : null;
 

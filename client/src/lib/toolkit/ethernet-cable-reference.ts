@@ -121,7 +121,7 @@ export interface EthSpeed {
 }
 
 export const ETH_SPEEDS: EthSpeed[] = [
-  { id: "10base-t", name: "10BASE-T", ieee: "802.3i (1990)", pairs: "2 pairs: 1-2, 3-6", coding: "Manchester, 10 MHz fundamental" },
+  { id: "10base-t", name: "10BASE-T", ieee: "802.3i (1990)", pairs: "2 pairs: 1-2, 3-6", coding: "Manchester, 10 MBd" },
   { id: "100base-tx", name: "100BASE-TX", ieee: "802.3u (1995)", pairs: "2 pairs: 1-2, 3-6", coding: "4B5B and MLT-3, 125 MBd" },
   { id: "1000base-t", name: "1000BASE-T", ieee: "802.3ab (1999)", pairs: "4 pairs, both directions", coding: "PAM-5, 125 MBd per pair" },
   { id: "2.5gbase-t", name: "2.5GBASE-T", ieee: "802.3bz (2016)", pairs: "4 pairs, both directions", coding: "PAM-16 (DSQ128), 200 MBd" },
@@ -138,14 +138,30 @@ export interface Support {
   /** Maximum channel length in meters; 0 when unsupported. */
   meters: number;
   note?: string;
+  /**
+   * Conditional cells only: up to this length the speed is supported with no
+   * caveat, and from here to `meters` the note applies.
+   */
+  clearM?: number;
+  /** What to say for a length at or under clearM. */
+  clearNote?: string;
 }
 
 const CAT8_NOTE =
-  "Cat8 is specified only as a 30 m channel. A longer run is outside that specification and has to be tested against a lower class, such as Cat6A, for the speed it carries.";
+  "Cat8 is specified only as a channel of 30 m or less. A longer run is outside the Cat8 specification, so it has to be certified against a lower class, such as Cat6A for 10 Gb/s and below, using Cat8 cable.";
 
 const Y = (meters: number, note?: string): Support => ({ level: "yes", meters, note });
-const C = (meters: number, note: string): Support => ({ level: "conditional", meters, note });
+const C = (meters: number, note: string, clearM?: number, clearNote?: string): Support => ({
+  level: "conditional",
+  meters,
+  note,
+  clearM,
+  clearNote,
+});
 const N = (note: string): Support => ({ level: "no", meters: 0, note });
+
+/** Cat8 carrying a speed that lower categories also carry to 100 m. */
+const CAT8_LONG: Support = C(100, CAT8_NOTE, 30, "Within the 30 m Cat8 channel.");
 
 const ALL_100 = (cat5?: Support): Record<CategoryId, Support> => ({
   cat5: cat5 ?? Y(100),
@@ -153,7 +169,7 @@ const ALL_100 = (cat5?: Support): Record<CategoryId, Support> => ({
   cat6: Y(100),
   cat6a: Y(100),
   cat7: Y(100),
-  cat8: Y(100, CAT8_NOTE),
+  cat8: CAT8_LONG,
 });
 
 export const SUPPORT: Record<SpeedId, Record<CategoryId, Support>> = {
@@ -179,10 +195,12 @@ export const SUPPORT: Record<SpeedId, Record<CategoryId, Support>> = {
     cat6: C(
       55,
       "IEEE 802.3an allows up to 55 m on Cat6. TIA TSB-155 treats 37 m as the safe figure and 37 to 55 m as needing alien crosstalk testing or mitigation.",
+      37,
+      "Within the 37 m that TSB-155 treats as safe on Cat6 without alien crosstalk testing.",
     ),
     cat6a: Y(100),
     cat7: Y(100),
-    cat8: Y(100, CAT8_NOTE),
+    cat8: CAT8_LONG,
   },
   "25gbase-t": {
     cat5: N("25GBASE-T needs Cat8 (Class I or II) cabling."),
@@ -262,7 +280,12 @@ export function checkRun(speed: SpeedId, cat: CategoryId, meters: number): RunVe
       message: `${formatRun(meters)} is over the ${s.meters} m limit for ${sp} on ${c}.`,
     };
   }
-  if (s.level === "conditional") return { verdict: "conditional", limitM: s.meters, message: s.note ?? "" };
+  if (s.level === "conditional") {
+    if (s.clearM !== undefined && meters <= s.clearM) {
+      return { verdict: "ok", limitM: s.meters, message: s.clearNote ?? `Within ${s.clearM} m.` };
+    }
+    return { verdict: "conditional", limitM: s.meters, message: s.note ?? "" };
+  }
   return { verdict: "ok", limitM: s.meters, message: s.note ?? `Within the ${s.meters} m channel limit.` };
 }
 
@@ -575,7 +598,7 @@ export const COMMON_SHIELDS = ["U/UTP", "F/UTP", "U/FTP", "S/FTP", "SF/UTP", "F/
 const LEGACY: Record<string, { code: string; note: string } | { ambiguous: string }> = {
   UTP: { code: "U/UTP", note: "UTP is the informal name; the ISO/IEC 11801 code is U/UTP." },
   SCTP: { code: "F/UTP", note: "ScTP (screened twisted pair) is an older North American name for F/UTP." },
-  FTP: { code: "F/UTP", note: "FTP has been used for both F/UTP and U/FTP. It is read here as F/UTP; check the cable's own marking." },
+  FTP: { code: "F/UTP", note: "FTP (foiled twisted pair) is the informal name for a foil-screened cable. It is read here as F/UTP; check the cable's own marking." },
   "S/STP": { code: "S/FTP", note: "S/STP is an older name for S/FTP." },
   SSTP: { code: "S/FTP", note: "S-STP is an older name for S/FTP." },
   STP: { ambiguous: "STP is used loosely for any shielded cable. Ask for the ISO code, such as F/UTP, U/FTP or S/FTP." },
