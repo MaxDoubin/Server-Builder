@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 307 of them. Regenerate with script/generatePostIndex.ts.
+ * 308 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "three-apple-afterburner-cards",
+    title: "Apple Afterburner Benchmark: Three Cards in One Mac Pro",
+    date: "2026-11-04",
+    tags: ["apple","mac-pro","hardware","performance"],
+    excerpt: "I measured three Afterburner cards in one Mac Pro: 27 real-time 4K streams, decode that CPU load barely touched, an FPGA I chose not to flash, and files recovered bit for bit through the decoder.",
+    coverImage: "/images/blog/three-apple-afterburner-cards.jpg",
+    wordCount: 7593,
+  },
   {
     slug: "dell-hba330-vs-h330",
     title: "Dell HBA330 vs H330: Pass-Through, Queue Depth and ZFS",
@@ -2431,12 +2440,12 @@ export const postIndex: PostMeta[] = [
     slug: "mac-pro-afterburner-card",
     title: "The Apple Afterburner Card: Hardware Video Acceleration",
     date: "2025-10-25",
-    updated: "2026-08-25",
+    updated: "2026-11-04",
     tags: ["apple","mac-pro","hardware"],
     excerpt: "What Apple's Afterburner accelerator card does, how it works, and why hardware-accelerated ProRes decoding matters.",
     coverImage: "/images/blog/mac-pro-afterburner-card.jpg",
     coverCredit: {"author":"Gavin Lckg","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg"},
-    wordCount: 1534,
+    wordCount: 2225,
   },
   {
     slug: "firewall-policy-design",
@@ -3019,10 +3028,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 307;
+export const POST_COUNT = 308;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and seven";
+export const POST_COUNT_SPELLED = "three hundred and eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3031,10 +3040,10 @@ export const POST_COUNT_SPELLED = "three hundred and seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2344;
+export const CITATION_COUNT = 2383;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 181;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2506;
+export const CHECKED_URL_COUNT = 2545;

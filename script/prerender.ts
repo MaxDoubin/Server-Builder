@@ -36,6 +36,7 @@ import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome
 import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
 import { CASES as ODIRECT_CASES, accepted as odOk, asAddress as odAddress, asBytes as odSize, asOdirect as odLines, blame as odBlame, correctOption as odCorrect, largest as odLargest, memAligned as odMemOk, outcome as odOutcome } from "../client/src/lib/odirect/index";
 import { CASES as REUSEPORT_CASES, after as rpAfter, asChange as rpChange, asCount as rpCount, asReuseport as rpLines, binds as rpBinds, correctOption as rpCorrect, each as rpEach, movedPercent as rpMoved, stable as rpStable } from "../client/src/lib/reuseport/index";
+import * as AB from "../client/src/lib/afterburner/data";
 import { CASES as MALLOCTRIM_CASES, afterFree as mtAfterFree, asBytes as mtSize, asMalloctrim as mtLines, asPattern as mtPattern, correctOption as mtCorrect, freeHelps as mtFreeHelps, freeReturns as mtReturns, held as mtHeld, heldAfterTrim as mtHeldAfterTrim, peak as mtPeak, source as mtSource } from "../client/src/lib/malloctrim/index";
 import { CASES as PAGECACHE_CASES, after as pcAfter, asAttempt as pcAttempt, asSize as pcSize, asStore as pcStore, availableCostKb as pcCost, buffCache as pcColumn, cached as pcCached, correctOption as pcCorrect, costKb as pcWrote, freed as pcFreed, asPagecache as pcLines, pinned as pcPinned, shared as pcShared, survives as pcSurvives } from "../client/src/lib/pagecache/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
@@ -5799,6 +5800,167 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
 </main>`,
   });
 
+  // ── three Afterburner cards ──
+  /*
+    The companion to the write-up, and the page is mostly charts and a canvas,
+    so the static body is the report's tables in plain HTML. Every figure is
+    read from lib/afterburner/data, the same module the page and its gate
+    read, so a crawler cannot be told a different number from a visitor. The
+    caveats travel with the figures: the data recovery ceiling is never
+    printed without the BGRA output it was measured with, and the technique
+    never without the LZ4 result that puts it in proportion.
+  */
+  const abN = (value: number, digits = 1) =>
+    value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const abTable = (head: string[], rows: Array<Array<string | number>>) => `  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr>${head.map((cell) => `<th>${esc(cell)}</th>`).join("")}</tr>
+    </thead>
+    <tbody>
+${rows.map((row) => `      <tr>${row.map((cell) => `<td>${esc(String(cell))}</td>`).join("")}</tr>`).join("\n")}
+    </tbody>
+  </table>
+  </div>`;
+  const abDescription =
+    "Interactive results from three Apple Afterburner cards in one Mac Pro 7,1: 96 real-time 1080p streams, 27 at 4K and 6 at 8K across all three cards, CPU isolation, mixed timelines, and a browser demo of recovering files through a video decoder.";
+  const abLz4 = AB.BASELINE.rows.find((row) => row.method === "LZ4");
+
+  await writePage("afterburner", base, {
+    title: "Three Apple Afterburner Cards, Measured | Max Doubin",
+    description: abDescription,
+    canonical: `${SITE_URL}/afterburner`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  name: "Three Apple Afterburner cards, measured",
+  description:
+    "Decode capacity, CPU isolation, mixed-resolution, endurance and data recovery measurements from three Apple Afterburner cards in one Mac Pro 7,1, using locally generated gradient and noise ProRes test clips.",
+  url: `${SITE_URL}/afterburner`,
+  creator: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+  isBasedOn: `${SITE_URL}/blog/three-apple-afterburner-cards`,
+  isAccessibleForFree: true,
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Three Apple Afterburner cards</h1>
+  <p>
+    Three Afterburner cards in one Mac Pro: how much ProRes they decode, why the FPGA on them was left alone, and
+    what comes back when ordinary files go through the decoder. The whole investigation is in
+    <a href="${SITE_URL}/blog/three-apple-afterburner-cards">the full write-up</a>.
+  </p>
+  <p>
+    Every number here is a measurement on one machine, not a specification: a ${esc(AB.MACHINE.host)} with an ${esc(AB.MACHINE.cpu)}
+    (${AB.MACHINE.physicalCores} physical and ${AB.MACHINE.logicalCores} logical cores), ${esc(AB.MACHINE.os)}, and three
+    Afterburner cards (${esc(AB.MACHINE.fpga)}) in PCIe ${AB.MACHINE.cards.map((card) => `slot ${card.slot} (x${card.lanes})`).join(", ")}.
+    The video tests used locally generated ProRes test clips of gradients and noise, not real footage. Stream counts
+    are for all three cards together through VideoToolbox's hardware-required decode path, and real time means at least
+    ${AB.REAL_TIME_FPS} fps on every stream. The two Radeon Pro Vega II modules were left out of every test.
+  </p>
+  <h2>How many streams play in real time</h2>
+${abTable(["Resolution", "Streams", "Notes"], AB.STREAM_CEILINGS.rows.map((row) => [row.resolution, row.streams, row.note]))}
+  <p>
+    A 32K clip (${AB.DECODE_32K.width} by ${AB.DECODE_32K.height}) was also generated and decoded successfully. That was
+    a test of resolution, not a count of streams.
+  </p>
+  <h2>A saturated CPU barely moves the decode</h2>
+  <p>
+    All ${AB.MACHINE.logicalCores} logical cores were pinned with busy loops (${esc(AB.CPU_ISOLATION.saturatedLoad)}) while
+    the cards ran at their ceilings. Every stream stayed above ${AB.REAL_TIME_FPS} fps.
+  </p>
+${abTable(
+  ["Condition", ...AB.CPU_ISOLATION.rows.map((row) => `${row.resolution} x${row.streams}, min / avg fps`)],
+  [
+    ["CPU idle", ...AB.CPU_ISOLATION.rows.map((row) => `${abN(row.baseline.min)} / ${abN(row.baseline.avg)}`)],
+    ["All cores busy", ...AB.CPU_ISOLATION.rows.map((row) => `${abN(row.saturated.min)} / ${abN(row.saturated.avg)} (-${abN(row.reportedDropPercent)}%)`)],
+  ],
+)}
+  <h2>When resolutions mix, 8K falls behind first</h2>
+  <p>
+    One batch ran 8K, 4K and 1080p at once, each at half its solo ceiling. Added up, that is about
+    ${AB.MIXED_LOAD.ceilingsOfWork} ceilings of work, so something had to give. 4K and 1080p stayed just above
+    ${AB.REAL_TIME_FPS} fps; 8K fell below real time on every stream.
+  </p>
+${abTable(
+  ["Tier", "Streams", "Min / avg / max fps", "Real time"],
+  AB.MIXED_LOAD.rows.map((row) => [
+    row.resolution,
+    `${row.streams} of ${row.soloCeiling}`,
+    `${abN(row.fps.min)} / ${abN(row.fps.avg)} / ${abN(row.fps.max)}`,
+    row.verdict === "no" ? "No" : "Yes",
+  ]),
+)}
+  <h2>Long runs, scrubbing and six editors</h2>
+  <ul>
+    <li>${AB.ENDURANCE.minutes} minutes at the ${AB.ENDURANCE.resolution} ceiling of ${AB.ENDURANCE.streams} streams: all ${AB.ENDURANCE.streamsAlive} streams kept decoding, the cards' pending queues stayed bounded, and the host CPU never throttled (CPU_Speed_Limit stayed at ${AB.ENDURANCE.cpuSpeedLimit}).</li>
+    <li>One ${AB.SCRUBBING.resolution} stream decoded in order at ${abN(AB.SCRUBBING.sequentialFps)} fps and in random order at ${abN(AB.SCRUBBING.randomFps)} fps: no measurable penalty for scrubbing.</li>
+    <li>${AB.EDITORS.editors} scrubbing processes at once on ${AB.EDITORS.resolution} ran at ${abN(Math.min(...AB.EDITORS.burst.fps))} to ${abN(Math.max(...AB.EDITORS.burst.fps))} fps each over ${abN(AB.EDITORS.burst.seconds)} seconds, and ${abN(Math.min(...AB.EDITORS.sustained.fps))} to ${abN(Math.max(...AB.EDITORS.sustained.fps))} fps over ${AB.EDITORS.sustained.seconds} seconds.</li>
+  </ul>
+  <h2>Asking for a pixel format costs frames</h2>
+${abTable(
+  ["Requested output", "Decode rate", "Against native"],
+  AB.PIXEL_FORMAT.rows.map((row) => [row.format, `${abN(row.fps)} fps`, row.reportedDropPercent ? `-${row.reportedDropPercent}%` : ""]),
+)}
+  <h2>Why the FPGA was not reprogrammed</h2>
+  <p>${esc(AB.FPGA.neverDone)} The flash tool that was built was only ever tested against a simulator.</p>
+  <ol>
+${AB.FPGA.reasons.map((reason) => `    <li>${esc(reason)}</li>`).join("\n")}
+  </ol>
+  <h2>Files through a video decoder</h2>
+  <p>
+    Bytes were painted as solid ${AB.TECHNIQUE.blockPixels} by ${AB.TECHNIQUE.blockPixels} pixel blocks in
+    ${esc(AB.TECHNIQUE.codec)} frames, one byte in each of the red, green and blue channels, and read back through the
+    hardware decode path. ${esc(AB.TECHNIQUE.header)} It is a demonstration, not a practical way to store data: plain
+    LZ4 on one core decompressed a 10 MB random payload at ${abLz4 ? abLz4.mbps.lo.toLocaleString("en-US") : ""} MB/s, about
+    ${AB.BASELINE.reportedLz4Margin} times the best result here. The page has a browser simulation of the block code.
+  </p>
+  <h3>Did the bytes come back</h3>
+${abTable(["Test", "Scale", "Result"], AB.CORRECTNESS.rows.map((row) => [row.test, row.scale, row.result]))}
+  <h3>Where more sessions stop helping</h3>
+  <p>
+    Per-session decode time for a fixed small workload grew smoothly from ${AB.CONCURRENCY_SWEEP.smooth.fromSeconds} s at
+    1 session to ${AB.CONCURRENCY_SWEEP.smooth.toSeconds} s at 9, jumped to ${AB.CONCURRENCY_SWEEP.cliff.seconds} s at 10,
+    and sat at ${AB.spanText(AB.CONCURRENCY_SWEEP.plateau.seconds)} s from 11 to 13. Nine sessions run four times back to
+    back took ${AB.CONCURRENCY_SWEEP.repeatedN9.map((s2) => `${s2} s`).join(", ")}.
+  </p>
+  <h3>The data recovery ceiling</h3>
+  <p>
+    With long-lived sessions, four configurations converged on ${AB.spanText(AB.CEILING_CONFIGS.converges)} MB/s for all
+    three cards together. Every figure in this table was measured with the decoder forced to 32-bit BGRA output, which
+    slows hardware decode ${AB.NATIVE_VS_BGRA.hardwarePenalty} times. It is a ceiling of that pipeline, not a proven limit
+    of the cards, and it was not re-run with native output.
+  </p>
+${abTable(["Configuration", "Aggregate", "Note"], AB.CEILING_CONFIGS.rows.map((row) => [row.configuration, `${AB.spanText(row.mbps, 2)} MB/s`, row.note]))}
+  <h3>The x16 card works harder</h3>
+${abTable(["Card", "PCIe slot", "Busy"], AB.PER_CARD_BUSY.rows.map((row) => [row.registryId, `x${row.lanes} (slot ${row.slot})`, `${AB.spanText(row.busy, 0)}%`]))}
+  <h3>Software decode was faster, by less than it first looked</h3>
+  <p>
+    The first comparison forced both paths to BGRA output, which slows hardware decode far more than software. Re-run
+    in one session each with native output, software decode was about ${AB.NATIVE_VS_BGRA.correctedMargin} times as fast
+    as hardware. The BGRA-forced comparison of all sessions together had implied about
+    ${AB.SOFTWARE_VS_HARDWARE.uncorrectedMargin} times; it measured something different and was not re-run with native output.
+  </p>
+${abTable(["Decode path", "Native", "Forced BGRA"], AB.NATIVE_VS_BGRA.rows.map((row) => [row.path, `${abN(row.nativeFps)} fps`, `${abN(row.bgraFps)} fps`]))}
+  <h3>ProRes 4444 was the right codec</h3>
+${abTable(["Codec profile", "Software decode rate"], AB.CODEC_PROFILES.rows.map((row) => [row.profile, `${abN(row.mbps)} MB/s`]))}
+  <h3>Damaged frames: errors, and one silent risk</h3>
+${abTable(["Corruption", "Result", "Status code"], AB.CORRUPTION.rows.map((row) => [row.level, row.result, row.status !== undefined ? String(row.status) : ""]))}
+  <h3>Against ordinary compression</h3>
+${abTable(
+  ["Method", "Rate", "Note"],
+  AB.BASELINE.rows.map((row) => [
+    row.method,
+    `${row.project && row.mbps.lo === row.mbps.hi ? "about " : ""}${AB.spanText(row.mbps, 0)} MB/s`,
+    row.bgra ? "Measured with BGRA output" : "Single threaded",
+  ]),
+)}
+  ${backLinks([["/blog/three-apple-afterburner-cards", "The full write-up"], ["/blog/mac-pro-afterburner-card", "What the Afterburner card is"], ["/projects", "Projects"]])}
+</main>`,
+  });
+
   // ── what free gives back ──
   /*
     The static body carries the two tables, because the search that brings
@@ -10378,6 +10540,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/odirect`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/reuseport`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/afterburner`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/malloctrim`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
