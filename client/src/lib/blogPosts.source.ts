@@ -50779,6 +50779,3438 @@ exactly one field.
 - [AWS: S3 Object Lock](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
 `,
   },
+  {
+    slug: "cisco-acl-wildcard-mask",
+    title: "Cisco ACL Wildcard Masks: How to Calculate Them and Where They Bite",
+    date: "2026-11-04",
+    tags: ["networking", "cisco", "security", "learning"],
+    excerpt:
+      "A wildcard mask is the subnet mask inverted: 0 bits must match, 1 bits are ignored. How to calculate one, and what a mistyped mask silently matches.",
+    coverImage: "/images/blog/cisco-acl-wildcard-mask.jpg",
+    content: `
+## The short answer
+
+A wildcard mask is a subnet mask turned inside out: in Cisco's words, [each 0 bit means "this bit must match exactly" and each 1 means "this bit can be ignored (do not care)"](https://www.cisco.com/c/en/us/support/docs/security/ios-firewall/23602-confaccesslists.html). To calculate one, subtract the subnet mask from 255.255.255.255 one octet at a time, so a /24 (255.255.255.0) becomes 0.0.0.255, a /30 becomes 0.0.0.3, and the private block [172.16.0.0/12](https://www.rfc-editor.org/rfc/rfc1918) becomes 0.15.255.255. In an access list, \`host 10.1.1.2\` means 10.1.1.2 0.0.0.0, \`any\` means 0.0.0.0 255.255.255.255, and [an omitted wildcard is read as 0.0.0.0](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-create-ip-apply.html). Wildcard bits do not have to be contiguous, so nothing in the syntax marks a subnet mask typed in the wildcard position as wrong: \`permit 10.1.1.0 255.255.255.0\` ignores the first three octets and matches 16,777,216 addresses, the size of a [/8](https://www.rfc-editor.org/rfc/rfc4632), where 0.0.0.255 would match 256. Verify an entry with \`show access-lists\`, and add an explicit \`deny ip any any\` if the implicit deny at the end needs its own counter.
+
+## What is a wildcard mask, and how is it different from a subnet mask?
+
+A subnet mask says how long the network prefix is. [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) writes the length as a slash followed by "a decimal value between 0 and 32 that describes the number of significant bits," and its section 5.1 says "the mask must be left contiguous," meaning all ones, then all zeros. An ACL asks a different question about each address bit: compare it, or skip it. Cisco's [IP access list guide](https://www.cisco.com/c/en/us/support/docs/security/ios-firewall/23602-confaccesslists.html) introduces the wildcard with "In contrast, ACLs use a wildcard mask (also called an inverse mask), which works in the opposite way."
+
+| | Subnet mask | Wildcard mask |
+|---|---|---|
+| A 1 bit | Part of the network prefix | Ignore this bit |
+| A 0 bit | Host bit | This bit must match |
+| Shape | Contiguous, per RFC 4632 | Any 32-bit pattern; Cisco says [wildcard masks "allow noncontiguous bits"](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-access-list-ov.html) |
+| Example for a /24 | 255.255.255.0 | 0.0.0.255 |
+
+A packet matches an entry when its address and the entry's address differ only in bit positions where the wildcard has a 1. The entry 10.1.2.0 0.0.0.255 works like this:
+
+\`\`\`text
+ACL entry   10.1.2.0   00001010.00000001.00000010.00000000
+Wildcard    0.0.0.255  00000000.00000000.00000000.11111111
+Matches                00001010.00000001.00000010.xxxxxxxx
+                       10.1.2.0 through 10.1.2.255
+\`\`\`
+
+The first 24 bits must equal the entry's. The last eight can be anything. Cisco's own sample table in the [IP access list overview](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-access-list-ov.html) shows the same idea at a smaller scale: 172.18.8.0 with 0.0.0.7 is described as "Only subnet 172.18.8.0/29 matches."
+
+One consequence is easy to miss. Any bit under a 1 in the wildcard is ignored, including the corresponding bit in the address you typed. The same table lists 172.18.8.15 with 0.0.0.3 as "Only subnet 172.18.8.15/30 matches," but the block that entry covers is 172.18.8.12 through 172.18.8.15, because the two low bits of the .15 are skipped. Writing the real network address keeps the line readable. The [alignment article](/blog/alignment-is-what-runs-out) explains why a block has to start on a multiple of its own size.
+
+## How do you calculate a wildcard mask from a prefix length or subnet mask?
+
+Cisco's method is subtraction. The [guide](https://www.cisco.com/c/en/us/support/docs/security/ios-firewall/23602-confaccesslists.html) shows "255.255.255.255 - 255.255.255.0 (subnet mask) = 0.0.0.255 (inverse mask)." Do it octet by octet: 255 minus the mask octet. An octet that is 255 in the mask becomes 0, an octet that is 0 becomes 255, and only the one partial octet needs real arithmetic.
+
+From a prefix length n, the wildcard has 32 minus n one bits on the right, and the entry matches 2 to the power of (32 minus n) addresses. The counts below are the "addrs/block" column of the table in [RFC 4632 section 3.1](https://www.rfc-editor.org/rfc/rfc4632).
+
+| Prefix | Subnet mask | Wildcard mask | Addresses matched |
+|---|---|---|---|
+| /8 | 255.0.0.0 | 0.255.255.255 | 16,777,216 |
+| /12 | 255.240.0.0 | 0.15.255.255 | 1,048,576 |
+| /16 | 255.255.0.0 | 0.0.255.255 | 65,536 |
+| /20 | 255.255.240.0 | 0.0.15.255 | 4,096 |
+| /22 | 255.255.252.0 | 0.0.3.255 | 1,024 |
+| /23 | 255.255.254.0 | 0.0.1.255 | 512 |
+| /24 | 255.255.255.0 | 0.0.0.255 | 256 |
+| /25 | 255.255.255.128 | 0.0.0.127 | 128 |
+| /26 | 255.255.255.192 | 0.0.0.63 | 64 |
+| /27 | 255.255.255.224 | 0.0.0.31 | 32 |
+| /28 | 255.255.255.240 | 0.0.0.15 | 16 |
+| /29 | 255.255.255.248 | 0.0.0.7 | 8 |
+| /30 | 255.255.255.252 | 0.0.0.3 | 4 |
+| /31 | 255.255.255.254 | 0.0.0.1 | 2 |
+| /32 | 255.255.255.255 | 0.0.0.0 | 1 |
+
+In the partial octet, the wildcard value is the block size minus one, and the block size is 256 minus the mask value. A mask octet of 192 gives blocks of 64 and a wildcard octet of 63.
+
+### Worked examples
+
+- **A /26 at 192.168.1.64.** 255.255.255.255 minus 255.255.255.192 is 0.0.0.63, so the entry is \`192.168.1.64 0.0.0.63\`, covering .64 through .127.
+- **The private block 172.16.0.0/12.** The mask 255.240.0.0 gives 0.15.255.255, and \`172.16.0.0 0.15.255.255\` covers 172.16.0.0 through 172.31.255.255, the range [RFC 1918 section 3](https://www.rfc-editor.org/rfc/rfc1918) assigns to that block. The other two blocks in that section are 10.0.0.0/8 and 192.168.0.0/16.
+- **Summarizing eight networks.** Cisco's guide covers 192.168.32.0/24 through 192.168.39.0/24 with \`192.168.32.0 0.0.7.255\`, because "If you subtract 255.255.248.0 (subnet mask) from 255.255.255.255, it yields 0.0.7.255."
+
+\`\`\`text
+ip access-list extended BLOCK-PRIVATE-FROM-OUTSIDE
+ deny ip 10.0.0.0 0.255.255.255 any
+ deny ip 172.16.0.0 0.15.255.255 any
+ deny ip 192.168.0.0 0.0.255.255 any
+ permit ip any any
+\`\`\`
+
+Applied inbound on an Internet-facing interface, a list like this drops packets that arrive from outside carrying a private source address.
+
+### What if the range is not a power of two?
+
+One entry cannot match exactly 10.1.1.10 through 10.1.1.20. An entry matches 2 to the power of (the number of 1 bits in its wildcard) addresses, so it always matches a power-of-two count, and the range holds 11. With contiguous wildcards each block also starts on a multiple of its own size. The range splits into four such blocks:
+
+\`\`\`text
+permit ip 10.1.1.10 0.0.0.1 any
+permit ip 10.1.1.12 0.0.0.3 any
+permit ip 10.1.1.16 0.0.0.3 any
+permit ip host 10.1.1.20 any
+\`\`\`
+
+These cover .10 and .11, then .12 to .15, then .16 to .19, then .20 alone.
+
+The [IP range to CIDR](/tools/ip-range-to-cidr) tool does that split automatically, the [wildcard mask calculator](/tools/wildcard-mask-calculator) checks any single pair, and the [subnetting guide](/blog/subnetting-practical-guide) covers the prefix side.
+
+## What do host, any and 0.0.0.0 255.255.255.255 mean in an access list?
+
+Cisco's guide defines both keywords in terms of the pair: "The source/wildcard of 0.0.0.0/255.255.255.255 means any," and "The source/wildcard of 10.1.1.2/0.0.0.0 is the same as host 10.1.1.2." Its [sample configurations page](https://www.cisco.com/c/en/us/support/docs/ip/access-lists/26448-ACLsamples.html) says the same for \`access-list 1 permit 192.168.10.1 0.0.0.0\`, which "is another way to configure the same rule" as \`host 192.168.10.1\`.
+
+| You type | Equivalent pair | Matches |
+|---|---|---|
+| \`host 10.1.1.2\` | 10.1.1.2 0.0.0.0 | Exactly 10.1.1.2 |
+| \`10.1.1.2\` (no wildcard) | 10.1.1.2 0.0.0.0 | Exactly 10.1.1.2 |
+| \`any\` | 0.0.0.0 255.255.255.255 | Every address |
+| \`0.0.0.0\` (no wildcard) | 0.0.0.0 0.0.0.0 | Only the address 0.0.0.0 |
+
+The last row catches people who carry a habit over from routing. In a route, 0.0.0.0/0 means every destination. In an ACL, a bare 0.0.0.0 gets the default wildcard of 0.0.0.0, so every bit must match and only the all-zeros address does. Use \`any\`.
+
+The same notation appears outside ACLs. In OSPF, the \`network\` command takes \`network ip-address wildcard-mask area area-id\`, and Cisco's [command reference](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-i1.html) describes the wildcard as an IP-address-type mask with "don't care" bits. Cisco's [IOS XE 17 routing guide](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-routing/b-ip-routing/m_iro-cfg-0.html) recommends enabling OSPF with the interface-level \`ip ospf\` command instead. The [OSPF article](/blog/ospf-routing-protocol) covers the protocol itself.
+
+## How do standard and extended ACLs use wildcards, and where should each one be applied?
+
+A standard ACL tests only the source address, so each entry has one address and wildcard. An extended ACL also tests the destination and other packet fields, so each entry can carry two pairs. Cisco's [overview](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-access-list-ov.html) numbers standard lists 1 to 99 or 1300 to 1999 and extended lists 100 to 199 or 2000 to 2699, and the [IP access list guide](https://www.cisco.com/c/en/us/support/docs/security/ios-firewall/23602-confaccesslists.html) says named lists, created with \`ip access-list standard\` or \`ip access-list extended\`, arrived in Release 11.2.
+
+| | Standard | Extended |
+|---|---|---|
+| Numbers | 1 to 99, 1300 to 1999 | 100 to 199, 2000 to 2699 |
+| Tests | Source address | Source, destination, protocol, ports and more |
+| Wildcard pairs per entry | One | Two |
+
+Abbreviated from the syntax in Cisco's guide:
+
+\`\`\`text
+access-list <1-99> {permit|deny} {host ADDR | ADDR WILDCARD | any}
+access-list <100-199> {permit|deny} PROTOCOL SRC SRC-WILDCARD DST DST-WILDCARD [operator port]
+\`\`\`
+
+### Where should each one go?
+
+Cisco's overview is the type-specific source: "Because standard access lists test source addresses, they are very efficient at blocking traffic close to a destination," while extended lists "are good for blocking traffic anywhere." The IP access list guide gives general advice that does not distinguish the two types: "It is a good practice to apply the ACL on the interface closest to the source of the traffic." The two statements fit together once you consider what each type can see. A standard ACL placed near the source would block that source from everything beyond it, so it belongs near the one destination being protected. An extended ACL names the destination, so it can sit next to the source and stop unwanted traffic before it crosses the network.
+
+Direction matters as much as the interface. The overview says "Inbound access lists process packets before the packets are routed to an outbound interface," that [only one access list per interface, per protocol and per direction is allowed](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-access-list-ov.html), and that an outgoing list does not filter traffic generated by the device itself.
+
+### A worked extended ACL
+
+A user VLAN, 192.168.10.0/24, may reach one web server over HTTPS and nothing else in the server subnet 192.168.20.0/24, and may reach everything outside that subnet:
+
+\`\`\`text
+ip access-list extended USERS-TO-SERVERS
+ 10 permit tcp 192.168.10.0 0.0.0.255 host 192.168.20.10 eq 443
+ 20 deny   ip  192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+ 30 permit ip  192.168.10.0 0.0.0.255 any
+ 40 deny   ip  any any
+ exit
+interface GigabitEthernet0/1
+ description Gateway for VLAN 10
+ ip access-group USERS-TO-SERVERS in
+\`\`\`
+
+Each pair does a different job. \`host 192.168.20.10\` is the pair 192.168.20.10 0.0.0.0, the two /24 pairs use 0.0.0.255, and \`any\` is the pair of all ones. Line 10 has to come before line 20, because Cisco's samples page says "Because the Cisco IOS Software stops the test of conditions after the first match, the order of the conditions is critical." The [first-match article](/blog/first-match-wins) shows what a correct rule in the wrong position looks like, and the [firewall policy article](/blog/firewall-policy-design) covers the default-deny structure behind line 40. The [IOS fundamentals article](/blog/cisco-ios-fundamentals) covers the configuration modes used above.
+
+This is also a CCNA topic. Cisco's [CCNA 200-301 v1.1 exam topics](https://learningcontent.cisco.com/documents/marketing/exam-topics/200-301-CCNA-v1.1.pdf) list objective 5.6, "Configure and verify access control lists," for a 120-minute exam.
+
+## When do non-contiguous wildcard masks make sense, such as matching only odd addresses?
+
+When the addresses you want share a bit pattern instead of a range. Cisco's overview says "wildcard masks allow noncontiguous bits in the mask," and Cisco's NX-OS guide states the contrast directly: a prefix [matches "only on the first contiguous bits," while a wildcard mask "matches on any bit in the address."](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/security/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Security_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_Security_Configuration_Guide_7x_chapter_01001.html) Put a 0 where the bit must be fixed and a 1 where it can vary.
+
+| Entry | What it matches | Addresses |
+|---|---|---|
+| \`192.168.1.1 0.0.0.254\` | Odd last octets in 192.168.1.0/24 | 128 |
+| \`192.168.1.0 0.0.0.254\` | Even last octets in 192.168.1.0/24 | 128 |
+| \`10.1.0.1 0.0.255.0\` | The .1 address in every /24 under 10.1.0.0/16 | 256 |
+| \`10.1.0.0 0.0.254.255\` | Every even-numbered /24 under 10.1.0.0/16 | 32,768 |
+
+The third row is the practical one: if every VLAN gateway sits at .1 of its subnet, one entry covers all of them. It only stays correct while the addressing plan stays regular, and a colleague has to decode the mask to audit it.
+
+### Cisco's own example needs a closer look
+
+Cisco's overview lists \`10.1.2.0\` with \`0.0.252.255\` as "Matches any even-numbered network in the range of 10.1.2.0 to 10.1.254.0." Applying the bit rule from the same page, 252 is 11111100, so the top six bits of the third octet are ignored and the low two must equal those of 2, which is binary 10. That admits third octets 2, 6, 10 and so on up to 254, which is 64 networks, and skips 4, 8 and 12, which are even. For every even-numbered network, the mask is 0.0.254.255, where only the lowest bit is fixed at 0 (that mask also admits third octet 0, which is outside the range Cisco states). That reading comes from enumerating all 256 third-octet values against both masks, not from a Cisco statement, so confirm any unusual mask before it goes into production.
+
+## Why does typing a subnet mask where a wildcard belongs match the wrong hosts without any error?
+
+Because the syntax cannot tell the two apart. Cisco states that wildcard masks allow noncontiguous bits, so by that rule any 32-bit value is a legal wildcard, including 255.255.255.0, and there is nothing for the parser to reject. Apply the 1-means-ignore rule to \`permit 10.1.1.0 255.255.255.0\`: the three octets of 255 are ignored and the last octet must be 0. That matches 10.1.1.0, 203.0.113.0 and every other address ending in .0, and it does not match 10.1.1.77, which was the host the line was meant to cover.
+
+| Intended | Correct entry | Typed by mistake | What the typo matches |
+|---|---|---|---|
+| 10.1.1.0/24 | \`10.1.1.0 0.0.0.255\` (256 addresses) | \`10.1.1.0 255.255.255.0\` | 16,777,216 addresses ending in .0 |
+| 10.1.1.4/30 | \`10.1.1.4 0.0.0.3\` (4 addresses) | \`10.1.1.4 255.255.255.252\` | 1,073,741,824 addresses whose last octet is a multiple of 4 |
+| 10.1.0.0/16 | \`10.1.0.0 0.0.255.255\` (65,536 addresses) | \`10.1.0.0 255.255.0.0\` | 65,536 addresses of the form a.b.0.0 |
+
+The first typo matches as many addresses as a /8, which RFC 4632 lists at 16,777,216, and 65,536 times the 256 intended. The second matches a quarter of the 4,294,967,296 addresses in the IPv4 space, a figure that appears in the RFC 4632 table as the number of /32 blocks. The third matches the same number of addresses as the correct entry, but shares only the address 10.1.0.0 with it.
+
+The damage depends on the action. A mistyped \`permit\` leaves the intended hosts to fall through to a later line or to the implicit deny, so the service they needed stops working. A mistyped \`deny\` leaves the intended hosts untouched and blocks unrelated addresses. Neither case produces an error. The visible symptom is a hit count that does not fit the traffic, which is what \`show access-lists\` is for, covered in the last section.
+
+### Other platforms use other conventions
+
+Moving a config between platforms is the most common way to meet this mistake:
+
+- **ASA.** Cisco's [ASA 9.1 guide](https://www.cisco.com/c/en/us/td/docs/security/asa/asa91/configuration/general/asa_91_general_config/acl_extended.html) says "When you specify a network mask, the method is different from the Cisco IOS software access-list command," that "The ASA uses a network mask (for example, 255.255.255.0 for a Class C mask)," and that "The Cisco IOS mask uses wildcard bits (for example, 0.0.0.255)."
+- **IPv6.** IOS XE IPv6 ACLs take a prefix, not a wildcard. The [IOS XE 16.7 guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-7/sec-data-acl-xe-16-7-book/ip6-acls-xe.html) gives the syntax as \`permit protocol {source-ipv6-prefix/prefix-length | any | host source-ipv6-address}\`.
+- **NX-OS.** Nexus switches accept either a prefix or a wildcard mask in an entry, per the guide quoted above, so check which form a pasted entry uses before reading its mask.
+
+A quick sanity check for IOS: a wildcard written for an ordinary subnet has its 0 bits on the left and its 1 bits on the right, like 0.0.0.63. A wildcard that begins with 255 and is not the pair for \`any\` deserves a second look.
+
+## How do you verify hit counts with show access-lists and account for the implicit deny?
+
+Cisco's [ACL manageability guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-dply-clr-ald-acl-xe.html) says "The system counts how many packets match (hit) each line of an access list," and its sample output shows the total in parentheses after each entry:
+
+\`\`\`text
+Router# show ip access-list 150
+
+Extended IP access list 150
+   10 permit ip host 10.1.1.1 any (3 matches)
+   30 permit ip host 10.2.2.2 any (27 matches)
+\`\`\`
+
+A test sequence for the ACL above:
+
+\`\`\`text
+Router# show ip interface GigabitEthernet0/1 | include access list
+Router# clear ip access-list counters USERS-TO-SERVERS
+Router# show ip access-lists USERS-TO-SERVERS
+Router# show ip access-list interface GigabitEthernet0/1 in
+\`\`\`
+
+The first command uses a field that Cisco's [interface command reference](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/interface/command/ir-cr-book/ir-s5.html) describes as showing "whether the interface has an incoming access list set," which confirms the ACL is bound to the interface and direction intended. The second resets the counters; per the [security command reference](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/a1/sec-a1-cr-book/sec-cr-c2.html), "If no name or number is specified, all IP access list counters are cleared," so name the list. The fourth, \`show ip access-list interface\`, is documented in the same ACL manageability guide and shows statistics for one interface and direction.
+
+| Symptom | Likely cause | Check |
+|---|---|---|
+| A line expected to match shows no hits | Subnet mask typed as a wildcard, or the wrong interface or direction | Compare the wildcard with the calculation above; read the interface binding |
+| A broad line collects traffic meant for a narrow one | An earlier entry matched first | Order of the sequence numbers |
+| Everything is blocked | The list has no permit line | Cisco: "You must have at least one permit statement in an ACL or all traffic is blocked" |
+| Traffic is dropped but no line counts it | The implicit deny did it | Add an explicit \`deny ip any any\` |
+
+### Why does the implicit deny not show up?
+
+Cisco's guide says "Every ACL has an implicit deny at the end for any traffic that is not explicitly permitted," but the implicit entry is not a line in the list, so it has no counter. Cisco's overview recommends an explicit deny and notes that "Only packets denied by explicit deny statements are counted." An [INE write-up](https://ine.com/blog/2010-01-02-ccna-the-explicit-deny-all) shows the effect: after adding \`deny any log\` to a standard ACL, \`show access-lists\` listed that line with "(5 matches)."
+
+Skip the \`log\` keyword when the goal is only a count. Cisco's overview notes that "Packets matching an entry in an ACL with a log option are process switched" and says "It is not recommended to use the log option on ACLs," and that "The logging facility should not be used as a billing tool or an accurate source of the number of matches to an access list." The same INE example logged one denied packet to the console although five were counted.
+
+Sequence numbers keep this editable. Cisco's [refining guide](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_sec-refine-ip-al-0.html) says the first entry gets number 10 with successive entries incremented by 10, and "entries currently in the access list can be resequenced to create room to insert the new entry," using \`ip access-list resequence NAME start increment\`. That makes it possible to insert a corrected line at the right position, delete the mistyped one with its \`no\` form, and clear the counters again.
+
+## Sources
+
+- [Cisco: Configure IP Access Lists (document 23602)](https://www.cisco.com/c/en/us/support/docs/security/ios-firewall/23602-confaccesslists.html)
+- [Cisco: Configure Commonly Used IP ACLs (document 26448)](https://www.cisco.com/c/en/us/support/docs/ip/access-lists/26448-ACLsamples.html)
+- [Cisco: IP Access List Overview, Security and VPN Configuration Guide, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-access-list-ov.html)
+- [Cisco: Creating an IP Access List and Applying It to an Interface, IOS XE 17](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-create-ip-apply.html)
+- [Cisco: Refining an IP Access List, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_sec-refine-ip-al-0.html)
+- [Cisco: Displaying and Clearing IP Access List Data Using ACL Manageability, IOS XE 17](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-17/sec-data-acl-xe-17-book/sec-dply-clr-ald-acl-xe.html)
+- [Cisco: IOS Security Command Reference, Commands A to C (clear ip access-list counters)](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/a1/sec-a1-cr-book/sec-cr-c2.html)
+- [Cisco: IOS Interface and Hardware Component Command Reference (show ip interface)](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/interface/command/ir-cr-book/ir-s5.html)
+- [Cisco: IOS IP Routing OSPF Command Reference (network area)](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-i1.html)
+- [Cisco: IP Routing Configuration Guide, IOS XE 17.x, Configuring OSPF](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-routing/b-ip-routing/m_iro-cfg-0.html)
+- [Cisco: IPv6 Access Control Lists, IOS XE Fuji 16.7.x](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-7/sec-data-acl-xe-16-7-book/ip6-acls-xe.html)
+- [Cisco: Adding an Extended Access List, ASA 9.1 General Operations CLI Configuration Guide](https://www.cisco.com/c/en/us/td/docs/security/asa/asa91/configuration/general/asa_91_general_config/acl_extended.html)
+- [Cisco: Configuring IP ACLs, Nexus 9000 NX-OS Security Configuration Guide, Release 7.x](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/security/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Security_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_Security_Configuration_Guide_7x_chapter_01001.html)
+- [Cisco: CCNA Exam v1.1 (200-301) exam topics](https://learningcontent.cisco.com/documents/marketing/exam-topics/200-301-CCNA-v1.1.pdf)
+- [IETF: RFC 4632, Classless Inter-domain Routing (CIDR)](https://www.rfc-editor.org/rfc/rfc4632)
+- [IETF: RFC 1918, Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918)
+- [INE: CCNA, The Explicit Deny All](https://ine.com/blog/2010-01-02-ccna-the-explicit-deny-all)
+`,
+  },
+  {
+    slug: "dell-mem0701-correctable-memory-error",
+    title: "Dell MEM0701 and MEM0702: Correctable Memory Error Rate Exceeded",
+    date: "2026-11-04",
+    tags: ["dell", "servers", "troubleshooting", "hardware"],
+    excerpt:
+      "What Dell's MEM0701, MEM0702 and MEM0802 mean, why one correctable error rarely means a bad DIMM, and why a restart for Post Package Repair comes first.",
+    coverImage: "/images/blog/dell-mem0701-correctable-memory-error.jpg",
+    content: `
+## The short answer
+
+MEM0701 is a Warning that a DIMM's correctable error rate passed the limit the server firmware allows, logged as "Correctable memory error rate exceeded" with the DIMM location. Dell's message reference calls it ["an early indicator of a possible future uncorrectable error"](https://www.manualsdir.com/manuals/620821/dell-poweredge-vrtx.html?page=378) and says to reinstall the memory, but Dell's guidance for 14th generation servers is to restart without moving the DIMM so the BIOS can run memory retraining and [Post Package Repair](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) (PPR), then look for MEM0804 (repaired) or MEM0805 (repair failed, replace the DIMM). MEM0702 is the same message at Critical severity (Warning from 14G BIOS 2.4.x), [MEM0802 replaces it](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) on 14G RDIMM and LRDIMM systems from BIOS 2.5.x, and MEM0005 reports a persistent error limit. One event is not a verdict: Dell's memory RAS white paper says [some correctable errors per DIMM are "unavoidable"](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf), and Google's fleet study found [8.2 percent of DIMMs and 32.2 percent of machines](https://www.cs.toronto.edu/~bianca/papers/sigmetrics09.pdf) had at least one a year. On 13th generation servers, [BIOS 2.3.x could reboot the machine](https://www.dell.com/support/kbdoc/en-us/000141221/dell-poweredge-13g-possible-reboot-after-correctable-memory-errors) after the event, and a [repost of Dell's notice](https://matjamsharing.blogspot.com/2017/09/dell-r430-r530-r630-r730-r830-r930-m630.html) gives 2.4.3 as the R630 and R730 fix.
+
+## What do MEM0701, MEM0702, MEM0802 and MEM0005 mean, and how serious is each?
+
+All four report correctable errors on one DIMM, errors the platform detected and corrected, which Dell's [white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) says "will not disrupt operation of PowerEdge servers." Dell's Event and Error Messages Reference (the PowerEdge VRTX edition, [mirrored here](https://www.manualsdir.com/manuals/620821/dell-poweredge-vrtx.html?page=378)) lists MEM0701 as Severity 2 (Warning) in the System Health category, with the response "Re-install the memory component. If the problem continues, contact support." The same entry says no LCD message is defined, so the front panel can stay quiet. Dell's [PMem 100 guide](https://www.dell.com/support/manuals/en-us/poweredge-r740/dcpmm_ug_pub/events-during-runtime?guid=guid-c7ba5af1-7aa3-4c2e-8a84-e5ea7993d3c8&lang=en-us) repeats that action.
+
+| ID | What it reports | Severity | Dell's response |
+|---|---|---|---|
+| MEM0701 | Correctable memory error rate exceeded for a DIMM | Warning | Reinstall the memory; on 14G, restart so retraining and PPR run |
+| MEM0702 | Same text | Critical at first, Warning from BIOS 2.4.x (December 2019) on 14G | Same as MEM0701 |
+| MEM0802 | Replaces MEM0702 on RDIMM and LRDIMM, BIOS 2.5.x or later | Not stated | Restart so PPR runs; do not move the DIMM |
+| MEM0005 | Persistent correctable error limit reached | Critical | Restart so retraining and PPR run |
+| MEM8000 | Correctable error logging disabled for a DIMM | Not stated | Reseat the DIMM, do not swap or move it |
+| MEM0804 | PPR succeeded (replaces MEM9060) | Not stated | None, no replacement needed |
+| MEM0805 | PPR failed (replaces UEFI0278) | Not stated | Replace the DIMM |
+
+Severities, retraining triggers and the MEM0802, MEM0804 and MEM0805 replacements come from [Dell KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors). The MEM8000 action comes from Dell's [memory RAS white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf), which on MEM0805 says "Contact Dell technical support" where the KB says to replace. Dell's 14G and 15G guidance also names MEM5104 as a threshold event and MEM7114 as a failed repair, per [KB 000194574](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events).
+
+The MEM0701 and MEM0702 pair shows up in operator logs. A Wikimedia operations ticket from April 2019 records [the same line for DIMM_A5](https://phabricator.wikimedia.org/T221502) at 13:33:36 as Non-Critical and at 13:56:56 as Critical, and a December 2017 ticket logs [DIMM_B2](https://phabricator.wikimedia.org/T183176) the same way seven minutes apart. Neither prints the message ID, but a Non-Critical then Critical pair matches the severities Dell lists. The [ECC RAM explainer](/blog/ecc-ram-explained) covers why an ECC server corrects these without crashing.
+
+## Is one correctable error a reason to replace the DIMM?
+
+No, and Dell has said so in writing. The white paper says that "some correctable errors per DIMM is unavoidable and does not inherently warrant a memory module replacement," while firmware monitors "DIMM capacity, rates of correctable errors, and effectiveness of available self-healing." [KB 000194574](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events) says continuing to run a system that reports correctable errors, without restarting for self-repair, does not raise the risk of uncorrectable errors, and recommends replacement only when a repair fails and the system logs MEM0805 or MEM7114.
+
+The field data points the same direction with a caveat. Google's study of DDR1, DDR2 and FBDIMM memory over 2.5 years, [Schroeder, Pinheiro and Weber at SIGMETRICS 2009](https://www.cs.toronto.edu/~bianca/papers/sigmetrics09.pdf), is older than DDR4 and not a Dell dataset, but its Table 1 sets the base rates:
+
+| Measure, per year (fleet-wide) | Share | In 10,000 |
+|---|---|---|
+| Machines with a correctable error | 32.2 percent | 3,220 |
+| DIMMs with a correctable error | 8.2 percent | 820 |
+| Machines with an uncorrectable error | 1.29 percent | 129 |
+| DIMMs with an uncorrectable error | 0.22 percent | 22 |
+
+A DIMM with a correctable error in a month was between 27 and more than 400 times as likely to log an uncorrectable one that month as a DIMM without one, and 9 to 47 times as likely in the following month, depending on platform. The absolute odds stayed low, though: [1.7 to 2.3 percent](https://www.cs.toronto.edu/~bianca/papers/sigmetrics09.pdf) per month on the two platforms the paper quotes. Its authors concluded that replacing DIMMs solely on correctable errors "might be worth the price only in environments where the cost of downtime is high enough to outweigh the cost of the relatively high rate of false positives." Errors also cluster: the top 20 percent of DIMMs with errors produced over 94 percent of all errors, and in more than 85 percent of cases an error was followed by another in the same month.
+
+Dell staff on its community forum have not been uniform. In a 2021 thread on an R630, a Dell staff reply said the "Correctable ECC logging limit reached" warning [means logging is disabled](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-poweredge-r630-correctable-ecc-logging-limit-reached-warning/647f9358f4ccf8a8de561474) and suggested a swap test. In a 2024 thread on an R730 with BIOS 2.18.1, a Dell moderator answered a DIMM A10 "Correctable Memory Error Log Limit Reached" alert with ["The error means it's time for a replacement, I'm afraid"](https://www.dell.com/community/en/conversations/poweredge-hardware-general/poweredge-r730-dimm-a10-correctable-memory-error-log-limit-reached/65f1d8a2415a967d318cc062). Those are individual replies, while the KB is Dell's published position.
+
+| Situation | Dell's guidance |
+|---|---|
+| First MEM0701, MEM0702 or MEM0802 | Restart at the earliest convenience, do not move the DIMM |
+| MEM0804 after the restart | No action, no replacement |
+| MEM0805 or UEFI0278 | Replace the DIMM |
+| Retraining fails, or the same errors keep occurring | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) says replacement is not necessary unless retraining fails (UEFI0106) or these same errors continue to occur |
+| MEM8000 | Reseat the DIMM, do not move it, contact support if it persists |
+
+## How do you find the slot and the error history?
+
+The location is in the message itself, written as a socket name such as DIMM_A5 or B2. Dell's [memory troubleshooting article](https://www.dell.com/support/kbdoc/en-us/000304931/powerege-general-memory) says to check the Lifecycle Controller log and follow its recommended actions for a single failing DIMM, and to contact support when several DIMMs report errors. The [iDRAC tips](/blog/dell-idrac-tips-tricks) article covers sending both the System Event Log (SEL) and the Lifecycle log off the BMC with remote [syslog](/blog/syslog-centralized-logging), and the [server memory architecture](/blog/server-memory-architecture) article explains how DIMM slots map to each CPU's channels.
+
+From a shell on the iDRAC, Dell's [RACADM CLI guide](https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf) documents these commands:
+
+\`\`\`bash
+ssh root@IDRAC_IP
+racadm getsel -i                                # number of SEL records
+racadm getsel -o                                # one line per SEL record
+racadm lclog view -s warning,critical           # Lifecycle log, Warning and Critical records only
+racadm lclog view -k MEM                        # Lifecycle log, records that match a string
+racadm hwinventory                              # hardware inventory, including DIMM entries
+\`\`\`
+
+To keep a copy on the workstation, run \`ssh root@IDRAC_IP "racadm getsel -o" > sel-before.txt\`. The guide says \`getsel -o\` shows each record on a single line, \`lclog view -k\` filters on a string and \`-s\` takes Warning, Critical and Info. Its \`hwinventory\` sample output lists a module as \`DIMM.Socket.A1\` with Manufacturer, PartNumber, SerialNumber, Size and Speed, which is what a support case or a replacement order needs. The \`-k\` filter is the one to test first: in a [2018 Dell Community thread](https://www.dell.com/community/Rack-Servers/racadm-lclog-view-k-lt-string-gt-doesn-t-work/td-p/6238030) on a 13th generation server, Dell staff said it works on 14G but not on 12G or 13G firmware, so on older iDRACs run \`racadm lclog view\` over ssh from the workstation and filter the text with \`grep\`. For a remote read over [IPMI](/blog/ipmi-remote-management), the [ipmitool manual](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in) documents \`sel list\` and \`sel elist\`, and \`elist\` also prints the sensor ID behind each event.
+
+\`\`\`bash
+ipmitool -I lanplus -H IDRAC_IP -U root -a sel elist | grep -i -E "memory|dimm"
+\`\`\`
+
+On a Linux host, the kernel's [RAS documentation](https://docs.kernel.org/admin-guide/RAS/main.html) describes a per-DIMM \`dimm_ce_count\` file under the EDAC (Error Detection And Correction) tree and says the count "is very important to examine" because correctable errors "provide early indications that a DIMM is beginning to fail."
+
+\`\`\`bash
+grep -H . /sys/devices/system/edac/mc/mc*/dimm*/dimm_ce_count
+grep -H . /sys/devices/system/edac/mc/mc*/dimm*/dimm_label
+\`\`\`
+
+That tree is filled in by the EDAC driver for the CPU's memory controller, while Dell's MEM messages come from the server firmware, so treat the iDRAC log as the record of threshold events and the EDAC counts as a second view. Save the SEL before clearing it: a used server's log is a record of what the machine reported at its previous job, as the [used enterprise gear](/blog/buying-used-enterprise-gear) checklist advises.
+
+## What are DDR4 self-healing and Post Package Repair on 14th generation servers?
+
+Self-healing is Dell's name for two BIOS actions that run at the next boot after a threshold event: memory retraining and PPR. [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) covers servers with first and second generation Xeon Scalable processors on BIOS 2.1.x or later, and Dell's [white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) lists the R640 and R740 among them (the [R740 deep dive](/blog/dell-poweredge-r740-deep-dive) covers that platform).
+
+### What do retraining and PPR do?
+
+Retraining runs early in boot and tunes signal timing and margining for each DIMM and slot, which drift with configuration changes, BIOS memory reference code changes, operating temperature and DIMM age, per [the KB](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors). The KB says PPR "repairs a failing memory location by disabling the location or address at the hardware layer" so that a spare row is used instead. [The white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) calls it a JEDEC-defined capability in which a module swaps a degraded row for a spare, through electrical fusing that is permanent. JEDEC requires at least one spare row per DRAM bank group. Dell requires a significantly larger number in genuine Dell DIMMs, and says any genuine Dell RDIMM or LRDIMM rated 2666 MT/s or higher has the extended pool. The paper makes no equivalent promise for other modules, so spare-row headroom on third-party memory is unconfirmed.
+
+PPR can only happen at the start of boot, before memory training and test, and the BIOS may promote a warm reset to a cold one. [The KB](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) says MEM0701, MEM0702 and MEM0005 schedule both actions for the next restart, and warns "DO NOT change DIMM slot locations until the PPR operation has been run," because the repair is scheduled on a specific slot. That differs from the swap test Dell staff suggested in the 2021 R630 thread: on BIOS 2.1.x or later, Dell's first step is a restart without moving anything. The BIOS can also act without a reboot. Per [the white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf), on x4 DIMMs with two or more ranks per channel, Adaptive Double Device Data Correction maps out a failing DRAM bank when its error count nears a BIOS threshold, and Memory Page Retire asks the OS to stop using 4 KB pages.
+
+### What changed by BIOS version?
+
+| BIOS (14G Intel) | Change | Source |
+|---|---|---|
+| 2.1.x | MEM0701, MEM0702 and MEM0005 schedule retraining and PPR | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) |
+| 2.4.x, December 2019 | MEM0702 lowered from Critical to Warning; needs a December 2019 or newer iDRAC | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) |
+| 2.5.x, February 2020 | MEM0802, MEM0804 and MEM0805 added for RDIMM and LRDIMM; Correctable Error Logging option arrives (2.5.4 per [KB 000194574](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events)) | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) |
+| 2.7.x, July 2020 | MEM8000 and MEM0001 schedule PPR; 2.7.7 adds repair after consumed uncorrectable errors and covers "questionable" locations | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors), [white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) |
+| 2.8.2, September 2020 | MEM9072 (uncorrectable error found by patrol scrub) schedules PPR | [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) |
+| 2.13.3, March 2022 onward | Correctable Error Logging defaults to Disabled | [KB 000194574](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events) |
+
+KB 000194574 excludes 14th generation AMD servers such as the 64x5 and 74x5, which lack the automatic repair feature, and a [PowerFlex KB](https://www.dell.com/support/kbdoc/en-uk/000307996/powerflex-poweredge-dimm-ecc-correctable-memory-memxxxx-errors) gives 13th generation nodes on BIOS 2.8.x or later the same restart-first advice.
+
+### What does the Correctable Error Logging setting change, and what is MEM8000?
+
+Dell added the Correctable Error Logging option in 14G Intel BIOS 2.5.4 so customers could turn off reporting of threshold events, and [KB 000194574](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events) says many did. Since March 2022, Dell BIOS updates ship with it Disabled: 14G Intel BIOS 2.13.3 or later, 15G Intel 1.5.5 or later and 15G AMD 2.6.5 or later. With logging off, the BIOS still schedules the repair, and a failed repair is still logged as MEM0805 or MEM7114. The setting sits under BIOS Settings > Memory Settings, in F2 System Setup or the iDRAC web interface, and Dell's [17G tuning guide](https://www.dell.com/en-us/infohub/articles/dell-poweredge-17g-server-bios-settings-for-optimized-performance-r7725-r6725-r7715-r6715) still lists it as Disabled by default, described as "Enable or disable logging of correctable memory threshold error." A quiet SEL therefore does not prove a quiet DIMM.
+
+MEM8000 is a different case. The white paper says the system is "encountering correctable errors at a rate and pattern that may impact system performance," so logging was "temporarily disabled" at that DIMM, and BIOS 2.7.7 changed its signaling after an uptick in MEM8000 events that component failure analysis did not substantiate. A Dell staff member told a poster in a [2022 community thread](https://www.dell.com/community/en/conversations/systems-management-general/ecc-error-threshold/647f9e3af4ccf8a8de2cd125) that logging "is suspended, until cleared." The same poster quoted an unnamed Dell article as saying an SEL entry is written once per 10 correctable errors on a DIMM and that reporting "gets turned off after 10 such occurrences," which the poster read as about 100 errors. That thread is the only source for the figure here, and the Dell staff who replied did not confirm a number.
+
+## Why did some 13th generation servers reboot after a correctable error?
+
+BIOS 2.3.x on 13th generation PowerEdge servers could reboot after a correctable error was written to the SEL. [Dell KB 000141221](https://www.dell.com/support/kbdoc/en-us/000141221/dell-poweredge-13g-possible-reboot-after-correctable-memory-errors) describes it as rare and seen only on 2.3.x, mostly on the R630 and R730 but possible across 13G, and the fix is a newer BIOS. A [September 2017 repost of Dell's notice](https://matjamsharing.blogspot.com/2017/09/dell-r430-r530-r630-r730-r830-r930-m630.html) gives the mechanism and the fixed versions. A change in 2.3.x added SPD logging with a null pointer dereference that, once the critical correctable threshold was exceeded, could cause a machine check or lockup. The repost's sample Lifecycle log lists SYS1003 (System CPU Resetting) and SYS1001 (System is turning off) alongside a MEM0702 entry.
+
+| Model (per the repost) | BIOS with the fix |
+|---|---|
+| R630, R730 | 2.4.3 |
+| R430, R530, T430, T630, C4130, C6320, all modular blades | 2.4.2 |
+| R830 | 1.4.2 |
+
+The repost lists the T130, R230, T330, R330 and R930 as not affected, and says to troubleshoot normally if errors continue after the update. It is a copy and Dell's article is the authority, so check the model against the KB. The [R730 vs R730xd](/blog/dell-r730-vs-r730xd) comparison covers the hardware side, and the [BIOS configuration](/blog/server-bios-configuration) article covers memory settings.
+
+## How do you clear the error and test whether it comes back?
+
+Update first, restart without moving anything, and then watch the logs. Dell's [memory troubleshooting article](https://www.dell.com/support/kbdoc/en-us/000304931/powerege-general-memory) lists the initial steps, and the self-healing KB adds the restart rule.
+
+1. Check firmware and update the CPLD (where the model has one), iDRAC and BIOS, per KB 000304931. Servers on BIOS 2.0 or earlier need the update to get self-healing at all, per [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors).
+2. Save the SEL with \`racadm getsel -o\`, then restart without moving DIMMs. The [white paper](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) warns the BIOS "may initiate more reboots during this process."
+3. Read the log for MEM0804 (repaired), MEM0805 (replace) or UEFI0106 (retraining failed).
+4. If errors persist, Dell's steps are to power off and drain the server, reseat the memory modules, clear the SEL (\`racadm clrsel\`, which the [CLI guide](https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf) says removes all records and needs Clear Logs permission), restart, and collect a SupportAssist (TSR) log to check for new memory messages.
+5. Use a swap test only when repair has been tried. In the 2021 R630 thread, Dell staff advised clearing the log and [swapping with a matching DIMM](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-poweredge-r630-correctable-ecc-logging-limit-reached-warning/647f9358f4ccf8a8de561474): an error that follows the DIMM means a bad DIMM, and one that stays at the slot points to the board.
+
+A memory tester helps less than it sounds. [MemTest86's ECC page](https://www.memtest86.com/ecc.htm) says it polls errors from chipset and memory controller registers, that "there is no common ECC error framework," and that out-of-band monitoring through a BMC can explain missing reports. A pass on the screen is therefore weaker evidence than a clean iDRAC log, and a quiet day proves little. In Google's data, [more than 93 percent of the time](https://www.cs.toronto.edu/~bianca/papers/sigmetrics09.pdf) a machine that saw a correctable error saw at least one more within the same year, so compare the SEL and EDAC counts after a week and a month. In the 2019 Wikimedia case, a reboot did not clear the alerts, the ticket was closed as resolved on May 6 when the host recovered on its own, and it was [reopened on May 30](https://phabricator.wikimedia.org/T221502) for a DIMM swap.
+
+## What breaks
+
+**New message IDs show as "unknown" in the SEL.** Dell says the MEM08xx messages need a February 2020 or newer iDRAC, and the MEM0702 warning needs December 2019 or newer. Fix: update the iDRAC, per [KB 000053203](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors).
+
+**An R630 or R730 reboots by itself right after MEM0702.** This matches the BIOS 2.3.x defect in [KB 000141221](https://www.dell.com/support/kbdoc/en-us/000141221/dell-poweredge-13g-possible-reboot-after-correctable-memory-errors). Fix: update the BIOS to 2.4.3 or newer, then troubleshoot any remaining errors normally.
+
+**A DIMM was moved before the restart, and the result is hard to read.** PPR is scheduled against a specific slot, and [Dell says](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) to leave DIMMs in place until it has run. Fix: put the DIMM back, restart, and read the log for MEM0804 or MEM0805 before judging the slot.
+
+**The SEL shows no MEM0701, yet a DIMM looks unhealthy.** On 14G and 15G, Correctable Error Logging has defaulted to Disabled since March 2022, so threshold events are not logged by default. On 13G, owners report a "log limit reached" alert instead, as in the 2021 R630 and 2024 R730 threads, where the R730 poster saw it in the iDRAC memory health section. Fix: read the Memory page in the iDRAC and the Lifecycle log for MEM0804 and MEM0805, and re-enable the setting only if you want threshold events logged.
+
+**MEM0805 appears after the restart.** PPR failed, and [Dell's KB](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors) says to replace the DIMM. The [white paper's](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf) larger spare-row pool is promised only for genuine Dell modules. Fix: replace it, and note the part and serial numbers from \`racadm hwinventory\` for the order or the support case.
+
+**The same slot keeps reporting after a swap or a replacement.** A [Dell staff reply](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-poweredge-r630-correctable-ecc-logging-limit-reached-warning/647f9358f4ccf8a8de561474) says an error that stays at the slot after a swap suggests the board. Fix: update BIOS and iDRAC, reseat the module, and contact support if several DIMMs report errors, per [KB 000304931](https://www.dell.com/support/kbdoc/en-us/000304931/powerege-general-memory).
+
+## Sources
+
+- [Dell KB 000053203: What is DDR4 Self-healing with Intel Xeon Scalable Processors](https://www.dell.com/support/kbdoc/en-us/000053203/what-is-ddr4-self-healing-on-dell-poweredge-servers-with-intel-xeon-scalable-processors)
+- [Dell KB 000194574: 14G Intel and 15G PowerEdge Servers, Managing Correctable Error Threshold Events](https://www.dell.com/support/kbdoc/en-us/000194574/14g-intel-and-15g-intel-amd-poweredge-servers-ddr4-memory-managing-correctable-error-threshold-events)
+- [Dell KB 000304931: PowerEdge Memory Issues Troubleshooting Guidelines](https://www.dell.com/support/kbdoc/en-us/000304931/powerege-general-memory)
+- [Dell KB 000141221: PowerEdge 13G Possible Reboot After Correctable Memory Errors](https://www.dell.com/support/kbdoc/en-us/000141221/dell-poweredge-13g-possible-reboot-after-correctable-memory-errors)
+- [Dell KB 000307996: PowerFlex PowerEdge DIMM ECC Correctable Memory MEMXXXX Errors](https://www.dell.com/support/kbdoc/en-uk/000307996/powerflex-poweredge-dimm-ecc-correctable-memory-memxxxx-errors)
+- [Dell: Memory Errors and PowerEdge YX4X Server Memory RAS Features, revision 1.1 (July 2020)](https://dl.dell.com/manuals/common/dellemc_poweredge_yx4x_memoryras_v1_1.pdf)
+- [Dell: PowerEdge VRTX Event and Error Messages Reference, MEM0701 and MEM0702 entries (mirror)](https://www.manualsdir.com/manuals/620821/dell-poweredge-vrtx.html?page=378)
+- [Dell: PMem 100 Series User's Guide, Events During Runtime](https://www.dell.com/support/manuals/en-us/poweredge-r740/dcpmm_ug_pub/events-during-runtime?guid=guid-c7ba5af1-7aa3-4c2e-8a84-e5ea7993d3c8&lang=en-us)
+- [Dell: iDRAC9 RACADM CLI Guide, July 2020](https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf)
+- [Dell InfoHub: PowerEdge 17G Server BIOS Settings for Optimized Performance](https://www.dell.com/en-us/infohub/articles/dell-poweredge-17g-server-bios-settings-for-optimized-performance-r7725-r6725-r7715-r6715)
+- [Schroeder, Pinheiro, Weber: DRAM Errors in the Wild, SIGMETRICS 2009](https://www.cs.toronto.edu/~bianca/papers/sigmetrics09.pdf)
+- [Linux kernel documentation: RAS and EDAC](https://docs.kernel.org/admin-guide/RAS/main.html)
+- [ipmitool manual page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [MemTest86: ECC Support](https://www.memtest86.com/ecc.htm)
+- [Dell Community: ecc error threshold](https://www.dell.com/community/en/conversations/systems-management-general/ecc-error-threshold/647f9e3af4ccf8a8de2cd125)
+- [Dell Community: Dell Poweredge R630 Correctable ECC logging limit reached warning](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-poweredge-r630-correctable-ecc-logging-limit-reached-warning/647f9358f4ccf8a8de561474)
+- [Dell Community: PowerEdge R730 DIMM A10 Correctable Memory Error Log Limit Reached](https://www.dell.com/community/en/conversations/poweredge-hardware-general/poweredge-r730-dimm-a10-correctable-memory-error-log-limit-reached/65f1d8a2415a967d318cc062)
+- [Dell Community: racadm lclog view -k does not work](https://www.dell.com/community/Rack-Servers/racadm-lclog-view-k-lt-string-gt-doesn-t-work/td-p/6238030)
+- [Wikimedia Phabricator: T221502, db1099 is having memory issues](https://phabricator.wikimedia.org/T221502)
+- [Wikimedia Phabricator: T183176, cp4032 memory error](https://phabricator.wikimedia.org/T183176)
+- [matjamsharing blog: repost of Dell's notice on 13G reboots after correctable memory errors (September 2017)](https://matjamsharing.blogspot.com/2017/09/dell-r430-r530-r630-r730-r830-r930-m630.html)
+`,
+  },
+  {
+    slug: "fortigate-local-in-policy-trusted-hosts",
+    title: "FortiGate Trusted Hosts vs Local-In Policy: Locking Down Admin Access",
+    date: "2026-11-04",
+    tags: ["fortinet", "firewall", "security", "networking"],
+    excerpt:
+      "Local-in policies run before trusted hosts and have no implicit deny. See the two-rule lockdown Fortinet gives for CVE-2022-40684 and CVE-2024-55591.",
+    coverImage: "/images/blog/fortigate-local-in-policy-trusted-hosts.jpg",
+    content: `
+## The short answer
+
+Trusted hosts and local-in policies are two separate source filters on FortiGate administrative access, and FortiOS checks the local-in policy first. Trusted hosts are a per-account list (\`trusthost1\` to \`trusthost10\`, plus \`ip6-trusthost1\` to \`ip6-trusthost10\`) where an unset entry means any address. A local-in policy matches traffic addressed to the FortiGate itself by interface, source, destination and service. An ACCEPT match still goes through the account's trusted hosts, and a DENY match drops the connection without consulting them. Two traps follow: one administrator account without trusted hosts keeps the login page reachable from every address, and local-in policies have no implicit deny, so an accept rule for the management subnet does nothing until a deny rule for the same services sits below it. Fortinet's workaround for [CVE-2022-40684](https://www.fortiguard.com/psirt/FG-IR-22-377) and [CVE-2024-55591](https://www.fortiguard.com/psirt/FG-IR-24-535) is exactly that pair of rules, and the second advisory says trusted hosts achieve the same result only when every GUI user has them configured. Local-in policies are CLI-only through FortiOS 7.4 and have a GUI page from 7.6.0. Apply the pair under \`cfg-save revert\` so a typo reboots into the old configuration, not a lockout.
+
+## What is the difference between trusted hosts and a local-in policy, and which does FortiOS check first?
+
+Fortinet's [FortiOS 7.6.5 Administration Guide](https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/363127/local-in-policy) says local-in policies "control inbound traffic that is going to a FortiGate interface," and that trusted hosts "can be configured under an administrator to restrict the hosts that can access the administrative service."
+
+| | Trusted hosts | Local-in policy |
+|---|---|---|
+| Where it is set | \`config system admin\`, one list per account | \`config firewall local-in-policy\` |
+| Matches on | Source address | Interface, source, destination, service, schedule |
+| Covers | Administrator logins | Per Fortinet, [all traffic destined for the device itself](https://community.fortinet.com/fortigate-3/technical-tip-impact-of-local-in-policies-and-trusted-hosts-configuration-on-fortigate-access-194861) |
+| Default | Any IPv4 address (\`0.0.0.0 0.0.0.0\`) and any IPv6 address (\`::/0\`), per the [CLI reference](https://docs.fortinet.com/document/fortigate/7.2.1/cli-reference/16620/config-system-admin) | None defined in the [7.2.8 guide](https://docs.fortinet.com/document/fortigate/7.2.8/administration-guide/363127/local-in-policy): "no restrictions on local-in traffic" |
+| Ping | Not governed since FortiOS 6.0, per a [Fortinet tip](https://community.fortinet.com/fortigate-3/technical-tip-ping-is-allowed-when-trusted-hosts-are-configured-96438) | Can filter it |
+| Per-service control | A permitted host reaches every enabled admin protocol | Services chosen in each rule |
+| SSO administrators | [Cannot use trusted hosts](https://community.fortinet.com/fortigate-3/technical-tip-system-administrator-best-practices-for-fortigate-and-fortiproxy-92241) | Applies to the source address |
+
+### The local-in policy is checked first
+
+A Fortinet technical tip says local-in policies take effect first for all traffic going directly to the FortiGate, with trusted hosts acting as a second filter. The CIS FortiGate benchmark agrees in its impact note for [item 2.4.6, as reproduced by Tenable](https://www.tenable.com/audits/items/CIS_Fortigate_7.0.x_v1.4.0_L1.audit:a591d12f17e7d64adf905cda79b3b928): local-in policies are processed before trusted host configurations. The [tip on combining them](https://community.fortinet.com/fortigate-3/technical-tip-impact-of-local-in-policies-and-trusted-hosts-configuration-on-fortigate-access-194861) gives the outcomes below.
+
+| Local-in policy result | Trusted hosts | Outcome |
+|---|---|---|
+| Matches ACCEPT | Source in the list | Allowed |
+| Matches ACCEPT | Source not in the list | Dropped by the trusted host check |
+| Matches DENY | Not checked | Dropped |
+| No policy matches | Source in the list | Allowed |
+| No policy matches | Account has no list | Allowed from any address |
+
+The tip's worked example has a local-in accept rule for 10.128.202.0/24 on port1 (10.21.4.84) and an administrator trusted only at 10.128.202.253. A test from 10.128.202.254 matches the accept rule and still fails: a sniffer shows repeated SYN packets to port 443 and no SYN-ACK. The last two rows follow from the tip's statement that trusted hosts decide alone when no local-in policy applies, plus the [CLI default](https://docs.fortinet.com/document/fortigate/7.2.1/cli-reference/16620/config-system-admin) of any address.
+
+### The interface setting is a third control
+
+Neither filter turns a service on. A Fortinet [ingress filtering tip](https://community.fortinet.com/fortigate-3/technical-tip-filter-ingress-traffic-going-to-the-fortigate-using-local-in-policy-92952) says a permitted host reaches ICMP, SSH and HTTPS "if these protocols have been activated on the interface," and the [administrator best practices](https://community.fortinet.com/fortigate-3/technical-tip-system-administrator-best-practices-for-fortigate-and-fortiproxy-92241) tip says to run \`unset allowaccess\` on the external interface, allow only \`https ssh\` where administration is needed, and "never allow HTTP or Telnet administrative access to a FortiGate interface."
+
+## Why does one admin account without trusted hosts leave the login page open to every address?
+
+Because each account is judged on its own list, and an empty list is the same as \`0.0.0.0 0.0.0.0\`. The [CLI reference](https://docs.fortinet.com/document/fortigate/7.2.1/cli-reference/16620/config-system-admin) describes each entry as "Any IPv4 address or subnet address and netmask from which the administrator can connect to the FortiGate unit" and lists the default as any address, with \`::/0\` for the \`ip6-trusthost\` entries. Fortinet's [best practices tip](https://community.fortinet.com/fortigate-3/technical-tip-system-administrator-best-practices-for-fortigate-and-fortiproxy-92241) states the consequence: "If one account is left without configuring a Trusted Host, users will be able to see the FortiGate login page." The advisory for CVE-2024-55591 makes the same point from the other side: ["the trusthost feature achieves the same as the local-in policies above"](https://www.fortiguard.com/psirt/FG-IR-24-535) only if all GUI users are configured with it, and it calls the local-in policies "the preferred workaround."
+
+The table above lists two more gaps: SSO accounts cannot use the list, so only a local-in policy filters them, and ping is outside its scope. A third is display. The CIS remediation for [item 2.4.2](https://www.tenable.com/audits/items/CIS_FortiGate_7.4.x_v1.0.1_L1.audit:ecb99c356cb50a7191ffbd3baa20a9f8) warns that some FortiOS versions show only the first three trusted hosts in the GUI, so audit from the CLI.
+
+Look in each account for a missing \`trusthost1\` line or a \`0.0.0.0 0.0.0.0\` value:
+
+\`\`\`
+show system admin
+\`\`\`
+
+A scoped account looks like this. The best practices tip says FortiOS acts on the first match, so put specific entries above any \`0.0.0.0 0.0.0.0\` entry, and add the VPN subnet for remote administrators:
+
+\`\`\`
+config system admin
+    edit "netadmin"
+        set trusthost1 192.168.50.0 255.255.255.0
+        set trusthost2 10.8.0.0 255.255.255.0
+    next
+end
+\`\`\`
+
+The same tip warns that losing access to the trusted network leaves console access as the only recovery path. The [rule-order article](/blog/first-match-wins) shows why first-match evaluation makes ordering matter.
+
+## How do you write a local-in policy that allows HTTPS and SSH only from a management subnet?
+
+Create an address group, an accept rule for it, then a deny rule for the same services. This is the structure in Fortinet's workaround for [CVE-2022-40684](https://www.fortiguard.com/psirt/FG-IR-22-377): an address group of management IPs, a first policy accepting HTTP and HTTPS from it, and a second denying both from all sources. The version below adds SSH and uses \`lan\` as the interface holding the management subnet; substitute your own names.
+
+\`\`\`
+config firewall address
+    edit "mgmt-subnet"
+        set subnet 192.168.50.0 255.255.255.0
+    next
+end
+config firewall addrgrp
+    edit "MGMT_IPs"
+        set member "mgmt-subnet"
+    next
+end
+config firewall local-in-policy
+    edit 1
+        set intf "lan"
+        set srcaddr "MGMT_IPs"
+        set dstaddr "all"
+        set action accept
+        set service "HTTPS" "SSH"
+        set schedule "always"
+        set status enable
+    next
+    edit 2
+        set intf "any"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action deny
+        set service "HTTPS" "SSH"
+        set schedule "always"
+        set status enable
+    next
+end
+\`\`\`
+
+Policy 2 names the \`any\` interface, as Fortinet's advisory example does, and Fortinet's [local-in tip](https://community.fortinet.com/fortigate-3/technical-tip-local-in-policy-does-not-work-as-expected-and-forwards-all-traffic-109904) says \`any\` is how a deny covers every interface. A management host on a second interface therefore needs its own accept rule above it. Enter the accept rule first: Fortinet's [save mode tip](https://community.fortinet.com/fortigate-3/technical-tip-configuration-file-save-mode-for-configuration-changes-96154) says that in the default mode changes take effect "as soon as they are executed by entering either next or end," so each entry is live at its \`next\`.
+
+### Can one rule do the job with negation?
+
+Yes. Fortinet's [trusted-host impact tip](https://community.fortinet.com/fortigate-3/technical-tip-impact-of-local-in-policies-and-trusted-hosts-configuration-on-fortigate-access-194861) and [login-attempt tip](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053) show a single deny rule with \`srcaddr-negate enable\`, which denies every source except the group:
+
+\`\`\`
+config firewall local-in-policy
+    edit 1
+        set intf "any"
+        set srcaddr "MGMT_IPs"
+        set srcaddr-negate enable
+        set dstaddr "all"
+        set action deny
+        set service "HTTPS" "SSH"
+        set schedule "always"
+    next
+end
+\`\`\`
+
+Negation reads backwards in a ruleset, so keep the services explicit and test from a host outside the group before saving.
+
+### What about custom admin ports and the HA management interface?
+
+If the GUI or SSH listens on a custom port, the services in both rules must match it. [Fortinet's advisory](https://www.fortiguard.com/psirt/FG-IR-22-377) says to create custom service objects that use the administrative port settings and use them in place of HTTP and HTTPS. A [custom-port tip](https://community.fortinet.com/fortigate-3/technical-tip-configure-local-in-policy-to-restrict-unauthorized-administrative-access-with-custom-https-port-222620) explains why: a policy using the default HTTPS service "will not be effective since it has TCP/443 by default." The [best practices tip](https://community.fortinet.com/fortigate-3/technical-tip-system-administrator-best-practices-for-fortigate-and-fortiproxy-92241) moves the ports with \`set admin-sport 7734\` and \`set admin-ssh-port 2345\`, which would need services like these:
+
+\`\`\`
+config firewall service custom
+    edit "ADMIN-HTTPS"
+        set tcp-portrange 7734
+    next
+    edit "ADMIN-SSH"
+        set tcp-portrange 2345
+    next
+end
+\`\`\`
+
+An HA reserved management interface needs \`set ha-mgmt-intf-only enable\` in the policy. The 7.6.5 guide says an error is generated without it, and Fortinet's [HA management tip](https://community.fortinet.com/fortigate-3/technical-tip-how-to-configure-a-local-in-policy-on-a-ha-reserved-management-interface-113667) says it "can only be configured in the management VDOM."
+
+## Why do local-in policies have no implicit deny, and how do you add the deny rule yourself?
+
+Fortinet's [7.6.5 guide](https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/363127/local-in-policy) states it plainly: "Unlike IPv4 policies, there is no default implicit deny policy," and "The implicit deny policy should be placed at the bottom of the list of local-in-policies." The [ingress tip](https://community.fortinet.com/fortigate-3/technical-tip-filter-ingress-traffic-going-to-the-fortigate-using-local-in-policy-92952) adds that "there is no 'implicit denied' rule created, and then, all the traffic will go to the FortiGate," and names the cost of a catch-all: "SSLVPN, dynamic routing protocols, HA, etc" would be blocked. Name the services in the deny rule instead of using \`ALL\`.
+
+The default action points the other way. The guide says "if no action is set manually, then the action will default to \`deny\`." A rule written without \`set action\` is a deny, so the accept rule must say \`accept\`. Fortinet's own examples rely on this: the catch-all in the [local-in tip](https://community.fortinet.com/fortigate-3/technical-tip-local-in-policy-does-not-work-as-expected-and-forwards-all-traffic-109904) and the policy in the [interface hardening tip](https://community.fortinet.com/fortigate-3/technical-tip-securing-the-fortigate-administrative-interface-against-brute-force-attacks-226168) carry no action line at all.
+
+| Rules in place | Result |
+|---|---|
+| Accept rule only | Nothing is blocked. Fortinet's symptom text: "the traffic that is supposed to be denied is all being sent through" |
+| Deny rule only | Everyone is denied, including the management subnet |
+| Accept, then deny | Intended behavior |
+| Deny, then accept | The accept rule is never reached, which is why the guide puts the deny at the bottom of the list |
+
+The guide's own example uses ping: policy 2 accepts PING from 172.16.200.0/24 to port1, policy 3 denies PING from all sources, and other subnets are dropped by policy 3. Its debug flow reads "iprope_in_check() check failed on policy 3, drop," naming the rule that matched.
+
+### What default local-in policy ships on a new unit?
+
+The 7.2.8 guide says "By default, no local-in policies are defined." FortiOS 7.6.1 added a default policy on the \`any\` interface, per the [7.6 New Features entry](https://docs.fortinet.com/document/fortigate/7.6.0/new-features/695423/enhanced-security-with-default-local-in-policy-7-6-1). It matches the Internet Service sources \`Malicious-Malicious.Server\`, \`Tor-Exit.Node\` and \`Tor-Relay.Node\`, and the 7.6.5 guide says it is "automatically added when a FortiGate is in factory default setting" or a new VDOM is created. The guide says it can be added by hand on 7.4.4 and higher. Fortinet's [interface hardening tip](https://community.fortinet.com/fortigate-3/technical-tip-securing-the-fortigate-administrative-interface-against-brute-force-attacks-226168) warns that a blocklist like this "does not replace trusted hosts or explicit local-in restrictions."
+
+### How do you see what the deny rule blocks?
+
+Local traffic logging is off by default, according to a [Fortinet tip](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053). The 7.6.5 guide gives the CLI below. In the GUI, open Log & Report > Log Settings > Global Settings, set Local traffic logging to Specify, and set "Log local-in traffic" to Per policy. Entries appear under Log & Report > Local Traffic.
+
+\`\`\`
+config log setting
+    set local-in-policy-log enable
+end
+config firewall local-in-policy
+    edit 2
+        set logtraffic enable
+    next
+end
+\`\`\`
+
+## Which FortiOS versions show local-in policies in the GUI, and how do you enable the feature?
+
+Creation moved to the GUI in 7.6.0. Before that, only the CLI could write them.
+
+| FortiOS | What changed | Source |
+|---|---|---|
+| 7.2.x | "Local-in policies can only be created or edited in the CLI" | [7.2.8 guide](https://docs.fortinet.com/document/fortigate/7.2.8/administration-guide/363127/local-in-policy) |
+| 7.4.x | Still CLI-only: "configurable only from CLI for FortiOS v7.4 and below"; CLI-created policies are "not displayed in GUI" | [Login-attempt tip](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053), [ingress tip](https://community.fortinet.com/fortigate-3/technical-tip-filter-ingress-traffic-going-to-the-fortigate-using-local-in-policy-92952) |
+| 7.4.4 and higher | Internet Service Database objects usable as a source | [7.6.5 guide](https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/363127/local-in-policy) |
+| 7.4.6 and 7.6.x | SD-WAN zones selectable as the interface | [Fortinet tip](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053) |
+| 7.6.0 and higher | Custom policies created and edited under Policy & Objects > Local-In Policy, with IPv4 and IPv6 tabs | [7.6.0 New Features](https://docs.fortinet.com/document/fortigate/7.6.0/new-features/308650/gui-support-for-local-in-policies) |
+
+The GUI page is hidden until feature visibility is on. A [Fortinet tip on the GUI](https://community.fortinet.com/fortigate-3/technical-tip-creating-a-local-in-policy-ipv4-and-ipv6-on-gui-175336) says to enable Local-In Policy under System > Feature Visibility, and gives the CLI equivalent:
+
+\`\`\`
+config system settings
+    set gui-local-in-policy enable
+end
+\`\`\`
+
+The [login-attempt tip](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053) says GUI creation starts at FortiOS 7.6.6 in one sentence and "Starting v7.6" in another. The 7.6.0 New Features page and several other tips say 7.6.0, so check the unit in front of you. [A poster on the Fortinet forum](https://community.fortinet.com/support-forum-92/fortigate-7-4-5-not-blocking-incoming-management-access-attempts-186610) with a 7.4.5 unit found that a CLI-created policy did not appear in the GUI, which Fortinet staff said was expected. The [FortiOS 7.6 and 7.4 comparison](/blog/fortios-7-6-vs-7-4) covers the other branch differences.
+
+## What did Fortinet's advisories for CVE-2022-40684 and CVE-2024-55591 tell owners to do?
+
+Fortinet pointed owners at this setup in three advisories for FortiOS administrative-interface flaws, and CISA lists three of the four CVEs as exploited, per the [KEV catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).
+
+| Advisory | CVE and base score | FortiOS affected | Advisory published | CISA KEV |
+|---|---|---|---|---|
+| [FG-IR-22-377](https://www.fortiguard.com/psirt/FG-IR-22-377) | [CVE-2022-40684](https://nvd.nist.gov/vuln/detail/CVE-2022-40684), 9.8 | 7.0.0 to 7.0.6, 7.2.0 to 7.2.1 | Oct 10, 2022 | [Added 2022-10-11, due 2022-11-01](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2022-40684), 21 days |
+| [FG-IR-23-001](https://www.fortiguard.com/psirt/FG-IR-23-001) | [CVE-2023-25610](https://nvd.nist.gov/vuln/detail/CVE-2023-25610), 9.8 | 7.2.0 to 7.2.3, 7.0.0 to 7.0.9, 6.4.0 to 6.4.11, 6.2.0 to 6.2.12 | Mar 7, 2023 | [Not in the KEV catalog](https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json); Fortinet knew of no exploitation |
+| [FG-IR-24-535](https://www.fortiguard.com/psirt/FG-IR-24-535) | [CVE-2024-55591](https://nvd.nist.gov/vuln/detail/CVE-2024-55591), 9.8 | 7.0.0 to 7.0.16 | Jan 14, 2025 | [Added 2025-01-14, due 2025-01-21](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2024-55591), 7 days |
+| [FG-IR-24-535](https://www.fortiguard.com/psirt/FG-IR-24-535) | [CVE-2025-24472](https://nvd.nist.gov/vuln/detail/CVE-2025-24472), 8.1 | 7.0.0 to 7.0.16 | Jan 14, 2025 (CVE added Feb 11, 2025) | [Added 2025-03-18, due 2025-04-08](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-24472), 21 days |
+
+Each advisory's workaround for the administrative interface is the same in outline: disable HTTP and HTTPS administrative access, or restrict source addresses with local-in policies. FG-IR-22-377 and FG-IR-24-535 both add custom service objects for non-default ports. [FG-IR-23-001](https://www.fortiguard.com/psirt/FG-IR-23-001) adds that an HA reserved management interface needs a different policy setup, and [FG-IR-24-535](https://www.fortiguard.com/psirt/FG-IR-24-535) calls a non-standard administrator username helpful but not an authentication point, since the websocket does not authenticate. CVE-2025-24472 travels through the Security Fabric, so that advisory's step is \`config system csf\` with \`set status disable\`; [NVD](https://nvd.nist.gov/vuln/detail/CVE-2025-24472) says it needs the Security Fabric enabled and an attacker who knows the upstream and downstream serial numbers.
+
+Four details:
+
+- **The workaround is a stopgap.** The fixes are upgrades: 7.0.7 or 7.2.2 for CVE-2022-40684, and 7.0.17 for CVE-2024-55591. Whether a used unit can take them depends on its firmware license, which the [FortiGate homelab license article](/blog/fortigate-homelab-license) covers.
+- **The exploitation notes are specific.** The FG-IR-22-377 page says Fortinet knew of exploitation, tells owners to check logs for \`user=Local_Process_Access\`, and reports attackers adding a \`super_admin\` account named \`fortigate-tech-support\`. CISA marks all three KEV entries as known to be used in ransomware campaigns.
+- **Equal scores, different deadlines.** CVE-2022-40684 and CVE-2024-55591 share the score 9.8 and the vector \`AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\`, yet CISA allowed 21 days for the first and 7 for the second. A base score does not rank them, which is the argument of [A base score is not a queue](/blog/a-base-score-is-not-a-queue).
+- **Scores differ between pages.** FortiGuard's FG-IR-24-535 page lists a single 9.8, while NVD shows Fortinet's own 8.1 for CVE-2025-24472, with \`AC:H\`. Enter the vector in the [CVSS calculator](/tools/cvss-calculator) to watch attack complexity move the score.
+
+## How do you test the lockdown without cutting off your own session?
+
+Use the configuration save mode that undoes a change on a timer. A [Fortinet tip](https://community.fortinet.com/fortigate-3/technical-tip-configuration-file-save-mode-for-configuration-changes-96154) lists three modes: automatic, the default; manual, where commands "take effect but do not become part of the saved configuration"; and revert, which "allows the operator to restore the system to its previous configuration state" if the timer expires before \`execute cfg save\`. The default timeout is 600 seconds.
+
+\`\`\`
+config system global
+    set cfg-save revert
+    set cfg-revert-timeout 300
+end
+\`\`\`
+
+The [revert-mode tip](https://community.fortinet.com/fortigate-3/technical-tip-using-the-save-option-set-cfg-save-revert-to-automatically-reboot-and-revert-to-a-previous-configuration-of-a-fortigate-93653) says an unconfirmed change makes the FortiGate reload the last saved configuration, that a reboot can follow, and that in an HA pair "all members will reboot and revert to the previous config." On a single homelab firewall that is an outage while the unit restarts, not a console trip.
+1. Open a second admin session from an allowed host, and keep console access ready.
+2. Turn on revert mode, then enter the accept rule and the deny rule in that order.
+3. Test from a host outside the group. The expected result is no login page.
+4. Watch the drop with the sniffer and the debug flow below.
+5. Confirm from the allowed host that HTTPS and SSH still work and that an administrator with trusted hosts can log in.
+6. Run \`execute cfg save\` before the timer ends. The revert-mode tip says new changes must be saved this way within the timeout. Returning \`cfg-save\` to \`automatic\`, the default, is a separate decision, because a unit left in revert mode needs the same save after every later change.
+
+For step 4, repeated SYN packets with no SYN-ACK mean a drop, as in the worked example above. The [CLI essentials article](/blog/fortigate-cli-essentials) explains the sniffer arguments and the debug flow output.
+
+\`\`\`
+diagnose sniffer packet any "host 203.0.113.50 and port 443" 4 0 l
+\`\`\`
+
+Debug flow names the rule that dropped the packet. Fortinet's 7.6.5 guide shows the line to look for, "iprope_in_check() check failed on policy" followed by the ID of your deny rule. The sequence below follows the CLI essentials article, filtered to the outside host:
+
+\`\`\`
+diagnose debug reset
+diagnose debug flow filter addr 203.0.113.50
+diagnose debug flow show console enable
+diagnose debug enable
+diagnose debug flow trace start 10
+\`\`\`
+
+The [firewall policy design article](/blog/firewall-policy-design) covers where a management zone fits among forward policies.
+
+## What goes wrong after the lockdown?
+
+**The management subnet is locked out too.** The accept rule has no \`set action accept\`, sits below the deny, or names the wrong interface. Fix: log in at the console, run \`show firewall local-in-policy\`, and correct the order and action. Revert mode turns this into a timed reboot instead of a console trip.
+
+**The accept rule matches and the login still fails.** The administrator's trusted hosts do not include the source, which gives the SYN-without-SYN-ACK pattern. Fix: add the subnet, including any VPN subnet, to the account's trusted hosts.
+
+**SSL VPN, routing or HA stops after adding the deny.** Fortinet's [ingress tip](https://community.fortinet.com/fortigate-3/technical-tip-filter-ingress-traffic-going-to-the-fortigate-using-local-in-policy-92952) warns that a blanket deny blocks these, and a deny on HTTPS also matches any other service answering on port 443. Fix: name specific services instead of \`ALL\`, and move the admin GUI to its own port if another service answers on 443.
+
+**Ping still works from anywhere.** Trusted hosts do not govern ping on management interfaces from FortiOS 6.0. Fix: add an accept rule for the trusted group and a deny for everyone else with the \`PING\` service, which is the structure in Fortinet's [ping tip](https://community.fortinet.com/fortigate-3/technical-tip-ping-is-allowed-when-trusted-hosts-are-configured-96438).
+
+**A firewall policy that denies the scanners changes nothing.** Firewall policies govern traffic passing through the unit. In a [forum thread](https://community.fortinet.com/support-forum-92/fortigate-7-4-5-not-blocking-incoming-management-access-attempts-186610), a poster's deny policy did not stop attempts on the management interface, and Fortinet staff pointed to local-in policies. Fix: write it as a local-in policy.
+
+## Sources
+
+- [Fortinet Docs: Local-in policy (7.6.5 Administration Guide)](https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/363127/local-in-policy)
+- [Fortinet Docs: Local-in policy (7.2.8 Administration Guide)](https://docs.fortinet.com/document/fortigate/7.2.8/administration-guide/363127/local-in-policy)
+- [Fortinet Docs: GUI support for local-in policies (New Features)](https://docs.fortinet.com/document/fortigate/7.6.0/new-features/308650/gui-support-for-local-in-policies)
+- [Fortinet Docs: Default local-in policy 7.6.1 (New Features)](https://docs.fortinet.com/document/fortigate/7.6.0/new-features/695423/enhanced-security-with-default-local-in-policy-7-6-1)
+- [Fortinet Docs: config system admin (7.2.1 CLI Reference)](https://docs.fortinet.com/document/fortigate/7.2.1/cli-reference/16620/config-system-admin)
+- [Fortinet Community: Local-in policies and trusted hosts impact](https://community.fortinet.com/fortigate-3/technical-tip-impact-of-local-in-policies-and-trusted-hosts-configuration-on-fortigate-access-194861)
+- [Fortinet Community: Local-in policy against unauthorized logins](https://community.fortinet.com/fortigate-3/technical-tip-use-local-in-policy-to-restrict-unauthorized-login-attempts-to-administrative-access-of-fortigate-158053)
+- [Fortinet Community: Local-in policy on the GUI](https://community.fortinet.com/fortigate-3/technical-tip-creating-a-local-in-policy-ipv4-and-ipv6-on-gui-175336)
+- [Fortinet Community: Ping is allowed when trusted hosts are configured](https://community.fortinet.com/fortigate-3/technical-tip-ping-is-allowed-when-trusted-hosts-are-configured-96438)
+- [Fortinet Community: System administrator best practices](https://community.fortinet.com/fortigate-3/technical-tip-system-administrator-best-practices-for-fortigate-and-fortiproxy-92241)
+- [Fortinet Community: Securing the administrative interface](https://community.fortinet.com/fortigate-3/technical-tip-securing-the-fortigate-administrative-interface-against-brute-force-attacks-226168)
+- [Fortinet Community: Filter ingress traffic with local-in-policy](https://community.fortinet.com/fortigate-3/technical-tip-filter-ingress-traffic-going-to-the-fortigate-using-local-in-policy-92952)
+- [Fortinet Community: Local-in policy forwards all traffic](https://community.fortinet.com/fortigate-3/technical-tip-local-in-policy-does-not-work-as-expected-and-forwards-all-traffic-109904)
+- [Fortinet Community: Local-in policy with a custom HTTPS port](https://community.fortinet.com/fortigate-3/technical-tip-configure-local-in-policy-to-restrict-unauthorized-administrative-access-with-custom-https-port-222620)
+- [Fortinet Community: Local-in policy on an HA management interface](https://community.fortinet.com/fortigate-3/technical-tip-how-to-configure-a-local-in-policy-on-a-ha-reserved-management-interface-113667)
+- [Fortinet Community: Configuration file save mode](https://community.fortinet.com/fortigate-3/technical-tip-configuration-file-save-mode-for-configuration-changes-96154)
+- [Fortinet Community: Using cfg-save revert](https://community.fortinet.com/fortigate-3/technical-tip-using-the-save-option-set-cfg-save-revert-to-automatically-reboot-and-revert-to-a-previous-configuration-of-a-fortigate-93653)
+- [Fortinet Community forum: FortiGate 7.4.5 not blocking management access](https://community.fortinet.com/support-forum-92/fortigate-7-4-5-not-blocking-incoming-management-access-attempts-186610)
+- [FortiGuard PSIRT: FG-IR-22-377](https://www.fortiguard.com/psirt/FG-IR-22-377)
+- [FortiGuard PSIRT: FG-IR-23-001](https://www.fortiguard.com/psirt/FG-IR-23-001)
+- [FortiGuard PSIRT: FG-IR-24-535](https://www.fortiguard.com/psirt/FG-IR-24-535)
+- [NVD: CVE-2022-40684](https://nvd.nist.gov/vuln/detail/CVE-2022-40684)
+- [NVD: CVE-2023-25610](https://nvd.nist.gov/vuln/detail/CVE-2023-25610)
+- [NVD: CVE-2024-55591](https://nvd.nist.gov/vuln/detail/CVE-2024-55591)
+- [NVD: CVE-2025-24472](https://nvd.nist.gov/vuln/detail/CVE-2025-24472)
+- [CISA: Known Exploited Vulnerabilities Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
+- [CISA: KEV Catalog JSON feed](https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json)
+- [CISA: KEV Catalog, CVE-2022-40684](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2022-40684)
+- [CISA: KEV Catalog, CVE-2024-55591](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2024-55591)
+- [CISA: KEV Catalog, CVE-2025-24472](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-24472)
+- [Tenable: CIS FortiGate 7.4.x item 2.4.2, trusted hosts](https://www.tenable.com/audits/items/CIS_FortiGate_7.4.x_v1.0.1_L1.audit:ecb99c356cb50a7191ffbd3baa20a9f8)
+- [Tenable: CIS FortiGate 7.0.x item 2.4.6, local-in policies](https://www.tenable.com/audits/items/CIS_Fortigate_7.0.x_v1.4.0_L1.audit:a591d12f17e7d64adf905cda79b3b928)
+`,
+  },
+  {
+    slug: "gmail-550-5-7-26",
+    title: "Gmail 550 5.7.26: Which of Three Failures You Hit and the Fix",
+    date: "2026-11-04",
+    tags: ["email", "security", "dns", "troubleshooting"],
+    excerpt:
+      "Gmail's 550 5.7.26 covers three failures: no SPF or DKIM pass, an SPF hard fail, or a DMARC rejection. Read the bounce text, then fix the right record.",
+    coverImage: "/images/blog/gmail-550-5-7-26.jpg",
+    content: `
+## The short answer
+
+A Gmail 550 5.7.26 is a permanent rejection of mail that failed authentication, and [Google's SMTP error table](https://knowledge.workspace.google.com/admin/support/troubleshooting/gmail-smtp-errors-and-codes) gives the code three texts: "This email has been blocked because the sender is unauthenticated" (neither SPF nor DKIM passed), "The (E)MAIL FROM domain [...] has an SPF record with a hard fail policy (-all)" (the sending IP is not in that record), and "Unauthenticated email from domain-name is not accepted due to domain's DMARC policy" (the From: domain's policy rejects mail that fails DMARC). [RFC 7372](https://www.rfc-editor.org/rfc/rfc7372) defines X.7.26 only as "Multiple authentication checks failed" and says the particular mechanisms "are not specified," so the text after the code is the diagnosis. The fix is the same in all three: make SPF or DKIM pass for a domain that matches the visible From: address, then send the message again, because an [SMTP client is told not to repeat a 5yz request](https://www.rfc-editor.org/rfc/rfc5321). Gmail's [sender guidelines](https://support.google.com/a/answer/81126) require SPF or DKIM from every sender since February 1, 2024, and SPF, DKIM, DMARC and alignment from senders of 5,000 or more messages a day, and the [FAQ](https://support.google.com/a/answer/14229414) says enforcement ramped up in November 2025. The temporary twin, 4.7.26, arrives as a 421 or 451 and is retried.
+
+## What does 550 5.7.26 mean, and why do three different failures share it?
+
+The code is a family, not a single fault. A rejection has a reply code (550), an enhanced status code (5.7.26) and free text. [RFC 3463](https://www.rfc-editor.org/rfc/rfc3463) defines a first digit of 5 as a permanent failure "not likely to be resolved by resending the message in the current form" and files X.7.x under "Security or Policy Status." [RFC 5321](https://www.rfc-editor.org/rfc/rfc5321) says that after a 4yz reply "the SMTP client SHOULD try again," while after a 5yz reply it "SHOULD NOT repeat the exact request."
+
+RFC 7372 registered X.7.26 in 2014 as "Multiple authentication checks failed," returned "when a message failed more than one message authentication check." It explains the vagueness: "only one enhanced status code can be returned for a given exchange," so a server that finds several failures "SHOULD use the code that indicates multiple methods failed rather than only reporting the first one that failed." Outside Gmail's table, [RFC 8617](https://www.rfc-editor.org/rfc/rfc8617) also lets an ARC validator reply 5.7.29 for a broken chain or "the more general 5.7.26" instead. In RFC 7372's scheme a lone SPF failure would be X.7.23, "SPF validation failed," yet Gmail's hard-fail text uses 5.7.26.
+
+The table below counts the texts [Google's error page](https://knowledge.workspace.google.com/admin/support/troubleshooting/gmail-smtp-errors-and-codes) lists under the codes this article covers, plus its two largest 5.7.x groups, 5.7.1 and 5.7.0, as of November 2026. The page lists 121 texts in all.
+
+| Code | Texts | What they cover |
+|---|---|---|
+| 5.7.1 | 20 | Message format faults, low reputation, relay limits, other policy blocks |
+| 5.7.0 | 9 | Relay denied, authentication required, STARTTLS first, content security |
+| 5.7.26 | 3 | Unauthenticated sender, SPF hard fail, DMARC policy |
+| 5.7.40 | 3 | Missing DMARC record, plus two unrelated sign-in errors |
+| 4.7.26 | 2 | Rate limited as unauthenticated, DMARC with temporary DNS failures |
+| 5.7.27 | 1 | SPF did not pass (bulk senders) |
+
+The page also says Gmail appends "gsmtp" to every error and "gcdp" to errors caused by a custom rule a Workspace administrator created, so a rejection ending in gcdp is the recipient organization's policy, not authentication.
+
+## How do you tell which of the three failures you hit?
+
+Read the bounce text first, then confirm with headers. The code alone cannot separate the three.
+
+### From the bounce text
+
+For mail sent through Gmail, the notice comes from "Mail Delivery Subsystem" and often has the subject "Delivery Status Notification (Failure)," per Google's [bounce help](https://support.google.com/mail/answer/7720). From any other server, that server writes the notice, since [the sending client generates the failure notification](https://www.rfc-editor.org/rfc/rfc9989). Long rejections repeat the status code on each line, which [RFC 2034](https://www.rfc-editor.org/rfc/rfc2034) requires. A shortened layout with a placeholder address:
+
+\`\`\`
+550-5.7.26 The MAIL FROM domain [example.com] has an SPF record with a hard
+550-5.7.26 fail policy (-all) but it fails to pass SPF checks with the ip:
+550-5.7.26 [203.0.113.25]. To best protect our users from spam and phishing,
+550 5.7.26 the message has been blocked.
+\`\`\`
+
+A [poster on the OVHcloud forum](https://community.ovhcloud.com/t/dns-retour-depuis-gmail-hard-550-5-7-26-fail-policy/4532) pasted this SPF variant, and a [Mailman issue](https://gitlab.com/mailman/mailman/-/issues/1084) pasted the DMARC one. Match the text against the table.
+
+| Text begins | What Gmail reports | Usual cause | Fix |
+|---|---|---|---|
+| "This email has been blocked because the sender is unauthenticated" | "DKIM = did not pass" and SPF for the domain and IP "did not pass" | Sender missing from SPF, DKIM not signing, or message changed after signing | Make SPF or DKIM pass |
+| "The (E)MAIL FROM domain [...] has an SPF record with a hard fail policy (-all)" | SPF failed for the printed IP against a record ending in -all | IP not in the record | Add the sender to one SPF record |
+| "Unauthenticated email from domain-name is not accepted due to domain's DMARC policy" | DMARC failed under the From: domain's policy | No SPF or DKIM pass for a domain matching From: | Align SPF or DKIM with From: |
+
+Google's [DMARC troubleshooting page](https://support.google.com/a/answer/10032578) names the third text as what a sender sees when a legitimate message fails DMARC, and lists a failed SPF or DKIM check, a message header that "isn't aligned," or a record problem as causes. Google's pages do not say which text wins when several conditions apply, or whether a passing DKIM signature avoids the SPF hard-fail text. The OVH poster's domain published two SPF records, \`v=spf1 a mx ptr ~all\` and \`v=spf1 -all\`, and a reply said to delete both and publish one. [RFC 7208](https://www.rfc-editor.org/rfc/rfc7208) makes more than one SPF record a "permerror."
+
+### From the Authentication-Results header
+
+A message rejected during the SMTP exchange is not accepted, so no Gmail mailbox holds its headers. Headers exist for test messages Gmail accepts, such as one sent from a path where at least one check passes, or one delivered to spam. Open the message, choose More, then Show original, per Google's [header instructions](https://support.google.com/mail/answer/29436). A Fortinet document shows a passing Gmail result:
+
+\`\`\`
+Authentication-Results: mx.google.com;
+  dkim=pass header.i=@fortinet.com header.s=dkim header.b=Lcxh1a5H;
+  spf=pass (google.com: domain of example@fortinet.com designates <ip-address> as permitted sender) smtp.mailfrom=example@fortinet.com;
+  dmarc=pass (p=QUARANTINE sp=NONE dis=NONE) header.from=fortinet.com
+\`\`\`
+
+That layout is from [FortiMail's documentation](https://docs.fortinet.com/document/fortimail/6.4.0/cookbook/697073/testing-email-signing-and-verification). [RFC 8601](https://www.rfc-editor.org/rfc/rfc8601) defines the grammar: a method and a result, such as \`spf=fail\`, then properties. SPF reports \`smtp.mailfrom\` or \`smtp.helo\`, and DKIM reports signature tags, so \`header.d\` is the signing domain. A constructed set in the same layout, for a mailing service that signs with its own domain:
+
+\`\`\`
+Authentication-Results: mx.example.net;
+  dkim=pass header.d=mailer.example.org header.s=s1;
+  spf=fail smtp.mailfrom=bob@example.com;
+  dmarc=fail header.from=example.com
+\`\`\`
+
+DKIM passes here, but for mailer.example.org, so nothing aligns with example.com and DMARC fails. [RFC 9989](https://www.rfc-editor.org/rfc/rfc9989), the May 2026 DMARC standard that obsoletes RFC 7489, defines that alignment: the domain SPF or DKIM validated must match the From: domain, exactly in strict mode or by organizational domain in relaxed mode. Read three things: \`spf\` and its \`smtp.mailfrom\`, \`dkim\` and its \`header.d\`, and whether \`dmarc\` follows. Three cautions:
+
+- Trust only the line whose authentication service identifier belongs to the receiver, because RFC 8601 [warns](https://www.rfc-editor.org/rfc/rfc8601) that a forged field can claim a message was authenticated.
+- A DKIM result of "body hash did not verify" means the message was modified in transit, per [Google](https://knowledge.workspace.google.com/admin/security/troubleshoot-dkim-issues).
+- Gmail checks only the first 5 signatures listed in the header, so a valid signature outside them fails DKIM.
+
+When no test gets through, use your outbound logs for the sending IP and DMARC aggregate reports, which Google's [DMARC setup page](https://support.google.com/a/answer/2466580) recommends requesting with the \`rua\` tag. The [DMARC record analyzer](/tools/dmarc-record-analyzer) and [SPF record analyzer](/tools/spf-record-analyzer) read the records.
+
+## Why do forwarding and mailing lists trigger 5.7.26 when direct mail passes, and what do SRS and ARC change?
+
+A forwarder or list changes what the checks depend on. For SPF, the connecting IP at Gmail is the forwarder's. [RFC 9989](https://www.rfc-editor.org/rfc/rfc9989) says relayed mail "will most likely fail SPF checks unless the RFC5321.MailFrom address is rewritten," while "DKIM signatures will generally remain valid." Google's [forwarding guide](https://support.google.com/mail/answer/175365) agrees that "forwarded messages often fail SPF authentication," and lists what breaks DKIM: changing MIME boundaries, the Subject, the body or its encoding, or expanding recipients. [RFC 6376](https://www.rfc-editor.org/rfc/rfc6376) notes that lists commonly add trailers and that signatures "can fail to verify through no fault of the Signer."
+
+If both fail and the sender's domain publishes a reject policy, the result is the DMARC text. RFC 9989 concedes that list mail with an unmodified From: header "is frequently rejected due to a 'p=reject' policy," and it says receivers "MUST NOT reject incoming messages solely on the basis of a 'p=reject' policy." Google's [FAQ](https://support.google.com/a/answer/14229414) likewise calls a DMARC failure "one of several factors" in whether mail is rejected, sent to spam or delivered, without listing the others. A policy of none is not a guarantee. A Mailman issue, last edited in July 2023, says Gmail had started rejecting messages From: gmail.com that fail DMARC "in spite of" the published p=none, which fits the sender guidelines' statement that Gmail "will begin using a DMARC quarantine enforcement policy" against impersonated Gmail From: headers. Google's [FAQ](https://support.google.com/a/answer/14229414) adds that the bulk-sender alignment requirement "isn't required for forwarded or mailing list messages," but a failing message generally meets "the enforcement defined in the sending domain's DMARC policy."
+
+**SRS.** Sender Rewriting Scheme replaces the envelope sender with an address in the forwarder's domain, which Google's guide asks forwarders to do. Microsoft's [SRS documentation](https://learn.microsoft.com/en-us/exchange/reference/sender-rewriting-scheme) says it fixes autoforwarding's incompatibility with SPF but not DMARC: "DMARC also requires domain alignment," so the reliable path is a DKIM signature from the From: domain that stays intact.
+
+**ARC.** Authenticated Received Chain adds three headers at each intermediary: an authentication-results copy, a message signature and a seal whose \`cv=\` tag reports none, fail or pass, per [Google's ARC page](https://knowledge.workspace.google.com/admin/security/arc-email-authentication). [RFC 8617](https://www.rfc-editor.org/rfc/rfc8617) calls the assertion "more akin to testimony by a verifiable party than to hard evidence" and says "ARC is not a trust framework." Google says ARC does not stop forwarders removing ARC headers, and its [authentication help](https://support.google.com/mail/answer/180707) says a forwarded message passing SPF or DKIM but with ARC showing earlier failure is treated as unauthenticated. Google does not say which ARC sealers Gmail trusts, so a forwarder cannot count on ARC to rescue p=reject mail.
+
+List software works around this by rewriting From:. RFC 9989 says lists have "all adopted workarounds," either the list's address or a per-sender form such as bob=example.com@user.somelist.example, and [Mailman 3](https://docs.mailman3.org/projects/mailman/en/latest/src/mailman/handlers/docs/dmarc-mitigations.html) offers munging From: with the original in Reply-To: or Cc:, or wrapping the message in one from the list.
+
+## How do 4.7.26, 5.7.27, 5.7.30, 5.7.32 and 5.7.40 differ from 5.7.26?
+
+They are narrower codes for specific bulk-sender requirements, mostly in a temporary and a permanent form. From Google's [error table](https://knowledge.workspace.google.com/admin/support/troubleshooting/gmail-smtp-errors-and-codes):
+
+| Code | Reply | What the text says | Requirement |
+|---|---|---|---|
+| 4.7.26 | 421 | Rate limited as "unauthenticated"; Gmail "requires all senders to authenticate with either SPF or DKIM" | SPF or DKIM, all senders |
+| 4.7.26 | 451 | DMARC policy applies "but temporary DNS failures prevent authentication" | Fix DNS or wait |
+| 5.7.27 / 4.7.27 | 550 / 421 | "didn't pass SPF authentication" | SPF, bulk senders |
+| 5.7.30 / 4.7.30 | 550 / 421 | "didn't pass DKIM authentication" | DKIM, bulk senders |
+| 5.7.32 / 4.7.32 | 421 / 421 | From: header "isn't aligned with either the authenticated SPF or DKIM organizational domain" | Alignment, bulk senders |
+| 5.7.40 / 4.7.40 | 550 / 421 | No DMARC record "or the DMARC record doesn't specify a DMARC policy" | DMARC record, bulk senders |
+
+The same table also covers suspicious SPF entries (5.7.24), missing PTR records (5.7.25) and missing TLS (5.7.29). Four inconsistencies matter before searching these codes elsewhere:
+
+- The blocked 5.7.32 row prints reply code 421 beside a 5.x.x status, which RFC 2034 does not allow because a 5xx reply must carry a 5.X.X code. The page does not say which 5xx reply accompanies it.
+- The 5.7.40 label also appears on two 504 rows, "Unrecognized authentication type" and "XOAUTH is no longer supported," which concern sign-in, not DMARC.
+- The [FAQ](https://support.google.com/a/answer/14229414) lists a missing DMARC record as 4.7.31 where the error table says 4.7.40, and puts it under "Delivery support or mitigations unavailable," not rejection.
+- The [IANA registry](https://www.iana.org/assignments/smtp-enhanced-status-codes/smtp-enhanced-status-codes.xhtml), updated December 6, 2024, assigns X.7.27 to a null MX, X.7.29 to ARC validation failure and X.7.30 to REQUIRETLS support, and lists nothing for X.7.32 or X.7.40. Gmail's meanings differ or are its own.
+
+Gmail's 5.7.26 text says "all senders," while 5.7.27 and 5.7.30 say "bulk email senders." A sender with SPF but no DKIM clears the all-senders check, and once it counts as bulk the missing signature is what 4.7.30 and 5.7.30 report.
+
+## What does Gmail require from every sender, and what more from 5,000 or more messages a day?
+
+Gmail's [sender guidelines](https://support.google.com/a/answer/81126) split the rules in two. From February 1, 2024, every sender to Gmail accounts must meet the first column, and senders above 5,000 messages a day both. TLS was added in December 2023. The page names the failure outright: messages that are not authenticated with these methods "might be marked as spam or rejected with a 5.7.26 error."
+
+| Requirement | All senders | 5,000 or more a day |
+|---|---|---|
+| Authentication | SPF or DKIM | SPF and DKIM |
+| DMARC | Not required | Record required; policy "can be set to none" |
+| Alignment | Not required | From: domain aligned with SPF or DKIM domain, for direct mail |
+| DNS | Valid forward and reverse (PTR) records | Same |
+| Transport | TLS | Same |
+| Format | RFC 5322 | Same |
+| Spam rate | Below 0.3% in Postmaster Tools | Same |
+| Unsubscribe | None | One-click for marketing and subscribed mail |
+
+The [FAQ](https://support.google.com/a/answer/14229414) defines a bulk sender as one that sends "close to 5,000 messages or more to personal Gmail accounts within a 24-hour period," counted across a primary domain, and the status is permanent. Personal accounts end in @gmail.com or @googlemail.com, and the rules do not cover mail to Workspace accounts. Google asks for a spam rate below 0.1% and says only one of SPF or DKIM must align, but "It's likely that DMARC alignment with both SPF and DKIM will eventually be a sender requirement."
+
+Two details cause failures. The guidelines require a DKIM key of 1024 bits or longer, 2048 recommended, and Google's [authentication help](https://support.google.com/mail/answer/180707) says shorter keys are "considered unsigned." One-click unsubscribe means the [RFC 8058](https://www.rfc-editor.org/rfc/rfc8058) headers: one HTTPS URI in \`List-Unsubscribe\`, a \`List-Unsubscribe-Post\` header, and a DKIM signature covering both.
+
+\`\`\`
+List-Unsubscribe: <https://example.com/unsub?id=abc123>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+\`\`\`
+
+Passing these checks is a delivery condition, not a verdict on content, as [why authenticated mail can still be hostile](/blog/the-authentication-passed-anyway) shows, and [SPF, DKIM and DMARC](/blog/spf-dkim-dmarc) covers the three standards.
+
+## How do you fix the record and resend, given that a 550 is never retried?
+
+Fix the sending identity, wait for DNS, test, then send again. A 550 ends the attempt. A 4xx behaves differently: [RFC 5321](https://www.rfc-editor.org/rfc/rfc5321) says the sender "MUST delay retrying," the interval "SHOULD be at least 30 minutes," and the give-up time "generally needs to be at least 4-5 days," so a queued 421 or 451 message can deliver on its own once the cause is fixed.
+
+1. **Collect the identifiers.** From the bounce and your logs, note the sending IP, the envelope sender domain, the DKIM \`d=\` domain and the From: domain.
+2. **Repair SPF.** Publish exactly one record. [RFC 7208](https://www.rfc-editor.org/rfc/rfc7208) limits DNS-querying terms to 10, returns permerror beyond that, and makes a lookup failure or timeout a temperror. Google's [SPF page](https://support.google.com/a/answer/10685928) shows \`v=spf1 include:_spf.google.com ~all\` for Workspace-only senders, adds every other sender to the same record, and prefers \`~all\` because a hyphen "can be overly restrictive," which matters since the hard-fail text names \`-all\`.
+3. **Repair DKIM.** Sign with a key at your own domain so \`d=\` can align with From:, using 2048 bits where your DNS host allows. Google's [DKIM page](https://knowledge.workspace.google.com/admin/security/troubleshoot-dkim-issues) says a 2048-bit key may need splitting into quoted strings for the 255-character limit and that outbound gateways adding footers break signatures. Its authentication help advises against the \`l=\` tag.
+4. **Publish DMARC.** Google's [DMARC page](https://support.google.com/a/answer/2466580) says to start at \`p=none\` with a \`rua\` address and to allow 48 hours after SPF and DKIM first. Relaxed alignment is the default, and strict alignment "can result in messages from associated subdomains to be rejected or sent to spam."
+5. **Wait for DNS.** Google says SPF fixes take 24 to 48 hours. If the record did not exist before, resolvers may have cached its absence for the lower of the SOA MINIMUM field and the SOA's TTL, per [RFC 2308](https://www.rfc-editor.org/rfc/rfc2308), as [DNS negative caching](/blog/dns-negative-caching) explains.
+6. **Test, then resend.** Send from the same system to a Gmail address you control, read Show original, and resend the rejected message only when SPF or DKIM passes with an aligned domain. Any sender can watch the [Postmaster Tools compliance dashboard](https://support.google.com/mail/answer/14668346), which usually updates within 24 hours.
+
+These commands check the records, with your own domain and DKIM selector in place of example.com and s1:
+
+\`\`\`bash
+dig +short TXT example.com | grep -i 'v=spf1'    # expect exactly one line
+dig +short TXT s1._domainkey.example.com         # the DKIM public key
+dig +short TXT _dmarc.example.com                # the DMARC policy
+dig +short SOA example.com                       # last number is the SOA minimum
+\`\`\`
+
+SPF is a TXT record at the domain, DKIM keys sit under \`_domainkey\` per [RFC 6376](https://www.rfc-editor.org/rfc/rfc6376), and DMARC is a TXT record at \`_dmarc.<domain>\` per [RFC 9989](https://www.rfc-editor.org/rfc/rfc9989). A conservative starting set, where the second include stands in for a third-party sender:
+
+\`\`\`dns
+example.com.          IN TXT "v=spf1 include:_spf.google.com include:spf.mailer.example.org ~all"
+_dmarc.example.com.   IN TXT "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+\`\`\`
+
+RFC 9989 removed the \`pct\` tag that Google's pages still describe, replacing part of it with a \`t\` testing flag, so leave \`pct\` out of a new record. For the 451 DMARC variant the failing piece is DNS: the faults behind timeouts, from lame delegations to missing glue, are in [four DNS faults, one symptom](/blog/four-faults-one-sentence), with the basics in [DNS fundamentals](/blog/dns-fundamentals-infrastructure).
+
+If you only sent a message and do not control the domain, Google's [guidance](https://support.google.com/mail/answer/2451690) is to send through the outgoing server that matches your address, or contact that address's provider. A forwarder should, per Google's [forwarding guide](https://support.google.com/mail/answer/175365), rewrite the envelope sender, leave DKIM-protected content unchanged and add an X-Forwarded-For or X-Forwarded-To header.
+
+## Sources
+
+- [Google Workspace Help: Gmail SMTP errors and codes](https://knowledge.workspace.google.com/admin/support/troubleshooting/gmail-smtp-errors-and-codes)
+- [Gmail Help: Email sender guidelines](https://support.google.com/a/answer/81126)
+- [Gmail Help: Email sender guidelines FAQ](https://support.google.com/a/answer/14229414)
+- [Gmail Help: Control unauthenticated mail from your domain](https://support.google.com/mail/answer/2451690)
+- [Gmail Help: Best practices for forwarding email to Gmail](https://support.google.com/mail/answer/175365)
+- [Gmail Help: Check if your Gmail message is authenticated](https://support.google.com/mail/answer/180707)
+- [Gmail Help: Fix bounced or rejected emails](https://support.google.com/mail/answer/7720)
+- [Gmail Help: Trace an email with its full header](https://support.google.com/mail/answer/29436)
+- [Gmail Help: Postmaster Tools dashboards](https://support.google.com/mail/answer/14668346)
+- [Google Workspace Help: Set up DMARC](https://support.google.com/a/answer/2466580)
+- [Google Workspace Help: Troubleshoot DMARC issues](https://support.google.com/a/answer/10032578)
+- [Google Workspace Help: Troubleshoot SPF issues](https://support.google.com/a/answer/10685928)
+- [Google Workspace Help: Troubleshoot DKIM issues](https://knowledge.workspace.google.com/admin/security/troubleshoot-dkim-issues)
+- [Google Workspace Help: ARC email authentication](https://knowledge.workspace.google.com/admin/security/arc-email-authentication)
+- [IETF: RFC 2034, SMTP Service Extension for Returning Enhanced Error Codes](https://www.rfc-editor.org/rfc/rfc2034)
+- [IETF: RFC 2308, Negative Caching of DNS Queries](https://www.rfc-editor.org/rfc/rfc2308)
+- [IETF: RFC 3463, Enhanced Mail System Status Codes](https://www.rfc-editor.org/rfc/rfc3463)
+- [IETF: RFC 5321, Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321)
+- [IETF: RFC 6376, DomainKeys Identified Mail (DKIM) Signatures](https://www.rfc-editor.org/rfc/rfc6376)
+- [IETF: RFC 7208, Sender Policy Framework (SPF) Version 1](https://www.rfc-editor.org/rfc/rfc7208)
+- [IETF: RFC 7372, Email Authentication Status Codes](https://www.rfc-editor.org/rfc/rfc7372)
+- [IETF: RFC 8058, Signaling One-Click Functionality for List Email Headers](https://www.rfc-editor.org/rfc/rfc8058)
+- [IETF: RFC 8601, Message Header Field for Indicating Message Authentication Status](https://www.rfc-editor.org/rfc/rfc8601)
+- [IETF: RFC 8617, The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617)
+- [IETF: RFC 9989, Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989)
+- [IANA: SMTP Enhanced Status Codes registry](https://www.iana.org/assignments/smtp-enhanced-status-codes/smtp-enhanced-status-codes.xhtml)
+- [Microsoft Learn: Sender Rewriting Scheme (SRS) in Microsoft 365](https://learn.microsoft.com/en-us/exchange/reference/sender-rewriting-scheme)
+- [GNU Mailman 3 documentation: DMARC Mitigations](https://docs.mailman3.org/projects/mailman/en/latest/src/mailman/handlers/docs/dmarc-mitigations.html)
+- [Fortinet: FortiMail 6.4.0 Cookbook, Testing email signing and verification](https://docs.fortinet.com/document/fortimail/6.4.0/cookbook/697073/testing-email-signing-and-verification)
+- [GNU Mailman issue 1084: DMARC mitigations for specific From: addresses](https://gitlab.com/mailman/mailman/-/issues/1084)
+- [OVHcloud Community: DNS retour depuis Gmail, hard 550-5.7.26 fail policy](https://community.ovhcloud.com/t/dns-retour-depuis-gmail-hard-550-5-7-26-fail-policy/4532)
+`,
+  },
+  {
+    slug: "ilo-4-embedded-flash-sd-card-failed",
+    title: "iLO 4 Embedded Flash/SD-CARD Failed: NAND Format or New Board",
+    date: "2026-11-04",
+    tags: ["servers", "troubleshooting", "hardware", "homelab"],
+    excerpt:
+      "HPE's documented fix for the iLO 4 Embedded Flash/SD-CARD error: firmware minimums, five NAND format methods, the AC power pull and when it is the board.",
+    coverImage: "/images/blog/ilo-4-embedded-flash-sd-card-failed.jpg",
+    content: `
+## The short answer
+
+On an HPE ProLiant Gen8 or Gen9 server, "Embedded Flash/SD-CARD" in the iLO 4 self-test points at the NAND, a [4 GB flash chip](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) that is [embedded on the system board](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US) and [stores Active Health System (AHS) logs, OneView profiles and Intelligent Provisioning](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US), or at a failed SD card. HPE's documented repair is a fixed sequence: update iLO 4 to 2.61 or later, format the NAND, check iLO Health, and if it is still Degraded, shut the server down, remove AC power and format again. Formatting from the Onboard Administrator, HPQLOCFG, PowerShell or HPONCFG needs iLO 4 2.44 or later, and the web interface's "Format Embedded Flash and reset iLO" button needs 2.61 and [appears only while iLO Health is Degraded](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US). If the iLO is still Degraded after the second format, HPE's advisory calls for a system board replacement. The format erases AHS logs and Intelligent Provisioning, so reboot the server and reinstall Intelligent Provisioning afterward. One owner report describes a worn chip that showed the warning again shortly after a format while the host operating system kept running, so what that owner lost was iLO monitoring, not the server.
+
+## What does "Embedded Flash/SD-CARD" failing on iLO 4 mean?
+
+iLO 4 is the server's out-of-band management controller (the [IPMI article](/blog/ipmi-remote-management) covers the category), and it runs diagnostic self-tests and publishes one result. HPE's user guide defines iLO Health as ["based on the combined results of the iLO diagnostic self-tests"](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-DE11DD4A-9282-4425-93A4-D79370A9AE5A.html&docLocale=en_US), with two values, OK and Degraded. From firmware 2.61 on, a failed flash self-test also puts a warning on the login page and an "iLO Health" status on the Overview and Diagnostics pages, per [HPE advisory a00048622](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US).
+
+The flash is the NAND. The [iLO 4 2.82 User Guide](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US) calls the Embedded Flash "also called the NAND" and "a partition of nonvolatile flash memory that is embedded on the system board." HPE says it [began using NAND in ProLiant servers with Gen8](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00049583en_us), and that Gen8 Intelligent Provisioning is ["built into the server on its NAND chip"](https://support.hpe.com/hpesc/public/docDisplay?docId=c03456549&docLocale=en_US), which is why F10 at POST boots from it. The label also names an SD card, and iLO does watch the internal slot: the guide lists an ["SD-Card Status"](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-DE11DD4A-9282-4425-93A4-D79370A9AE5A.html&docLocale=en_US) field described as "The status of the internal SD card," and HPE has a [separate advisory](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00050883en_us) for an Embedded Flash/SD Card that may intermittently fail to mount on iLO 4 2.60 or earlier, where "the boot will not complete" if the OS is on the card. On Gen9, System Utilities has an [Internal SD Card Slot](https://support.hpe.com/hpesc/public/docDisplay?docId=c04398276&page=s_enable_disable_internal_SD_slot.html&docLocale=en_US) switch under System Options > USB Options, set to Enabled or Disabled.
+
+An owner who removed a failed 32 GB SD card from a DL360e Gen8 on iLO 2.78 still saw ["NAND read failure"](https://be-virtual.net/hpe-proliant-removing-sd-card-ilo-degraded/) on the Diagnostics page, so pulling the card did not clear the line. The strings below come from HPE's advisory and from owner reports:
+
+| Where it appears | Text | Reported by |
+|---|---|---|
+| Login page | "iLO Self-Test reports a problem with: Embedded Flash/SD-CARD. View details on Diagnostics page." | Owner reports ([one](https://be-virtual.net/hpe-proliant-removing-sd-card-ilo-degraded/), [two](https://blog.fernvenue.com/archives/hpe-proliant-signs-of-age/)) |
+| Diagnostics | "Embedded media manager failed initialization" | [HPE advisory c04996097](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) |
+| Diagnostics | "The AHS file system mount failed with (No such device)" or "(I/O error)" | HPE advisory c04996097 |
+| Diagnostics | "Controller firmware revision 2.09.00 Could not partition embedded media device" | HPE advisory c04996097 |
+| Diagnostics | "Controller firmware revision 2.10.00 Embedded media initialization failed due to media write-verify test failure" | Owner reports ([one](https://gbeifuss.github.io/p/resolving-hp-ilo-nand-error/), [two](https://blog.fernvenue.com/archives/hpe-proliant-signs-of-age/)) |
+| Active Health System | "bb_dl_disabled" when downloading the log | HPE advisory c04996097 |
+| Intelligent Provisioning | F10 does not start it | HPE advisory c04996097 |
+| OneView | "Remote Insight/Integrated Lights-Out Self-Test Error 8192", or "Blob Store is not yet initialized. and Status: 126" | HPE advisory c04996097 |
+
+The "controller firmware revision" in these strings is not the iLO version. HPE lists "Controller Firmware Version 2.09.00 may fail to restart" under Embedded Media Errors in [advisory c04996097](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097), which suggests the number belongs to the embedded media controller. Two owner reports that quote 2.10.00 and state their iLO version ran iLO 4 [2.79](https://gbeifuss.github.io/p/resolving-hp-ilo-nand-error/) and [2.78](https://be-virtual.net/hpe-proliant-removing-sd-card-ilo-degraded/), so the number cannot tell you whether your iLO is current. HPE published the first revision of advisory c04996097 on March 31, 2016, so the failure is old and well documented.
+
+## Which Gen8 and Gen9 servers and iLO 4 firmware does the advisory cover?
+
+HPE's scope line reads "Any HPE ProLiant Gen8-series or HPE ProLiant Gen9-series servers with iLO 4." The [NAND format advisory](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US) lists platforms that include the DL360p, DL380p and ML350p Gen8, the MicroServer Gen8, the BL460c Gen8 and Gen9 blades, and the DL360, DL380 and ML350 Gen9. Gen10 servers use iLO 5, which got the same NAND write change in firmware 1.30 according to the [HPE notice](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00049583en_us), but this repair is written for iLO 4. The [iLO generations article](/blog/ilo-6-vs-ilo-7) maps iLO versions to server generations, and the [DL360p Gen8 fan article](/blog/proliant-dl360p-gen8-fan-noise) covers another iLO 4 symptom on the same hardware.
+
+Firmware decides which repair paths exist:
+
+| iLO 4 version | What HPE ties to it |
+|---|---|
+| 2.44 | Minimum to format the NAND at all; only the web interface method needs more (2.61) |
+| 2.50 or older | Run \`oemHP_clearRESTapistate\` in the iLO CLI before the post-format reboot |
+| 2.53 or newer | The post-format reboot repopulates RIS and RESTful data by itself |
+| 2.55 | Adds AuxPwrCycle, the remote equivalent of removing AC power |
+| 2.60 or earlier | The embedded flash or SD card may intermittently fail to mount |
+| 2.61 | Adds the Format button, the login warning and the iLO Health status; reduces NAND writes |
+| 2.82 | Release notes published March 2023 recommend this version |
+
+The 2.44, 2.50, 2.53 and 2.55 rows and the first three items in the 2.61 row come from [advisory a00048622](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US), the reduced NAND writes in the 2.61 row from the [write algorithm notice](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00049583en_us), the 2.60 row from [advisory a00050883](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00050883en_us), and the 2.82 row from the [iLO 4 v2.82 release notes](https://support.hpe.com/hpesc/public/docDisplay?docId=c03334036en_us&docLocale=en_US), which say "Recommended to update to HPE iLO 4 2.82 version" and supersede 2.81. The release notes list three fixed items and none concerns the NAND, and HPE's own repair sequence still ends in a board replacement after the firmware update.
+
+HPE calls 2.61 a ["critical update"](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) that improves the write algorithm for the embedded 4 GB flash. The [write algorithm notice](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00049583en_us) explains that 2.61 tailors "the AHS NAND program cycles to the optimal block size NAND writes" for HPE's chips, and says NAND cells have "a defined number of program/erase cycles," and that once the reserved blocks or write count reach a limit "NAND writes will be disabled." The same limit on flash write cycles is why write amplification matters on SSDs, which the [SSD write amplification article](/blog/write-amplification-ssd-endurance) covers. The notice also recommends against downgrading below 2.60, because that restores the older write algorithm.
+
+One upgrade path is risky. [HPE advisory a00060355](https://support.hpe.com/hpesc/public/docDisplay?docId=a00060355en_us&docLocale=en_US) says Gen8 servers on iLO 4 2.30 or earlier "may experience corrupted NAND memory" after upgrading to 2.61, and the fix is to reformat the NAND after the upgrade. An owner who took DL380 G9 servers from iLO 1.4 to 2.79 [reported](https://gbeifuss.github.io/p/resolving-hp-ilo-nand-error/) that two thirds showed the NAND warning afterward.
+
+## In what order does HPE say to fix it?
+
+Advisory c04996097 gives seven steps "completed in the order specified." The [advisory](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) puts the conditions in its overview:
+
+1. Upgrade iLO 4 to 2.61 or later.
+2. Format the NAND by one of the methods in the next section.
+3. Check iLO status. If it is normal, skip to step 6.
+4. If it is still degraded, schedule a maintenance window, shut the server down, perform an AC power pull (DL and ML servers) or an E-fuse reset (blades), and format again.
+5. Check iLO status again. If it is normal, continue to step 6.
+6. Reboot the server, reinstall Intelligent Provisioning, and refresh the server in OneView if it is managed there.
+7. If the iLO is still degraded after steps 1 to 4, replace the system board.
+
+HPE says a format can be done "while the server is online in most cases." The exception is a VMware ESXi host that boots from the embedded SD card: HPE strongly recommends shutting ESXi down for the format, and for iLO firmware updates and iLO resets on such hosts.
+
+## How do you format the NAND from the web interface, HPONCFG or PowerShell?
+
+Log in with administrator-level credentials. The [iLO 4 guide](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US) lists the Configure iLO Settings privilege and a Degraded health status as prerequisites, and it adds that "an experienced support organization" should have recommended the format. [Advisory a00048622](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US) documents five methods:
+
+| Method | Needs | Where it runs |
+|---|---|---|
+| Web interface | iLO 4 2.61 | Browser, Information > Diagnostics |
+| Onboard Administrator CLI | 2.44 | Blades in c3000 and c7000 enclosures only |
+| HPQLOCFG | 2.44 | Windows host, local or remote |
+| PowerShell | 2.44 | Windows, iLO cmdlets 1.x |
+| HPONCFG | 2.44 | Linux or VMware host |
+
+### Web interface
+
+Open Information > Diagnostics and click the "iLO Health" link. HPE says that link, and so the "Format Embedded Flash and reset iLO" button behind it, [shows only when iLO Health is Degraded](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US). Per the [user guide](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US), iLO warns that the process erases all data on the Embedded Flash, asks for confirmation, formats, and then resets itself. The advisory adds that the self-test warning may still display because of browser caching.
+
+### Script methods
+
+All four script methods send the same RIBCL script. HPE says to save it as Force_Format.xml and to replace the user name and password on line 2:
+
+\`\`\`xml
+<RIBCL VERSION="2.0">
+<LOGIN USER_LOGIN="adminname" PASSWORD="password">
+<RIB_INFO MODE="write">
+<FORCE_FORMAT VALUE="all"/>
+</RIB_INFO>
+</LOGIN>
+</RIBCL>
+\`\`\`
+
+From Windows, HPQLOCFG sends the script to a remote iLO. Put the file in the folder that holds the utility, which is \`C:\\Program Files (x86)\\Hewlett-Packard\\HPLights-OutConfiguration Utility\` by default, and run:
+
+\`\`\`bat
+HPQLOCFG.exe -s <IPofTargetiLO> -u <iLO-Username> -p <Password-For-iLO> -f Force_Format.xml
+\`\`\`
+
+From PowerShell, HPE requires the iLO cmdlets at version 1.5.0.1 or earlier, because version 2.x does not include the Invoke-HPiLORIBCLCommand cmdlet. Both versions can be installed on the same machine.
+
+\`\`\`powershell
+$xml = ([string](Get-Content "C:\\RIBCL_XML\\Force_Format.xml"))
+Invoke-HPiLORIBCLCommand -Server <iLO-IP> -Username Administrator -Password <password> -RIBCLCommand $xml -DisableCertificateAuthentication
+\`\`\`
+
+If the PowerShell commands are accepted, the output shows a WARNING status with the message "Forcing a format of the partition after the iLO reset." On a Linux or VMware host, run HPONCFG from \`/opt/hp/tools\`:
+
+\`\`\`bash
+cd /opt/hp/tools
+./hponcfg -f Force_Format.xml
+\`\`\`
+
+Success prints "Script succeeded for IP:XXX.XXX.XXX.XXX." The advisory's revision table mentions \`-i\` for the Linux command, but its instructions use \`-f\`, and the [iLO 4 scripting guide](https://support.hpe.com/hpesc/public/docDisplay?docId=c03334058&docLocale=en_US) defines \`-f\` as reading the script from a file and \`-i\` as reading it from standard input. The same guide says HPONCFG on the host needs an Administrator or root account on the host. On a blade, the Onboard Administrator method pastes the same XML after \`HPONCFG <bay #> << end_marker\`, using the bay number of the blade.
+
+### How do you confirm it worked?
+
+HPE lists four checks for iLO 4 2.61 or newer:
+
+- The login page no longer shows the self-test warning, after refreshing the browser cache.
+- iLO Health on the Overview page reads OK.
+- The iLO Event Log contains "Embedded Flash/SD-CARD: One or more storage devices have been formatted".
+- The Diagnostics page shows the iLO self-test as normal.
+
+If the format fails, HPE says "additional steps will be required," which leads to the next section.
+
+## Why does HPE say an AC power removal may be needed?
+
+HPE does not give a reason. Its wording is that "A server AC power removal may be required (prior to the NAND format) in order for the NAND format to be successful." For ML and DL servers that means shutting down and disconnecting the power cables "for a few seconds." For blades it means an E-fuse reset, which is \`reset server #\` in the Onboard Administrator CLI, where # is the bay number. Firmware 2.55 added AuxPwrCycle so the equivalent can be done remotely, and the [advisory](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US) gives no syntax for it.
+
+The two advisories place the power pull differently. The format advisory says it may be needed before the format, while [c04996097](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) makes it step 4, after a first format leaves the iLO degraded. If the server has to be shut down for step 4 anyway, the format advisory's wording permits doing the pull before the first format.
+
+Owner reports fit the second order. An administrator with DL380 G9 servers said resetting iLO and cycling the server did nothing, the format left the same error, and removing the power cord for 15 seconds cleared it, in a [December 2021 post](https://gbeifuss.github.io/p/resolving-hp-ilo-nand-error/). A [2019 post](https://kallesplayground.wordpress.com/2019/06/24/hpe-ilo-problem-with-embedded-flash-sd-card/) on two BL490c Gen9 blades says the format cleared one and the other needed an E-fuse reset from the Onboard Administrator. The DL360e Gen8 owner above reported that removing power and restarting iLO left the health Degraded, and that the eventual fix took about three hours.
+
+A caution for blades under OneView: if the NAND is inaccessible, advisory c04996097 says an E-fuse reset means the server "will not be able to be brought back under management until the NAND issue is remediated," which causes an unexpected outage. A profile that is unassigned cannot be reassigned until the NAND is repaired.
+
+## What do you lose, and how do you reinstall Intelligent Provisioning afterward?
+
+The format erases everything on the Embedded Flash, and per the [iLO 4 guide](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US), external providers such as Intelligent Provisioning and the BIOS "must be reconfigured." Concretely:
+
+- **AHS history.** An HPE support article says a NAND format ["will clear Entire AHS entries."](https://support.hpe.com/hpesc/public/docDisplay?docId=sf000079969en_us&docLocale=en_US) The same article covers a milder case, an AHS log that stops collecting current boot entries on iLO 4 2.61 or newer because the system cannot overwrite existing NAND data. Its first fix is to clear the log from the iLO web interface under Active Health System log, Show Advanced Settings, and the format is the alternative.
+- **The OneView blob store.** The format wipes it, so refresh the server in OneView and mark old errors cleared.
+- **Intelligent Provisioning.** Reinstall it, then confirm it shows as installed on the System Information, Firmware Information page.
+
+If the server was on during the format, reboot it. On 2.53 or newer the reboot repopulates the RIS and RESTful data. On 2.50 or older, connect to the iLO CLI first and run \`oemHP_clearRESTapistate\`, which the scripting guide spells \`oemhpe_clearRESTAPIstate\` and describes as clearing "any data cache stored by the HPE RESTful interface."
+
+Intelligent Provisioning comes in two lines for these servers: 1.x for Gen8 and 2.x for Gen9, with 3.x reserved for Gen10, per [advisory c04996097](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097). A Windows or Linux host can reinstall it online with a package from HPE, while a VMware host needs the offline recovery media. The advisory says the DVD can be reused and can be mounted remotely through iLO virtual media. The versions it lists are Gen8 recovery media 1.70 from October 2017 and Gen9 recovery media 2.70(b) from February 2018, so check HPE's revision history for anything newer.
+
+## When is the fix a system board replacement?
+
+When steps 1 to 4 leave iLO Health Degraded. HPE's step 7 says to contact HPE support, open a case, and during a maintenance window shut the server down, unassign any OneView profile, replace the system board, enter the server model and serial number through RBSU, update to iLO 4 2.61 or later, check iLO status, and reassign the profile. That fits the user guide's description of the NAND as embedded on the system board: HPE's documented remedy names the board, not a flash module. The advisory assumes a support case, and it does not say whether a used server without a contract qualifies, so ask HPE before counting on that route.
+
+One owner report shows how a worn board can behave. A [September 2025 post](https://blog.fernvenue.com/archives/hpe-proliant-signs-of-age/) about two DL388p Gen8 servers in service for about ten years says the Format Embedded Flash button appeared to work, but the same warning returned shortly afterward, and the author concluded the NAND was worn. The author also reported that this does not affect the normal operation of the services on the server's OS, and used \`ssacli\` to watch the array and drives without iLO. HPE's [Management Component Pack](https://downloads.linux.hpe.com/SDR/project/mcp/) lists \`ssacli\` as the "HPE Command Line Smart Storage Administration Utility." The [P420i HBA mode article](/blog/smart-array-p420i-hba-mode) covers the Smart Array controller in these Gen8 servers.
+
+For a used purchase, the iLO login page is a free test. A Gen8 or Gen9 unit on 2.61 or newer shows the self-test warning there, so log in before paying. On older firmware the warning is not on the login page, so open the Diagnostics page, where [HPE lists](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097) messages such as "Embedded media manager failed initialization." The [used enterprise gear article](/blog/buying-used-enterprise-gear) has a receiving checklist to run alongside it.
+
+## What can go wrong during the fix?
+
+**There is no "Format Embedded Flash and reset iLO" button.** The button needs iLO 4 2.61 and a Degraded iLO Health status. Fix: update the iLO, or use a script method on 2.44 or newer. If iLO Health reads OK, the button is hidden by design: HPE's guide lists a Degraded iLO Health as a prerequisite for the format.
+
+**The warning is still on the login page after the format.** HPE says browser caching can keep it on screen, so refresh the cache and read iLO Health and the Event Log instead. If the log lacks the "have been formatted" line, do the AC power pull or E-fuse reset and format again.
+
+**The warning comes back shortly after a format.** The DL388p Gen8 owner above read that as a worn chip. Fix: monitor storage from the OS with \`ssacli\`, or follow step 7.
+
+**The error appeared right after a firmware upgrade.** HPE says Gen8 servers on 2.30 or earlier may corrupt the NAND on the way to 2.61. Fix: format the NAND after the upgrade, as HPE directs, and expect to lose AHS history.
+
+**\`Invoke-HPiLORIBCLCommand\` is not recognized.** The 2.x cmdlets lack it. Fix: install iLO cmdlets 1.5.0.1 or earlier beside the newer version.
+
+**An ESXi host boots from the SD card.** HPE strongly recommends shutting ESXi down before the format, a firmware update or an iLO reset. If the card fails to mount on 2.60 or earlier, the boot will not complete. Fix: update to 2.61 and reboot.
+
+**A OneView server cannot be added or a profile cannot be assigned.** OneView uses the NAND blob store. Fix: repair the NAND first, then refresh the server.
+
+**Intelligent Provisioning does nothing on F10 after the format.** The format removed it. Fix: reinstall it from HPE's package or recovery media and check the Firmware Information page.
+
+## Sources
+
+- [HPE: Advisory, How to Format the NAND Used to Store AHS logs, OneView Profiles, and Intelligent Provisioning (a00048622)](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048622en_us&docLocale=en_US)
+- [HPE: Advisory, AHS Logs and OneView Profiles May Be Unavailable Causing iLO Self-Test Error 8192, Embedded Media Manager and Other Errors (c04996097)](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c04996097)
+- [HPE: Notice, Critical iLO 5 Firmware 1.30 and iLO 4 Firmware 2.61 Include Write Algorithm Enhancements That Prolong NAND Life (a00049583)](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00049583en_us)
+- [HPE: Advisory, Gen8 Servers with iLO 4 Firmware 2.30 (or Earlier) May Corrupt NAND After Upgrade to iLO 4 2.61 (a00060355)](https://support.hpe.com/hpesc/public/docDisplay?docId=a00060355en_us&docLocale=en_US)
+- [HPE: Advisory, Embedded Flash/SD Card May Intermittently Fail To Be Mounted with iLO 4 (a00050883)](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-a00050883en_us)
+- [HPE: iLO 4 2.82 User Guide, Formatting the Embedded Flash](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-CC78938D-F80A-441F-947B-566BA87E0214.html&docLocale=en_US)
+- [HPE: iLO 4 2.82 User Guide, System status details](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00001038en_us&page=GUID-DE11DD4A-9282-4425-93A4-D79370A9AE5A.html&docLocale=en_US)
+- [HPE: iLO 4 v2.82 Release Notes](https://support.hpe.com/hpesc/public/docDisplay?docId=c03334036en_us&docLocale=en_US)
+- [HPE: iLO 4 Scripting and Command Line Guide, April 2021](https://support.hpe.com/hpesc/public/docDisplay?docId=c03334058&docLocale=en_US)
+- [HPE: ProLiant Gen8-series or Gen9-series Servers with iLO 4, How to Fix Incomplete AHS Log (sf000079969)](https://support.hpe.com/hpesc/public/docDisplay?docId=sf000079969en_us&docLocale=en_US)
+- [HPE: Notice, Intelligent Provisioning Replaces SmartStart Media in ProLiant Gen8-Series Servers (c03456549)](https://support.hpe.com/hpesc/public/docDisplay?docId=c03456549&docLocale=en_US)
+- [HPE: UEFI System Utilities User Guide for HPE ProLiant Gen9 Servers and HPE Synergy, Internal SD Card Slot](https://support.hpe.com/hpesc/public/docDisplay?docId=c04398276&page=s_enable_disable_internal_SD_slot.html&docLocale=en_US)
+- [HPE Software Delivery Repository: Management Component Pack](https://downloads.linux.hpe.com/SDR/project/mcp/)
+- [Greg Beifuss: Resolving HP iLO NAND Error](https://gbeifuss.github.io/p/resolving-hp-ilo-nand-error/)
+- [Kalle's playground: HPE iLO problem with Embedded Flash/SD-CARD](https://kallesplayground.wordpress.com/2019/06/24/hpe-ilo-problem-with-embedded-flash-sd-card/)
+- [Be-Virtual.net: HPE ProLiant Removing SD Card iLO Degraded](https://be-virtual.net/hpe-proliant-removing-sd-card-ilo-degraded/)
+- [fernvenue's Blog: HPE ProLiant, Signs of Age](https://blog.fernvenue.com/archives/hpe-proliant-signs-of-age/)
+`,
+  },
+  {
+    slug: "ipsec-no-proposal-chosen",
+    title: "IPsec NO_PROPOSAL_CHOSEN: Matching IKEv2 Proposals Between Vendors",
+    date: "2026-11-04",
+    tags: ["networking", "security", "firewall", "troubleshooting", "fortinet"],
+    excerpt:
+      "How to read IKEv2 NO_PROPOSAL_CHOSEN errors on FortiGate, strongSwan, pfSense and Cisco, and which transforms, DH groups and PFS settings must match.",
+    coverImage: "/images/blog/ipsec-no-proposal-chosen.jpg",
+    content: `
+## The short answer
+
+NO_PROPOSAL_CHOSEN is IKEv2 notify type 14. It means the responder compared the SA payload it received with its own policy, found no suite with one acceptable transform of every type, and, as [RFC 7296](https://www.rfc-editor.org/rfc/rfc7296) requires, rejected every proposal. In IKE_SA_INIT no IKE SA exists afterward; in IKE_AUTH or CREATE_CHILD_SA the IKE SA survives and only the child SA (or the rekey) fails. The initiator's log usually says only that the notify arrived, while the responder's log lists both proposal sets: strongSwan prints "received proposals" and "configured proposals", FortiGate prints "incoming proposal" and "my proposal". Compare encryption with key length, PRF, integrity (absent with AES-GCM), Diffie-Hellman group, ESN and, for child SAs, the PFS group. Lifetimes are not negotiated, so a lifetime difference alone does not raise this error, and a PFS mismatch can stay hidden until the first rekey. A set built from [RFC 8247](https://www.rfc-editor.org/rfc/rfc8247) MUST-level algorithms that every platform below can express is AES-CBC with a 256-bit key, HMAC-SHA2-256, PRF_HMAC_SHA2_256 and group 14, with AES-GCM-16 (a SHOULD) as the AEAD option. Two documented upgrade traps: [FortiOS 7.6.5 changed the default DH groups](https://docs.fortinet.com/document/fortigate/7.6.5/fortios-release-notes/230510/changes-in-default-behavior) from 14 and 5 to 20 and 21 for CLI configuration, and per [strongSwan's Windows notes](https://docs.strongswan.org/docs/latest/interop/windowsClients.html) the built-in Windows IKEv2 client proposes only modp1024 by default.
+
+## What does NO_PROPOSAL_CHOSEN mean in IKEv2, and which exchange raised it?
+
+RFC 7296 section 2.7 says "The responder MUST accept a single proposal or reject them all and return an error," and names that error NO_PROPOSAL_CHOSEN. The accepted suite "MUST contain exactly one transform of each type included in the proposal." The RFC's example of three ciphers and two integrity algorithms yields six acceptable combinations, so peers need one overlap per transform type, not identical lists. Section 3.10 defines the notify as "None of the proposed crypto suites was acceptable" and adds that it can serve as a "generic" Child SA error, including when a USE_TRANSPORT_MODE or IPCOMP_SUPPORTED notify is unacceptable. [WireGuard versus IPsec](/blog/wireguard-vs-ipsec-tunnels) covers why IPsec has this negotiation layer.
+
+The type numbers below come from the [IANA IKEv2 registry](https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml).
+
+| Exchange | Type | What it negotiates | What NO_PROPOSAL_CHOSEN does | Visible in a capture |
+|---|---|---|---|---|
+| IKE_SA_INIT | 34 | IKE SA algorithms, nonces, first Diffie-Hellman exchange | The exchange fails and no IKE SA exists | Yes, sent in the clear |
+| IKE_AUTH | 35 | Identities, authentication, the first child SA (no key exchange payload) | The IKE SA is still created, the child SA is missing | No, encrypted |
+| CREATE_CHILD_SA | 36 | New child SAs, rekeys of IKE and child SAs, optional PFS key exchange | The rekey or new child fails | No, encrypted |
+
+RFC 7296 section 1.2 says "All messages following the initial exchange are cryptographically protected." It lists NO_PROPOSAL_CHOSEN among the IKE_AUTH errors that "do not prevent an IKE SA from being set up," and section 2.21.1 says that in IKE_SA_INIT "any error notification causes the exchange to fail." Because that notify is unauthenticated, the recipient "should continue trying for some time before giving up."
+
+Vendor menus still say "phase 2." RFC 7296 calls the initial exchanges (IKE_SA_INIT and IKE_AUTH, the latter carrying the first child SA) "known in IKEv1 as Phase 1," so on an IKEv2 tunnel "phase 1" settings shape the IKE SA and "phase 2" settings shape child SAs. [RFC 9395](https://www.rfc-editor.org/rfc/rfc9395) (April 2023) deprecated IKEv1.
+
+## How do you tell an IKE_SA_INIT mismatch from a child SA mismatch in the logs?
+
+Read the responder first. Netgate's [IPsec log guide](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-logs.html) says that in its failed-connection examples the initiator "does not receive messages about specific items that do not match, so the responder logs are much more informative," because "it would be insecure to provide messages to a potential attacker that would give them information about how the tunnel is configured." RFC 7296 takes the same position in its INVALID_SYNTAX entry: "more detailed error information should be written to a console or log."
+
+| Platform | Initiator sees | Responder logs |
+|---|---|---|
+| strongSwan, IKE_SA_INIT | "received NO_PROPOSAL_CHOSEN notify error", per [ike_init.c](https://github.com/strongswan/strongswan/blob/master/src/libcharon/sa/ikev2/tasks/ike_init.c) | "received proposals" and "configured proposals" at level 1, then "no acceptable proposal found" |
+| strongSwan, child SA | "received NO_PROPOSAL_CHOSEN notify, no CHILD_SA built", per [child_create.c](https://github.com/strongswan/strongswan/blob/master/src/libcharon/sa/ikev2/tasks/child_create.c) | The same two dumps, or "no acceptable traffic selectors found" for a selector mismatch |
+| FortiGate | "notify msg received: NO-PROPOSAL-CHOSEN" | "incoming proposal:" and "my proposal, gw NAME:" lines, then "no proposal chosen" |
+| pfSense | The strongSwan strings above, because pfSense writes a strongSwan [swanctl.conf](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-connections.html); Netgate's IKEv1 samples print "received NO_PROPOSAL_CHOSEN error notify" | The same two dumps, then "no proposal found" in Netgate's samples, at Status > System Logs, IPsec tab |
+
+In current strongSwan source, [proposal.c](https://github.com/strongswan/strongswan/blob/master/src/libstrongswan/crypto/proposal/proposal.c) logs both lists at level 1 when selection fails and each "no acceptable" transform line at level 2. FortiGate's wording comes from Fortinet's [no proposal chosen](https://community.fortinet.com/fortigate-3/troubleshooting-tip-no-proposal-chosen-negotiate-sa-error-202876) and [KE payload](https://community.fortinet.com/fortigate-3/troubleshooting-tip-ipsec-vpn-down-due-to-mismatched-dh-group-in-ke-payload-208310) articles. A [February 2012 post on the strongSwan users list](https://lists.strongswan.org/pipermail/users/2012-February/002550.html) (strongSwan 4.6.1, a user report) shows an IKE_SA_INIT failure from the responder side, abridged here:
+
+\`\`\`text
+charon: 05[CFG] selecting proposal:
+charon: 05[CFG]   no acceptable DIFFIE_HELLMAN_GROUP found
+charon: 05[CFG] received proposals: IKE:AES_CBC_128/HMAC_MD5_96/PRF_HMAC_MD5/MODP_1536
+charon: 05[CFG] configured proposals: IKE:AES_CBC_128/HMAC_MD5_96/PRF_HMAC_MD5
+charon: 05[IKE] received proposals inacceptable
+charon: 05[ENC] generating IKE_SA_INIT response 0 [ N(NO_PROP) ]
+\`\`\`
+
+The received proposal has MODP_1536 and the configured one has no group, so the group is the culprit. The poster reported that the tunnel came up once the IKEv2 connection was moved ahead of an IKEv1 one in \`ipsec.conf\`, and that editing the IKEv1 suite changed the "configured" dump. That dump shows what the responder actually compared, which may not be the connection being edited.
+
+A capture can confirm the first exchange only. [Wireshark](/blog/wireshark-packet-analysis)'s [ISAKMP reference](https://www.wireshark.org/docs/dfref/i/isakmp.html) lists the fields \`isakmp.exchangetype\` and \`isakmp.notify.msgtype\`, which combine into \`isakmp.exchangetype == 34 && isakmp.notify.msgtype == 14\` for IKE_SA_INIT rejections (the [Wireshark filters](/tools/wireshark-filters) page has the syntax). IKE_AUTH and CREATE_CHILD_SA replies are encrypted.
+
+## Which parameters must match, and which are never negotiated?
+
+One value per transform type has to overlap. RFC 7296 section 3.3.3 sets which types each protocol needs.
+
+| Transform type | IANA type | IKE SA | ESP child SA |
+|---|---|---|---|
+| Encryption (ENCR) | 1 | Mandatory | Mandatory |
+| Pseudorandom function (PRF) | 2 | Mandatory | Not used |
+| Integrity (INTEG) | 3 | Mandatory with non-AEAD ciphers | Optional, absent with AEAD |
+| Diffie-Hellman group | 4 | Mandatory | Optional, this is PFS |
+| Extended sequence numbers (ESN) | 5 | Not used | Mandatory |
+
+Several mismatches hide inside that table.
+
+- **Key length.** RFC 7296 section 3.3.5 says transforms such as ENCR_AES_CBC must always carry a Key Length attribute, and "proposals not containing it MUST be rejected," so AES-128 and AES-256 are different offers. [RFC 8247](https://www.rfc-editor.org/rfc/rfc8247) keeps 192-bit keys at MAY.
+- **AEAD versus classic.** [RFC 5282 section 8](https://www.rfc-editor.org/rfc/rfc5282) says an integrity algorithm "MUST NOT be selected" with an authenticated encryption algorithm. strongSwan's [proposal documentation](https://docs.strongswan.org/docs/latest/config/proposals.html) says AEAD and classic algorithms "must not be used in the same proposal," so offering both takes two proposals, and an AEAD proposal needs an explicit PRF.
+- **PRF.** With classic ciphers, strongSwan derives the PRF from the integrity algorithm if none is configured. A Fortinet [debug excerpt](https://community.fortinet.com/fortigate-3/troubleshooting-tip-no-proposal-chosen-negotiate-sa-error-202876) shows both \`AUTH_HMAC_SHA2_256_128\` and \`PRF_HMAC_SHA2_256\` in one proposal.
+- **ESN.** An initiator that supports ESN usually offers both values, and per RFC 7296 a single ESN transform with value 1 "means that using normal (non-extended) sequence numbers is not acceptable." strongSwan assumes \`noesn\` when neither keyword is set.
+
+Lifetimes are not in the table because they are not negotiated. RFC 7296 section 2.8 says "in IKEv1 SA lifetimes were negotiated" but in IKEv2 each end enforces its own policy, and the shorter side "will end up always being the one to request the rekeying." Netgate's [connection guide](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-connections.html) states that "Lifetime mismatches do not cause a failure in phase 1 or phase 2." Defaults differ: strongSwan rekeys the IKE SA every 4 hours and a child SA every hour, per its [renewal docs](https://docs.strongswan.org/docs/latest/config/rekeying.html), and FortiOS uses \`keylife\` 86400 for phase 1 and \`keylifeseconds\` 43200 for phase 2, per the [7.4.2](https://docs.fortinet.com/document/fortigate/7.4.2/cli-reference/333620) and [7.6.5](https://docs.fortinet.com/document/fortigate/7.6.5/cli-reference/252893715) CLI references.
+
+## How do FortiGate, pfSense, strongSwan, Cisco and Windows name the same algorithms and groups?
+
+The IANA registry fixes the numbers, and each vendor picks its own label. The strongSwan column comes from its [proposal keyword tables](https://docs.strongswan.org/docs/latest/config/proposals.html), FortiOS from the 7.4.2 phase 1 reference above, and Windows from Microsoft's [Set-VpnConnectionIPsecConfiguration](https://learn.microsoft.com/en-us/powershell/module/vpnclient/set-vpnconnectionipsecconfiguration) page.
+
+| IANA transform | strongSwan | FortiOS phase 1 | Windows cmdlet |
+|---|---|---|---|
+| ENCR_AES_CBC (12), 256-bit key | \`aes256\` | \`aes256-sha256\` (cipher and hash as one keyword) | \`AES256\` |
+| ENCR_AES_GCM_16 (20), 256-bit key | \`aes256gcm16\` | \`aes256gcm-prfsha256\` | \`GCMAES256\` |
+| AUTH_HMAC_SHA2_256_128 (12) | \`sha256\` | the \`sha256\` half of the keyword | \`SHA256\` for IKE, \`SHA256128\` for ESP |
+| PRF_HMAC_SHA2_256 (5) | \`prfsha256\` | the \`prfsha256\` suffix on AEAD keywords | Not set separately |
+| Group 14, 2,048-bit MODP | \`modp2048\` | \`dhgrp 14\` | \`Group14\`, PFS \`PFS2048\` |
+| Group 19, 256-bit ECP | \`ecp256\` | \`dhgrp 19\` | \`ECP256\` |
+| Group 20, 384-bit ECP | \`ecp384\` | \`dhgrp 20\` | \`ECP384\` |
+| Group 31, Curve25519 | \`x25519\` | \`dhgrp 31\` | Not offered |
+
+FortiOS phase 2 uses shorter names. strongSwan's [FortiGate interoperability page](https://docs.strongswan.org/docs/latest/interop/fortinet.html) pairs the phase 2 lines \`set proposal aes128gcm aes256gcm aes128-sha256 aes256-sha256\` and \`set dhgrp 31 15 14\` with \`esp_proposals = aes128gcm16-aes256gcm16-x25519\`. pfSense uses a GUI list, and its [phase 1 page](https://docs.netgate.com/pfsense/en/latest/vpn/ipsec/configure-p1.html) says a GCM tunnel uses the hash "solely as a PRF."
+
+[Cisco IOS](/blog/cisco-ios-fundamentals) XE takes \`encryption\`, \`integrity\` and \`group\` lines inside a \`crypto ikev2 proposal\`, which is used only once a policy references it, per Cisco's [IOS XE 17 guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_ike2vpn/configuration/xe-17/sec-flex-vpn-xe-17-book/sec-cfg-ikev2-flex.html). The guide's smart-default proposal is AES-CBC-256, integrity and PRF SHA512 and SHA384, and groups 19, 14, 21 and 5. Another section says the default groups are 2 and 5, so trust \`show crypto ikev2 proposal\` on the live router. The ASA's \`crypto ikev2 policy\` takes \`encryption\`, \`integrity\`, \`group\`, \`prf\` and \`lifetime seconds\`.
+
+Group sizes compare only within one family. [RFC 8247](https://www.rfc-editor.org/rfc/rfc8247) section 2.4 and the [IANA registry](https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml) give these ratings and sizes.
+
+| Group | IANA size | RFC 8247 status |
+|---|---|---|
+| 1 | 768-bit MODP | MUST NOT |
+| 2 | 1,024-bit MODP | SHOULD NOT |
+| 5 | 1,536-bit MODP | SHOULD NOT |
+| 14 | 2,048-bit MODP | MUST |
+| 15 | 3,072-bit MODP | Not mentioned |
+| 19 | 256-bit random ECP | SHOULD |
+| 20, 21, 31 | 384-bit ECP, 521-bit ECP, Curve25519 | Not mentioned |
+
+RFC 8247 rates the 256-bit group 19 above the 1,536-bit group 5, so a peer that offers only group 2 or 5 is offering what the standard discourages. Groups it does not mention "MAY be implemented," and [RFC 9395](https://www.rfc-editor.org/rfc/rfc9395) says such algorithms were left in a state of "MAY be used."
+
+## How do INVALID_KE_PAYLOAD, TS_UNACCEPTABLE and AUTHENTICATION_FAILED differ?
+
+Each points at a different layer of the negotiation.
+
+| Notify | Type | Raised when | First check |
+|---|---|---|---|
+| NO_PROPOSAL_CHOSEN | 14 | No overlap in a transform type, or a "generic" child SA failure | The two proposal dumps |
+| INVALID_KE_PAYLOAD | 17 | The initiator's key exchange group differs from the one the responder chose | The group the responder names |
+| AUTHENTICATION_FAILED | 24 | IKE_AUTH authentication failed | PSK, IDs, certificates |
+| TS_UNACCEPTABLE | 38 | The responder's policy accepts no part of the proposed traffic selectors | Subnets on both sides |
+
+RFC 7296 section 3.10.1 lists all four, with the INVALID_KE_PAYLOAD rules in sections 1.2 and 1.3.1. **INVALID_KE_PAYLOAD** carries "the accepted Diffie-Hellman group number" in two octets, and the initiator "MUST again propose its full set of acceptable cryptographic suites" on the retry. Per strongSwan's [proposal documentation](https://docs.strongswan.org/docs/latest/config/proposals.html), it costs one extra round trip when the peers share a group but the initiator guessed another. If they share no group at all, the answer is NO_PROPOSAL_CHOSEN, as in the 2012 log above. Fortinet's [KE payload article](https://community.fortinet.com/fortigate-3/troubleshooting-tip-ipsec-vpn-down-due-to-mismatched-dh-group-in-ke-payload-208310) shows \`mismatched DH group in KE payload, selected 14, received 5\` followed by \`sending INVALID_KE notify\`, and warns that the IKE debug "may not output the exact error due to a DH group," with a sample showing only \`notify msg received: NO-PROPOSAL-CHOSEN\`.
+
+**TS_UNACCEPTABLE** is a policy answer about subnets, not algorithms. RFC 7296 section 2.9 says the responder sends it when its policy "does not allow it to accept any part of the proposed Traffic Selectors," and otherwise narrows the selectors. Netgate's [connection guide](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-connections.html) gives a /24 against a /32 in the phase 2 networks as one example of the small mismatches behind failed tunnels, and the [subnet calculator](/tools/subnet-calculator) settles the arithmetic. **AUTHENTICATION_FAILED** means no IKE SA. RFC 7296 section 2.21.2 lists "invalid shared secret, invalid ID, untrusted certificate issuer, revoked or expired certificate." A wrong clock can make a valid certificate look expired, as [the clock article](/blog/the-clock-is-the-last-thing-anybody-checks) shows.
+
+Sometimes the proposals match and the error appears anyway. A transport versus tunnel mode disagreement can do it, per the RFC 7296 definition above, and so can the following.
+
+- **Wrong gateway match on FortiGate.** Fortinet's [no proposal chosen article](https://community.fortinet.com/fortigate-3/troubleshooting-tip-no-proposal-chosen-negotiate-sa-error-202876) says the error "is likely due to a gateway address mismatch" and shows identical AES-CBC and SHA2-256 proposals on both sides. A dial-up server needs \`set local-gw\` when clients target a secondary address, and an ADVPN spoke needs the same \`network-id\` as its hub.
+- **Not installable.** strongSwan's [child_create.c](https://github.com/strongswan/strongswan/blob/master/src/libcharon/sa/ikev2/tasks/child_create.c) answers NO_PROPOSAL_CHOSEN when it cannot install the selected child SA (it logs "unable to install inbound and outbound IPsec SA (SAD) in kernel" first), so a kernel without the algorithm can look like a mismatch.
+
+A tunnel that comes up but stalls on large transfers has an [MTU problem](/blog/mtu-and-jumbo-frames), not a proposal one.
+
+## Which debug commands show both peers' proposals on each platform?
+
+**FortiGate.** Fortinet's [IKE debugging article](https://community.fortinet.com/fortigate-3/troubleshooting-tip-ipsec-tunnel-debugging-ike-92770) gives this sequence for FortiOS 7.4.1 and later. Before 7.4.1 the filter command is spelled \`log-filter\`, and on 7.2 and earlier the address filter is \`dst-addr4\`. The [FortiGate CLI essentials](/blog/fortigate-cli-essentials) article covers the command families.
+
+\`\`\`text
+diagnose vpn ike log filter clear
+diagnose vpn ike log filter rem-addr4 203.0.113.5
+diagnose debug application ike -1
+diagnose debug console timestamp enable
+diagnose debug enable
+# reproduce the failure, then stop
+diagnose debug disable
+diagnose debug reset
+\`\`\`
+
+**strongSwan.** The [logging documentation](https://docs.strongswan.org/docs/latest/config/logging.html) calls level 1 "a good default to see whats going on" and says level 2 adds "more detailed debugging control flow." A file logger with a raised default looks like this:
+
+\`\`\`conf
+charon {
+  filelog {
+    charon {
+      path = /var/log/charon.log
+      default = 2
+      flush_line = yes
+    }
+  }
+}
+\`\`\`
+
+[\`swanctl --log\`](https://docs.strongswan.org/docs/latest/swanctl/swanctlLog.html) receives only levels 0 and 1, which still include the failed-selection dumps, and [\`swanctl --rekey --child NAME\`](https://docs.strongswan.org/docs/latest/swanctl/swanctlRekey.html) forces the CREATE_CHILD_SA that exposes a PFS disagreement.
+
+**pfSense.** Netgate's [log guide](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-logs.html) says to open VPN > IPsec, Advanced Settings, set IKE SA, IKE Child SA and Configuration Backend to Diag, and set the rest to Control. The [connection guide](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-connections.html) adds \`swanctl --initiate --ike conX\` and \`swanctl --initiate --child conX\` to start each portion from the shell, and says to look for UDP 500 and 4500 in the firewall log ([port reference](/tools/port-reference)).
+
+**Cisco.** Per the IOS XE guide, \`show crypto ikev2 proposal\` prints the default and configured proposals, \`crypto logging ikev2\` enables IKEv2 syslog messages and \`crypto ikev2 diagnose error\` enables error diagnostics, both disabled by default. On an ASA, \`show crypto ikev2 sa detail\` and \`show running-config crypto ikev2\` are documented in the [ASA guide](https://www.cisco.com/c/en/us/td/docs/security/asa/asa922/configuration/vpn/asa-922-vpn-config/vpn-site2site.html).
+
+## Why did a working tunnel start failing after an upgrade or at the first rekey?
+
+**FortiOS 7.6.5.** Fortinet's [release notes](https://docs.fortinet.com/document/fortigate/7.6.5/fortios-release-notes/230510/changes-in-default-behavior) list Bug ID 1107163: the default DH groups changed "from 14 and 5 to 20 and 21 when configured from the CLI," and VPNs on the old defaults "will be updated to DH groups 14, 20 and 21 when upgraded." A peer that offers none of the new set gets NO_PROPOSAL_CHOSEN. Fortinet's [upgrade tip](https://community.fortinet.com/fortigate-3/technical-tip-ipsec-tunnels-not-connecting-after-upgrade-to-v7-6-5-or-above-220185) says the change "can affect tunnels negotiated with peers on older FortiOS versions" and that after manually setting matching groups on both peers the tunnels "should resume connectivity." [FortiOS 7.6 versus 7.4](/blog/fortios-7-6-vs-7-4) covers the other branch differences.
+
+**The first rekey.** The first child SA made in IKE_AUTH never carries a key exchange. strongSwan's renewal documentation says that if peers disagree on PFS "it will not be known until the CHILD_SA is first rekeyed with a CREATE_CHILD_SA exchange (and fails)," and that childless IKE SAs, available since 5.8.0, surface the mismatch at start. Netgate's [phase 2 page](https://docs.netgate.com/pfsense/en/latest/vpn/ipsec/configure-p2.html) says the same for pfSense: the first child SA uses the phase 1 DH group, so a PFS mismatch can fail "after the first child SA expires."
+
+**Windows clients.** The strongSwan Windows notes say Windows 7 up to Windows 11 propose \`3des-aes128-aes192-aes256-sha1-sha256-sha384-modp1024\` by default. The registry value \`NegotiateDH2048_AES256\` set to 1 or 2 enables AES-256-CBC and modp2048. The Windows client "can't handle unsupported Diffie Hellman groups," so a strongSwan gateway that starts an IKE rekey must use modp2048 first. A client with no PFS group configured returns error 13816 when the server proposes any key exchange method, even \`none\`, which strongSwan has included in its default ESP proposals since 6.0.2.
+
+## Which proposal set interoperates while following RFC 8247?
+
+RFC 8247 sets what implementations must support, not what to deploy: section 1.4 says it "does not give any recommendations for the use of algorithms."
+
+| Item | IKE SA | Child SA (ESP) |
+|---|---|---|
+| Encryption | AES-CBC (MUST) and AES-GCM-16 (SHOULD), for 128 and 256-bit keys | AES-CBC and AES-GCM-16 are both MUST in [RFC 8221](https://www.rfc-editor.org/rfc/rfc8221) for 128 and 256-bit keys |
+| Integrity | HMAC-SHA2-256-128 (MUST), none with AES-GCM | HMAC-SHA2-256-128 (MUST), none with AES-GCM |
+| PRF | PRF_HMAC_SHA2_256 (MUST) | Not used |
+| Group | 14 (MUST), 19 (SHOULD) | Optional PFS; if used, one group both ends accept, and Netgate's [phase 2 page](https://docs.netgate.com/pfsense/en/latest/vpn/ipsec/configure-p2.html) calls 14 the optimal choice |
+| Avoid | 3DES (MAY), SHA-1 (MUST-), groups 2 and 5 (SHOULD NOT), group 1, MD5, DES, NULL (MUST NOT) | 3DES (SHOULD NOT), MD5 (MUST NOT) |
+
+A strongSwan configuration with the AEAD proposal first and a classic fallback (addresses and authentication omitted):
+
+\`\`\`conf
+connections {
+  site-b {
+    version = 2
+    proposals = aes256gcm16-prfsha256-modp2048,aes256-sha256-modp2048
+    children {
+      lan {
+        esp_proposals = aes256gcm16-modp2048,aes256-sha256-modp2048
+      }
+    }
+  }
+}
+\`\`\`
+
+The FortiOS equivalent (interface, gateway and authentication omitted), using keywords from the 7.4.2 and 7.6.5 references and strongSwan's interop page:
+
+\`\`\`text
+config vpn ipsec phase1-interface
+    edit "site-b"
+        set ike-version 2
+        set proposal aes256gcm-prfsha256 aes256-sha256
+        set dhgrp 14
+    next
+end
+config vpn ipsec phase2-interface
+    edit "site-b-p2"
+        set phase1name "site-b"
+        set proposal aes256gcm aes256-sha256
+        set pfs enable
+        set dhgrp 14
+    next
+end
+\`\`\`
+
+The 7.4.2 reference shows \`ike-version\` defaulting to 1, so set it explicitly, and the 7.6.5 phase 2 page shows \`pfs\` defaulting to enable. On IOS XE the matching IKE half is a \`crypto ikev2 proposal\` with \`encryption aes-cbc-256\`, \`integrity sha256\` and \`group 14\`, attached through a \`crypto ikev2 policy\`.
+
+## Sources
+
+- [IETF: RFC 7296, Internet Key Exchange Protocol Version 2 (IKEv2)](https://www.rfc-editor.org/rfc/rfc7296)
+- [IETF: RFC 8247, Algorithm Implementation Requirements and Usage Guidance for IKEv2](https://www.rfc-editor.org/rfc/rfc8247)
+- [IETF: RFC 8221, ESP and AH Algorithm Requirements](https://www.rfc-editor.org/rfc/rfc8221)
+- [IETF: RFC 5282, Authenticated Encryption Algorithms in the IKEv2 Encrypted Payload](https://www.rfc-editor.org/rfc/rfc5282)
+- [IETF: RFC 9395, Deprecation of IKEv1 and Obsoleted Algorithms](https://www.rfc-editor.org/rfc/rfc9395)
+- [IANA: Internet Key Exchange Version 2 (IKEv2) Parameters](https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml)
+- [strongSwan: Algorithm Proposals (Cipher Suites)](https://docs.strongswan.org/docs/latest/config/proposals.html)
+- [strongSwan: IKE and IPsec SA Renewal](https://docs.strongswan.org/docs/latest/config/rekeying.html)
+- [strongSwan: Logging](https://docs.strongswan.org/docs/latest/config/logging.html)
+- [strongSwan: Windows Clients](https://docs.strongswan.org/docs/latest/interop/windowsClients.html)
+- [strongSwan: Fortinet Devices](https://docs.strongswan.org/docs/latest/interop/fortinet.html)
+- [strongSwan: swanctl --log](https://docs.strongswan.org/docs/latest/swanctl/swanctlLog.html)
+- [strongSwan: swanctl --rekey](https://docs.strongswan.org/docs/latest/swanctl/swanctlRekey.html)
+- [strongSwan source: ike_init.c](https://github.com/strongswan/strongswan/blob/master/src/libcharon/sa/ikev2/tasks/ike_init.c)
+- [strongSwan source: child_create.c](https://github.com/strongswan/strongswan/blob/master/src/libcharon/sa/ikev2/tasks/child_create.c)
+- [strongSwan source: proposal.c](https://github.com/strongswan/strongswan/blob/master/src/libstrongswan/crypto/proposal/proposal.c)
+- [strongSwan users list: NO_PROPOSAL_CHOSEN error when IKEv1 and IKEv2 have closely resemble but not exact suites](https://lists.strongswan.org/pipermail/users/2012-February/002550.html)
+- [Netgate: Troubleshooting IPsec Logs](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-logs.html)
+- [Netgate: Troubleshooting IPsec Connections](https://docs.netgate.com/pfsense/en/latest/troubleshooting/ipsec-connections.html)
+- [Netgate: IPsec Phase 1 Settings](https://docs.netgate.com/pfsense/en/latest/vpn/ipsec/configure-p1.html)
+- [Netgate: IPsec Phase 2 Settings](https://docs.netgate.com/pfsense/en/latest/vpn/ipsec/configure-p2.html)
+- [Fortinet: FortiOS 7.6.5 Release Notes, Changes in default behavior](https://docs.fortinet.com/document/fortigate/7.6.5/fortios-release-notes/230510/changes-in-default-behavior)
+- [Fortinet: FortiOS 7.4.2 CLI Reference, config vpn ipsec phase1-interface](https://docs.fortinet.com/document/fortigate/7.4.2/cli-reference/333620)
+- [Fortinet: FortiOS 7.6.5 CLI Reference, config vpn ipsec phase2-interface](https://docs.fortinet.com/document/fortigate/7.6.5/cli-reference/252893715)
+- [Fortinet Community: Technical Tip, IPsec tunnels not connecting after upgrade to v7.6.5 or above](https://community.fortinet.com/fortigate-3/technical-tip-ipsec-tunnels-not-connecting-after-upgrade-to-v7-6-5-or-above-220185)
+- [Fortinet Community: Troubleshooting Tip, IPsec VPN down due to mismatched DH group in KE payload](https://community.fortinet.com/fortigate-3/troubleshooting-tip-ipsec-vpn-down-due-to-mismatched-dh-group-in-ke-payload-208310)
+- [Fortinet Community: Troubleshooting Tip, No Proposal Chosen, Negotiate SA Error](https://community.fortinet.com/fortigate-3/troubleshooting-tip-no-proposal-chosen-negotiate-sa-error-202876)
+- [Fortinet Community: Troubleshooting Tip, IPsec tunnel debugging IKE](https://community.fortinet.com/fortigate-3/troubleshooting-tip-ipsec-tunnel-debugging-ike-92770)
+- [Cisco: Configuring Internet Key Exchange Version 2, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_ike2vpn/configuration/xe-17/sec-flex-vpn-xe-17-book/sec-cfg-ikev2-flex.html)
+- [Cisco: ASA 9.22 VPN Configuration Guide, LAN-to-LAN IPsec VPNs](https://www.cisco.com/c/en/us/td/docs/security/asa/asa922/configuration/vpn/asa-922-vpn-config/vpn-site2site.html)
+- [Microsoft: Set-VpnConnectionIPsecConfiguration](https://learn.microsoft.com/en-us/powershell/module/vpnclient/set-vpnconnectionipsecconfiguration)
+- [Wireshark: Display Filter Reference, Internet Security Association and Key Management Protocol](https://www.wireshark.org/docs/dfref/i/isakmp.html)
+`,
+  },
+  {
+    slug: "mikrotik-bridge-vlan-filtering",
+    title: "MikroTik VLANs on RouterOS 7: Bridge VLAN Filtering Without Lockout",
+    date: "2026-11-04",
+    tags: ["networking", "switching", "homelab", "security"],
+    excerpt:
+      "Build RouterOS 7 trunk and access ports with bridge VLAN filtering, keep management access with Safe Mode, and check which chips offload it in hardware.",
+    coverImage: "/images/blog/mikrotik-bridge-vlan-filtering.jpg",
+    content: `
+## The short answer
+
+On RouterOS 7, VLANs belong on one bridge with \`vlan-filtering=yes\`. Set \`pvid\` and \`frame-types\` on every bridge port, list each VLAN in \`/interface bridge vlan\` with trunk ports under \`tagged\` and that VLAN's access ports under \`untagged\` (one VLAN ID per access entry), and add the bridge itself to every VLAN the router must reach, such as a management VLAN. Enable \`vlan-filtering\` last, because MikroTik warns that [enabling it filters out traffic destined for the CPU](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/layer2-misconfiguration) and that changing it can [temporarily disable all ports](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/). Do it from a serial console, a port outside the bridge, or [Safe Mode](https://manual.mikrotik.com/docs/7.25/management-tools/console) (Control+X), which undoes changes if the session dies, after a 9 minute TCP timeout. \`ingress-filtering\` has defaulted to yes [since RouterOS v7](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/). The \`H\` flag in \`/interface bridge port print\` shows whether a bridge port is [hardware offloaded](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/). Marvell Prestera (CRS3xx) chips offload VLAN filtering [since 6.41](https://download.mikrotik.com/routeros/6.41/CHANGELOG), RTL8367 since [7.1rc1](https://download.mikrotik.com/routeros/7.1rc1/CHANGELOG), MT7621 since [7.1rc5](https://download.mikrotik.com/routeros/7.1rc5/CHANGELOG), and the 88E6393X, 88E6191X, 88E6190, MT7531 and EN7523 [in v7](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/). Atheros-based models such as the RB3011 [cannot](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/).
+
+## Why is one bridge with vlan-filtering the supported way to do VLANs on RouterOS 7?
+
+MikroTik's [Bridge VLAN Table guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/bridge-vlan-table) says bridge VLAN filtering "should be used instead of many known VLAN misconfigurations that are most likely causing you either performance issues or connectivity issues." The feature arrived in RouterOS 6.41 on 2017-Dec-22, whose [changelog](https://download.mikrotik.com/routeros/6.41/CHANGELOG) lists "implemented software based vlan-aware bridges" and, for the CRS3xx, VLAN configuration "integrated within bridge VLAN configuration with hw-offload".
+
+Three reasons are documented. First, a VLAN interface used as a bridge port sends tagged spanning tree BPDUs, which the [Layer2 misconfiguration page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/layer2-misconfiguration) says "violates the IEEE 802.1W standard when (R/M)STP is used." The [Bridging and Switching page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/) calls VLAN filtering "highly recommended" for STP and RSTP compliance and "mandatory" for MSTP (the [spanning tree article](/blog/spanning-tree-protocol-deep-dive) covers how BPDUs work). Second, the same page says a VLAN interface created on a bridge port "will never capture any traffic at all," because the bridge claims the frames first. Third, on most modern chips there is no alternative: for the 88E6393X, 88E6191X, 88E6190, MT7621, MT7531, EN7523 and RTL8367, the [Switch Chip Features page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/switch-chip-features) says the VLAN table "is configured through bridge HW vlan-filtering" and that "VLAN-related configuration on the /interface/ethernet/switch menu is not available."
+
+| \`vlan-filtering\` | Tag handling | MAC learning |
+|---|---|---|
+| \`no\` (default) | Bridge ignores VLAN tags and cannot modify them | Shared VLAN learning (SVL) |
+| \`yes\` | All bridge VLAN functions active | Independent VLAN learning (IVL) |
+
+The table paraphrases the [Bridging and Switching page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/). For VLAN theory and Cisco and FortiGate syntax, the [VLAN segmentation guide](/blog/vlan-segmentation-guide) is the general companion.
+
+## What do pvid, tagged, untagged, frame-types and ingress-filtering mean on a bridge port?
+
+The defaults come from the [Bridging and Switching page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/):
+
+| Property | Where | Default | Effect |
+|---|---|---|---|
+| \`frame-types\` | bridge, bridge port | \`admit-all\` | Also \`admit-only-vlan-tagged\` and \`admit-only-untagged-and-priority-tagged\` |
+| \`ingress-filtering\` | bridge, bridge port | \`yes\` | Drops a frame on receipt if the ingress port is not in the table for its VLAN |
+| \`pvid\` | bridge, bridge port | \`1\` | VLAN given to untagged ingress frames |
+| \`ether-type\` | bridge | \`0x8100\` | Which tag type counts as a VLAN tag |
+| \`tagged\`, \`untagged\` | \`/interface bridge vlan\` | none | Tag added or removed on egress |
+
+The [Bridge VLAN Table guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/bridge-vlan-table) explains how they interact:
+
+- **Tagged and untagged are egress actions.** The VLAN ID is checked on the egress port, and a frame whose VLAN is missing from the table for that port is dropped before it is sent.
+- **PVID touches only untagged frames.** If a VLAN40 frame arrives on a port with \`pvid=20\`, the tag "is NOT changed" and the table decides forwarding.
+- **\`frame-types\` works in both directions, \`ingress-filtering\` only on ingress.** For \`frame-types\` to take effect, \`ingress-filtering\` must be enabled.
+- **The bridge is a port.** It has its own \`pvid\` (the CPU port) and, with the default of 1, can be added to the untagged side of VLAN 1 automatically.
+
+That last point explains a common surprise. The guide shows a trunk and a bridge both at \`pvid=1\` producing a dynamic VLAN 1 entry with the bridge and the trunk untagged, and captions its diagram "Unintentionally allowed management access using untagged traffic through the trunk port." The guide offers two fixes: give the trunk a \`pvid\` different from the bridge's, or, the option it calls more intuitive and recommended, set \`frame-types=admit-only-vlan-tagged\` with \`ingress-filtering=yes\` on the bridge itself and on the trunk. A port with \`admit-only-vlan-tagged\` is not added as an untagged port for its PVID, and RouterOS 6.46 ([changelog](https://download.mikrotik.com/routeros/6.46/CHANGELOG)) stopped adding the bridge as an untagged member in that case.
+
+| Port role | \`frame-types\` | \`pvid\` | Table entry |
+|---|---|---|---|
+| Trunk | \`admit-only-vlan-tagged\` | unused | \`tagged\` for every VLAN carried |
+| Access | \`admit-only-untagged-and-priority-tagged\` | the VLAN ID | \`untagged\`, one VLAN per entry |
+| Hybrid | \`admit-all\` | native VLAN | \`untagged\` for one VLAN, \`tagged\` for others |
+
+MikroTik's [VLAN page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/vlan) says IDs 0, 1 and 4095 "should not be used in generic VLAN setups." A [native VLAN mismatch](/blog/the-request-arrived-the-reply-did-not) is the classic way a hybrid port goes wrong.
+
+## How do you build trunk and access ports in /interface bridge vlan, and why one entry per access VLAN?
+
+This adapts the trunk and access example from MikroTik's [Basic VLAN switching guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/basic-vlan-switching), renaming the ports: ether2 is the trunk, ether3 and ether4 are access ports for VLANs 20 and 30. Listing \`bridge1\` under \`tagged\` gives the router access to those VLANs, which inter-VLAN routing needs.
+
+\`\`\`
+/interface bridge
+add name=bridge1 vlan-filtering=no frame-types=admit-only-vlan-tagged
+
+/interface bridge port
+add bridge=bridge1 interface=ether2 frame-types=admit-only-vlan-tagged
+add bridge=bridge1 interface=ether3 pvid=20 ingress-filtering=yes frame-types=admit-only-untagged-and-priority-tagged
+add bridge=bridge1 interface=ether4 pvid=30 ingress-filtering=yes frame-types=admit-only-untagged-and-priority-tagged
+
+/interface bridge vlan
+add bridge=bridge1 tagged=bridge1,ether2 untagged=ether3 vlan-ids=20
+add bridge=bridge1 tagged=bridge1,ether2 untagged=ether4 vlan-ids=30
+\`\`\`
+
+The [Bridge VLAN Table guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/bridge-vlan-table) adds that access ports need no \`untagged=\` entry, because each "is added as an untagged port dynamically with a VLAN ID that is specified in the PVID property." Explicit entries state the intent in the configuration, and the dynamic ones appear in the print output with a \`D\` flag.
+
+The temptation is to merge the two entries into \`untagged=ether3,ether4 vlan-ids=20,30\`. Its instruction is blunt: "Do NOT use multiple VLAN IDs on access ports." The table only decides which VLANs may leave a port, so the merged entry lets VLAN 20 and 30 leave both ports untagged. The [Bridging and Switching page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/) says the same in its danger notice: a multi-VLAN entry "should only be used for tagged ports configurations," and when several VLANs are specified for access ports, "tagged packets may be sent as untagged packets through the wrong access port, regardless of the PVID value."
+
+The [Layer2 page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/layer2-misconfiguration) documents a related leak that needs no mistake in the access entries. A single trunk entry such as \`tagged=ether2 vlan-ids=10,20\` pulled the dynamic untagged entries of the \`pvid=10\` and \`pvid=20\` access ports into one group, so broadcast and multicast traffic flooded between them and the print output showed "port with pvid added to untagged group which might cause problems, consider adding a separate VLAN entry." The page marks this resolved since RouterOS 7.15: "Dynamic VLANs are now always created as separate entries and no longer merge with statically configured ones" (the 7.15 [changelog](https://download.mikrotik.com/routeros/7.15/CHANGELOG) lists "reworked dynamic VLAN creation"). On older releases, give each VLAN its own entry whenever an access port uses one of the IDs. On any release, use ranges only for trunks, such as \`tagged=ether2 vlan-ids=100-115\`.
+
+Read back the result with \`/interface bridge vlan print\`. The Bridge VLAN Table guide's example shows each VLAN with its \`CURRENT-TAGGED\` and \`CURRENT-UNTAGGED\` ports. Check that no port or VLAN appears that should not, "especially the CPU port (bridge)." The [VLAN tag decoder](/tools/vlan-tag-decoder) reads raw tags from a capture, such as the guide's example \`8100 6063\` (priority 3, VLAN 99).
+
+## How do you keep management access when you turn on vlan-filtering?
+
+The [Bridge VLAN Table guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/bridge-vlan-table) recommends creating the bridge with \`vlan-filtering=no\`, adding ports and table entries, and enabling filtering last, preferably on a serial console or through a port that is not in the bridge: "It is always recommended to configure VLAN filtering while using a serial console." The bridge may also reset, "which will force you to reconnect."
+
+A tagged management VLAN is the pattern the [Basic VLAN switching guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/basic-vlan-switching) uses. The bridge and the trunk are tagged members of VLAN 99, and a VLAN interface on the bridge carries the address:
+
+\`\`\`
+/interface bridge vlan
+add bridge=bridge1 tagged=bridge1,ether2 vlan-ids=99
+
+/interface vlan
+add interface=bridge1 name=MGMT vlan-id=99
+
+/ip address
+add address=192.168.99.1/24 interface=MGMT
+\`\`\`
+
+Enable filtering inside Safe Mode. The [Console page](https://manual.mikrotik.com/docs/7.25/management-tools/console) says F4 or Control+X toggles it. Changes made while it is active "are automatically undone if the safe mode session terminates abnormally," after a TCP timeout of 9 minutes. Control+D leaves and undoes the changes, while \`/quit\` does not. Safe Mode holds the 100 most recent actions, after which the session leaves it and nothing is undone, and it is ignored for commands that need a reboot.
+
+\`\`\`
+# Press Control+X: "[Safe Mode taken]"
+/interface bridge set bridge1 vlan-filtering=yes
+# Session survived: press Control+X again to keep the change.
+# Session dropped: reconnect over VLAN 99 within 9 minutes, press Control+X, answer r at
+# "Hijacking Safe Mode from someone - unroll/release/don't take it [u/r/d]", then Control+X again.
+\`\`\`
+
+The Console page describes that prompt for another user taking Safe Mode (\`r\` keeps the changes, \`u\` undoes them) and does not cover the same account reconnecting, so rehearse the recovery on a spare router. If nobody reconnects, the change rolls back when the old session times out.
+
+Four details matter:
+
+- **Untagged management.** The Bridge VLAN Table guide shows it (the same PVID on the bridge and an access port) but says untagged access "is not considered a good security practice," and that access through access ports is "never a good security practice" because an attacker could sniff the management VLAN ID. Manage through the trunk, since "trunk ports usually have better physical security."
+- **MAC access is a stopgap.** In the Bridging page's untagged management example, Layer 2 access such as MAC-telnet "will be working either way," and the Bridge VLAN Table guide says the bridge reset is "mostly relevant when using MAC-telnet." The [Securing your router guide](https://manual.mikrotik.com/docs/7.25/getting-started/securing-your-router) says MAC-Telnet, MAC-WinBox and MAC-Ping "should be disabled in production networks," so use them only while building the configuration.
+- **Firewall the CPU.** When CPU access is allowed from a VLAN and port, the Bridging page says to "implement proper firewall filter rules" and to allow only the services that are required.
+- **Recovery.** Holding the reset button during power-up [restores the default configuration](https://manual.mikrotik.com/docs/7.25/getting-started/configuration-management/routeros-configuration-reset), which discards the VLAN setup, the rest of the configuration and the password. Keep a [backup](https://manual.mikrotik.com/docs/7.25/getting-started/configuration-management/backup) first.
+
+## Which switch chips hardware-offload bridge VLAN filtering, and how does the H flag show it?
+
+Device examples and host table sizes come from the [Switch Chip Features page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/switch-chip-features), the Prestera table sizes from the [Marvell Prestera page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/marvell-prestera-switch-chip-features), and the offload verdicts from the [Bridging and Switching page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/):
+
+| Chip | Example devices | VLAN filtering offload | Host (MAC) table |
+|---|---|---|---|
+| Marvell Prestera | CRS3xx | Yes, since 6.41 | 16K to 256K by model (CRS309: 32K) |
+| 88E6393X | RB5009 | Yes, v7 | up to 16K |
+| 88E6191X, 88E6190 | CCR2004-16G-2S+, L009 | Yes, v7 | up to 16K |
+| RTL8367 | RB4011iGS+, RB1100AHx4 | Yes, since 7.1rc1 | up to 2K |
+| MT7621 | hEX S, RBM33G | Yes, since 7.1rc5 | up to 2K |
+| MT7531 | hAP ax lite | Yes, v7 | up to 2K |
+| EN7523 | hEX Refresh | Yes, v7 | up to 1K |
+| CRS1xx, CRS2xx | CRS109, CRS212 | No, switch menu | not in that table |
+| QCA8337, Atheros8327 | RB3011, RB2011 | No | up to 2K |
+| IPQ-PPE | hAP ax², hAP ax³, Chateau ax | No | up to 2K |
+
+Each non-Prestera chip that offloads VLAN filtering lists a VLAN table of up to 4K entries. The 7.1rc5 changelog is dated 2021-Oct-25 and names "hEX, hEX S, RBM33G, RBM11G, LtAP." CRS3xx units such as the CRS309 in the [10GbE homelab build](/blog/10gbe-networking-homelab) are Prestera devices, whose page says "VLAN filtering settings don't affect hardware offloading."
+
+Host table size matters when many devices share one chip. The Switch Chip Features page says a full table is handled differently by family: the RTL8367 ignores new MAC addresses until entries time out, the MT7621, MT7531 and EN7523 let only a certain number of entries renew, and the QCA8337 and Atheros8327 remove older entries.
+
+Run \`/interface bridge port print\` and look for \`H\`. The [documentation](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/) says "certain bridge or port functions can automatically disable HW offloading," and its tables list them:
+
+- **EtherType and stacking.** On the 88E6393X family, MT7621 family and RTL8367, \`ether-type=0x88a8\`, \`0x9100\` and \`tag-stacking=yes\` fall under the footnote "Using these features disables HW offload." Prestera chips are the exception: their [page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/marvell-prestera-switch-chip-features) says a provider bridge (IEEE 802.1ad) and tag stacking can be offloaded since RouterOS v6.43.
+- **Horizon.** "Split horizon is a software feature that disables hardware offloading."
+- **Other bridge features.** On the MT7621 family and RTL8367, IGMP snooping, DHCP snooping and bonding disable offload. On the 88E6393X family, ARP inspection, IP source guard, MLAG and the IPv6 snooping features do ([DHCP snooping](/blog/dhcp-snooping-arp-inspection) is covered separately).
+- **A second bridge.** CRS1xx/2xx units support several offloaded bridges per chip. "All other devices support only one," and \`hw=yes\` on a port picks which bridge gets it.
+
+Chips without VLAN filtering offload still accept the configuration. The Layer2 page says "All devices are able to be configured with bridge VLAN filtering, but only a few of them will be able to offload the traffic to the switch chip," and lists the symptoms on the others: a missing \`H\` flag, low throughput and high CPU usage. The Bridging page sends those devices to the [Basic VLAN switching guide](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/basic-vlan-switching), whose \`/interface ethernet switch\` examples are the hardware method for them.
+
+The Bridging page also warns that changing properties such as VLAN filtering "can trigger a switch chip reset, temporarily disabling all Ethernet ports." Devices with several chips complicate VLAN spans: the RB4011 has two RTL8367 chips, the RB1100AHx4 three, and the CCR2004-16G-2S+ two 88E6191X chips. The Layer2 page says, in its RB2011 and RB3011 switch-menu example, that packets forwarded between ports on different chips "are also processed by the CPU." RouterOS 7.10 [fixed](https://download.mikrotik.com/routeros/7.10/CHANGELOG) "HW offloading for vlan-filtered bridge on devices with multiple switches" (a problem introduced in 7.8), and 7.20 [added](https://download.mikrotik.com/routeros/7.20/CHANGELOG) a dynamic "switch-cpu" entry when a VLAN spans chips.
+
+## How do you route between VLANs on the same router with VLAN interfaces, DHCP servers and firewall rules?
+
+Routing needs a VLAN interface on the bridge, not on a port. The bridge must be a tagged member of each routed VLAN, which the trunk and access entries above already do. Since RouterOS 7.16 ([changelog](https://download.mikrotik.com/routeros/7.16/CHANGELOG), 2024-Sep-20), adding a VLAN interface to a bridge with VLAN filtering enabled creates a dynamic entry commented "added by vlan on bridge," so older releases need the manual entry. The explicit \`tagged=bridge1,...\` entries shown above work on every release.
+
+\`\`\`
+/interface vlan
+add interface=bridge1 name=VLAN20 vlan-id=20
+add interface=bridge1 name=VLAN30 vlan-id=30
+
+/ip address
+add address=192.168.20.1/24 interface=VLAN20
+add address=192.168.30.1/24 interface=VLAN30
+
+/ip pool
+add name=pool20 ranges=192.168.20.10-192.168.20.200
+add name=pool30 ranges=192.168.30.10-192.168.30.200
+
+/ip dhcp-server
+add name=dhcp20 interface=VLAN20 address-pool=pool20 disabled=no
+add name=dhcp30 interface=VLAN30 address-pool=pool30 disabled=no
+
+/ip dhcp-server network
+add address=192.168.20.0/24 gateway=192.168.20.1
+add address=192.168.30.0/24 gateway=192.168.30.1
+\`\`\`
+
+The [DHCP Server page](https://manual.mikrotik.com/docs/7.25/network-management/dhcp/server) lists the requirements: an address on the server interface, a pool that does not include the router's own address, a network entry and the server. When \`dns-server\` or \`ntp-server\` is unset, the server sends "the DNS or NTP servers the router itself uses."
+
+Inter-VLAN traffic crosses the \`forward\` chain, "used to process packets passing through the router," while traffic to the router itself uses \`input\`. The [Filter page](https://manual.mikrotik.com/docs/7.25/firewall-and-quality-of-service/firewall/filter) starts with established and related connections, and the order matters ([first match wins](/blog/first-match-wins)):
+
+\`\`\`
+/ip firewall filter
+add chain=forward action=accept connection-state=established,related comment="replies"
+add chain=forward action=drop connection-state=invalid comment="invalid"
+add chain=forward action=drop in-interface=VLAN30 out-interface=VLAN20 comment="VLAN 30 cannot start connections into VLAN 20"
+add chain=input action=accept in-interface=MGMT protocol=tcp dst-port=22,8291 \\
+    place-before=[find comment="defconf: drop all not coming from LAN"]
+\`\`\`
+
+The last rule suits a router with the default configuration: the Securing guide places added accepts in front of "defconf: drop all not coming from LAN," so a new VLAN interface needs an accept there or a place in the LAN interface list.
+
+FastTrack does not bypass these rules for new connections. The [Packet Flow page](https://manual.mikrotik.com/docs/7.25/firewall-and-quality-of-service/packet-flow-in-routeros) says FastTrack packets "bypass firewall, connection tracking, simple queues" and more, but the Filter page's example fast-tracks only established and related traffic, so "the firewall will work with new connections only."
+
+L3 hardware offloading, which the [Prestera page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/marvell-prestera-switch-chip-features) says is possible "on supported hardware" since RouterOS v7, is a separate risk for inter-VLAN firewall rules. The [L3 Hardware Offloading page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/l3-hardware-offloading) says packets "are routed by hardware when both the ingress and egress ports have l3-hw-offloading=yes," and that when both are \`no\`, packets "go through the CPU/Firewall." Its example says inter-VLAN traffic "is fully routed by the hardware, not entering the CPU/Firewall," so a \`forward\` rule between two hardware-routed VLANs never sees that traffic. The page also says VLAN interfaces belong on the bridge, and recommends turning L3HW off while changing bridge or VLAN settings. The VLAN interface MTU defaults to 1500, but the [VLAN page](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/vlan) says some NICs cannot receive 1500 bytes plus the 4 byte tag and 14 byte header. MTU 1496 works around that and fragments larger packets (see [MTU and jumbo frames](/blog/mtu-and-jumbo-frames)).
+
+## What breaks after an upgrade, and how do you spot it?
+
+**Tagged traffic that RouterOS 6 forwarded can be dropped on 7.** The Bridging page says \`ingress-filtering\` "is enabled by default since RouterOS v7," and a frame is dropped on receipt if its ingress port is not a member of the VLAN in the table. The Ansible \`community.routeros\` [changelog](https://github.com/ansible-collections/community.routeros/blob/main/CHANGELOG.rst) shows how the defaults diverge: version 2.18.0 changed the module's \`ingress-filtering\` default back to false "for RouterOS before version 7." Fix: add the port to the VLAN entry, or set the property deliberately.
+
+**VLANs leak between access ports.** There are two documented causes. A merged entry that lists several VLAN IDs with access ports under \`untagged\` leaks on every release. Before 7.15, a multi-VLAN trunk entry could also absorb the dynamic untagged entries of access ports. Fix: one VLAN per access entry, RouterOS 7.15 or later, and a check of the table for the \`port with pvid added to untagged group\` warning.
+
+**The same configuration behaves differently on a hEX after 7.1rc5.** The 7.1rc5 changelog added offload for MT7621 devices. A [MikroTik forum poster](https://forum.mikrotik.com/t/routeros-7-bridge-vlan-dhcp-client-issue-after-upgrade/156119/7) wrote in March 2022 that before that release "bridge vlan filtering was done by the CPU," so "the same config might not work anymore." This is a forum report, but it fits the documentation, since the CPU port must be a table member. Fix: add the bridge as a tagged member of every VLAN the router uses.
+
+**A VLAN interface on the bridge gets no traffic.** The bridge is not in the VLAN. Fix: add \`bridge1\` to \`tagged=\`. On 7.16 and later, a VLAN interface added while filtering is enabled gets the dynamic entry itself.
+
+**Untagged traffic reaches the router through the trunk.** The trunk and the bridge share \`pvid=1\`. Fix: \`frame-types=admit-only-vlan-tagged\` on the bridge and the trunk, as in the trunk and access example.
+
+**CPU usage is high and no port shows H.** The chip cannot offload, or a feature such as horizon, IGMP snooping or a non-default EtherType disabled it. Fix: check the table and move unsupported chips to the switch-menu method.
+## Sources
+
+- [MikroTik: RouterOS Manual, Bridging and Switching](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/)
+- [MikroTik: Bridge VLAN Table](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/bridge-vlan-table)
+- [MikroTik: Basic VLAN switching](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/basic-vlan-switching)
+- [MikroTik: Layer2 misconfiguration](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/user-guides/layer2-misconfiguration)
+- [MikroTik: Switch Chip Features](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/switch-chip-features)
+- [MikroTik: Marvell Prestera switch chip features](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/marvell-prestera-switch-chip-features)
+- [MikroTik: L3 Hardware Offloading](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/l3-hardware-offloading)
+- [MikroTik: VLAN](https://manual.mikrotik.com/docs/7.25/bridging-and-switching/vlan)
+- [MikroTik: Console, Safe Mode](https://manual.mikrotik.com/docs/7.25/management-tools/console)
+- [MikroTik: Securing your router](https://manual.mikrotik.com/docs/7.25/getting-started/securing-your-router)
+- [MikroTik: RouterOS configuration reset](https://manual.mikrotik.com/docs/7.25/getting-started/configuration-management/routeros-configuration-reset)
+- [MikroTik: Backup](https://manual.mikrotik.com/docs/7.25/getting-started/configuration-management/backup)
+- [MikroTik: DHCP Server](https://manual.mikrotik.com/docs/7.25/network-management/dhcp/server)
+- [MikroTik: Firewall Filter](https://manual.mikrotik.com/docs/7.25/firewall-and-quality-of-service/firewall/filter)
+- [MikroTik: Packet Flow in RouterOS](https://manual.mikrotik.com/docs/7.25/firewall-and-quality-of-service/packet-flow-in-routeros)
+- [MikroTik: RouterOS 6.41 changelog](https://download.mikrotik.com/routeros/6.41/CHANGELOG)
+- [MikroTik: RouterOS 6.46 changelog](https://download.mikrotik.com/routeros/6.46/CHANGELOG)
+- [MikroTik: RouterOS 7.1rc1 changelog](https://download.mikrotik.com/routeros/7.1rc1/CHANGELOG)
+- [MikroTik: RouterOS 7.1rc5 changelog](https://download.mikrotik.com/routeros/7.1rc5/CHANGELOG)
+- [MikroTik: RouterOS 7.10 changelog](https://download.mikrotik.com/routeros/7.10/CHANGELOG)
+- [MikroTik: RouterOS 7.15 changelog](https://download.mikrotik.com/routeros/7.15/CHANGELOG)
+- [MikroTik: RouterOS 7.16 changelog](https://download.mikrotik.com/routeros/7.16/CHANGELOG)
+- [MikroTik: RouterOS 7.20 changelog](https://download.mikrotik.com/routeros/7.20/CHANGELOG)
+- [MikroTik forum: RouterOS 7 Bridge VLAN/DHCP client issue after upgrade](https://forum.mikrotik.com/t/routeros-7-bridge-vlan-dhcp-client-issue-after-upgrade/156119/7)
+- [GitHub: ansible-collections community.routeros changelog](https://github.com/ansible-collections/community.routeros/blob/main/CHANGELOG.rst)
+`,
+  },
+  {
+    slug: "proxmox-ve-8-to-9-upgrade",
+    title: "Proxmox VE 8 to 9 Upgrade: pve8to9, Trixie Repos and What Breaks",
+    date: "2026-11-04",
+    tags: ["proxmox", "virtualization", "operations", "homelab"],
+    excerpt:
+      "How to upgrade Proxmox VE 8 to 9 with pve8to9 and trixie .sources repos, one node at a time, plus the sysctl.conf, cgroup v1 and NIC changes that break hosts.",
+    coverImage: "/images/blog/proxmox-ve-8-to-9-upgrade.jpg",
+    content: `
+## The short answer
+
+Proxmox VE 8 reached end of life in August 2026 per the [Proxmox FAQ lifecycle table](https://pve.proxmox.com/wiki/FAQ), and the supported way off it is an in-place apt upgrade from the latest 8.4 (pve-manager 8.4.1 or newer) to Proxmox VE 9 on Debian 13 "trixie," as laid out in the [official 8 to 9 guide](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9). The sequence is: update to the last 8.4 packages, run \`pve8to9 --full\` until it reports no failures, switch every Debian and Proxmox repository from bookworm to trixie (the guide writes the new ones as deb822 \`.sources\` files), run \`apt dist-upgrade\`, and reboot. Keep at least 5 GB free on the root file system (ideally more than 10 GB) and a console that does not depend on the host's own network. A cluster is upgraded one node at a time, and hyper-converged Ceph must already be on Squid 19.2. The changes that break existing hosts are \`/etc/sysctl.conf\` no longer being read, containers with systemd 230 or older no longer running because cgroup v1 is gone, NICs that the newer kernel can rename, the removed \`VM.Monitor\` privilege, and LVM autoactivation on shared storage.
+
+## When did Proxmox VE 8 reach end of life, and what happens if you stay on it?
+
+The FAQ ties the schedule to Debian: Proxmox VE versions are ["supported at least as long as the corresponding Debian version is supported by the Debian Security Team, i.e. approximately 3 years after its initial release."](https://pve.proxmox.com/wiki/FAQ) Its table gives Proxmox VE 8 an end of life of 2026-08. The 8 to 9 guide's cgroup section gives only an estimate, ["estimated EOL is July 2026"](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9). [Debian's releases page](https://www.debian.org/releases/) lists bookworm at 2026-07-11 plus a separate LTS column to 2028-06-30, but the FAQ names the Security Team, not LTS, so 2028 does not extend the Proxmox date. That wording is a floor, and the FAQ promises nothing beyond it for a host that stays on 8.
+
+| Proxmox VE | Debian base | First release | Proxmox EOL | Months of support |
+|---|---|---|---|---|
+| 6 | 10 (buster) | 2019-07 | 2022-09 | 38 |
+| 7 | 11 (bullseye) | 2021-07 | 2024-07 | 36 |
+| 8 | 12 (bookworm) | 2023-06 | 2026-08 | 38 |
+| 9 | 13 (trixie) | 2025-08 | tba | 14 so far |
+
+Month counts subtract the FAQ's year-month values, and the 14 for Proxmox VE 9 runs to October 2026. Each line ran roughly three years, ending when or just after its Debian base ended. Debian puts trixie at 2028-08-09, but the FAQ says tba.
+
+The [Roadmap](https://pve.proxmox.com/wiki/Roadmap) lists 8.4 (April 9, 2025, kernel 6.8.12-9 by default, 6.14 opt-in) as the newest 8.x release, so a host that stays has no later 8.x to move to. Meanwhile 9.0 arrived August 5, 2025, 9.1 on November 19, 2025 with kernel 6.17, and 9.2 on May 21, 2026 with kernel 7.0 and QEMU 11.0. A co-installed Proxmox Backup Server has its own path in the [PBS 3 to 4 how-to](https://pbs.proxmox.com/wiki/Upgrade_from_3_to_4), which the PVE guide links as a prerequisite. The [Proxmox VE vs ESXi](/blog/proxmox-vs-esxi) article covers 9.0's snapshots as volume chains on thick LVM, which the Roadmap still lists as a technology preview.
+
+## What does pve8to9 check, and how do you clear each warning?
+
+\`pve8to9\` ships in the latest 8.4 packages. Per the [upgrade guide](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9), run \`pve8to9\` for the standard checks and \`pve8to9 --full\` at least once before upgrading. It "only checks and reports things," changes nothing, and cannot know every customization, so rerun it after each fix and again after the upgrade.
+
+\`\`\`bash
+pve8to9 --full
+\`\`\`
+
+The [source in Proxmox's pve-manager repository](https://git.proxmox.com/?p=pve-manager.git;a=blob;f=PVE/CLI/pve8to9.pm;hb=refs/heads/master) (read from master; the pve-manager 8.4.21 package carries every check in the table below, though master has newer ones) prefixes each line PASS, INFO, SKIP, NOTICE, WARN or FAIL and ends with a summary of passed, skipped, warning and failure counts. Without \`--full\` it skips the container cgroup v2 check and says so. Treat every FAIL as a blocker and read every WARN.
+
+| Report | What to do |
+|---|---|
+| proxmox-ve package is too old | On the 8.x repositories run \`apt update\` and \`apt dist-upgrade\` until \`pveversion\` reports 8.4.1 or newer |
+| Mixed old and new package repository suites | Use one base suite on every Proxmox and Debian repository; ask the vendor about third-party ones |
+| Legacy spelling \`pvetest\` | The [Roadmap](https://pve.proxmox.com/wiki/Roadmap) says the test repository is now \`pve-test\` |
+| Lost quorum, offline nodes, fewer than three quorum-providing nodes | Bring every node online first. A two-node cluster can use a [QDevice for a third vote](https://pve.proxmox.com/pve-docs/chapter-pvecm.html) |
+| systemd-boot meta-package installed | The guide says it is safe to remove unless you set up systemd-boot by hand |
+| UEFI without \`grub-efi-amd64\`, or ESP not at \`/boot/efi\` | Mount the ESP at \`/boot/efi\` and make it mount at boot, per the source; install the meta-package, for which the guide gives \`[ -d /sys/firmware/efi ] && apt install grub-efi-amd64\` |
+| LVM autoactivation | Run \`/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation\`; strongly recommended for shared LVM, optional for local-only |
+| \`/etc/sysctl.conf\` has settings | Move them to \`/etc/sysctl.d/\` (below) |
+| \`maxfiles\` in \`/etc/vzdump.conf\` | The source says it "was deprecated with PVE 7.x and is getting dropped with PVE 9." Use [\`prune-backups\`](https://pve.proxmox.com/pve-docs/chapter-vzdump.html) |
+| Custom role references \`VM.Monitor\` | The privilege is gone; edit the role |
+| Container lacks unified cgroup v2 support (\`--full\` only) | Upgrade the container OS (below) |
+| DKMS modules found, or an old \`70-persistent-net.rules\` | Out-of-tree drivers must support the new kernel; the source says the udev file means NICs are likely to be renamed and to replace it with a systemd \`.link\` file |
+
+The same source warns when the node's hostname does not resolve to an address configured on it, and when only \`systemd-timesyncd\` keeps time, recommending chrony, ntpsec or openntpd.
+
+## How do you switch the repositories to trixie and the new .sources format?
+
+First get the node current on 8.4 and work from a console or a \`tmux\` or \`screen\` session. The [guide](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9) says not to upgrade from the web interface's virtual console because it is interrupted mid-upgrade, and recommends testing on an identical non-production machine first when only SSH is available. [iDRAC's virtual console](/blog/dell-idrac-tips-tricks), an Enterprise license feature, is the usual out-of-band option on a PowerEdge.
+
+\`\`\`bash
+apt update
+apt dist-upgrade
+pveversion
+\`\`\`
+
+Then point the Debian entries at trixie. The guide's commands rewrite the classic one-line files, and it says to comment out anything still naming bookworm:
+
+\`\`\`bash
+sed -i 's/bookworm/trixie/g' /etc/apt/sources.list
+sed -i 's/bookworm/trixie/g' /etc/apt/sources.list.d/pve-enterprise.list
+\`\`\`
+
+The Proxmox VE 9 repositories use deb822 style. Enterprise subscribers create this file, run \`apt update\` and \`apt policy\`, and only then delete the old \`pve-enterprise.list\`:
+
+\`\`\`bash
+cat > /etc/apt/sources.list.d/pve-enterprise.sources << EOF
+Types: deb
+URIs: https://enterprise.proxmox.com/debian/pve
+Suites: trixie
+Components: pve-enterprise
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+EOF
+\`\`\`
+
+Hosts without a subscription use \`proxmox.sources\` with URI \`http://download.proxmox.com/debian/pve\` and component \`pve-no-subscription\`, and must remove the PVE 8 entry from \`sources.list\`, \`pve-install-repo.list\` or wherever it lives. The [Package Repositories page](https://pve.proxmox.com/wiki/Package_Repositories) gives the same stanzas, says \`Enabled: no\` in the enterprise entry stops its error messages on a host with no key, and shows Debian's side as \`debian.sources\` with \`trixie\`, \`trixie-updates\` and \`trixie-security\`.
+
+Hyper-converged Ceph hosts also need \`ceph.sources\`, pointing at \`ceph-squid\` with component \`enterprise\` (URI \`https://enterprise.proxmox.com/debian/ceph-squid\`) or \`no-subscription\` (URI \`http://download.proxmox.com/debian/ceph-squid\`), after Ceph itself is on Squid. A 401 from the enterprise repository means the subscription needs a refresh: \`pvesubscription update --force\`. Remove any backports line, since the guide says the upgrade was not tested with backports packages. Debian's [sources.list(5)](https://manpages.debian.org/trixie/apt/sources.list.5.en.html) says the one-line style "is deprecated and may eventually be removed, but not before 2029." After the upgrade, \`apt modernize-sources\` converts what is left, keeps old files with a \`.bak\` suffix, and previews changes if you answer "n."
+
+Confirm \`apt update\` shows no errors, then upgrade:
+
+\`\`\`bash
+systemctl disable --now systemd-journald-audit.socket
+apt dist-upgrade
+\`\`\`
+
+The first line is the guide's advice for keeping kernel audit messages out of the journal during the upgrade. The guide says \`dist-upgrade\` takes under 5 minutes on a fast SSD server and "up to 60 minutes or more" on a slow spinning disk. For configuration prompts, the guide says to keep your version of \`/etc/issue\` (Proxmox regenerates it) and, if unsure, \`/etc/default/grub\`, and to take the maintainer's version of \`/etc/lvm/lvm.conf\`, \`/etc/ssh/sshd_config\` (which swaps \`ChallengeResponseAuthentication\` for \`KbdInteractiveAuthentication\`) and \`/etc/chrony/chrony.conf\` when you made no changes.
+
+Then rerun \`pve8to9\` and reboot. The guide says to reboot even if the host already ran the 6.14 opt-in kernel on PVE 8, because the kernel was rebuilt with the PVE 9 compiler and ABI.
+
+## Which changes in Proxmox VE 9 break existing hosts?
+
+### Settings that silently stop applying
+
+The \`systemd-sysctl\` in Proxmox VE 9 no longer honors \`/etc/sysctl.conf\`, per the guide, so values there are not applied after the reboot. The [Debian trixie release notes](https://www.debian.org/releases/trixie/release-notes/issues.html) agree. The guide names two victims: the \`rp_filter\` override that older EVPN exit-node documentation placed in \`sysctl.conf\`, and IP forwarding. The [sysctl.d(5) man page](https://man7.org/linux/man-pages/man5/sysctl.d.5.html) says files are read in lexicographic order and the latest name wins, which is why the guide asks for a two-digit prefix.
+
+\`\`\`bash
+grep -v -E '^[[:space:]]*([#;]|$)' /etc/sysctl.conf
+printf 'net.ipv4.ip_forward = 1\\n' > /etc/sysctl.d/90-local.conf
+\`\`\`
+
+The first command lists active lines in the legacy file; recreate each under \`/etc/sysctl.d/\`. The [network tuning article](/blog/linux-network-tuning-without-cargo-cult) uses the same layout.
+
+Debian also made \`/tmp\` a tmpfs, capped at 50 percent of RAM by default, and per its [release notes](https://www.debian.org/releases/trixie/release-notes/issues.html) files in the old \`/tmp\` are hidden once it mounts after the reboot. \`systemctl mask tmp.mount\` plus a reboot restores the old behavior. The guide adds that \`/tmp\` and \`/var/tmp\` are now cleaned while the system runs, while Debian's [notes](https://www.debian.org/releases/trixie/release-notes/issues.html) say the upgrade creates \`/etc/tmpfiles.d/tmp.conf\` to keep the old cleanup, so check which applies.
+
+### Containers: cgroup v1 is gone
+
+Proxmox VE has defaulted to pure cgroup v2 since 7.0, but the Roadmap says that with 9.0 the hybrid hierarchy can no longer be switched back on with a kernel parameter. The [container documentation](https://pve.proxmox.com/pve-docs/chapter-pct.html) says containers need systemd 231 or newer, or no systemd at all, and the guide says systemd 230 or older, such as CentOS 7 or Ubuntu 16.04, is unsupported. The documented fixes are to upgrade the guest distribution, update its systemd from backports, or move the workload to a virtual machine. The checker also flags \`lxc.cgroup.\` keys in container configs as ignored under v2, usually fixed with the \`lxc.cgroup2.\` prefix. The [cgroup limits article](/blog/cgroups-resource-limits) covers the v2 interface.
+
+PVE 9 also ships AppArmor 4.1. The Roadmap says most problems with older profiles are fixed by adding \`abi <abi/3.0>,\` to the profile, and lists a known issue with Docker inside an LXC container (bug 6538). New containers are unprivileged by default, per the [container documentation](https://pve.proxmox.com/pve-docs/chapter-pct.html), and the Roadmap says creating a privileged one now needs \`Sys.Modify\` in most cases.
+
+### Network names
+
+The guide warns that the newer kernel recognizes more hardware features, such as virtual functions, and that names often derive from the PCI address, so some NICs change name. The Roadmap adds that PVE 9 accepts alternative names in network and firewall configuration, but "in some cases, the previous primary name might not be available as an alternative name after the upgrade." [Debian's notes](https://www.debian.org/releases/trixie/release-notes/issues.html) name two triggers, the i40e driver and firmware exposing the \`_SUN\` ACPI object, and suggest \`udevadm test-builtin net_setup_link\` after the upgrade but before rebooting. A forum poster who tried an in-place 8.4 to 9.2 upgrade on a four-node Cisco UCS M5 cluster [reported the management NICs vanishing](https://forum.proxmox.com/threads/moving-from-8-4-to-9-2.185401/) on each attempt although the checks came up clean, and a reply pointed to the wiki's name-change item. The Roadmap says the \`pve-network-interface-pinning\` tool can pin names before the upgrade. The command is in the \`pve-manager\` package from 8.4.9 on (8.4.9 package contents), so finish the 8.4 update first. The [administration guide](https://pve.proxmox.com/pve-docs/chapter-sysadmin.html) documents it:
+
+\`\`\`bash
+pve-network-interface-pinning generate
+diff -y /etc/network/interfaces /etc/network/interfaces.new
+\`\`\`
+
+It writes \`.link\` files to \`/usr/local/lib/systemd/network\` and rewrites old names in \`/etc/network/interfaces\`, \`host.fw\` and the SDN controller and fabric files, leaving \`.new\` copies to diff. A reboot applies the names, and \`/etc/pve/firewall/cluster.fw\` is not updated. Two more items, per the Roadmap and the guide: a VirtIO vNIC with an unset MTU now inherits the bridge MTU instead of 1500, and a Ceph full-mesh \`post-up\` line that restarts \`frr.service\` can deadlock at boot, so the guide replaces it with a conditional \`is-active\` form.
+
+### Privileges, storage and third-party software
+
+The privilege and GlusterFS rows come from the [Roadmap](https://pve.proxmox.com/wiki/Roadmap) 9.0 notes, and the Veeam and plugin rows from the [upgrade guide](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9).
+
+| Change | Effect |
+|---|---|
+| \`VM.Monitor\` removed | Replaced by \`Sys.Audit\` and finer guest agent privileges; custom roles need editing |
+| \`VM.Replicate\` added | Replication jobs need it on \`/vms/<vmid>\` |
+| GlusterFS dropped | Move guests or mount it manually as Directory storage |
+| QEMU machine version 10.0 or newer | The guide says Veeam backups fail for those VMs; pin \`9.2+pve1\` or postpone |
+| Third-party storage plugins | Wait until the author supports PVE 9 |
+
+Hardware matters too. The guide calls hardware more than 10 years old less tested, reporting Ceph "illegal instruction" errors on an AMD Opteron 2427 and a Turion II Neo N54L, and says PCI passthrough VMs failed to start on kernel 6.14 for some users, with pinning an older kernel as the workaround. The [GPU passthrough article](/blog/gpu-passthrough-proxmox) covers the host setup. NVIDIA vGPU hosts need GRID 18.3 (driver 570.158.02) or newer first, and the Roadmap says 9.1's kernel 6.17 needed vGPU 19.4.
+
+## How do you upgrade a cluster one node at a time?
+
+Start healthy. [\`pvecm status\`](https://pve.proxmox.com/pve-docs/chapter-pvecm.html) must show a quorate cluster with every node present, and the cluster documentation says all nodes should run the same version and that HA needs at least three nodes for reliable quorum, so treat mixed versions as temporary. Upgrade hyper-converged Ceph first, per the [Reef to Squid page](https://pve.proxmox.com/wiki/Ceph_Reef_to_Squid): set \`ceph osd set noout\`, upgrade the packages on every node, restart the monitors one node at a time, then the managers, then the OSDs one node at a time, run \`ceph osd require-osd-release squid\` once every OSD runs Squid, restart any CephFS MDS daemons, and unset \`noout\`.
+
+Guest migration sets the order. The guide says migrating from an older Proxmox VE to a newer one "will always work," while newer to older "may work, but is generally not supported." Empty the first node and upgrade it, then move guests from the next node onto upgraded nodes, never back.
+
+For HA-managed guests, [node maintenance mode](https://pve.proxmox.com/pve-docs/chapter-ha-manager.html) moves them and records the origin node so they can return:
+
+\`\`\`bash
+ha-manager crm-command node-maintenance enable pve2
+# on pve2's console: pve8to9 --full, repositories, dist-upgrade, reboot
+pve8to9
+pvecm status
+ha-manager crm-command node-maintenance disable pve2
+\`\`\`
+
+Services that cannot leave a node do not move. The HA documentation says, under the migrate shutdown policy, that a service must not be locally bound, for example by hardware passthrough, and that if strict node affinity rules leave no available node the shutdown "will hang until you manually intervene," so stop such guests by hand before the node's turn. Maintenance mode also survives a reboot: per the same documentation it ends only when disabled with the command above or when the manager status is cleared.
+
+After the last node reaches 9, the guide says HA groups migrate to HA rules automatically, and \`journalctl -eu pve-ha-crm\` on the active CRM node explains any trouble. The [HA article](/blog/proxmox-clustering-high-availability) shows the rules that replace groups. If Ceph shows \`HEALTH_ERR\` for "insecure key types" after the first monitor node reboots, the guide says services stay operational, to resume the upgrade, and to migrate the keys once every node is on 9.
+
+## Should you upgrade in place or reinstall and restore?
+
+The guide lists both as supported. In place needs apt familiarity. A new installation from the 9.x ISO "will delete all data on the existing host," so guests come back from backup. The reinstall checklist: back up all guests and \`/etc\` (at least \`/etc/pve\`, \`/etc/passwd\`, \`/etc/network/interfaces\`, \`/etc/resolv.conf\`), install, force-reload the browser, rebuild the cluster if any, restore \`/etc/pve/storage.cfg\` and the firewall files, then restore guests. Prove the backups first; the [restore drills article](/blog/restore-drills-that-matter) covers an honest test.
+
+A cluster node is removed first and joins again after the install. The [cluster documentation](https://pve.proxmox.com/pve-docs/chapter-pvecm.html) says a node that runs Ceph must first have its OSDs, metadata servers, monitor and manager destroyed, and that the node must be powered off before \`pvecm delnode\` and kept from returning with its old configuration, since "the cluster could end up broken." Afterward, delete the stale \`/etc/pve/nodes/<name>\` directory, remove the node from HA rules, and run \`pvecm updatecerts\` on the rejoined node if SSH complains about a fingerprint.
+
+Hardware can decide it. The Roadmap says the 9.2 installer's kernel 7.0.2-6 has problems with RAID controllers on \`megaraid_sas\` and certain NVMe drives in JBOD mode, fixed in 7.0.14-15, and recommends installing from the 9.1 ISO and then upgrading. That driver serves the PERC H730 ([HBA mode article](/blog/perc-h730-hba-mode)). Since 9.1 the installer can also pin interface names.
+
+Choose in place when \`pve8to9 --full\` ends clean, console access exists and the backups restore. The guide recommends a rehearsal on identical or similar hardware; choose reinstall when that rehearsal fails. A forum poster whose in-place attempts kept losing NICs [reported that a fresh 9.2 install](https://forum.proxmox.com/threads/moving-from-8-4-to-9-2.185401/) on a standalone M5 saw all of them, though the thread's reply traced the loss to the guide's known name-change issue, for which the guide points to interface pinning.
+
+## What breaks during the upgrade, and how do you recover?
+
+**The upgrade stops partway.** A network failure can leave it half done. Fix: \`apt -f install\`, then \`apt dist-upgrade\` again, per the guide's troubleshooting section.
+
+**apt warns that it is attempting to remove the meta-package \`proxmox-ve\`.** The guide says one or more installed packages cannot be upgraded because their trixie repository is not configured. Fix: add the trixie equivalent, or restore the old configuration, \`apt update\`, remove packages from that repository and restart. On Proxmox VE installed over plain Debian, run \`apt remove linux-image-amd64\` first.
+
+**No network after the reboot.** A renamed NIC leaves \`/etc/network/interfaces\` naming a device that is gone. Fix: at the console, run \`ip -br link\`, correct the name in \`/etc/network/interfaces\`, then run the pinning tool.
+
+**The host hangs at boot with a Ceph full mesh.** FRR now depends on \`networking.service\`. Fix: boot the Rescue Boot entry in the Advanced menu of the Proxmox VE ISO and edit \`/etc/network/interfaces\`, per the guide.
+
+**GRUB reports \`\`disk \`lvmid/...\` not found\`\`.** This hits UEFI hosts with root on LVM. Fix: \`apt install grub-efi-amd64\` before rebooting; ZFS root and legacy BIOS hosts are not affected.
+
+**\`Check of pool pve/data failed (status:64). Manual repair required\`.** Fix: \`lvconvert --repair pve/data\`. The guide says the cause is under investigation.
+
+**A PowerEdge fails to boot kernel 6.17.** The Roadmap's 9.1 notes report machine check errors on some Dell PowerEdge servers while 6.14 boots, and say enabling SR-IOV Global and I/OAT DMA in firmware helps. An [owner's blog post](https://einstein.astro.gla.ac.uk/jscott/blog/2026/20260428_proxmox_dell_r630_boot_failure/) describes an R630 boot loop, with machine check errors in the iDRAC log, that those settings resolved. Fix: enable them, or pin the old kernel:
+
+\`\`\`bash
+proxmox-boot-tool kernel list
+proxmox-boot-tool kernel pin 6.14.11-4-pve
+\`\`\`
+
+The [administration guide](https://pve.proxmox.com/pve-docs/chapter-sysadmin.html) says to remove a pin as soon as possible so the latest security patches apply, with \`proxmox-boot-tool kernel unpin\`.
+
+**Packages end up half installed.** In an August 2025 forum thread an Intel i219-V owner [reported the NIC down after the upgrade](https://forum.proxmox.com/threads/upgraded-to-proxmox-ve-9-intel-i219-v-nic-down-network-wont-work.169150/) with its name unchanged. A reply said a test cluster ended up with many half-broken packages, found with \`apt --fix-broken install\`, although the upgrade reported no error. The thread has no confirmed cause. Fix: before rebooting, confirm that \`apt -f install\`, the guide's repair for a partial upgrade, has nothing left to do.
+
+## Sources
+
+- [Proxmox VE Wiki: Upgrade from 8 to 9](https://pve.proxmox.com/wiki/Upgrade_from_8_to_9)
+- [Proxmox VE Wiki: FAQ](https://pve.proxmox.com/wiki/FAQ)
+- [Proxmox VE Wiki: Roadmap](https://pve.proxmox.com/wiki/Roadmap)
+- [Proxmox VE Wiki: Package Repositories](https://pve.proxmox.com/wiki/Package_Repositories)
+- [Proxmox VE Wiki: Ceph Reef to Squid](https://pve.proxmox.com/wiki/Ceph_Reef_to_Squid)
+- [Proxmox VE Administration Guide: Host System Administration](https://pve.proxmox.com/pve-docs/chapter-sysadmin.html)
+- [Proxmox VE Administration Guide: Proxmox Container Toolkit](https://pve.proxmox.com/pve-docs/chapter-pct.html)
+- [Proxmox VE Administration Guide: Cluster Manager](https://pve.proxmox.com/pve-docs/chapter-pvecm.html)
+- [Proxmox VE Administration Guide: High Availability](https://pve.proxmox.com/pve-docs/chapter-ha-manager.html)
+- [Proxmox VE Administration Guide: Backup and Restore](https://pve.proxmox.com/pve-docs/chapter-vzdump.html)
+- [Proxmox: pve8to9 checklist source (pve-manager repository)](https://git.proxmox.com/?p=pve-manager.git;a=blob;f=PVE/CLI/pve8to9.pm;hb=refs/heads/master)
+- Proxmox: pve-manager 8.4.21 package, bookworm pve-no-subscription repository (served over plain HTTP only; its HTTPS certificate does not match the host name): \`http://download.proxmox.com/debian/pve/dists/bookworm/pve-no-subscription/binary-amd64/pve-manager_8.4.21_all.deb\`
+- Proxmox: pve-manager 8.4.9 package, bookworm pve-no-subscription repository (served over plain HTTP only; its HTTPS certificate does not match the host name): \`http://download.proxmox.com/debian/pve/dists/bookworm/pve-no-subscription/binary-amd64/pve-manager_8.4.9_all.deb\`
+- [Proxmox Backup Server Wiki: Upgrade from 3 to 4](https://pbs.proxmox.com/wiki/Upgrade_from_3_to_4)
+- [Debian: Release Notes for trixie, Issues to be aware of for trixie](https://www.debian.org/releases/trixie/release-notes/issues.html)
+- [Debian: Debian Releases](https://www.debian.org/releases/)
+- [Debian Manpages: sources.list(5) for trixie](https://manpages.debian.org/trixie/apt/sources.list.5.en.html)
+- [Linux man-pages: sysctl.d(5)](https://man7.org/linux/man-pages/man5/sysctl.d.5.html)
+- [Proxmox Support Forum: Moving from 8.4 to 9.2 (owner report)](https://forum.proxmox.com/threads/moving-from-8-4-to-9-2.185401/)
+- [Proxmox Support Forum: Upgraded to Proxmox VE 9 - Intel i219-V nic down network wont work (owner report)](https://forum.proxmox.com/threads/upgraded-to-proxmox-ve-9-intel-i219-v-nic-down-network-wont-work.169150/)
+- [Owner blog (einstein.astro.gla.ac.uk): Dell PowerEdge R630 machine check error when booting Proxmox 9](https://einstein.astro.gla.ac.uk/jscott/blog/2026/20260428_proxmox_dell_r630_boot_failure/)
+`,
+  },
+  {
+    slug: "selinux-avc-denied",
+    title: "SELinux avc: denied: How to Read It and Fix the Right Thing",
+    date: "2026-11-04",
+    tags: ["linux", "security", "troubleshooting", "operations"],
+    excerpt:
+      "How to read an SELinux avc: denied record, tell a label from a port or boolean, fix it with semanage and restorecon, and when audit2allow is acceptable.",
+    coverImage: "/images/blog/selinux-avc-denied.jpg",
+    content: `
+## The short answer
+
+An \`avc: denied\` record means SELinux policy has no rule that lets the process type in \`scontext\` perform the logged permission on the target type in \`tcontext\` for that \`tclass\`. Red Hat's [troubleshooting chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) says that "in most cases, SELinux denials are signs of misconfiguration," and tells administrators to check for a labeling problem first, then for a service configured in a way SELinux was never told about, before generating policy with \`audit2allow\`. In practice a wrong file label is fixed with \`semanage fcontext\` plus \`restorecon\`, a service on a nonstandard port with \`semanage port -a\`, and an access that policy gates behind a switch with \`setsebool -P\`. If nothing is logged although access fails, ordinary Unix permissions may have refused first, the audit daemon may not be running, or a \`dontaudit\` rule may be hiding the denial, which \`semodule -DB\` lifts. To test SELinux as the cause without loosening everything, [\`semanage permissive -a httpd_t\`](https://man7.org/linux/man-pages/man8/semanage-permissive.8.html) makes one domain permissive.
+
+## How do you read an avc: denied line field by field?
+
+Find the records with \`ausearch\`, using every SELinux message type. This is the [ausearch manual's](https://man7.org/linux/man-pages/man8/ausearch.8.html) own example for SELinux logs. The manual says "Recent is 10 minutes ago," and \`-i\` interprets numeric values as text.
+
+\`\`\`bash
+ausearch -m AVC,USER_AVC,SELINUX_ERR,USER_SELINUX_ERR -i -ts recent
+\`\`\`
+
+Red Hat's sample record shows Apache reading a directory:
+
+\`\`\`text
+type=AVC msg=audit(1395177286.929:1638): avc:  denied  { read } for  pid=6591 comm="httpd" name="webpages" dev="0:37" ino=2112 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:nfs_t:s0 tclass=dir
+\`\`\`
+
+| Field | Meaning | In the sample |
+|---|---|---|
+| \`type=AVC\` | Kernel-generated; \`USER_AVC\` comes from user-space object managers | Kernel |
+| \`msg=audit(time:serial)\` | Timestamp and serial; the \`type=SYSCALL\` record with the same serial adds the executable and UIDs | \`1395177286.929:1638\` |
+| \`avc: denied\` | The action taken; \`granted\` appears when an \`auditallow\` rule asked for a record | Denied |
+| \`{ read }\` | The refused permission; \`getattr\`, \`read\` and \`write\` are the common ones | \`read\` |
+| \`pid\`, \`comm\` | Process ID and command name | 6591, \`httpd\` |
+| \`name\` or \`path\`, \`dev\`, \`ino\` | The object; the \`name\` field is not always present | \`webpages\` |
+| \`scontext\` | Source context, \`user:role:type:level\`; the type is the domain | \`httpd_t\` |
+| \`tcontext\` | Target context in the same format | \`nfs_t\` |
+| \`tclass\` | Object class: \`file\`, \`dir\`, \`tcp_socket\` and so on | \`dir\` |
+| \`permissive=0\` or \`1\` | \`1\` when a denied permission was allowed anyway by global or per-domain permissive mode | Not shown |
+
+The field meanings come from Red Hat's [audit-log section](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) and the [SELinux Notebook](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/auditing.md), which dates \`permissive=\` to Linux 4.17. The kernel's [avc.c](https://github.com/torvalds/linux/blob/master/security/selinux/avc.c) writes \`permissive=0\` when the access was refused and \`1\` when it went through. Red Hat's [introduction](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/getting-started-with-selinux_using-selinux) adds that a D-Bus message the policy forbids produces a \`USER_AVC\` and a timed-out call.
+
+The same introduction explains the cases where no record exists: SELinux rules "are checked after DAC rules," so "no SELinux denial is logged if the traditional DAC rules prevent the access." A plain \`Permission denied\` with no AVC is often a mode or ownership problem, covered in [how Unix permission classes are chosen](/blog/permissions-do-not-add-up), [the umask ceiling](/blog/a-ceiling-and-not-a-request) and the [chmod calculator](/tools/chmod-calculator).
+
+## Is the denial a file label, a port, or a boolean?
+
+Read \`tclass\`, the permission and the target type together. They usually point to one of three repairs.
+
+| Record shows | Likely cause | Confirm with | Repair |
+|---|---|---|---|
+| \`tclass=file\` or \`dir\`; target type such as \`var_t\`, \`default_t\`, \`user_home_t\` or \`samba_share_t\` | Wrong file label | \`matchpathcon -V\`, \`ls -Z\`, \`restorecon -n -v\` | \`semanage fcontext\` and \`restorecon\` |
+| \`{ name_bind }\` on \`tcp_socket\` | Service listening on a port whose type its domain may not bind | \`semanage port -l\` | \`semanage port -a\` |
+| \`{ name_connect }\` on \`tcp_socket\` | Outbound connection to a port type the domain may not reach | \`getsebool -a\`, \`semanage boolean -l\`, \`semanage port -l\` | \`setsebool -P\` for a matching boolean; otherwise a port type the domain may reach |
+| Target type of a mounted filesystem such as \`nfs_t\` or \`cifs_t\` | Default label of the mount, controlled by a boolean | \`semanage boolean -l\` | \`setsebool -P\` |
+
+Red Hat's [non-standard configuration example](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) shows the first two rows. Apache told to listen on port 3131 fails with \`(13)Permission denied: AH00072: make_sock: could not bind to address [::]:3131\`. After the port is fixed, the content returns 403 Forbidden because \`/var/test_www/html\` carries \`var_t\`. The [troubleshooting chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) adds that \`/srv\` is labeled \`var_t\` on RHEL, files in new top-level directories can get \`default_t\`, and Apache is denied both. Its port denial reads:
+
+\`\`\`text
+type=AVC msg=audit(1225948455.061:294): avc:  denied  { name_bind } for  pid=4997 comm="httpd" src=9876 scontext=unconfined_u:system_r:httpd_t:s0 tcontext=system_u:object_r:port_t:s0 tclass=tcp_socket
+\`\`\`
+
+The Notebook's [permission reference](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/object_classes_permissions.md) says \`name_bind\` controls the relationship "between a socket and the port number" and \`name_connect\` means "Connect to a specific port type." The first sample record has an \`nfs_t\` target. Red Hat's [chapter on booleans](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) says NFS client mounts get that default label and that booleans such as \`httpd_use_nfs\` ("Allow httpd to access nfs file systems") control access, so a denial like that points to a boolean first, not a relabel. For access the default policy does not cover, the same guide says to "start by searching for a boolean that matches your use case," else use "a matching SELinux type or even create a local policy module."
+
+### What does audit2why add?
+
+\`audit2allow -w\`, also run as \`audit2why\`, classifies each record against the loaded policy. The common verdicts below come from the [audit2allow script](https://github.com/SELinuxProject/selinux/blob/main/python/audit2allow/audit2allow):
+
+\`\`\`bash
+ausearch -m AVC,USER_AVC -ts recent --raw | audit2allow -w
+\`\`\`
+
+| Verdict printed | Meaning |
+|---|---|
+| \`The boolean X was set incorrectly.\` | A boolean would allow it; the output includes the matching \`setsebool -P\` command |
+| \`Missing type enforcement (TE) allow rule.\` | No rule and no boolean; the output suggests \`audit2allow\` |
+| \`Missing role allow rule.\` or \`Typebounds violation.\` | A role-pair or parent-type allow rule is missing |
+| \`Unknown - would be allowed by active policy\` | The policy changed since the denial, or an in-memory boolean differs from the permanent one |
+
+A mislabeled file usually gets the missing-rule verdict too, because policy has no rule for that pair of types either. That is why labeling comes first: the verdict is not an instruction to write a rule.
+
+Confirm a service's domain with \`ps -efZ | grep name\`. In Red Hat's [custom application example](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/writing-a-custom-selinux-policy_using-selinux) a daemon with no policy runs as \`unconfined_service_t\`, and denials began only after its own policy was installed.
+
+### How many ports does a port type cover?
+
+A confined service can listen only on the port types its policy allows. The counts below come from Fedora's [corenetwork.te.in](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/kernel/corenetwork.te.in), and Red Hat's [guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) shows the same \`http_port_t\` and \`http_cache_port_t\` lists in \`semanage port -l\` output.
+
+| Port type | Default TCP ports | Count |
+|---|---|---|
+| \`ssh_port_t\` | 22 | 1 |
+| \`smtp_port_t\` | 25, 465, 587 | 3 |
+| \`http_port_t\` | 80, 81, 443, 488, 8008, 8009, 8443, 9000 | 8 |
+| \`http_cache_port_t\` | 8080, 8118, 8123, 10001-10010 | 13 |
+
+The [semanage-port manual](https://man7.org/linux/man-pages/man8/semanage-port.8.html) uses sshd on port 8991 as its example, which is why [moving sshd off port 22](/blog/ssh-hardening-linux-servers) fails on an SELinux system until the new port is labeled. The [port reference](/tools/port-reference) lists what each number is normally used for.
+
+## How do you fix a file label so it survives a relabel?
+
+Record the correct label in policy with \`semanage fcontext\`, then apply it with \`restorecon\`. Red Hat's [troubleshooting chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) moves a website to \`/srv/myweb\`. The \`matchpathcon\` line is the comparison step Red Hat's [non-standard configuration chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) uses, pointed at the new path:
+
+\`\`\`bash
+matchpathcon /var/www/html /srv/myweb
+semanage fcontext -a -t httpd_sys_content_t "/srv/myweb(/.*)?"
+restorecon -R -v /srv/myweb
+\`\`\`
+
+The troubleshooting chapter notes that "The semanage utility does not change the context," so the \`restorecon\` step is required. Its [RHEL 7 guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-working_with_selinux-selinux_contexts_labeling_files) says rules added this way "are persistent, even if the file system is relabeled," and says to put quotation marks around a regular expression such as \`/web(/.*)?\`.
+
+To make a new tree match an existing one, use an equivalence rule. This is the Apache example from the same non-standard configuration chapter, for a relocated document root. Red Hat runs \`restorecon -Rv /var/\`; here the relabel is narrowed to the new tree:
+
+\`\`\`bash
+semanage fcontext -a -e /var/www /var/test_www
+restorecon -R -v /var/test_www
+\`\`\`
+
+The [semanage-fcontext manual](https://man7.org/linux/man-pages/man8/semanage-fcontext.8.html) warns that "substitution based on another substitution does not work," so point each rule at the original path. Preview any relabel first: the [restorecon manual](https://man7.org/linux/man-pages/man8/restorecon.8.html) says \`-n\` changes nothing, and with \`-v\` it lists the files whose labels would change.
+
+### Why is chcon the wrong tool?
+
+\`chcon -t httpd_sys_content_t /web\` fixes the denial immediately and then disappears. Red Hat's RHEL 7 guide says "changes made with the chcon command are not persistent across file-system relabels, or the execution of the restorecon command." Use it to test a theory, then record the real rule.
+
+### Why does a moved file keep the wrong label?
+
+The label follows the file on \`mv\`. Red Hat's [label maintenance chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-working_with_selinux-maintaining_selinux_labels_) says files and directories "keep their current SELinux context when they are moved," and its example leaves \`user_home_t\` on a file moved into \`/var/www/html\`. A copy creates a new file labeled by the destination's rules, unless \`cp --preserve=context\` carries the old label along. It advises copying rather than moving, and the RHEL 9 [troubleshooting chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) repairs an already moved file with \`restorecon -v\`.
+
+## How do you fix a port or boolean denial?
+
+For a port, assign the service's port to a type its domain may bind. Red Hat's [Apache example](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) and the semanage-port manual use the same form:
+
+\`\`\`bash
+semanage port -l | grep http_port_t
+semanage port -a -t http_port_t -p tcp 3131
+semanage port -a -t ssh_port_t -p tcp 8991
+\`\`\`
+
+Red Hat's [troubleshooting chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) explains the flags: \`-a\` adds a record, \`-t\` sets the type and \`-p\` the protocol. List your own additions with \`semanage port -l -C\`. If the port already has a type, \`-a\` does not fail. The [semanage source](https://github.com/SELinuxProject/selinux/blob/main/python/semanage/seobject.py) prints \`Port tcp/N already defined, modifying instead\` and changes the type, and it refuses to delete a mapping that comes from policy with \`Port tcp/N is defined in policy, cannot be deleted\`.
+
+For a boolean, find it, read what it does, and set it persistently:
+
+\`\`\`bash
+getsebool -a | grep httpd_can_network
+semanage boolean -l | grep httpd_can_network
+setsebool -P httpd_can_network_connect_db on
+\`\`\`
+
+Red Hat's [guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux) says \`-P\` makes the change persistent across restarts, that it "requires a rebuild of the entire policy" and may take time, and that clearer descriptions in \`semanage boolean -l\` come with the \`selinux-policy-devel\` package. The [setsebool manual](https://man7.org/linux/man-pages/man8/setsebool.8.html) adds that without \`-P\` "only the current boolean value is affected."
+
+Choose the narrowest boolean that covers the access. In Fedora's [Apache policy](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/contrib/apache.te), \`httpd_can_network_connect\` is described as "Allow HTTPD scripts and modules to connect to the network using TCP" and expands to \`corenet_tcp_connect_all_ports(httpd_t)\`. The [corenet interface](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/kernel/corenetwork.if.in) defines that as \`allow $1 port_type:tcp_socket name_connect;\`, so it opens every port type. \`httpd_can_network_connect_db\` opens only database port types such as MySQL, PostgreSQL, MSSQL and Oracle, and Red Hat's troubleshooting chapter uses it for Apache talking to MariaDB. A reverse proxy such as the one in [the nginx proxy guide](/blog/nginx-reverse-proxy-setup) is an outbound \`name_connect\` too. Fedora's [apache.fc](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/contrib/apache.fc) labels \`/usr/bin/nginx\` with \`httpd_exec_t\`, the Apache executable type, so confirm the domain with \`ps -efZ\` before choosing.
+
+After any repair, repeat the failing action and run \`ausearch -m AVC -i -ts recent\`. Red Hat's verification step expects \`<no matches>\`.
+
+## Why does nothing show up in the audit log even though access fails?
+
+The commands below collect the evidence for each cause, in order.
+
+\`\`\`bash
+auditctl -s                                   # pid 0: auditd is not running; lost: dropped records
+grep -o 'audit=[^ ]*' /proc/cmdline           # audit=0 turns kernel audit off
+journalctl _TRANSPORT=audit | grep AVC        # records read from the kernel audit subsystem
+journalctl -t setroubleshoot                  # Red Hat's check when auditd runs but ausearch is empty
+dmesg | grep -i -e type=1300 -e type=1400     # Red Hat's check when auditd is not running
+semodule -DB                                  # also log dontaudit denials
+semodule -B                                   # restore the dontaudit rules afterward
+\`\`\`
+
+**Auditing is off or not collecting.** The [auditctl manual](https://man7.org/linux/man-pages/man8/auditctl.8.html) says a \`pid\` of 0 in \`auditctl -s\` "indicates that the audit daemon is not running," and the \`lost\` entry counts records discarded because the kernel queue overflowed. The [kernel parameter documentation](https://docs.kernel.org/admin-guide/kernel-parameters.html) says \`audit=0\` means "kernel audit is disabled and can not be enabled until the next reboot." Without auditd the records go elsewhere. The [journald.conf manual](https://man7.org/linux/man-pages/man5/journald.conf.5.html) says \`Audit=\` defaults to yes in the default namespace, the [journal fields manual](https://man7.org/linux/man-pages/man7/systemd.journal-fields.7.html) marks audit-sourced entries \`_TRANSPORT=audit\`, and the [audit2allow manual](https://man7.org/linux/man-pages/man1/audit2allow.1.html) says that without the audit package the messages land in \`/var/log/messages\`.
+
+**A dontaudit rule suppresses it.** The Notebook's [access vector rules page](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/avc_rules.md) says a \`dontaudit\` rule "stops the auditing of denial messages" for events known to happen harmlessly, with the example \`dontaudit traceroute_t { port_type -port_t }:tcp_socket name_bind;\`. Its [permission reference](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/object_classes_permissions.md) adds that when a denied \`access()\` or \`faccessat()\` call meets a \`dontaudit\` rule on \`audit_access\`, no AVC event is written. Red Hat's fix is \`semodule -DB\` to log everything, then \`semodule -B\`. The [semodule manual](https://man7.org/linux/man-pages/man8/semodule.8.html) describes \`-D\` as temporarily removing dontaudits, reverting "whenever policy is rebuilt."
+
+**SELinux is not the blocker.** Red Hat's last step is \`setenforce 0\` and a retry: "If the problem still occurs, something different than SELinux is blocking your scenario." Other layers include the [systemd sandboxing settings](/blog/systemd-service-hardening), a firewall and ordinary modes, all part of [a hardened server's layers](/blog/linux-server-hardening).
+
+**The search missed it.** \`-ts recent\` covers ten minutes, and a denied D-Bus message is logged as a \`USER_AVC\`, so search all four message types.
+
+## How do you put one domain in permissive mode instead of the whole system?
+
+\`\`\`bash
+semanage permissive -a httpd_t
+# reproduce the failure
+ausearch -m AVC,USER_AVC -i -ts recent
+semanage permissive -d httpd_t
+\`\`\`
+
+The domain keeps running normally but logs what it would have been denied, with \`permissive=1\` in each record. The [semanage-permissive manual](https://man7.org/linux/man-pages/man8/semanage-permissive.8.html) lists current domains with \`-l\`, split into builtin and customized types, and says \`-d\` can remove only domains added with \`semanage permissive\`. The [semanage source](https://github.com/SELinuxProject/selinux/blob/main/python/semanage/seobject.py) installs a module named \`permissive_httpd_t\` containing \`(typepermissive httpd_t)\`, and the Notebook's [modes page](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/modes.md) stores such a module under its \`400\` directory and notes that \`sestatus\` does not display per-domain modes.
+
+The system-wide alternative is \`setenforce 0\`, which Red Hat's [introduction](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/getting-started-with-selinux_using-selinux) says does not persist across reboots. The same chapter warns that permissive domains "can compromise security of your system" and recommends caution, "for example, when debugging a specific scenario." Red Hat's [permissive mode procedure](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/changing-selinux-states-and-modes_using-selinux) adds "Each AVC is logged only once in this case." One permissive run can also reveal several denials where enforcement showed one. That is an inference: the introduction says an enforced denial blocks the operation and "the process receives an error," and a program that stops at its first error never reaches its later accesses. Collect them all, fix labels, ports and booleans, then remove the permissive record and test again.
+
+## When is audit2allow the right answer?
+
+After labels, ports and booleans are ruled out, and only for a specific, understood access. Red Hat's [guidance](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) is that you "should not use audit2allow to generate a local policy module as your first option," because labeling problems and configuration changes you "forgot to tell SELinux about" are more common.
+
+Three situations qualify:
+
+1. **A policy gap.** Red Hat's [example](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) is a new PostgreSQL release performing an action the shipped policy has not seen. The route is a local module plus a support case against the \`selinux-policy\` component with the output of \`audit2allow -w -a\` and \`audit2allow -a\`.
+2. **A confined custom application.** Red Hat's [custom policy chapter](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/writing-a-custom-selinux-policy_using-selinux) builds a policy with \`sepolicy generate --init\`, then runs \`ausearch -m AVC -ts recent | audit2allow -R\`, which suggests a \`logging_write_generic_logs(mydaemon_t)\` macro. Because "rules suggested by audit2allow can be incorrect for certain cases," it inspects the macro with \`macro-expander\` first.
+3. **A harmless denial.** The [audit2allow manual](https://man7.org/linux/man-pages/man1/audit2allow.1.html) says some denials "are not fatal to the application," in which case a \`dontaudit\` rule from \`-D\` may be preferable to an \`allow\` rule.
+
+The same manual warns against "blindly implementing the sometimes broad changes recommended by this utility" and says a new domain or type is often better. A label denial shows why: for Red Hat's 403 example, whose log shows \`httpd\` denied \`getattr\` on the file, an illustrative rule in the manual's output format would read \`allow httpd_t var_t:file { getattr open read };\`. Red Hat says files created in \`/srv\` inherit \`var_t\`, so that rule would cover every such tree, where one \`semanage fcontext\` line would have scoped the access to the website.
+
+When it is the right tool, scope the input to one process and review the file before loading it:
+
+\`\`\`bash
+ausearch -c 'mydaemon' --raw | audit2allow -m local > local.te
+cat local.te
+ausearch -c 'mydaemon' --raw | audit2allow -M my-mydaemon
+semodule -i my-mydaemon.pp
+semodule -lfull | grep my-mydaemon
+semodule -r my-mydaemon
+\`\`\`
+
+The \`-a\` option reads the whole audit and message log; the manual's \`-l\` option limits input to after the last policy reload. On RHEL, custom rules carry a support caveat. Red Hat's [local module procedure](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux) warns "Red Hat does not support creating SELinux policy modules with custom rules because this falls outside of the Production Support Scope of Coverage," says to use only rules Red Hat provides, and lists local modules at priority 400.
+
+## What breaks after a fix that looked right?
+
+**A fix vanishes after a relabel or reboot.** A \`chcon\` label disappears at relabel, and a \`setsebool\` without \`-P\` leaves the boot-time default unchanged, per its [manual](https://man7.org/linux/man-pages/man8/setsebool.8.html). Fix: record labels with \`semanage fcontext\`, run \`restorecon\`, confirm with \`semanage fcontext -l -C\`, and repeat booleans with \`-P\`.
+
+**\`restorecon -R\` leaves a directory alone.** The restorecon manual says a file labeled with a customizable type is not reset "unless the -F option is used," and lists the types in \`/etc/selinux/{SELINUXTYPE}/contexts/customizable_types\`. Fix: add \`-F\` after checking that the label really is wrong.
+
+**A new rule relabels more than intended.** The semanage-fcontext manual says local rules are matched "from most recent one to the oldest, with first match being used," and that expressions should be "as specific as possible." Fix: anchor the path and review \`semanage fcontext -l -C\`.
+
+**A port moves away from another service.** \`semanage port -a\` on a port that already has a type modifies it, per the source. Fix: run \`semanage port -l | grep PORT\` first, and remove only your own records with \`-d\`.
+
+**A container cannot read a bind mount.** [Podman's documentation](https://docs.podman.io/en/latest/markdown/podman-run.1.html) says "Podman does not change the labels set by the OS," and that \`:z\` (shared) or \`:Z\` (private) on the volume relabels it. It warns "Do not relabel system files and directories," and offers \`--security-opt label=disable\` for a whole home directory. Fix: use \`:z\` or \`:Z\` on a dedicated directory.
+
+**dontaudit rules stay disabled after \`semodule -DB\`.** The audit log grows noisy with known harmless events until \`semodule -B\` rebuilds them. Fix: run it as soon as the evidence is collected.
+
+**Mislabeled files after a spell in system-wide permissive mode.** Red Hat's [warning](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/changing-selinux-states-and-modes_using-selinux) is that "users and processes might label various file-system objects incorrectly," and that objects created while SELinux is disabled get no label. Fix: preview with \`restorecon -n -v -R\` on the affected tree, then run it without \`-n\` before returning to enforcing.
+
+**A service started by hand gets the wrong label.** Red Hat's introduction says to start services with \`systemctl start\` "to avoid incorrect SELinux labeling." Fix: start it through systemd and read the AVC for that run.
+
+## Sources
+
+- [Red Hat: Troubleshooting problems related to SELinux (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux)
+- [Red Hat: Getting started with SELinux (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/getting-started-with-selinux_using-selinux)
+- [Red Hat: Changing SELinux states and modes (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/changing-selinux-states-and-modes_using-selinux)
+- [Red Hat: Configuring SELinux for applications and services with non-standard configurations (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/configuring-selinux-for-applications-and-services-with-non-standard-configurations_using-selinux)
+- [Red Hat: Writing a custom SELinux policy (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_selinux/writing-a-custom-selinux-policy_using-selinux)
+- [Red Hat: SELinux contexts, labeling files (RHEL 7)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-working_with_selinux-selinux_contexts_labeling_files)
+- [Red Hat: Maintaining SELinux labels (RHEL 7)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-working_with_selinux-maintaining_selinux_labels_)
+- [SELinux Notebook: Auditing SELinux Events](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/auditing.md)
+- [SELinux Notebook: Access Vector Rules](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/avc_rules.md)
+- [SELinux Notebook: SELinux Permissive and Enforcing Modes](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/modes.md)
+- [SELinux Notebook: Object Classes and Permissions](https://github.com/SELinuxProject/selinux-notebook/blob/main/src/object_classes_permissions.md)
+- [SELinux project: audit2allow script source](https://github.com/SELinuxProject/selinux/blob/main/python/audit2allow/audit2allow)
+- [SELinux project: semanage seobject.py source](https://github.com/SELinuxProject/selinux/blob/main/python/semanage/seobject.py)
+- [Fedora selinux-policy: corenetwork.te.in](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/kernel/corenetwork.te.in)
+- [Fedora selinux-policy: corenetwork.if.in](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/kernel/corenetwork.if.in)
+- [Fedora selinux-policy: apache.te](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/contrib/apache.te)
+- [Fedora selinux-policy: apache.fc](https://github.com/fedora-selinux/selinux-policy/blob/rawhide/policy/modules/contrib/apache.fc)
+- [Linux kernel source: security/selinux/avc.c](https://github.com/torvalds/linux/blob/master/security/selinux/avc.c)
+- [man7.org: ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html)
+- [man7.org: auditctl(8)](https://man7.org/linux/man-pages/man8/auditctl.8.html)
+- [man7.org: audit2allow(1)](https://man7.org/linux/man-pages/man1/audit2allow.1.html)
+- [man7.org: semanage-fcontext(8)](https://man7.org/linux/man-pages/man8/semanage-fcontext.8.html)
+- [man7.org: semanage-port(8)](https://man7.org/linux/man-pages/man8/semanage-port.8.html)
+- [man7.org: semanage-permissive(8)](https://man7.org/linux/man-pages/man8/semanage-permissive.8.html)
+- [man7.org: semodule(8)](https://man7.org/linux/man-pages/man8/semodule.8.html)
+- [man7.org: setsebool(8)](https://man7.org/linux/man-pages/man8/setsebool.8.html)
+- [man7.org: restorecon(8)](https://man7.org/linux/man-pages/man8/restorecon.8.html)
+- [man7.org: journald.conf(5)](https://man7.org/linux/man-pages/man5/journald.conf.5.html)
+- [man7.org: systemd.journal-fields(7)](https://man7.org/linux/man-pages/man7/systemd.journal-fields.7.html)
+- [Linux kernel documentation: The kernel's command-line parameters](https://docs.kernel.org/admin-guide/kernel-parameters.html)
+- [Podman documentation: podman-run](https://docs.podman.io/en/latest/markdown/podman-run.1.html)
+`,
+  },
+  {
+    slug: "smr-vs-cmr-hard-drives",
+    title: "SMR vs CMR Hard Drives: How to Tell Which You Have and Why ZFS Cares",
+    date: "2026-11-04",
+    tags: ["storage", "hardware", "homelab"],
+    excerpt:
+      "Which WD, Seagate and Toshiba models are SMR, why the Linux zoned flag cannot show it, and how DM-SMR stretched one ZFS resilver to nearly 230 hours.",
+    coverImage: "/images/blog/smr-vs-cmr-hard-drives.jpg",
+    content: `
+## The short answer
+
+The Linux zoned flag cannot report drive-managed SMR (DM-SMR), so the dependable test is the exact model number checked against the vendor's own list. These disks pass as ordinary drives: the kernel documents that [drive-managed devices "will be treated as regular block devices and zoned will report 'none'"](https://www.kernel.org/doc/Documentation/ABI/stable/sysfs-block). Western Digital's [SKU list](https://blog.westerndigital.com/wp-content/uploads/2020/07/WD_SMR_SKUs_vDS.pdf) names WD20EFAX, WD30EFAX, WD40EFAX and WD60EFAX, the 2 to 6 TB WD Red, as SMR. Seagate [confirmed SMR](https://blocksandfiles.com/2020/04/15/seagate-2-4-and-8tb-barracuda-and-desktop-hdd-smr/) in the ST2000DM008, ST4000DM004 and ST8000DM004 BarraCuda, and Toshiba [listed the 4 and 6 TB P300 and the L200](https://www.toshiba-storage.com/about/press-center/use-of-shingled-magnetic-recording-smr-technology-in-toshiba-consumer-hard-drives/). WD Red Plus, WD Red Pro, Seagate IronWolf and Toshiba N300 are listed as CMR. \`smartctl\` labels many SMR models in its Model Family line, but only for drives its database knows. For ZFS, OpenZFS calls DM-SMR drives ["not recommended for ZFS pools"](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html), a ServeTheHome RAIDZ resilver took [nearly 230 hours on a WD40EFAX against under 17 hours on CMR drives](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/2/), and iXsystems reported [IDNF errors from the WD40EFAX on firmware 82.00A82](https://www.truenas.com/docs/hardware/notices/wdsmr/).
+
+## What is the difference between CMR, drive-managed SMR and host-managed SMR?
+
+CMR leaves gaps between tracks. SMR removes them: per the [Zoned Storage project](https://zonedstorage.io/docs/introduction/smr), the write head is wider than one track, so "the next track partially overwrites the previous one," which raises areal density and per-drive capacity. The cost is that "all data streams must be organized and written sequentially to the media." Overlapping tracks are grouped into zones, and changing one sector means rewriting its zone, because "direct modification is not permitted." Reads stay random-access, since SMR disks keep "true random-read capability."
+
+| Variant | Who enforces sequential writes | What Linux reports in \`queue/zoned\` | Standard |
+|---|---|---|---|
+| CMR | Nobody, there is no constraint | \`none\` | None |
+| Drive-managed | Drive firmware | \`none\`, same as a regular disk | Transparent to the host: "No industry standard exists" for the model, per the [Zoned Storage project](https://zonedstorage.io/docs/introduction/smr) |
+| Host-aware | Host preferably, drive handles the rest | \`host-aware\` | ZBC (SCSI), ZAC (ATA) |
+| Host-managed | Host, required | \`host-managed\` | ZBC (SCSI), ZAC (ATA) |
+
+The [Zoned Storage guide](https://zonedstorage.io/docs/getting-started/smr-disk) defines \`none\` as "Regular disk or drive managed ZBC/ZAC disk."
+
+NAS-branded SMR is drive-managed. WD's [April 20, 2020 statement](https://blog.westerndigital.com/wd-red-nas-drives/) says SMR is implemented as drive-managed SMR "on the device itself" in its 2 to 6 TB WD Red drives and as host-managed SMR in high-capacity data center drives. Host-managed disks need software that follows zone rules: Seagate's [CMR and SMR list](https://www.seagate.com/products/cmr-smr-list/) says they require "control over zone management, write ordering, and filesystem selection," and the [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) says "ZFS cannot manage the zone semantics these drives require, so they do not work with TrueNAS."
+
+### What a drive-managed disk does behind the interface
+
+The firmware takes random writes into a persistent cache and merges them into the shingled bands later. A 2015 [USENIX FAST paper, Skylight](https://www.usenix.org/system/files/conference/fast15/fast15-paper-aghayev.pdf), reverse engineered Seagate's 5 TB and 8 TB drive-managed disks and found a persistent disk cache of 20 GiB on a 5 TB model and 25 GiB on an 8 TB model, "with high random write speed until the cache is full." The bands were 15 to 40 MiB, and aggressive cleaning during idle time took 0.6 to 1.6 seconds per modified band. These are 2015 Seagate figures; the WD documents cited here give none for the EFAX drives. iXsystems says WD's drives ["use an indirect Logical Block Addressing model, which is similar to SSDs"](https://www.truenas.com/docs/hardware/notices/wdsmr/) and do background garbage collection that "does reduce their sustained random write performance."
+
+## Which WD, Seagate and Toshiba models do the vendors list as SMR?
+
+### Western Digital
+
+WD's [SMR SKU list](https://blog.westerndigital.com/wp-content/uploads/2020/07/WD_SMR_SKUs_vDS.pdf), updated July 6, 2020, covers client internal drives and ends with "All other capacity points use CMR recording technology."
+
+| Family | SMR model numbers |
+|---|---|
+| WD Red 3.5 in | WD20EFAX (2 TB), WD30EFAX (3 TB), WD40EFAX (4 TB), WD60EFAX (6 TB) |
+| WD Blue 3.5 in | WD20EZAZ (2 TB), WD60EZAZ (6 TB) |
+| WD Blue 2.5 in | WD10SPZX (1 TB), WD20SPZX (2 TB) |
+| WD Black 2.5 in | WD5000LPSX (500 GB), WD10SPSX (1 TB) |
+
+WD's September 2023 [WD Red brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-hdd/product-brief-western-digital-wd-red-hdd.pdf) still lists the same four EFAX models, each with 256 MB of cache and the footnote "Implementation of SMR for these products is device-managed SMR." The letters are not enough on their own: [TrueNAS](https://www.truenas.com/docs/hardware/notices/wdsmr/) notes that the "8TB and larger drives with the 'EFAX' code use CMR technology," and the same code marks SMR at 2 to 6 TB. WD's later documents add models to that list. The [WD Blue 3.5 in brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-blue-hdd/product-brief-western-digital-wd-blue-pc-hdd.pdf), March 2025, marks the WD40EZAZ, WD30EZAZ and WD20EZBX as SMR alongside the WD60EZAZ and WD20EZAZ. The July 2020 list names only the 2 and 6 TB Blue.
+
+### Seagate
+
+In April 2020 [Blocks and Files](https://blocksandfiles.com/2020/04/15/seagate-2-4-and-8tb-barracuda-and-desktop-hdd-smr/) reported that a Seagate spokesperson confirmed SMR in these four products: "I confirm all four products listed use SMR technology."
+
+| Product | Model | Capacity |
+|---|---|---|
+| BarraCuda | ST2000DM008 | 2 TB |
+| BarraCuda | ST4000DM004 | 4 TB |
+| BarraCuda | ST8000DM004 | 8 TB |
+| Desktop HDD | ST5000DM000 | 5 TB |
+
+Seagate's [current list](https://www.seagate.com/products/cmr-smr-list/) is by capacity, not model number. It shows SMR for the 4 and 8 TB 3.5 in BarraCuda, the 2 and 4 TB 2.5 in BarraCuda, the 1 and 2 TB 2.5 in FireCuda and the 8 TB Archive, and CMR for the 3.5 in BarraCuda at 12 to 24 TB. It has no 2 TB 3.5 in BarraCuda, so for the ST2000DM008 rely on the 2020 confirmation and the smartmontools database ("Seagate BarraCuda 3.5 (SMR)").
+
+### Toshiba
+
+Toshiba's [statement dated April 30, 2020](https://www.toshiba-storage.com/about/press-center/use-of-shingled-magnetic-recording-smr-technology-in-toshiba-consumer-hard-drives/) lists these SMR parts and says the N300 "does not use SMR."
+
+| Family | Model numbers |
+|---|---|
+| P300 | HDWD260UZSVA (6 TB), HDWD240UZSVA (4 TB) |
+| L200 | HDWL120UZSVA, HDWL120EZSTA, HDWL120XZSTA (2 TB); HDWL110UZSVA, HDWL110EZSTA, HDWL110XZSTA (1 TB) |
+
+The [smartmontools database](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/drivedb.h) tags more Toshiba models than that page does, including the S300 models HDWT720, HDWT740, HDWT840 and HDWT860.
+
+## How do you check a drive you already own?
+
+Read the exact model, look it up on the vendor's list, and use the Linux flags only as hints. A drive behind a [RAID](/blog/raid-levels-comparison) controller may report the controller's name instead of its own, so read the label, switch to HBA mode as in the [PERC H730 HBA mode](/blog/perc-h730-hba-mode) article, or query through the controller with [\`smartctl -d megaraid,N\`](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html).
+
+\`\`\`bash
+sudo smartctl -i /dev/sda
+lsblk -d -o NAME,MODEL,SERIAL,ROTA,ZONED
+cat /sys/block/sda/queue/zoned
+\`\`\`
+
+### Read the model and the Model Family line
+
+The [smartctl manual](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html) says \`-i\` prints the model number, serial number and firmware version, indicates whether the drive is in the smartmontools database, and if so "the drive model family may also be printed." The [database](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/drivedb.h) carries entries named "Western Digital Red (SMR)" for \`WDC WD[2346]0EFAX-.*\`, "Western Digital Red (CMR)" for the EFRX and EFPX series, "Seagate BarraCuda 3.5 (SMR)", "Toshiba P300 (SMR)" and "Toshiba L200 (SMR)." A trimmed \`smartctl\` printout [posted by a TrueNAS SCALE 24.10.2 owner](https://forums.truenas.com/t/cant-trim-pool-of-smr-drives/34557) in February 2025 shows what to read:
+
+\`\`\`
+Model Family:     Seagate BarraCuda 3.5 (SMR)
+Device Model:     ST2000DM008-2FR102
+Rotation Rate:    7200 rpm
+Form Factor:      3.5 inches
+TRIM Command:     Available
+Device is:        In smartctl database 7.3/5660
+\`\`\`
+
+Old databases miss newer models. The manual says to run \`update-smart-drivedb\`, and \`-P showall\` takes a model and firmware to list matching entries. The strings below are copied from the "Western Digital Red (SMR)" entry's own "tested with" comment.
+
+\`\`\`bash
+sudo update-smart-drivedb
+sudo smartctl -P showall 'WDC WD60EFAX-68SHWN0' '82.00A82'
+\`\`\`
+
+The label comes from matching the model string against that database (the manual's entry format is a model regular expression), not from probing the drive, so a missing "(SMR)" tag is not a clean bill of health. Treat the vendor list as the authority and the tag as a second opinion.
+
+### What the zoned flag cannot tell you
+
+\`queue/zoned\` and \`lsblk\`'s ZONED column come from the same kernel attribute (the [lsblk source](https://raw.githubusercontent.com/util-linux/util-linux/stable/v2.40/misc-utils/lsblk.c) reads \`queue/zoned\`), which reports \`none\` for a drive-managed disk. The \`smartctl\` source also prints a "Zoned Device" line from ATA identify data, with "Host Aware Zones" and "Device managed zones" as the possible values, but a code comment says the field was "added in ACS-4, obsoleted in ACS-5" (see [ataprint.cpp](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/ataprint.cpp)). The information section in the forum post above has no such line, and the drive is SMR. A flag that says \`none\` or prints nothing clears nothing.
+
+### Why TRIM is a hint and not a test
+
+The same source prints a TRIM line for a spinning drive only when it reports support, with the comment "HDD: if supported (SMR)." The pattern is unreliable: the [database's own comment](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/drivedb.h) marks a tested ST4000DM004-2CV104 as "TRIM: no." Advertising is not the same as working. In the forum post above, \`zpool trim\` answered "cannot trim: no devices in pool support trim operations" while \`smartctl\` said TRIM was available, and \`lsblk -D\` showed 0B discard granularity. A reply said "smartctl says what the vendor tells it to." Yet the same drive showed 4K granularity after the poster moved it to a Fedora 41 machine, and a reply allowed that TRIM might be blocked at the libata driver level, so a zero reflects the operating system's path as much as the drive.
+
+### Do not infer it from cache size
+
+Cache size and RPM class fail as tells. These three 4 TB WD NAS drives are all 5400 RPM class:
+
+| Model | Recording | Cache | Source |
+|---|---|---|---|
+| WD40EFRX | CMR | 64 MB | [WD Red spec sheet, 2017](https://products.wdc.com/library/SpecSheet/ENG/2879-800002.pdf); CMR per [TrueNAS](https://www.truenas.com/docs/hardware/notices/wdsmr/) |
+| WD40EFAX | DM-SMR | 256 MB | [WD Red brief, September 2023](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-hdd/product-brief-western-digital-wd-red-hdd.pdf) |
+| WD40EFPX | CMR | 256 MB | [WD Red Plus brief, March 2025](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-plus-hdd/product-brief-western-digital-wd-red-plus-hdd.pdf) |
+
+The SMR drive and the newest CMR drive share a cache size, and ServeTheHome noted that [the SMR drive "has a much larger cache than the CMR version, 256MB vs 64MB"](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/2/) against the WD40EFRX.
+
+### Measure it on a spare drive
+
+A write test settles the cases a list cannot, but it destroys data on its target, so run it only on an empty, unmounted drive. [fio](https://fio.readthedocs.io/en/latest/fio_doc.html) aborts write jobs aimed at what looks like a mounted device unless told otherwise. \`write_bw_log\` with \`log_avg_msec\` records one averaged bandwidth figure per interval, so the log shows when throughput steps down.
+
+\`\`\`bash
+sudo fio --name=smr-probe --filename=/dev/sdX --ioengine=libaio --direct=1 \\
+  --rw=randwrite --bs=4k --iodepth=16 --time_based --runtime=7200 \\
+  --write_bw_log=smr-probe --log_avg_msec=10000
+\`\`\`
+
+Skylight describes high random write speed "until the cache is full," and says the effective cache size "is a function of write size and queue depth," so the plateau length varies. A long plateau followed by a step down matches that description; a flat log proves little if the run ended before the cache filled. The [fio benchmarking article](/blog/storage-benchmarking-fio) covers sustained runs, and [reading SMART data](/blog/smart-data-drive-failure) covers what else to check on a used drive.
+
+## Why do DM-SMR drives stall during a ZFS resilver or RAID rebuild?
+
+A resilver is a long run of writes with no idle time, and idle time is when a DM-SMR drive empties its cache. WD's [June 23, 2020 post](https://blog.westerndigital.com/wd-red-nas-drives/) says DMSMR drives "prefer idle time to perform background operations, without which the drive may take longer to complete a command," and that the "increased amount of sustained random writes during ZFS resilvering (similar to a rebuild) causes a lack of idle time for DMSMR drives to execute internal data management tasks." Once the persistent cache fills, the drive must move data into bands to accept new writes, a cleaning step Skylight timed at 0.6 to 1.6 seconds per modified band on the 2015 drives. Blocks and Files describes the effect as ["a pause of potentially many seconds"](https://blocksandfiles.com/2020/04/15/seagate-2-4-and-8tb-barracuda-and-desktop-hdd-smr/) when the cache is flushed.
+
+### What the tests measured
+
+ServeTheHome's May 2020 [RAIDZ test](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/) used a four-drive pool of Toshiba CMR disks on FreeNAS 11.3-U2, filled to around 60 percent. Each test drive replaced one member and the resilver was timed, with extra load: 1 MB files copied to the array over the network, and 2 TB read from it and copied to another device. Each drive had been prepped with 3 TB written and 1 TB deleted, run through the review's write benchmarks, and unplugged right afterward. On the [second page of the review](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/2/), scrubs were disabled and "resilvering priority was completely disabled." The result: "all three CMR drives comfortably completed the resilver in under 17 hours, the SMR drive took nearly 230 hours to perform an identical task." A second WD40EFAX gave the same result, and the review called it a "9 day and almost 14-hour rebuild." The resilver did finish without errors. The same review found the drive "seemed to recover relatively quickly if given even brief periods of inactivity," and a reader comment objected that the test drives had been heavily written and unplugged just before the run, unlike a new drive swapped in after a failure. One test bed is evidence, not a law, but it matches WD's explanation.
+
+On non-ZFS RAID, WD [says](https://blog.westerndigital.com/wd-red-nas-drives/) that on "a typical Synology or QNAP (non-ZFS) platform" its DMSMR drives "perform as well as CMR drives or show slightly longer RAID rebuild times," while acknowledging that "in some cases" DMSMR "can result in slower rebuild times." The [rebuild risk math](/blog/raid-rebuild-risk-math) article explains why a longer rebuild window matters even when the rebuild succeeds.
+
+### How it fails
+
+iXsystems [reported](https://www.truenas.com/docs/hardware/notices/wdsmr/), in a notice that calls its testing unfinished, that the 4 TB WD40EFAX with firmware 82.00A82 "can cause it to enter a faulty state under heavy write loads, including resilvering," and expected other WD Red DM-SMR models on the same firmware to behave the same. In that state the drive "returns IDNF errors, becomes unusable, and is treated as a drive failure by ZFS," and the notice warns that data within a vdev or pool can be lost if multiple drives fail. The notice calls the failure rare: about 100 FreeNAS Mini systems shipped with 2 and 6 TB DM-SMR drives, and one issue was reported. It states no cause. Its advice is to erase a DM-SMR drive before adding it to a pool, keep backups, and contact iXsystems if IDNF errors appear.
+
+OpenZFS says DM-SMR can trigger ["severe write-amplification stalls during RAIDZ/mirror resilver, scrub, and zfs send/receive workloads"](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html). The TrueNAS guide says DM-SMR and host-aware drives "function poorly with TrueNAS, and the TrueNAS team does not recommend them," with "longer, less reliable resilver operations." A related option is \`zpool replace -s\`, which the [OpenZFS manual](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-replace.8.html) says reconstructs the new device "sequentially to restore redundancy as quickly as possible," skips checksum verification until a scrub that starts afterward, and "is not supported for raidz configurations." None of the sources above tested it on an SMR drive, so it is no proven fix. Pool design is covered in [Running ZFS on Dell Enterprise Hardware](/blog/zfs-on-enterprise-hardware).
+
+## Are WD Red Plus, Red Pro, IronWolf and N300 all CMR?
+
+Yes, per each vendor's published documents, with the model suffix still worth reading.
+
+| Line | What the vendor says | Source |
+|---|---|---|
+| WD Red Plus | CMR for every model in the March 2025 brief: WD20EFPX, WD40EFPX, WD60EFPX, WD80EFPX and larger up to 12 TB; rated 180 TB/year | [WD Red Plus brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-plus-hdd/product-brief-western-digital-wd-red-plus-hdd.pdf) |
+| WD Red Pro | "CMR 2TB to 18TB" in June 2020 | [WD blog](https://blog.westerndigital.com/wd-red-nas-drives/) |
+| Seagate IronWolf | CMR at 2 to 16 TB; the SMR column reads N/A | [Seagate list](https://www.seagate.com/products/cmr-smr-list/) |
+| Seagate IronWolf Pro | CMR at 2 to 24 TB, plus HAMR CMR at 28 to 32 TB | [Seagate list](https://www.seagate.com/products/cmr-smr-list/) |
+| Toshiba N300 | Recording Technology listed as CMR, buffer 256 MiB to 1 GiB, 180 TB/year rated workload | [N300 data sheet](https://toshiba.semicon-storage.com/content/dam/toshiba-ss-v3/master/en/storage/product/internal-specialty/HDD-NSENE.pdf) |
+
+WD introduced Red Plus in 2020 as ["the new name for conventional magnetic recording (CMR)-based NAS drives"](https://blog.westerndigital.com/wd-red-nas-drives/) for write-intensive work "such as ZFS," and the [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) calls Red Plus "non-SMR." Seagate [stated in 2020](https://blocksandfiles.com/2020/04/15/seagate-2-4-and-8tb-barracuda-and-desktop-hdd-smr/) that it does not use SMR "in any IronWolf or IronWolf Pro drives," and that it does not market BarraCuda "as being suitable for NAS applications."
+
+For WD Red, the suffix tells the generation. TrueNAS says the previous generation, the EFRX drives, [uses CMR](https://www.truenas.com/docs/hardware/notices/wdsmr/), the EFPX and related Red Plus codes are CMR in WD's brief, and EFAX is SMR only at 2 to 6 TB. A listing that omits the suffix or the recording technology is a reason to ask the seller.
+
+## Is SMR ever fine in a homelab?
+
+Yes, for single disks holding large files that are written once and read occasionally. Seagate's list says SMR "is best suited for workloads that are sequential or easily sequentialized," and names large media repositories, backup tiers, compliance archives and object storage. ServeTheHome's verdict on the WD40EFAX was that [for single drive installations it "will likely function without issue,"](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/2/) while its RAIDZ results, in the reviewer's words, "overshadow the otherwise decent performance of the drive."
+
+| Use | DM-SMR fit | Basis |
+|---|---|---|
+| Single-disk archive of large files | Reasonable | Seagate's sequential workload list; ServeTheHome's single-drive verdict |
+| Mirror or RAIDZ pool that must resilver | Avoid | [OpenZFS](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) and [TrueNAS](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) say not recommended |
+| ZFS send/receive target | Not exempt | OpenZFS names send/receive as an affected workload |
+| VM disks and zvols with random overwrites | Avoid | Skylight: random write speed holds only until the persistent cache is full |
+| Non-ZFS RAID on a Synology or QNAP | Vendor-qualified | WD reports equal or "slightly longer" rebuilds, with caveats |
+| Behind a hardware RAID card | Check the card | The [PERC H755 article](/blog/perc-h755-hba-mode) quotes Dell: the card "does not support" SMR |
+
+One [TrueNAS forum reply](https://forums.truenas.com/t/cant-trim-pool-of-smr-drives/34557) argued that sequentially writing 1 TB to a mirror of 2 TB drives, with no overwrites in place, is unlikely to hit the worst behavior. It is a forum opinion, not vendor guidance, and the poster said it was not "a blanket endorsement of SMR." For a redundant pool, buy CMR drives and keep SMR out of anything that must resilver; the full build is in [TrueNAS on a Dell R730](/blog/truenas-on-dell-r730).
+
+## What breaks
+
+**A resilver estimate climbs from hours to days.** WD ties the slowdown to a lack of idle time for background work, and ServeTheHome measured nearly 230 hours under added load. Fix: stop other writes to the pool, keep backups current, and plan to replace SMR members with CMR drives.
+
+**The replacement faults with IDNF errors.** iXsystems saw this on the WD40EFAX at firmware 82.00A82 under heavy writes, and ZFS treats the drive as failed. Fix: do not resilver a second SMR member at the same time, since multiple failures in a vdev lose data, and contact the vendor.
+
+**\`smartctl\` says TRIM is available and \`zpool trim\` refuses.** The operating system may not be sending TRIM to the drive. Fix: check \`lsblk -D\`; a zero discard granularity means that kernel is not offering TRIM, whatever \`smartctl\` lists.
+
+**Two drives share a prefix and differ in recording.** EFAX covers SMR at 2 to 6 TB and CMR at 8 TB and up, and WD's 2020 list omits the WD40EZAZ and WD30EZAZ that its March 2025 Blue brief marks SMR. Fix: compare the full model against the newest vendor document and the database, and ask the vendor when they disagree.
+
+## Sources
+
+- [Linux kernel: sysfs-block ABI, queue/zoned](https://www.kernel.org/doc/Documentation/ABI/stable/sysfs-block)
+- [Zoned Storage: Shingled Magnetic Recording Hard Disks](https://zonedstorage.io/docs/introduction/smr)
+- [Zoned Storage: Getting Started with SMR Hard Disks](https://zonedstorage.io/docs/getting-started/smr-disk)
+- [USENIX FAST '15: Skylight, A Window on Shingled Disk Operation](https://www.usenix.org/system/files/conference/fast15/fast15-paper-aghayev.pdf)
+- [Western Digital: On WD Red NAS Drives](https://blog.westerndigital.com/wd-red-nas-drives/)
+- [Western Digital: SMR Drives by Capacity, SKU list updated 7/06/2020](https://blog.westerndigital.com/wp-content/uploads/2020/07/WD_SMR_SKUs_vDS.pdf)
+- [Western Digital: WD Red Product Brief, September 2023](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-hdd/product-brief-western-digital-wd-red-hdd.pdf)
+- [Western Digital: WD Red Plus Product Brief, March 2025](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-red-plus-hdd/product-brief-western-digital-wd-red-plus-hdd.pdf)
+- [Western Digital: WD Blue 3.5-inch HDD Product Brief, March 2025](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/internal-drives/wd-blue-hdd/product-brief-western-digital-wd-blue-pc-hdd.pdf)
+- [Western Digital: WD Red NAS Storage Specification Sheet, 2017](https://products.wdc.com/library/SpecSheet/ENG/2879-800002.pdf)
+- [Seagate: CMR and SMR list](https://www.seagate.com/products/cmr-smr-list/)
+- [Blocks and Files: Seagate submarines SMR into 3 Barracuda drives and a Desktop HDD](https://blocksandfiles.com/2020/04/15/seagate-2-4-and-8tb-barracuda-and-desktop-hdd-smr/)
+- [Toshiba: Use of Shingled Magnetic Recording (SMR) Technology in Toshiba Consumer Hard Drives](https://www.toshiba-storage.com/about/press-center/use-of-shingled-magnetic-recording-smr-technology-in-toshiba-consumer-hard-drives/)
+- [Toshiba: N300 NAS Hard Drive data sheet](https://toshiba.semicon-storage.com/content/dam/toshiba-ss-v3/master/en/storage/product/internal-specialty/HDD-NSENE.pdf)
+- [TrueNAS Documentation: WD Red SMR Drive Compatibility with ZFS](https://www.truenas.com/docs/hardware/notices/wdsmr/)
+- [TrueNAS Documentation: Hardware Guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/)
+- [OpenZFS documentation: Hardware, SMR vs CMR](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [OpenZFS manual: zpool-replace(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-replace.8.html)
+- [ServeTheHome: WD Red SMR vs CMR Tested, Avoid Red SMR](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/)
+- [ServeTheHome: WD Red SMR vs CMR Tested, page 2](https://www.servethehome.com/wd-red-smr-vs-cmr-tested-avoid-red-smr/2/)
+- [smartmontools: smartctl(8) manual page](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html)
+- [smartmontools: drivedb.h drive database](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/drivedb.h)
+- [smartmontools: ataprint.cpp source](https://raw.githubusercontent.com/smartmontools/smartmontools/master/smartmontools/ataprint.cpp)
+- [util-linux: lsblk.c source, v2.40](https://raw.githubusercontent.com/util-linux/util-linux/stable/v2.40/misc-utils/lsblk.c)
+- [TrueNAS forum: Can't trim pool of SMR drives?](https://forums.truenas.com/t/cant-trim-pool-of-smr-drives/34557)
+- [fio documentation](https://fio.readthedocs.io/en/latest/fio_doc.html)
+`,
+  },
+  {
+    slug: "ssh-no-matching-key-exchange-method-cisco",
+    title: "SSH to an Old Cisco Switch: No Matching Key Exchange Method Found",
+    date: "2026-11-04",
+    tags: ["networking", "cisco", "security", "troubleshooting"],
+    excerpt:
+      "Which OpenSSH releases dropped group1, group14-sha1 and ssh-rsa, the exact -o options and Host block for one switch, and the IOS 15 and IOS XE fixes.",
+    coverImage: "/images/blog/ssh-no-matching-key-exchange-method-cisco.jpg",
+    content: `
+## The short answer
+
+"no matching key exchange method found" means the OpenSSH client and the switch share no key exchange algorithm, and the client will not fall back to one it treats as weak. [OpenSSH 7.0](https://www.openssh.org/txt/release-7.0) (August 2015) disabled \`diffie-hellman-group1-sha1\` and \`ssh-dss\` by default, [8.2](https://www.openssh.org/txt/release-8.2) (February 2020) dropped \`diffie-hellman-group14-sha1\` from the default proposal, and [8.8](https://www.openssh.org/txt/release-8.8) (September 2021) disabled RSA signatures made with SHA-1, which is the only plain RSA host key algorithm in Cisco's older algorithm lists. For one switch, append what the "Their offer" line shows: \`ssh -oKexAlgorithms=+diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-rsa admin@switch\`, and choose group14 over group1 whenever the switch offers it. Put the same options in a \`Host\` block in \`~/.ssh/config\` and confirm them with \`ssh -G\`. The lasting fix is on the switch: a 2048-bit RSA key and \`ip ssh version 2\` on classic IOS 15, or IOS XE 17.x, where Cisco's [17.12 guide](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-12/configuration_guide/sec/b_1712_sec_9300_cg/ssh_algorithms_for_common_criteria_certification.html) lists curve25519 and ECDH key exchange and \`rsa-sha2-512\` host keys by default. Each negotiation step fails separately, so expect a second error, host key and then cipher, after the first fix.
+
+## What does "no matching key exchange method found" mean?
+
+Both sides of an SSH connection send ordered lists of algorithms first. [RFC 4253](https://www.rfc-editor.org/rfc/rfc4253) says "If no algorithm satisfying all these conditions can be found, the connection fails, and both sides MUST disconnect." OpenSSH reports which list failed and prints what the other side offered. The reason strings live in [ssherr.c](https://github.com/openssh/openssh-portable/blob/master/ssherr.c), and [packet.c](https://github.com/openssh/openssh-portable/blob/master/packet.c) builds the line as \`Unable to negotiate with <host> port <port>: <reason>. Their offer: <list>\`.
+
+| Message | Negotiation step | Client option that changes it |
+|---|---|---|
+| \`no matching key exchange method found\` | Key exchange | \`KexAlgorithms\` |
+| \`no matching host key type found\` | Host key signature | \`HostKeyAlgorithms\` |
+| \`no matching cipher found\` | Encryption | \`Ciphers\` |
+| \`no matching MAC found\` | Message integrity | \`MACs\` |
+
+The options are documented in [ssh_config(5)](https://man.openbsd.org/ssh_config). Only the first failing step is reported: in [kex.c](https://github.com/openssh/openssh-portable/blob/master/kex.c) the client chooses the key exchange first, then the host key algorithm, then ciphers, MACs and compression, and records the peer's list for whichever choice fails. The host key case has its own write-up in no matching host key type found, ssh-rsa. A connection that closes before negotiation starts, such as \`kex_exchange_identification: Connection closed by remote host\`, is a different failure, covered in [the MaxStartups post](/blog/the-connection-refused-by-a-daemon-doing-nothing).
+
+To see everything a switch offers without trial and error, Nmap's [ssh2-enum-algos](https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html) script says that "If verbosity is set, the offered algorithms are each listed by type." The [Nmap command builder](/tools/nmap-command-builder) assembles the flags.
+
+\`\`\`bash
+nmap -v -p 22 --script ssh2-enum-algos 10.10.10.2
+\`\`\`
+
+## Which OpenSSH releases turned the legacy algorithms off, and why?
+
+Most rows change defaults rather than remove code, so the old algorithms can be switched back on until 10.0 removes DSA.
+
+| OpenSSH | Date | What changed for a client talking to old gear |
+|---|---|---|
+| [7.0](https://www.openssh.org/txt/release-7.0) | 2015-08-11 | 1024-bit \`diffie-hellman-group1-sha1\` and \`ssh-dss\` disabled by default at run-time |
+| [7.2](https://www.openssh.org/txt/release-7.2) | 2016-02-29 | blowfish-cbc, cast128-cbc, arcfour and rijndael-cbc aliases off in ssh; MD5-based and truncated HMACs off; group exchange minimum raised to 2048 bits |
+| [7.4](https://www.openssh.org/txt/release-7.4) | 2016-12-19 | \`3des-cbc\` removed from the client's default proposal |
+| [7.6](https://www.openssh.org/txt/release-7.6) | 2017-10-03 | "ssh(1): do not offer CBC ciphers by default"; RSA keys under 1024 bits refused |
+| [8.2](https://www.openssh.org/txt/release-8.2) | 2020-02-14 | \`diffie-hellman-group14-sha1\` removed from the default key exchange for client and server |
+| [8.8](https://www.openssh.org/txt/release-8.8) | 2021-09-26 | RSA signatures using SHA-1 (\`ssh-rsa\`) disabled by default |
+| [10.0](https://www.openssh.org/txt/release-10.0) | 2025-04-09 | DSA removed entirely; sshd stops offering finite-field Diffie-Hellman by default |
+
+### Why group1 went first
+
+The group in \`diffie-hellman-group1-sha1\` is 1024 bits. Logjam researchers estimate that ["an academic team can break a 768-bit prime and that a nation-state can break a 1024-bit prime,"](https://weakdh.org/) and their [server guidance](https://weakdh.org/sysadmin.html) says "at the very least, you should disable Group 1 support." [RFC 9142](https://www.rfc-editor.org/rfc/rfc9142) calls the group "too weak to be retained" and marks \`diffie-hellman-group1-sha1\` SHOULD NOT. It gives \`diffie-hellman-group14-sha1\` a MAY with the advice to "put at the end of the list of negotiated key exchanges," and makes \`diffie-hellman-group14-sha256\` a MUST. Group14 with SHA-1 is the less bad SHA-1 method, and group14 with SHA-256 is better still.
+
+### Why old gear has only these algorithms
+
+RFC 4253 made \`diffie-hellman-group1-sha1\`, \`diffie-hellman-group14-sha1\`, \`ssh-dss\` and \`3des-cbc\` REQUIRED, so vendors built exactly those. The OpenSSH 7.4 notes acknowledge the cost: removing 3DES "may cause problems connecting to older devices using the default configuration, but it's highly likely that such devices already need explicit configuration for key exchange and hostkey algorithms already anyway."
+
+### Why ssh-rsa fails even though RSA is fine
+
+The key is fine. The [8.5 notes](https://www.openssh.org/txt/release-8.5) explain that an \`ssh-rsa\` key can sign with \`rsa-sha2-256\`, \`rsa-sha2-512\` or \`ssh-rsa\` (RSA with SHA-1), and "Only the last of these is being turned off by default." The 8.8 notes give the reason: chosen-prefix SHA-1 collisions cost under USD 50,000. [RFC 8332](https://www.rfc-editor.org/rfc/rfc8332) defines the SHA-2 variants and says implementations "SHOULD start to disable "ssh-rsa" in their default configurations." A switch that signs only with SHA-1 fails with \`Their offer: ssh-rsa\`, as [an owner report](https://chrisjhart.com/Cisco-IOS-SSH-Key-Type/) from a switch whose prompt reads C3560-CX shows.
+
+### What a current client still accepts
+
+The 10.0 notes say of finite-field Diffie-Hellman that "The client is unchanged and continues to support these methods by default," and the current [kex-names.c](https://github.com/openssh/openssh-portable/blob/master/kex-names.c) still builds group1, group14-sha1 and SHA-1 group exchange when OpenSSL is present, so the names can be appended. DSA is the exception. The [9.8 notes](https://www.openssh.org/txt/release-9.8) disabled it at compile time (portable OpenSSH needs \`--enable-dsa-keys\`) and 10.0 removed it, so \`+ssh-dss\` cannot work in a 10.x client.
+
+A working connection can still print a warning. OpenSSH [10.1](https://www.openssh.org/txt/release-10.1) (October 2025) added "a warning when the connection negotiates a non-post quantum key agreement algorithm," controlled by the \`WarnWeakCrypto\` option. The ssh_config(5) manual says the \`no-pq-kex\` flag disables only that warning. Cisco's 17.12 defaults list no post-quantum method, so expect the warning even after the fix. It is not a failure.
+
+## How do you connect once without weakening every other host?
+
+Append the algorithm for a single command. The [OpenSSH legacy page](https://www.openssh.org/legacy.html) explains that "The '+' before the list instructs ssh to append the algorithm to the client's default set rather than replacing the default," and adds that "By appending, you will automatically upgrade to the best supported algorithm when the server starts supporting it." The man page agrees that \`+\` appends, \`-\` removes and \`^\` moves entries to the front.
+
+\`\`\`bash
+# Key exchange: use the strongest name in "Their offer"
+ssh -oKexAlgorithms=+diffie-hellman-group14-sha1 admin@10.10.10.2
+
+# Only group1 on offer (a school IT blog reports this on IOS 12.x)
+ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 admin@10.10.10.2
+
+# Then the host key, if the next error names ssh-rsa
+ssh -oKexAlgorithms=+diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-rsa admin@10.10.10.2
+\`\`\`
+
+Leave the \`+\` off and the option replaces the whole default list, which drops every modern algorithm. A [school IT blog](https://techblog.glendaleacademy.org/cisco/openssh-and-cisco) shows that form for IOS 12.x devices reached from Ubuntu 16.04, whose \`Their offer\` line listed only group1. It works against such a switch but would fail against any better one.
+
+Pick the name from the offer, not from habit. Two owner reports show a switch offering \`diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1\`, [one on a C3560-CX](https://chrisjhart.com/Cisco-IOS-SSH-Key-Exchange-Algorithms/) and [one from a Raspberry Pi](https://gist.github.com/rdapaz/015a4a3f95e51a12b1871091f8fd5305), and both fixes enabled group1 even though group14 was on offer. Under RFC 9142 group14 is the better choice.
+
+Check that the client build knows the name before blaming the switch. Per [ssh(1)](https://man.openbsd.org/ssh), \`ssh -Q kex\` lists the supported key exchange algorithms, \`ssh -Q key-sig\` all key types and signature algorithms, and \`ssh -Q cipher\` the symmetric ciphers. To test whether a switch can do better than SHA-1 at all, the 8.2 notes give a command: connect "after removing the ssh-rsa algorithm from ssh(1)'s allowed list."
+
+\`\`\`bash
+ssh -oHostKeyAlgorithms=-ssh-rsa admin@10.10.10.2
+\`\`\`
+
+If that fails with no other host key type available, the notes say "the server software on that host should be upgraded." The manual allows \`-v\` up to three times for more detail on any step.
+
+## What goes in ~/.ssh/config for one switch, and how does ssh -G confirm it?
+
+A \`Host\` block scopes the options to one device. The block extends the stanza in the 8.8 release notes, which sets \`HostkeyAlgorithms\` and \`PubkeyAcceptedAlgorithms\` for one old host, with a \`KexAlgorithms\` line added.
+
+\`\`\`text
+# ~/.ssh/config
+Host sw-closet
+    HostName 10.10.10.2
+    User admin
+    KexAlgorithms +diffie-hellman-group14-sha1
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
+
+Host *
+    ServerAliveInterval 30
+\`\`\`
+
+Two ssh_config(5) rules decide whether this works. First, "for each configuration directive, the first specified value will be used," so "more host-specific declarations should be given near the beginning of the file." Put the switch block above \`Host *\`. Second, a \`Host\` block applies to the declarations that follow "up to the next Host or Match keyword," and a single \`*\` gives global defaults. Never put the legacy options under \`Host *\`, because the client would then accept the weak algorithms from every server.
+
+\`ssh -G\` shows what the client will do without connecting. The manual says it "causes ssh to print its configuration after evaluating Host and Match blocks and exit."
+
+\`\`\`bash
+ssh -G sw-closet | grep -i -E '^(kexalgorithms|hostkeyalgorithms|pubkeyacceptedalgorithms) '
+ssh -G some-linux-host | grep -i -E '^(kexalgorithms|hostkeyalgorithms) '
+\`\`\`
+
+For the switch, each list should end with the name you appended. For an unrelated host the lists should be the unmodified defaults, which is the point of scoping. If the switch output shows no change, a more general \`Host\` pattern earlier in the file set the value first, or the name typed on the command line does not match the \`Host\` pattern.
+
+\`PubkeyAcceptedAlgorithms\` matters only for public key login. The 8.8 notes say the workaround covers "connection and/or user authentication," and the 8.5 notes renamed the old \`PubkeyAcceptedKeyTypes\` keyword to it. Password login needs only the first two lines. For key setup see [SSH key-based authentication](/blog/ssh-key-based-authentication), and for how a bare \`KexAlgorithms\` line replaces the default list, see [SSH hardening for Linux servers](/blog/ssh-hardening-linux-servers).
+
+## How do you make a classic IOS 15 switch offer something better?
+
+Do it from the console. On classic IOS the options come down to the key, the SSH version and the Diffie-Hellman size. The sequence follows the hostname, domain name and key steps in Cisco's [15E guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_usr_ssh/configuration/15-e/sec-usr-ssh-15-e-book/sec-secure-shell-v2.html).
+
+\`\`\`text
+Switch# configure terminal
+Switch(config)# hostname sw-closet
+sw-closet(config)# ip domain-name lab.example
+sw-closet(config)# crypto key generate rsa modulus 2048
+sw-closet(config)# ip ssh version 2
+sw-closet(config)# ip ssh dh min size 2048
+sw-closet(config)# end
+sw-closet# show ip ssh
+\`\`\`
+
+The pieces, with IOS mode basics in [Cisco IOS fundamentals](/blog/cisco-ios-fundamentals):
+
+- **SSH version.** Cisco's [command reference](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/d1/sec-d1-cr-book/sec-cr-i3.html) says that without \`ip ssh version\` the switch runs in "compatibility mode, that is, Version 1 and Version 2 are both supported," and that the \`2\` keyword makes sure the router "will not inadvertently establish a weaker SSH Version 1 connection."
+- **Key size.** The 15E guide says the RSA key pair "must be greater than or equal to 768 bits" for SSH version 2. A 768-bit key satisfies IOS but not current OpenSSH: since 7.6 the client refuses RSA keys under 1024 bits, and [ssh-rsa.c](https://github.com/openssh/openssh-portable/blob/master/ssh-rsa.c) returns \`SSH_ERR_KEY_LENGTH\` when verifying a signature against a smaller key, which ssherr.c prints as "Invalid key length." RFC 8332 notes that NIST "disallows RSA and DSA keys shorter than 2048 bits for US government use" and calls it "prudent to follow this advice also outside of US government use."
+- **Diffie-Hellman size.** The 15E guide says Cisco's SSH has "traditionally used 768-bit modulus," and its feature table lists "DH Group 14 and Group 16 exchange support" for the 15.2(1)E train. The command reference says IOS SSH supports group14-sha1 at 2048 bits and SHA-1 group exchange at 2048 and 4096 bits, negotiates only groups at or above the configured minimum, and defaults \`ip ssh dh min size\` to 2048, so the sequence above only pins that value. The command was introduced in 12.4(20)T and integrated into 15.1(2)S. On an older image the offer line, not the guide, shows what the switch can do.
+- **Algorithm lists.** The command reference shows \`ip ssh server algorithm hostkey\` arriving in 15.5(1)S and 15.5(2)T, \`encryption\` in 15.5(2)S, and \`kex\` in IOS XE 16.3. Type \`ip ssh server algorithm ?\` to see whether the image has them. The host key command accepts only \`x509v3-ssh-rsa\` and \`ssh-rsa\`, so there is no \`rsa-sha2\` option there, and \`no matching host key type found\` needs the client option or a newer train.
+
+Generating a new key changes the host key. The next connection prints the \`REMOTE HOST IDENTIFICATION HAS CHANGED\` warning from [sshconnect.c](https://github.com/openssh/openssh-portable/blob/master/sshconnect.c), and \`ssh-keygen -R sw-closet\` clears the stale entry, since the [ssh-keygen(1)](https://man.openbsd.org/ssh-keygen) manual says -R "Removes all keys belonging to the specified hostname (with optional port number) from a known_hosts file." Cisco's [IOS XE guide](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/17-14/configuration_guide/sec/b_1714_sec_9400_cg/secure_shell_version_2_support.html) warns "When you delete the RSA key pair, you automatically disable the SSH server," so use the console.
+
+The 15E guide adds that the SSH server "requires you to have a k9 (Triple Data Encryption Standard [3DES]) software image depending on your release," so a used classic IOS switch on a no-crypto image needs a different image first. For IOS XE hardware, [the used Catalyst 9300 guide](/blog/used-catalyst-9300-for-a-lab) covers the license checks.
+
+## Which IOS XE commands set the lists on a Catalyst 9300, and what does show ip ssh print?
+
+On IOS XE the defaults moved a long way between 16.9 and 17.12. The table collects what Cisco's Catalyst 9300 guides for [16.9](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/16-9/configuration_guide/sec/b_169_sec_9300_cg/m9_169_sec_secure_shell_algorithms_cg.html), [17.3](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-3/configuration_guide/sec/b_173_sec_9300_cg/ssh_algorithms_for_common_criteria_certification.html) and 17.12 list as defaults.
+
+| IOS XE guide | Host key order | Key exchange | Encryption |
+|---|---|---|---|
+| 16.9 | x509v3-ssh-rsa, ssh-rsa | not in the guide | aes128-ctr, aes192-ctr, aes256-ctr |
+| 17.3 | x509v3-ssh-rsa, rsa-sha2-512, rsa-sha2-256, ssh-rsa | not in the guide | aes128-gcm, aes256-gcm, then the CTR ciphers |
+| 17.12 | rsa-sha2-512, rsa-sha2-256, ssh-rsa | curve25519-sha256, curve25519-sha256@libssh.org, ecdh-sha2-nistp256, nistp384, nistp521, diffie-hellman-group14-sha256, diffie-hellman-group16-sha512 | chacha20-poly1305, AES-GCM, then the CTR ciphers |
+
+Read this against the OpenSSH timeline. A 9300 on a 16.x image lists \`ssh-rsa\` as its only plain RSA host key algorithm (\`x509v3-ssh-rsa\` is the certificate form), so if the guide matches the image, an OpenSSH 8.8 or newer client fails with \`no matching host key type found\`. By 17.3 the guide adds the two SHA-2 variants, which an 8.8 client accepts without options. For key exchange, the command reference says \`ip ssh server algorithm kex\` arrived in IOS XE 16.3 with ECDH first and \`diffie-hellman-group14-sha1\` last, and its supported list has no group1. Cisco's [17.14 guide for the Catalyst 9400](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/17-14/configuration_guide/sec/b_1714_sec_9400_cg/secure_shell_version_2_support.html), which shares the IOS XE 17.x train, adds that "Starting from Cisco IOS XE Release 17.10," \`diffie-hellman-group14-sha1\` and the \`hmac-sha1\`, \`hmac-sha2-256\` and \`hmac-sha2-512\` MACs are "removed from the default list." The break now runs the other way for an old client that supports none of the remaining methods.
+
+The commands take an ordered list, and the 17.12 guide's syntax shows \`ip ssh {server | client} algorithm kex\` plus a server-only \`hostkey\` form. On a 17.12 image, for example:
+
+\`\`\`text
+configure terminal
+ ip ssh server algorithm kex curve25519-sha256 ecdh-sha2-nistp256 diffie-hellman-group14-sha256
+ ip ssh server algorithm hostkey rsa-sha2-512 rsa-sha2-256
+ end
+show ip ssh
+\`\`\`
+
+To admit an old client instead, append \`diffie-hellman-group14-sha1\`, which the 17.12 guide lists as supported but not default. The command reference shows the rejection \`% SSH command rejected: All kex algorithms cannot be disabled\` if the last method is removed, a \`no\` form removes one algorithm at a time, and \`default ip ssh server algorithm kex\` restores the default order.
+
+\`show ip ssh\` prints the active lists. Cisco's 17.3 sample shows these lines:
+
+\`\`\`text
+MAC Algorithms: hmac-sha2-256-etm, hmac-sha2-512-etm,hmac-sha2-256,hmac-sha2-512
+Hostkey Algorithms: x509v3-ssh-rsa, rsa-sha2-512, rsa-sha2-256,ssh-rsa
+\`\`\`
+
+Trust the device over the page. The 17.3 and 17.12 pages carry typos such as \`ssh-rsaa\`, and the 17.12 chapter states "Starting from Cisco IOS XE Amsterdam 17.1.1, SHA1 is not supported" while still listing \`ssh-rsa\` and \`hmac-sha1\` as supported. To confirm from the client, run the \`-ssh-rsa\` test from the earlier section: success means the switch signs with SHA-2.
+
+## What if the switch can never be upgraded?
+
+Then the client carries the legacy settings, scoped to that switch.
+
+### Ciphers
+
+\`no matching cipher found\` appears when nothing in the switch's list is still offered by the client, typically a CBC-only list. OpenSSH 7.6 stopped offering CBC by default and 7.4 removed \`3des-cbc\` from the client proposal. The fix is \`-oCiphers=+aes128-cbc\` or a \`Ciphers +aes128-cbc\` line in the host block. Cisco's command reference lists the 15.5(2)S default order as \`aes128-ctr, aes192-ctr, aes256-ctr, aes128-cbc, 3des-cbc, aes192-cbc, aes256-cbc\`, so a switch with that default offers CTR first and needs no option.
+
+### PuTTY
+
+PuTTY warns instead of refusing. Its [documentation](https://the.earth.li/~sgtatham/putty/latest/htmldoc/Chapter4.html) says "If the first algorithm PuTTY finds is below the 'warn below here' line, you will see a warning box," and describes Group 1 as "a well-known 1024-bit group, used with the SHA-1 hash function" that "may be the only method supported by very old server software." Its host key list includes DSA, so PuTTY remains an option for DSA-only devices that OpenSSH 10 cannot reach.
+
+### The switch as the client
+
+The same negotiation runs in reverse when a switch copies a configuration to a server with SCP. The [10.0 notes](https://www.openssh.org/txt/release-10.0) say sshd now removes the \`diffie-hellman-group*\` and \`diffie-hellman-group-exchange-*\` methods from its default list, so a switch whose client side can only offer finite-field Diffie-Hellman fails against a default 10.x server. The fix has the same shape as before: add the one method the switch can offer back with a \`KexAlgorithms +\` line in the server's [sshd_config(5)](https://man.openbsd.org/sshd_config), which still lists those methods as supported, or use an IOS XE release whose \`ip ssh client algorithm kex\` accepts ECDH, as the 17.12 guide lists.
+
+### Which fix goes where
+
+| Symptom | Client fix | Switch fix |
+|---|---|---|
+| Key exchange error, offer lists group1 only | \`+diffie-hellman-group1-sha1\` | Newer image with group14 or ECDH |
+| Key exchange error, offer includes group14-sha1 | \`+diffie-hellman-group14-sha1\` | Same |
+| \`no matching host key type found\`, offer \`ssh-rsa\` | \`HostKeyAlgorithms +ssh-rsa\` | IOS XE with \`rsa-sha2\` host keys |
+| \`Invalid key length\` | None; OpenSSH refuses RSA keys under 1024 bits | Regenerate a 2048-bit RSA key |
+| \`no matching cipher found\`, CBC only | \`Ciphers +aes128-cbc\` | CTR or GCM ciphers on a newer image |
+
+Keep the weakened options on one admin host, limited to a \`Host\` block for that switch, and reach the switch only from there. The 8.2 notes separate the risks: a SHA-1 collision against a certificate gives an attacker "effectively unlimited time," while forging a host key signature has only "the relatively brief LoginGraceTime window." Neither makes the setting safe for general use, so retire the switch when the budget allows. Anyone running an [SSH certificate authority](/blog/ssh-certificate-authority) should also note that 8.2 removed \`ssh-rsa\` from the accepted CA signature algorithms.
+
+## Sources
+
+- [OpenSSH: Legacy algorithms](https://www.openssh.org/legacy.html)
+- [OpenSSH: Release notes 7.0](https://www.openssh.org/txt/release-7.0)
+- [OpenSSH: Release notes 7.2](https://www.openssh.org/txt/release-7.2)
+- [OpenSSH: Release notes 7.4](https://www.openssh.org/txt/release-7.4)
+- [OpenSSH: Release notes 7.6](https://www.openssh.org/txt/release-7.6)
+- [OpenSSH: Release notes 8.2](https://www.openssh.org/txt/release-8.2)
+- [OpenSSH: Release notes 8.5](https://www.openssh.org/txt/release-8.5)
+- [OpenSSH: Release notes 8.8](https://www.openssh.org/txt/release-8.8)
+- [OpenSSH: Release notes 9.8](https://www.openssh.org/txt/release-9.8)
+- [OpenSSH: Release notes 10.0](https://www.openssh.org/txt/release-10.0)
+- [OpenSSH: Release notes 10.1](https://www.openssh.org/txt/release-10.1)
+- [OpenBSD: ssh(1) manual](https://man.openbsd.org/ssh)
+- [OpenBSD: ssh_config(5) manual](https://man.openbsd.org/ssh_config)
+- [OpenBSD: sshd_config(5) manual](https://man.openbsd.org/sshd_config)
+- [OpenBSD: ssh-keygen(1) manual](https://man.openbsd.org/ssh-keygen)
+- [OpenSSH Portable source: ssherr.c](https://github.com/openssh/openssh-portable/blob/master/ssherr.c)
+- [OpenSSH Portable source: packet.c](https://github.com/openssh/openssh-portable/blob/master/packet.c)
+- [OpenSSH Portable source: kex.c](https://github.com/openssh/openssh-portable/blob/master/kex.c)
+- [OpenSSH Portable source: kex-names.c](https://github.com/openssh/openssh-portable/blob/master/kex-names.c)
+- [OpenSSH Portable source: ssh-rsa.c](https://github.com/openssh/openssh-portable/blob/master/ssh-rsa.c)
+- [OpenSSH Portable source: sshconnect.c](https://github.com/openssh/openssh-portable/blob/master/sshconnect.c)
+- [IETF: RFC 4253, The Secure Shell (SSH) Transport Layer Protocol](https://www.rfc-editor.org/rfc/rfc4253)
+- [IETF: RFC 8332, Use of RSA Keys with SHA-256 and SHA-512 in the Secure Shell (SSH) Protocol](https://www.rfc-editor.org/rfc/rfc8332)
+- [IETF: RFC 9142, Key Exchange (KEX) Method Updates and Recommendations for Secure Shell (SSH)](https://www.rfc-editor.org/rfc/rfc9142)
+- [Logjam researchers: Weak Diffie-Hellman and the Logjam Attack](https://weakdh.org/)
+- [Logjam researchers: Logjam, PFS Deployment Guide](https://weakdh.org/sysadmin.html)
+- [Cisco: Cisco IOS Security Command Reference, Commands D to L, ip source-track through ivrf](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/d1/sec-d1-cr-book/sec-cr-i3.html)
+- [Cisco: Secure Shell Configuration Guide, IOS Release 15E, Secure Shell Version 2 Support](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_usr_ssh/configuration/15-e/sec-usr-ssh-15-e-book/sec-secure-shell-v2.html)
+- [Cisco: Security Configuration Guide, Cisco IOS XE 17.14.x (Catalyst 9400 Switches), Secure Shell Version 2 Support](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/17-14/configuration_guide/sec/b_1714_sec_9400_cg/secure_shell_version_2_support.html)
+- [Cisco: Security Configuration Guide, Cisco IOS XE Fuji 16.9.x (Catalyst 9300 Switches), SSH Algorithms for Common Criteria Certification](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/16-9/configuration_guide/sec/b_169_sec_9300_cg/m9_169_sec_secure_shell_algorithms_cg.html)
+- [Cisco: Security Configuration Guide, Cisco IOS XE Amsterdam 17.3.x (Catalyst 9300 Switches), SSH Algorithms for Common Criteria Certification](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-3/configuration_guide/sec/b_173_sec_9300_cg/ssh_algorithms_for_common_criteria_certification.html)
+- [Cisco: Security Configuration Guide, Cisco IOS XE Dublin 17.12.x (Catalyst 9300 Switches), SSH Algorithms for Common Criteria Certification](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-12/configuration_guide/sec/b_1712_sec_9300_cg/ssh_algorithms_for_common_criteria_certification.html)
+- [Nmap: ssh2-enum-algos NSE script](https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html)
+- [PuTTY: User Manual, Chapter 4, Configuring PuTTY](https://the.earth.li/~sgtatham/putty/latest/htmldoc/Chapter4.html)
+- [Christopher Hart: Cisco IOS, 'No matching key exchange found' During SSH](https://chrisjhart.com/Cisco-IOS-SSH-Key-Exchange-Algorithms/)
+- [Christopher Hart: Cisco IOS, 'No matching host key type found' During SSH](https://chrisjhart.com/Cisco-IOS-SSH-Key-Type/)
+- [Glendale Academy GAA Techblog: OpenSSH and Cisco](https://techblog.glendaleacademy.org/cisco/openssh-and-cisco)
+- [GitHub gist (rdapaz): Negotiate SSH](https://gist.github.com/rdapaz/015a4a3f95e51a12b1871091f8fd5305)
+`,
+  },
+  {
+    slug: "supermicro-fans-ramping-up-and-down",
+    title: "Supermicro Fans Ramping Up and Down: Fix the IPMI Fan Thresholds",
+    date: "2026-11-04",
+    tags: ["servers", "hardware", "homelab", "troubleshooting"],
+    excerpt:
+      "Why a Supermicro BMC sends quiet fans to full speed and back every few seconds, and how to lower the IPMI fan thresholds with ipmitool for Noctua-class fans.",
+    coverImage: "/images/blog/supermicro-fans-ramping-up-and-down.jpg",
+    content: `
+## The short answer
+
+A Supermicro BMC treats a fan reading that falls to its lower critical threshold as a failing fan: it logs a "Lower Critical going low" event and, per the [smfc project documentation](https://github.com/petersulyok/smfc), sets every fan in that cooling zone back to 100 percent. When the reading climbs back above the threshold the event clears, the fans slow down, the quiet fan drops below the line again, and the loop repeats every few seconds. The fix is to lower the three lower thresholds on the affected fan to values under its slowest in-spec speed, for example \`ipmitool sensor thresh FAN1 lower 100 200 300\`, which sets lower non-recoverable, lower critical and lower non-critical in that order per the [ipmitool manual](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in). X10 and X11 boards work in steps of 100 rpm, and owner reports differ on whether a value rounds to the nearest hundred or down, so read the values back. Fan mode did not help one X11SSL-CF owner, who [reported that none of the four modes made a difference](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712) and that the cycling ended after he lowered the thresholds. For scale, Noctua lists [460 rpm at 20 percent PWM](https://www.noctua.at/en/products/nf-a12x25-pwm/specifications) for the NF-A12x25 PWM and [200 rpm](https://www.noctua.at/en/products/nf-a12x25-ls-pwm/specifications) for the LS-PWM, and Supermicro's [IPMICFG guide](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf) shows a 600 rpm low limit in its sample output. Check the values again after a BMC firmware update.
+
+## Why do Supermicro fans spin up to full speed and back down every few seconds?
+
+The BMC reads each fan's speed and compares it with up to six stored limits, per the [smfc README](https://github.com/petersulyok/smfc). When a reading is too low, the BMC assumes the fan is stalling and tries to recover it. The author of a long-running [TrueNAS forum guide](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/), a moderator writing in 2014, says the BMC "automatically attempts to recover stalling" fans "by spinning them up to maximum (PWM set to 100% speed)." The smfc FAQ for loud, spinning-up fans gives the same cause: an assertion, meaning "the rotational speed of a fan went above or below an IPMI threshold," after which "IPMI switched back that zone to full rotational speed." Supermicro's X11SCZ-F/Q manual and X12/H12 BMC guide do not describe the response.
+
+A quiet fan makes this a loop. For example, a fan that idles at 300 rpm sits below a 500 rpm limit even though nothing is wrong. At 100 percent it speeds past the limit, and the IPMI specification says a low-going threshold clears once the reading rises "negative_hysteresis+1 counts above the threshold" (section 35.13.3 of the [IPMI 2.0 specification](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmi-second-gen-interface-spec-v2-rev1-1.pdf)). The event then clears, the fan slows, and the next dip trips the limit again. The smfc README's [example event log](https://github.com/petersulyok/smfc), from a fan-control setup on a Supermicro board, shows the pattern, with an assertion and a deassertion three seconds apart:
+
+\`\`\`text
+1 | 10/19/2023 | 05:15:35 PM CEST | Fan #0x46 | Lower Critical going low  | Asserted
+2 | 10/19/2023 | 05:15:35 PM CEST | Fan #0x46 | Lower Non-recoverable going low  | Asserted
+3 | 10/19/2023 | 05:15:38 PM CEST | Fan #0x46 | Lower Non-recoverable going low  | Deasserted
+4 | 10/19/2023 | 05:15:38 PM CEST | Fan #0x46 | Lower Critical going low  | Deasserted
+\`\`\`
+
+Owners describe the same pattern. An X11SSL-CF owner wrote in 2018 that fans "were spooling up and down every few seconds" with [Fractal Design Venturi HP fans](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712). A November 2015 X10SL7-F owner on the [thresholds guide](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-2) described fans that kept switching between off and "full blast," and wrote that lowering the lower thresholds "got them running constantly." A 2016 X10SL7-F owner using Noctua NF-F12 PWM fans [saw FANA dip to about 500 rpm](https://www.truenas.com/community/threads/loud-noctua-pwm-fans.47672/) in state "cr" for critical before the fans spun back up to full.
+
+### How do you confirm the thresholds are the cause?
+
+Two checks help:
+
+- \`ipmitool sel list\` should show fan entries such as "Lower Critical going low", the check the [smfc FAQ](https://github.com/petersulyok/smfc) gives for loud, spinning-up fans.
+- \`ipmitool sensor | grep -i fan\` shows each reading beside its limits. An X11SSL-CF owner [saw the fans dropping to about 300 rpm](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712) in a once-per-second loop of \`ipmitool sensor list all\`.
+
+If the event log holds no fan entries, the cause is elsewhere, for example lowered CPU temperature thresholds (see "What breaks" below).
+
+Most owner reports cited here come from X10, X11 and H12 boards, and the [X10 versus X11 comparison](/blog/supermicro-x10-vs-x11) lists which BMC chip each family uses. Two boundaries apply. The X11SCZ-Q has no BMC: its [manual](https://www.supermicro.com/manuals/motherboard/X11/MNL-2086.pdf) puts the F model's fan control on the BMC and the Q model's on the Super I/O. The smfc README also says X8 boards [do not implement the BMC's Full mode](https://github.com/petersulyok/smfc). Dell and HPE fan controls are in [iDRAC fan speed offset](/blog/idrac-fan-speed-offset), [quieting an R730](/blog/dell-r730-quiet-fans) and [DL360p Gen8 fan noise](/blog/proliant-dl360p-gen8-fan-noise); those are settings and overrides, not a threshold response.
+
+## What are the six IPMI fan thresholds, and which one triggers the full-speed recovery?
+
+Each fan sensor has three lower and three upper limits. Supermicro's [Embedded BMC/IPMI User's Guide](https://www.supermicro.com/manuals/other/embedded_bmc_ipmi.pdf) lists them on its Sensor Readings with Thresholds page as Low NR, Low CT, Low NC, High NC, High CT and High NR, and says an item reading below Low CT "is in a critical state." The IPMI specification's terminal-mode text commands (section 14.7.8) call non-critical a "warning," critical "fatal" and non-recoverable "potential damage."
+
+| ipmitool name | Threshold | Evidence about full speed |
+|---|---|---|
+| \`lnc\` | Lower Non-Critical | Not named as a full-speed trigger in the smfc README |
+| \`lcr\` | Lower Critical | The smfc README names crossing it, or the upper critical, as the trigger; an [X11SSL-CF owner](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712) traced the cycle to it |
+| \`lnr\` | Lower Non-Recoverable | Asserts with \`lcr\` in the smfc log above; one owner got [105 emails about non-recoverable fan speeds](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/) and his board changed its fan mode |
+| \`unc\`, \`ucr\`, \`unr\` | Upper limits | The smfc README says an upper critical crossing also resets the zone to 100 percent |
+
+Lower critical is the best-supported trigger. Lower non-recoverable sits below it, so a fan that crosses both asserts both, as in the log above. Three details matter in practice:
+
+- **Zones.** The smfc README groups fans into a CPU or system zone, zone 0, with FAN1, FAN2 and so on, and a peripheral zone, zone 1, with FANA and FANB. One quiet fan on FANA therefore sends the whole peripheral zone to full speed.
+- **Rounding.** The README says X10 and X11 thresholds are "RPM values rounded to the nearest hundreds," defined for each fan. The thresholds guide says setting [540 sets 500 and 550 sets 600](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/), which is nearest-hundred rounding, while a 2022 poster wrote that the BMC would [round all values down to a multiple of 100](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-8). Newer boards differ: a [sensor table from H12-based systems](https://forums.truenas.com/t/supermicro-fan-control/14398?page=3) shows limits of 140, 420 and 25340, all multiples of 140, so do not assume a 100 rpm step.
+- **Fewer thresholds on new boards.** The README says the AST2600 BMC on X13 boards implements [only a Lower Critical threshold](https://github.com/petersulyok/smfc). Supermicro's [X12 and H12 BMC guide](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) lists four limits on its Sensor tab: "Low NR," "Low CT," "High NR" and "High CT."
+
+None of the Supermicro documents cited here lists default fan thresholds. The sample output in the [IPMICFG guide](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf), dated December 2012, shows FAN1 and FAN2 reading 1800 rpm with a 600 rpm low limit and an 18975 rpm high limit, without saying which threshold the column shows. An H12SSL-I owner reported a [BMC default of 420 rpm lower critical](https://forums.unraid.net/topic/175202-ipmi-fan-control-with-supermicro-motherboards/) with 140 rpm hysteresis. A TrueNAS regular wrote in an [X11SSL-F thread](https://www.truenas.com/community/threads/supermicro-x11ssl-f-fan-control.85265/) that the "defaults are for fast spinning server fans and work badly with quiet, slow spinning fans."
+
+## How do you read and set fan thresholds with ipmitool sensor thresh?
+
+Read the table, then write the three lower values for the fan that dips. The ipmitool manual says \`sensor list\` lists "sensors and thresholds in a wide table format." The smfc README's sample rows, set with \`lower 0 100 200\` and \`upper 1600 1700 1800\`, read in the order reading, unit, status, \`lnr\`, \`lcr\`, \`lnc\`, \`unc\`, \`ucr\`, \`unr\`:
+
+\`\`\`text
+FAN1             | 500.000    | RPM        | ok    | 0.000     | 100.000   | 200.000   | 1600.000  | 1700.000  | 1800.000
+FANA             | 500.000    | RPM        | ok    | 0.000     | 100.000   | 200.000   | 1600.000  | 1700.000  | 1800.000
+FAN3             | na         |            | na    | na        | na        | na        | na        | na        | na
+\`\`\`
+
+\`\`\`bash
+ipmitool sensor | grep -i fan
+ipmitool sensor thresh FAN1 lower 100 200 300
+ipmitool sensor get FAN1
+\`\`\`
+
+Replace \`FAN1\` with the sensor name from the table, which the thresholds guide says is case-sensitive. From another machine, the manual documents \`-I lanplus -H <address> -U <username>\`, and \`-E\` reads the password from the \`IPMI_PASSWORD\` or \`IPMITOOL_PASSWORD\` environment variable:
+
+\`\`\`bash
+export IPMI_PASSWORD='your-bmc-password'
+ipmitool -I lanplus -H BMC_ADDRESS -U ADMIN -E sensor thresh FANA lower 100 200 300
+\`\`\`
+
+Reaching the BMC safely is covered in [IPMI and out-of-band management](/blog/ipmi-remote-management). Then pick values:
+
+1. Find the fan's lowest speed from its data sheet, including tolerance. For an X11SSL-F owner whose NF-A6x25 PWM fans produced [over 400 warnings](https://www.truenas.com/community/threads/supermicro-x11ssl-f-fan-control.85265/) about "lower critical going low," a TrueNAS regular worked from the sheet's 550 rpm at 20 percent PWM to a lowest in-spec speed near 440 rpm and suggested 400, 300 and 200 for the non-critical, critical and non-recoverable thresholds.
+2. Put \`lnc\` at or below that speed in 100 rpm steps, with \`lcr\` and \`lnr\` one and two steps lower. The same regular's earlier example for an NF-A12x25 reads: "The BMC rounds by 100 rpm so lnc would be 300, and then lc and lnr at 200 and 100."
+3. Keep the upper critical and non-recoverable limits above the fan's maximum plus its tolerance. Noctua's [infosheet](https://cdn.noctua.at/media/noctua_nf_a12x25_pwm_infosheet_en_web.pdf) lists the NF-A12x25 PWM's 2000 rpm maximum as +/-10 percent, so it can reach 2200. The smfc README's example for an NF-F12 PWM, listed at 1500 rpm, is \`ipmitool sensor thresh FAN1 upper 1600 1700 1800\`.
+4. Read the table back, then watch the readings and the event log for a few minutes.
+
+Order matters. The IPMI specification says "the application issuing this command is responsible for ensuring that thresholds for a sensor are set in the proper order," and the thresholds guide warns that ipmitool accepts out-of-order values and that the effects of them are unknown. A 2022 poster wrote that the BMC wants the values [in logical order](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-8), so use distinct ascending numbers.
+
+## Which fan mode should you pick: Standard, Full, Optimal, Heavy IO or PUE2?
+
+For a quiet board, Supermicro's [FAQ 28514](https://www.supermicro.com/en/support/faqs/faq.php?faq=28514) answers a question about an X11DP-family workstation by recommending Optimal and naming fan mode and CPU temperature as the factors behind the noise difference. Mode and thresholds are separate controls, though. The mode picks the BMC's fan curve, while the thresholds decide when a fan counts as failing, and the [X11SSL-CF owner](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712) wrote that after trying all four modes "none of them make any difference." He ended the cycling by lowering the lower thresholds on four fans to \`100 200 200\`.
+
+| Mode | X11SCZ-F/Q manual wording | Other documented notes |
+|---|---|---|
+| Standard | "normal system cooling" | IPMICFG value 0; the X12/H12 guide calls it "for power savings" |
+| Full | "full speed for maximum system cooling" | IPMICFG value 1 |
+| Optimal | "normal PCI-E add-on card area cooling" | IPMICFG value 2; the X12/H12 guide says it balances "system performance and power savings" |
+| Heavy I/O | "higher PCI-E add-on card area cooling" | [FAQ 16758](https://www.supermicro.com/en/support/faqs/faq.php?faq=16758) limits it to X10 boards with a dual cooling zone |
+| PUE2 | "best power efficiency and maximum noise reduction" | FAQ 16758 lists a "PUE Optimal" mode only on specific X10 boards with a single cooling design |
+
+The wording comes from the Fan Speed Modes table in the [X11SCZ-F/Q manual](https://www.supermicro.com/manuals/motherboard/X11/MNL-2086.pdf). The [X12 and H12 BMC guide](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) offers four modes on its Fans tab and no PUE. The [IPMICFG guide](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf) documents \`-fan\` to read the mode and \`-fan <mode>\` to set it, with 0 Standard, 1 Full and 2 Optimal.
+
+Raw ipmitool commands are an owner-found alternative that Supermicro's documents do not list: an X10SL7-F owner gave \`ipmitool raw 0x30 0x45 0x0\` to read the mode and \`ipmitool raw 0x30 0x45 0x1 <n>\` to set it, with 0 Standard, 1 Full, 2 Optimal and 4 Heavy I/O, in a [2016 thread](https://www.truenas.com/community/threads/loud-noctua-pwm-fans.47672/). A [ServeTheHome resource](https://forums.servethehome.com/index.php?resources/supermicro-x9-x10-x11-fan-speed-control.20/) agrees, lists no value 3, and says Optimal holds the peripheral zone near 30 percent while Heavy IO holds it at 75 percent. Physical server [notes](https://nullroute.lt/docs/supermicro.html) on X11SCM boards say Optimal lets fans "stay at 20% when the load is low." That matters for low-RPM fans, because 20 percent duty is where Noctua's minimum speeds sit.
+
+Manual duty-cycle control does not bypass the thresholds. In the smfc README's model, a fan in Full mode that oversteps the lower or upper critical value sends the zone back to 100 percent, so a fixed 20 percent duty that produces a reading under \`lcr\` would trip the same loop.
+
+## How low can the thresholds go for Noctua and other low-RPM fans?
+
+Low enough that the fan's slowest normal speed sits clear of the lowest limit. [Noctua's PWM white paper](https://cdn.noctua.at/media/Noctua_PWM_specifications_white_paper.pdf) says fan speed scales "broadly linear" between maximum at 100 percent PWM and the specified minimum at 20 percent, using the NF-A12x25 PWM as its example (2000 rpm maximum, 450 rpm minimum). Operation below 20 percent is "not officially supported in the Intel specification," and most Noctua PWM fans "will stop at 0% duty-cycle."
+
+The lowest in-spec column subtracts 20 percent, the tolerance Noctua lists on the NF-F12 PWM's minimum speed as [quoted in the smfc README](https://github.com/petersulyok/smfc). A TrueNAS regular [quoted the same 20 percent](https://www.truenas.com/community/threads/supermicro-x11ssl-f-fan-control.85265/) from the NF-A6x25 PWM data sheet, and the other rows use the same margin as an assumption. The last column is arithmetic in 100 rpm steps, not a tested value.
+
+| Fan | Minimum at 20% PWM | Lowest in spec (minus 20%) | \`lower\` values (lnr lcr lnc) |
+|---|---|---|---|
+| NF-F12 PWM | 300 rpm, per the smfc README quoting Noctua | 240 rpm | \`0 100 200\`, the README's own example |
+| NF-A12x25 PWM | [460 rpm](https://www.noctua.at/en/products/nf-a12x25-pwm/specifications); the white paper says 450 | 368 rpm | \`100 200 300\` |
+| NF-A12x25 G2 PWM | [360 rpm](https://www.noctua.at/en/products/nf-a12x25-g2-pwm/specifications) | 288 rpm | \`0 100 200\` |
+| NF-A12x25 LS-PWM | [200 rpm](https://www.noctua.at/en/products/nf-a12x25-ls-pwm/specifications) | 160 rpm | \`0 0 100\` |
+
+The LS-PWM row shows the limit of the approach. With 100 rpm steps, the lowest in-spec speed leaves room for one nonzero threshold, so the other two sit at zero. Reports differ on whether that is accepted: one TrueNAS regular wrote that his lower non-recoverable and critical were [set to zero](https://www.truenas.com/community/threads/loud-noctua-pwm-fans.47672/) and prevented the cycling, while another wrote that Supermicro BMCs [want the values in logical order](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-8).
+
+Lowering thresholds also delays the alert. With \`lcr\` at 200 rpm, a fan that degrades from 460 rpm to 250 rpm raises nothing, so keep \`lcr\` as high as the quiet fans allow and treat the temperature sensors as the backstop.
+
+Low-noise adapters change the speed range. Noctua's infosheets show the Low-Noise Adaptor cutting the NF-A12x25 PWM's [maximum from 2000 to 1700 rpm](https://cdn.noctua.at/media/noctua_nf_a12x25_pwm_infosheet_en_web.pdf) and the LS-PWM's [from 1200 to 900 rpm](https://cdn.noctua.at/media/noctua_nf_a12x25_ls_pwm_infosheet_en_web.pdf), and the smfc README warns that LNA or ULNA cables and Y-cables change the threshold math.
+
+## Do threshold changes survive a BMC reset, ipmicfg -fd or a firmware update?
+
+Supermicro's documents give no definite answer, so test it. Neither the X12/H12 guide nor the IPMICFG guide says whether a threshold written with ipmitool lives in flash or RAM.
+
+- **Firmware updates.** The X12 and H12 guide says the update "preserves the existing configuration, SDR, and SSL certificates" by default. The smfc README says that after a BMC firmware update "you have to configure IPMI thresholds again." Read the table after every update.
+- **Factory default.** \`IPMICFG -fd\` is documented as "Reset IPMI to the factory default," and the web interface's Factory Default page lets users "restore IPMI to the factory default settings." Neither says what happens to thresholds, so assume a reset can bring the originals back.
+- **Plain BMC restarts.** The web interface offers Unit Reset, and ipmitool offers \`mc reset\` with \`warm\` or \`cold\`. Owner reports are mixed. In one [X11 thread](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712), an X10SDV owner wrote after \`ipmitool bmc reset cold\` that "so far the fans haven't spun up like they did before," and an X11SSL-CF owner needed a BMC reset from the web interface after repeated reboots failed.
+- **Power.** In January 2016, an X11SSH-F owner and an A1SRi-2758F owner reported that threshold changes did not register until they [removed power](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-3) from the board (one unplugged the cable "for a few minutes"), not just restarted it.
+
+A workable routine is to set the thresholds, run \`ipmitool mc reset cold\`, read the table, power-cycle the machine, and read it again. Keep the commands in a script: a TrueNAS poster advised running an ipmitool fan script as a [post-init task](https://forums.truenas.com/t/how-to-stop-fan-ramping/32346) under System > Advanced Settings > Init/Shutdown Scripts, and the smfc README ships \`ipmi/set_ipmi_threshold.sh\` for setting all thresholds.
+
+## What breaks
+
+**Fans still cycle after the new thresholds.** The value may not have been stored, a rounding step may have moved it, or the fan may dip lower than the new limit. Fix: read the table back, watch the readings for several minutes, and lower \`lcr\` and \`lnr\` one step at a time. Check any fan-control script too: a January 2026 X11SSH-LN4F poster [traced odd behavior](https://forums.truenas.com/t/supermicro-fan-control/14398?page=3) to swapped zone settings in its configuration.
+
+**The thresholds change but the fans stay at full speed.** The fan mode may have changed. One owner wrote that his board [responded to the alerts](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/) by switching its mode to Full Speed or High I/O Speed, and that it stayed in Full Speed after a shutdown, though the web interface said otherwise, until he cycled power completely. An X10SL7-F owner [fixed full-speed fans](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-3) with \`ipmitool bmc reset warm\`. Fix, following those reports: set the mode back to Optimal or Standard, run \`ipmitool mc reset warm\`, and if the fans still do not respond, remove AC power for a few minutes.
+
+**Fans jump to full speed when the CPU warms up.** Lowered CPU temperature thresholds send the fans to full speed "as soon as the upper values of the CPU temperature are reached," per Supermicro's [FAQ 16301](https://www.supermicro.com/en/support/faqs/faq.php?faq=16301), and fan thresholds will not help. Fix: restore the CPU temperature thresholds and check \`ipmitool sdr type Temperature\`, a command the manual documents.
+
+**A drive or add-on card runs hot after quieting.** A card with no fan of its own depends on chassis airflow. Fix: choose Heavy I/O where the board offers it, which the [X12 and H12 BMC guide](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) says "will boost cooling to the add-on card zone," watch card temperatures, and see [LSI 9300-8i cooling](/blog/lsi-9300-8i-cooling).
+
+**An empty or moved fan header raises alarms.** [Thomas-Krenn](https://www.thomas-krenn.com/de/wiki/IPMI_Fan_Sensor_meldet_Lower_Non-Recoverable_Fehler) documents "Lower Non-Recoverable - Going Low" events from fan sensors with no fan attached on X8SIL-F and X7SPE-HF boards, and the [Mini-ITX owner](https://www.jeffgeerling.com/blog/2022/making-noctua-fans-work-quietly-supermicro-motherboard/) saw FAN1 read as off after moving a plug. Fix: plug fans into the headers the chassis expects, or hide unused sensors as the Thomas-Krenn page's linked article describes.
+
+## Sources
+
+- [ipmitool: manual page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [Intel: IPMI Second Generation Interface Specification v2.0 rev 1.1](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmi-second-gen-interface-spec-v2-rev1-1.pdf)
+- [Supermicro: X11SCZ-F/Q User's Manual](https://www.supermicro.com/manuals/motherboard/X11/MNL-2086.pdf)
+- [Supermicro: BMC User's Manual for X12 and H12](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf)
+- [Supermicro: Embedded BMC/IPMI User's Guide](https://www.supermicro.com/manuals/other/embedded_bmc_ipmi.pdf)
+- [Supermicro: IPMICFG Utility User's Guide](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf)
+- [Supermicro FAQ 16301: IPMI thresholds and fan control](https://www.supermicro.com/en/support/faqs/faq.php?faq=16301)
+- [Supermicro FAQ 16758: Fan modes in X10 boards](https://www.supermicro.com/en/support/faqs/faq.php?faq=16758)
+- [Supermicro FAQ 28514: Fan speed on the X11DP](https://www.supermicro.com/en/support/faqs/faq.php?faq=28514)
+- [Noctua: PWM specifications white paper](https://cdn.noctua.at/media/Noctua_PWM_specifications_white_paper.pdf)
+- [Noctua: NF-A12x25 PWM infosheet](https://cdn.noctua.at/media/noctua_nf_a12x25_pwm_infosheet_en_web.pdf)
+- [Noctua: NF-A12x25 LS-PWM infosheet](https://cdn.noctua.at/media/noctua_nf_a12x25_ls_pwm_infosheet_en_web.pdf)
+- [Noctua: NF-A12x25 PWM specifications](https://www.noctua.at/en/products/nf-a12x25-pwm/specifications)
+- [Noctua: NF-A12x25 G2 PWM specifications](https://www.noctua.at/en/products/nf-a12x25-g2-pwm/specifications)
+- [Noctua: NF-A12x25 LS-PWM specifications](https://www.noctua.at/en/products/nf-a12x25-ls-pwm/specifications)
+- [GitHub: petersulyok smfc, Supermicro fan control README](https://github.com/petersulyok/smfc)
+- [TrueNAS Community: How To, change IPMI sensor thresholds using ipmitool](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/)
+- [TrueNAS Community: How To, change IPMI sensor thresholds (page 2)](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-2)
+- [TrueNAS Community: How To, change IPMI sensor thresholds (page 3)](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-3)
+- [TrueNAS Community: How To, change IPMI sensor thresholds (page 8)](https://www.truenas.com/community/threads/how-to-change-ipmi-sensor-thresholds-using-ipmitool.53620/page-8)
+- [TrueNAS Community: Supermicro X11 and fan speeds](https://www.truenas.com/community/threads/supermicro-x11-fan-speeds.69712)
+- [TrueNAS Community: Loud Noctua PWM Fans](https://www.truenas.com/community/threads/loud-noctua-pwm-fans.47672/)
+- [TrueNAS Community: Supermicro X11SSL-F fan control](https://www.truenas.com/community/threads/supermicro-x11ssl-f-fan-control.85265/)
+- [TrueNAS Forums: How to Stop Fan Ramping](https://forums.truenas.com/t/how-to-stop-fan-ramping/32346)
+- [TrueNAS Forums: Supermicro Fan Control](https://forums.truenas.com/t/supermicro-fan-control/14398?page=3)
+- [Unraid Forums: IPMI fan control with Supermicro motherboards](https://forums.unraid.net/topic/175202-ipmi-fan-control-with-supermicro-motherboards/)
+- [ServeTheHome: Supermicro X9, X10, X11 fan speed control](https://forums.servethehome.com/index.php?resources/supermicro-x9-x10-x11-fan-speed-control.20/)
+- [Jeff Geerling: Making Noctua fans work (quietly) with a Supermicro motherboard](https://www.jeffgeerling.com/blog/2022/making-noctua-fans-work-quietly-supermicro-motherboard/)
+- [nullroute.lt: Physical server notes, Supermicro](https://nullroute.lt/docs/supermicro.html)
+- [Thomas-Krenn: IPMI Fan Sensor meldet Lower Non-Recoverable Fehler](https://www.thomas-krenn.com/de/wiki/IPMI_Fan_Sensor_meldet_Lower_Non-Recoverable_Fehler)
+`,
+  },
+  {
+    slug: "supermicro-ipmi-default-password",
+    title: "Supermicro IPMI Default Password: ADMIN, Sticker and ipmicfg Reset",
+    date: "2026-11-04",
+    tags: ["servers", "security", "homelab", "troubleshooting"],
+    excerpt:
+      "The login is ADMIN, but boards since late 2019 ship a unique 10-letter sticker password. Where it is, how to reset it with ipmicfg, and why 47 bits is thin.",
+    coverImage: "/images/blog/supermicro-ipmi-default-password.jpg",
+    content: `
+## The short answer
+
+The username is ADMIN on every Supermicro generation. The password is ADMIN on X9 boards and on older X10, X11 and H11 boards, but since November 2019 new X10, X11, H11, H12 and later boards ship with a unique password of exactly 10 uppercase letters, per [Supermicro's BMC Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf). It is printed on a non-removable sticker near the BMC chip or the serial number label and on a removable one that belongs on the chassis or service tag, and the motherboard sticker wins if the two differ. If both are gone, Supermicro [has difficulty checking who owns a server](https://www.supermicro.com/en/support/faqs/faq.php?faq=41692) and points to a reset from the host OS as root, with \`ipmicfg -user setpwd 2 <new>\` or \`ipmitool user set password 2 <new>\`. On a unique-password board, a factory reset restores that password, not ADMIN, unless \`ipmicfg -fd 3\` or the web option for ADMIN/ADMIN is chosen. The BMC takes its address from DHCP by default. Ten letters is only about 47 bits, and Lava researchers reported in 2026 that eight GPUs can search the whole space in about an hour, so keep the BMC on an [isolated management network](/blog/ipmi-remote-management) and replace the factory password.
+
+## What are the default Supermicro IPMI username and password on each generation?
+
+The username is ADMIN throughout. The password changed once, with the per-board passwords that began shipping in late 2019.
+
+| Board | Default login | Basis |
+|---|---|---|
+| X9, such as the X9DRH-iTF | ADMIN / ADMIN, no unique-password firmware | [X9 manual](https://www.supermicro.com/manuals/other/X9_SMT_IPMI.pdf), [Supermicro FAQ 32732](https://www.supermicro.com/en/support/faqs/faq.php?faq=32732) |
+| X10, X11, H11 built before the change | ADMIN / ADMIN | [Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf) |
+| X10, X11, H11 shipped since the change | ADMIN plus a unique password | [Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf) |
+| H12, X12, X13, H13, B13 | ADMIN plus a unique password | [X12/H12 manual](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf), [X13/H13/B13 manual](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf) |
+| X14 | ADMIN plus a unique password | [X14DBM-AP BMC page](https://www.supermicro.com/en/support/manuals/product/motherboard/x14dbm-ap/Content/software/bmc.htm) |
+
+The X9 manual says "The manufacturer default username and password are ADMIN/ADMIN." Supermicro's FAQ for an X9DRH-iTF owner says X9 boards are end of life and do not support the unique-password firmware, and that updating the firmware on an X9 board does not change the password or assign a unique one.
+
+The change was announced as a BMC security feature. The [Supermicro announcement page](https://www.supermicro.com/en/support/BMC_Unique_Password) says it covers new X10, X11, H11, H12 and all future products, and that Supermicro "will no longer use the default password “ADMIN” for new devices or systems." The guide limits it to factory programming: for systems "not assigned a unique password, the default setting of user id=ADMIN and password=ADMIN will be used." A used X10 or X11 board from before the rollout is therefore an ADMIN/ADMIN board unless a previous owner changed it. For used boards, see the [X10 vs X11 comparison](/blog/supermicro-x10-vs-x11) and [buying used enterprise gear](/blog/buying-used-enterprise-gear).
+
+The reason is California Senate Bill 327. [Civil Code section 1798.91.04](https://codes.findlaw.com/ca/civil-code/civ-sect-1798-91-04/) deems a connected device with a means of authentication outside a local network to have a reasonable security feature if "The preprogrammed password is unique to each device manufactured," or if the device "requires a user to generate a new means of authentication" before first access. The [Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf) says the law applies from January 1, 2020, and that Supermicro cannot ship one customer-chosen password across systems because every password must be unique and assigned at manufacturing. The documents differ on timing: the guide says stickers start in November 2019, while the [X12/H12 manual](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) says "mid-December 2019" in one FAQ answer and "Effective as of January 1, 2020" in its appendix, which the [X13/H13/B13 manual](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf) repeats. Boards from the changeover weeks can be either kind, so look for the sticker instead of trusting the date. The [iDRAC default password guide](/blog/idrac-default-password) covers the Dell equivalent.
+
+The guide specifies "a string of exactly 10 uppercase alphabetic letters," chosen to avoid mixing up look-alike letters and digits. The X12/H12 and X13/H13/B13 manuals both word it as "at least 10 alphabetic uppercase characters," and the X13 manual adds that the passwords contain no lowercase letters or numbers, so a character that looks like a zero is the letter O.
+
+## Where is the unique password printed, and what if both stickers are gone?
+
+Each board has two stickers, according to the [Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf):
+
+- **Non-removable:** placed near the BMC chip and/or the motherboard serial number label.
+- **Removable:** placed on CPU1's plastic protective cover, and meant to be moved to the chassis or service tag so the first login does not need the lid off. On a purchased server, that second sticker is already on the service tag.
+
+The password is on the bottom row, just below the IPMI MAC address, which also makes the sticker the quickest way to find the BMC's MAC for a DHCP lease lookup. Chassis placement varies, per the same guide:
+
+| System | Where the sticker is |
+|---|---|
+| Single-node 2U | Outward side of the service tag |
+| Single-node 1U | Opposite or bottom side of the service tag |
+| 2U4N and 2U2N BigTwin or TwinPro | Back of each node tray, next to the serial number label |
+| 1U Twin without a service tag | Above the first hard drive of each node |
+
+The X13 manual adds that most systems have a pull-out tag showing the BMC MAC and the password, and the rest carry the sticker on the top or front of the chassis. Supermicro marks affected shipments with a notice in the plastic wrap and an identifier on the shipping label.
+
+If the two stickers disagree, the guide says "use the motherboard sticker. The motherboard sticker is always correct." After a motherboard swap, the guide says to place the removable sticker from the new board over the old one on the chassis or service tag.
+
+When both are gone, there are two routes:
+
+1. **Ask Supermicro, if you bought direct.** The guide says customers who bought directly can request soft copies from a sales representative or Supermicro's customer portal, and that it can provide them only to direct customers, not to buyers through a distributor.
+2. **Reset from the host OS.** This is the route [Supermicro FAQ 41692](https://www.supermicro.com/en/support/faqs/faq.php?faq=41692) gives to an owner who lost the BMC password. Supermicro's answer says it has difficulty checking ownership and walks through \`ipmitool\` and IPMICFG instead.
+
+## How do you reset the IPMI password from the host OS with ipmicfg or ipmitool?
+
+Both tools talk to the BMC through the host's local interface, so neither asks for the current BMC password, which is why Supermicro offers them to an owner who lost it. Per FAQ 41692, both commands need root on the Linux OS. The FAQ's asker had lost the OS root password too, so the DOS and UEFI builds below are the fallback when root is gone. The [IPMICFG guide](https://www.supermicro.com/wdl/utility/IPMICFG/IPMICFG_UserGuide.pdf) lists these modules for the Linux build:
+
+\`\`\`bash
+sudo modprobe ipmi_msghandler
+sudo modprobe ipmi_devintf
+sudo modprobe ipmi_si
+\`\`\`
+
+The [ipmitool man page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in) says the open interface uses the OpenIPMI driver, with a device at \`/dev/ipmi0\` (or \`/dev/ipmi/0\` under udev). IPMICFG is a download from Supermicro's [IPMI Utilities page](https://www.supermicro.com/en/solutions/management-software/ipmi-utilities), and the guide names the Linux 64-bit binary \`IPMICFG-Linux.x86_64\`.
+
+With IPMICFG, list the users and set the password on ID 2, where the guide's \`-user list\` example shows ADMIN:
+
+\`\`\`bash
+sudo ./IPMICFG-Linux.x86_64 -user list
+sudo ./IPMICFG-Linux.x86_64 -user setpwd 2 'new-password-here'
+\`\`\`
+
+With ipmitool, FAQ 41692 uses channel 1 for the user list and ID 2 for ADMIN:
+
+\`\`\`bash
+sudo ipmitool user list 1
+sudo ipmitool user set password 2 'new-password-here'
+\`\`\`
+
+Always give the password on the command line, because the man page says a \`user set password\` call with no password clears it to NULL. The man page also takes an optional trailing \`16\` or \`20\` that sets the maximum password length, so use \`20\` for a password longer than 16 characters.
+
+A server with no installed operating system can still be reset from boot media, because IPMICFG also runs from [DOS and the UEFI shell](https://www.supermicro.com/en/solutions/management-software/ipmi-utilities). Jeff Geerling's [2022 write-up](https://www.jeffgeerling.com/blog/2022/resetting-ipmi-and-upgrading-bios-on-supermicro-motherboard-under-freebsd-or-not/) reports using a FreeDOS USB drive with the DOS folder from the IPMICFG download after the Linux binary would not run on FreeBSD.
+
+Four limits apply:
+
+- **Password rules.** The X13 manual's web interface wants 8 to 20 characters (the X12 manual says 8 to 19), at least three of lowercase, uppercase, digits and special characters, and not the username reversed. Neither manual says whether the host-side tools apply the same rules.
+- **Disabled ADMIN.** Geerling reported that ADMIN showed "No" in the Enable column of \`-user list\`, so setting a password was not enough and he reset the whole BMC with \`ipmicfg -fd 2\`. The ipmitool man page lists \`user enable <userid>\` for this, but neither Supermicro nor Geerling shows it used on a Supermicro board.
+- **KCS limits.** The [X12/H12](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) and [X13/H13/B13](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf) manuals have a KCS Control setting that caps what host-side commands can do, from Administrator down to Callback, and X13 adds a Disable KCS option. A previous owner may have set it.
+- **X14 tooling.** The IPMI Utilities page says IPMICFG, SMCIPMITool and IPMIView are not supported on X14, H14 or later, and recommends SAA and SSM. The X14DBM-AP page still says the password "can be reset using the Supermicro IPMICFG tool," so read the manual for the exact board.
+
+## What does a factory default reset set the password back to?
+
+It depends on which option is chosen. The web interface and IPMICFG each offer three choices that line up, though the two documents describe them differently:
+
+| Choice | Web option, per the [X13/H13/B13 manual](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf) | IPMICFG option, per the [IPMICFG guide](https://www.supermicro.com/wdl/utility/IPMICFG/IPMICFG_UserGuide.pdf) |
+|---|---|---|
+| 1 | Remove current settings but preserve user configurations | \`-fd 1\`: "Preserves the configurations in the 'Users' section." |
+| 2 | Restore to factory default: removes all users, resets ADMIN to the factory default password | \`-fd 2\`: "Restores the factory defaults and the default password of the motherboard." |
+| 3 | Set user defaults to ADMIN/ADMIN: removes all users, resets ADMIN to ADMIN | \`-fd 3\`: "Sets user's password to ADMIN." |
+
+The X13 manual adds that the "Factory default password is the unique password for X12 and next generation platforms." So on a board with a unique password, option 2 brings back the sticker password. On a board without one, the guide's rule applies and the default is ADMIN. The IPMICFG guide does not say whether options 2 and 3 remove other users.
+
+IPMICFG also has \`-fdl\` for factory default with a clean LAN configuration and \`-fde\` for a clean FRU and LAN. The IPMICFG guide's revision history says the options on \`-fd\` were added in revision 1.8, dated January 2020. The [2012 revision of the guide](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf) lists only \`-fd\` and \`-fde\`, so older builds have no option to choose.
+
+Owner reports do not all match the documentation. A commenter on [ServeTheHome's reset guide](https://www.servethehome.com/reset-supermicro-ipmi-password-default-lost-login/) wrote in February 2024 that on an H12DSi-N6, \`-fd 3\` ended with the motherboard sticker password working, while \`-fd 2\` returned "This command is not supported." That does not match the guide's description of option 3, so treat it as one owner's result on one board and run \`-user list\` and a test login after any reset.
+
+Two other operations do less than people expect:
+
+- **Config restore.** The X13 manual says a saved BMC configuration does not carry passwords, "Passwords cannot be transferred or overridden by another BMC/IPMI Configuration", and does not save IP addresses.
+- **Firmware updates.** The [X12/H12 manual](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) offers preserve options for the BMC configuration, SDR and SSL certificate, and says the update preserves them by default. FAQ 32732 says an X9 firmware update leaves the password alone, and that if the update resets to factory defaults, ADMIN/ADMIN works on those boards.
+
+## What is the default IPMI network setting, and how do you find the BMC's address?
+
+The default is DHCP on a failover port. The X9 manual says "DHCP is the default setting" and that the LAN interface default is Failover, which connects through the shared LAN port or the dedicated IPMI port with precedence given to the dedicated one. The X12/H12 manual says "The DHCP (Dynamic Host Configuration Protocol) is on by default," and the X13 manual describes failover as the first shared LAN and the dedicated LAN.
+
+Four ways to find the address:
+
+1. **DHCP lease table.** Look up the BMC's MAC, which is printed just above the password on the sticker, on the router or DHCP server.
+2. **From the host.** \`ipmicfg -m\` shows the IPv4 address and MAC per the IPMICFG guide, and the man page says \`ipmitool lan print\` prints the first LAN channel it finds:
+
+\`\`\`bash
+sudo ./IPMICFG-Linux.x86_64 -m
+sudo ipmitool lan print
+\`\`\`
+
+3. **From the BIOS.** The X12/H12 manual puts it under Server Management, then BMC Network Configuration, where the address source can be switched between DHCP and static.
+4. **With no DHCP server.** The same manual describes cabling a laptop directly to the IPMI or shared port and setting a static address on both ends, since no router is involved.
+
+To set a static address from the host, the IPMICFG guide lists these options:
+
+\`\`\`bash
+sudo ./IPMICFG-Linux.x86_64 -dhcp off
+sudo ./IPMICFG-Linux.x86_64 -m 192.0.2.20
+sudo ./IPMICFG-Linux.x86_64 -k 255.255.255.0
+sudo ./IPMICFG-Linux.x86_64 -g 192.0.2.1
+\`\`\`
+
+## Is a 10-letter password strong enough, and how do you lock the BMC down?
+
+The unique password protects against the old problem, a published default that works everywhere. It is a thin secret in other ways. The username is fixed, because the [X12/H12](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf) manual says the Administrator account cannot be deleted and the [X13/H13/B13](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf) manual says it cannot be deleted or disabled. The format is public, and an IPMI 2.0 flaw lets anyone who can reach UDP port 623 collect a password-derived value to guess against offline. [Rapid7's 2013 guide](https://rapid7.com/blog/post/2013/07/02/a-penetration-testers-guide-to-ipmi) describes that exchange and lists ADMIN/ADMIN as the Supermicro default. [Lava's 2026 research](https://lava.security/research/bmc-exposure-alert) measured it, with a May 6, 2026 scan:
+
+- 36,872 internet-exposed hosts answered IPMI on UDP 623.
+- 24,650 of them returned password-derived material before authentication.
+- Supermicro hardware was over half of the responding BMCs, and the old ADMIN:ADMIN pair matched only a few hundred.
+- The 26^10 factory space, about 141 trillion candidates, "could be searched in approximately one hour" on an eight-GPU server running Hashcat. Each captured response is cracked separately.
+- On two X13DEM boards at a bare-metal GPU provider whose policy allowed testing, the recovered passwords matched the 10-letter format. The researchers did not log in.
+- Lava reports that Supermicro called the scenario plausible and said it will review longer passwords or an expanded character set for future hardware.
+
+The table converts search space to bits, assuming random letters:
+
+| Password | Search space | Bits |
+|---|---|---|
+| ADMIN / ADMIN | 1, because it is published | 0 |
+| 10 uppercase letters | 26^10 = 141,167,095,653,376 | 47.0 |
+| 15 lowercase letters | 26^15, about 1.68 x 10^21 | 70.5 |
+
+Rounded to whole bits, the rows are 0, 47 and 71. At the rate implied by Lava's one-hour figure, the 15-letter row, which is 26^5 times larger, would take roughly 1,350 years, by arithmetic and not a measurement. Fifteen characters is NIST's floor: [SP 800-63B-4](https://pages.nist.gov/800-63-4/sp800-63b.html) requires single-factor passwords to be "a minimum of 15 characters in length" and says verifiers should accept at least 64. That standard governs digital identity services, not BMCs, so it is a yardstick here, as covered in [NIST's password rule changes](/blog/nist-password-rules-changed). The X13 web interface asks for three character classes, so an all-lowercase password would not meet its stated rules. Use a long mixed-class password, up to the 19 or 20 character limit of the web interface, and check candidates with the [password entropy tool](/tools/password-entropy).
+
+Then reduce what can reach the BMC. The X13 manual's port page lists these defaults, and says most can be changed except the web SSL port:
+
+| Port | Service | Default |
+|---|---|---|
+| TCP 443 | Web SSL | On, cannot be changed |
+| TCP 80 | Web | On |
+| TCP 22 | SSH | On |
+| TCP 623 | Virtual media | On |
+| UDP 623 | IPMI LAN | On |
+| UDP 161 | SNMP | Off |
+
+The X12 manual also lists the iKVM port, TCP 5900, as on by default. If a board lets you turn off the IPMI LAN port, UDP 623, that removes the exposure Lava measured, but IPMI-over-LAN tools such as \`ipmitool -I lanplus\` stop working, so check what depends on it first. For a firewall, the X13 manual's list of BMC ports is 80 and 443 TCP, 623 UDP, 5900 TCP, 623 TCP, 22 TCP and 8889 TCP for WS-MAN. The [port reference tool](/tools/port-reference) covers the protocols.
+
+The remaining steps:
+
+1. **Replace the password at first login.** The unique password is a starting value, and Supermicro's guide says the IPMI web interface or IPMICFG can change it. The [announcement page](https://www.supermicro.com/en/support/BMC_Unique_Password) also offers a sample Python script that resets the password to ADMIN or sets a chosen one, after a user agreement.
+2. **Turn on failed-login lockout.** Both manuals give a threshold of 1 to 5 failed attempts, a counter reset interval and a lockout duration.
+3. **Add IP access control rules.** Both manuals allow up to 10 rules, and the default policy is off with a default rule of ACCEPT.
+4. **Set a web session timeout.** The default is 0, meaning no timeout, in the X12 manual, and 30 minutes in the X13 manual.
+5. **Isolate the network.** [CISA's 2013 alert](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi), now marked as archived content, says to restrict IPMI traffic "to a management VLAN segment with strong network controls" and to set "strong, unique passwords." A [VLAN segmentation guide](/blog/vlan-segmentation-guide) covers the layout.
+6. **Close off legacy options.** Lava's advice includes disabling IPMI 1.5, cipher suite 0, anonymous accounts and NONE authentication where the BMC allows it.
+
+## What breaks after a reset, an update or a board swap?
+
+- **ADMIN/ADMIN is rejected.** The board has a unique password. Why: Supermicro stopped using ADMIN for new systems from late 2019. Fix: read the sticker, using the motherboard one if two differ, or reset from the host.
+- **Repeated guesses lock the account.** Why: both BMC manuals document a lockout threshold of 1 to 5 failed attempts. Fix: wait out the lockout duration, or have another administrator use the unlock action the X12 manual lists in the user table.
+- **A factory reset does not give ADMIN.** Why: the plain restore option returns the factory default password, which is the unique one on newer boards. Fix: use \`-fd 3\` or the ADMIN/ADMIN web option, then change the password before the BMC goes back on the network.
+- **IPMICFG reports an error right after \`-fd\`.** The ServeTheHome commenter saw "Failed to get the IPMI Firmware Revision. Completion Code=FFh" after \`-fd 3\` and said they waited 10 minutes before the IP and MAC came back. Why: the BMC is restarting. Fix: wait, and do not remove power, since the web interface prompt during a reset tells you to leave power in place until the BMC is back online.
+- **A host-side change leaves no log entry.** [FAQ 28796](https://www.supermicro.com/en/support/faqs/faq.php?faq=28796) says an X11DDW-NT on IPMI firmware 1.43 did not record an in-band \`ipmitool user set password 2\` in the event log, while web and out-of-band changes were logged, and the fix is firmware 1.55. Why: the FAQ gives no cause, only the firmware update as the fix. Fix: update the firmware, and treat anyone with root on the host as able to reset the BMC password.
+
+## Sources
+
+- [Supermicro: BMC Unique Password Guide](https://www.supermicro.com/support/BMC_Unique_Password_Guide.pdf)
+- [Supermicro: BMC Unique Password Security Feature, November 2019](https://www.supermicro.com/en/support/BMC_Unique_Password)
+- [Supermicro: FAQ 32732, unique password and X9 firmware updates](https://www.supermicro.com/en/support/faqs/faq.php?faq=32732)
+- [Supermicro: FAQ 41692, lost BMC ADMIN password](https://www.supermicro.com/en/support/faqs/faq.php?faq=41692)
+- [Supermicro: FAQ 28796, in-band password change not logged](https://www.supermicro.com/en/support/faqs/faq.php?faq=28796)
+- [Supermicro: IPMICFG User's Guide, revision 1.15](https://www.supermicro.com/wdl/utility/IPMICFG/IPMICFG_UserGuide.pdf)
+- [Supermicro: Utility User's Guide IPMICFG, 2012 revision](https://www.supermicro.com/wdl/ISO_Extracted/CDR-X9-UP_1.22_for_Intel_X9_UP_platform/IPMI/IPMICFG/Supermicro_Utility_User_Guide_IPMICFG.pdf)
+- [Supermicro: IPMI Utilities](https://www.supermicro.com/en/solutions/management-software/ipmi-utilities)
+- [Supermicro: X9 SMT IPMI User's Guide](https://www.supermicro.com/manuals/other/X9_SMT_IPMI.pdf)
+- [Supermicro: BMC User's Manual for X12 and H12](https://www.supermicro.com/manuals/other/BMC_Users_Guide_X12_H12.pdf)
+- [Supermicro: BMC User's Manual for X13, H13 and B13](https://www.supermicro.com/manuals/other/BMC_IPMI_X13_H13_B13.pdf)
+- [Supermicro: X14DBM-AP BMC page](https://www.supermicro.com/en/support/manuals/product/motherboard/x14dbm-ap/Content/software/bmc.htm)
+- [ipmitool: manual page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [Lava: BMC exposure research](https://lava.security/research/bmc-exposure-alert)
+- [Rapid7: A Penetration Tester's Guide to IPMI](https://rapid7.com/blog/post/2013/07/02/a-penetration-testers-guide-to-ipmi)
+- [CISA: Risks of Using the Intelligent Platform Management Interface (IPMI)](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi)
+- [NIST: SP 800-63B-4, Digital Identity Guidelines](https://pages.nist.gov/800-63-4/sp800-63b.html)
+- [FindLaw: California Civil Code section 1798.91.04](https://codes.findlaw.com/ca/civil-code/civ-sect-1798-91-04/)
+- [ServeTheHome: Reset Supermicro IPMI Password to Default](https://www.servethehome.com/reset-supermicro-ipmi-password-default-lost-login/)
+- [Jeff Geerling: Resetting IPMI and upgrading BIOS on a Supermicro motherboard](https://www.jeffgeerling.com/blog/2022/resetting-ipmi-and-upgrading-bios-on-supermicro-motherboard-under-freebsd-or-not/)
+`,
+  },
+  {
+    slug: "unifi-set-inform-adoption",
+    title: "UniFi Set-Inform: Adopting Devices Over SSH, DHCP Option 43 and DNS",
+    date: "2026-11-04",
+    tags: ["networking", "wireless", "homelab", "troubleshooting"],
+    excerpt:
+      "How to adopt a UniFi device across VLANs: set-inform over SSH, default logins, DHCP option 43 hex, the unifi DNS name and the ports to open.",
+    coverImage: "/images/blog/unifi-set-inform-adoption.jpg",
+    content: `
+## The short answer
+
+Running \`set-inform http://<host>:8080/inform\` over SSH on a factory-default UniFi device points it at a Network application that automatic discovery cannot reach, such as one on another subnet, VLAN or site. Ubiquiti's [Layer 3 adoption article](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3) states one requirement for remote adoption: unrestricted TCP 8080 between the device and the application. Its [Device Adoption article](https://help.ui.com/hc/en-us/articles/360012622613-UniFi-Device-Adoption) gives \`set-inform\` as the step to try when a device on a different VLAN or subnet does not appear. Ubiquiti's [SSH article](https://help.ui.com/hc/en-us/articles/204909374-Connecting-to-UniFi-with-Debug-Tools-SSH) lists \`ui\` / \`ui\` for new access points and switches, \`ubnt\` / \`ubnt\` on older ones, and \`root\` for gateways and consoles. To skip SSH, hand out the address with [DHCP option 43](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3): one field on a UniFi gateway, or hex on other DHCP servers, where \`0104c0a8030a\` means 192.168.3.10 and a block starting with \`02\` carries a full inform URL. A DNS A record named \`unifi\` works too, because a device that has not been pointed elsewhere still has the default inform URL, [http://unifi:8080/inform](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption). A device still owned by another application must be factory reset first, and Ubiquiti says the physical reset button [does not remove it](https://help.ui.com/hc/en-us/articles/205143490-How-to-Reset-UniFi-Devices-to-Factory-Defaults) from that application.
+
+## What does set-inform do, and when do you need it instead of automatic discovery?
+
+Adoption is the hand-off that puts a UniFi device under a Network application's control. On a shared network the device is discovered and listed as Pending Adoption. Ubiquiti's [Device Adoption article](https://help.ui.com/hc/en-us/articles/360012622613-UniFi-Device-Adoption) says that when a device does not appear, TCP 8080 and UDP 10001 must be open between the application host, the devices, and any gateways, firewalls or antivirus software in between. A [LinITX guide](https://blog.linitx.com/?p=3884) describes the same split: Layer 2 adoption uses self-discovery when the devices and the application are on the same network, and Layer 3 adoption over SSH is for an application at a remote location.
+
+Remote adoption means telling the device where the application is. That address is the inform URL, the endpoint on TCP 8080 where device and application communicate, and a factory-default device uses \`http://unifi:8080/inform\`, per [HostiFi](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption). The \`set-inform\` command rewrites it. Layer 2 discovery is the default, and Ubiquiti's Layer 3 article covers the SSH, DHCP and DNS routes:
+
+| Method | What it needs | Best for |
+|---|---|---|
+| Layer 2 discovery | Same network as the application, UDP 10001 and TCP 8080 | A flat home or small office network |
+| \`set-inform\` over SSH | SSH access to the device, its login, TCP 8080 to the application | One device, or a remote site with no control of DHCP |
+| DHCP option 43 | Control of the DHCP server for the device's VLAN | Many devices on a VLAN, or devices that reset |
+| DNS name \`unifi\` | An A record the device's resolver can answer | Sites where DNS is easier to change than DHCP |
+
+A fifth route, zero-touch provisioning, assigns a device to a site before it is unboxed. Ubiquiti's [ZTP article](https://help.ui.com/hc/en-us/articles/23954985107351-UniFi-Zero-Touch-Provisioning-ZTP-and-Device-Replacement) lists UniFi Network 8.2.71 or later, UniFi OS 4.0 or later and a supported device, which includes several U7 models, the E7 family and the UDB line. Ubiquiti's [Layer 3 article](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3) also says a device cycles through every inform option it has, ZTP code included, and the first one to resolve and respond adopts it. A stale DNS record or DHCP option can therefore pull a device toward an old application.
+
+Adoption governs management only: per Ubiquiti's [self-hosting article](https://help.ui.com/hc/en-us/articles/34210126298775-Self-Hosting-UniFi), devices of an offline self-hosted UniFi OS Server continue to run on their last available configuration. The [enterprise vs consumer Wi-Fi](/blog/enterprise-wifi-vs-consumer) article covers the management and data plane split.
+
+## Which SSH username and password does a factory-default UniFi device accept?
+
+Ubiquiti's [SSH article](https://help.ui.com/hc/en-us/articles/204909374-Connecting-to-UniFi-with-Debug-Tools-SSH) gives the defaults before setup or adoption. Third-party guides differ on some of them, and Ubiquiti's own list separates older hardware from newer.
+
+| Device class | Ubiquiti's default | Other guides |
+|---|---|---|
+| Access points and switches | \`ui\` / \`ui\`; \`ubnt\` / \`ubnt\` on older hardware | [HostiFi](https://www.hostifi.com/support/unifi-ssh-commands-guide): older AP firmware is \`ubnt\` / \`ubnt\`, some newer devices \`ui\` / \`ui\` |
+| Gateways and consoles | \`root\` / \`ui\`; \`root\` / \`ubnt\` on older hardware | HostiFi: UXG models are \`root\` / \`ubnt\`. [Unihosted](https://www.unihosted.com/blog/how-to-set-inform-in-unifi-a-guide): gateways take \`root\` with \`ui\` or \`ubnt\` |
+
+SSH is on by default for network devices. On consoles it is off until you enable it under Settings > Control Plane > Console, per the same Ubiquiti article.
+
+\`\`\`bash
+ssh ui@192.168.20.45
+\`\`\`
+
+Replace the address with the device's DHCP lease, and use \`ubnt@\` or \`root@\` where the table says so. The defaults apply only to a device that has never been adopted or has been reset. A login that fails on a unit you believe is new points to an earlier adoption, and the reset section below covers that case. The admin workstation also needs TCP 22 to the device, which Unihosted lists among the [ports to open](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks), so check the firewall between the two VLANs. A [VLAN segmentation](/blog/vlan-segmentation-guide) design that blocks management traffic by default will block this too.
+
+## How do you run set-inform, and why do some guides say to run it twice?
+
+Connect over SSH, run the command with the application's address, then read the result with \`info\`.
+
+\`\`\`bash
+ssh ui@192.168.20.45
+set-inform http://192.168.3.10:8080/inform
+info
+\`\`\`
+
+HostiFi says the URL ["must start with http:// and end with :8080/inform"](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption), and that \`info\` displays the URL the device is set to use, per its [SSH commands guide](https://www.hostifi.com/support/unifi-ssh-commands-guide). Ubiquiti's [Layer 3 article](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3) accepts an IP address or a fully qualified domain name in the URL. HostiFi recommends the server's DNS name rather than its IP address, in which case the name must resolve from the device's VLAN. Unihosted gives the readings to look for in \`info\` output:
+
+| Status in \`info\` | Meaning, per Unihosted |
+|---|---|
+| \`Status: Connected\` | The device reaches the application |
+| \`Status: Timeout\` | A firewall is blocking TCP 8080, or the URL has a typo |
+| \`Status: Server Reject\` | Same two suspects |
+
+Once the device appears in the application, click Adopt. Guides split on repetition. Unihosted's [troubleshooting guide](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks) says to run the command twice: "First time tells the device where to go, second time confirms and saves it." A [LinITX guide](https://blog.linitx.com/?p=3884) from September 2021 runs it once and repeats the set-inform and Adopt steps only if the device has not appeared after 10 to 15 minutes. Ubiquiti's [Device Adoption article](https://help.ui.com/hc/en-us/articles/360012622613-UniFi-Device-Adoption) says that for a device on a different VLAN or subnet the command may need to be repeated after the device appears in UniFi. The sequence that satisfies all three is to run it, adopt, read \`info\`, and run it again if the status is not Connected.
+
+The setting may not stick. A February 2024 post on the [Lawrence Systems forum](https://forums.lawrencesystems.com/t/unifi-l3-persistent-inform-url/20405) reported that adopted devices went back to the default inform URL after an update or reboot. The poster relayed UniFi support saying that any configuration applied over SSH "may vanish after reboot" and that DHCP option 43 is strongly recommended for Layer 3 adoption. A poster named LTS_Tom said he had never had a problem with set-inform on switches and APs. A later poster reported devices falling back to \`unifi:8080/inform\` after a reboot and said the inform host override was already set to the controller's address. Those reports conflict and none confirms a fix, so for more than a handful of devices use option 43 or DNS and treat \`set-inform\` as the manual override.
+
+One more setting controls what devices learn after adoption. The application can push its own inform address to every adopted device: Ubiquiti's [migration article](https://help.ui.com/hc/en-us/articles/360008976393-Backups-and-Migration-in-UniFi) enables the Override Inform Host toggle and enters the new console's IP, and the [LinuxServer documentation](https://docs.linuxserver.io/images/docker-unifi-network-application/) says to set the Inform Host to "a hostname or IP address accessible by your devices", warning that the menu location moves between releases. The [jacobalberty unifi-docker README](https://github.com/jacobalberty/unifi-docker) says that for a container you "MUST" override the Inform Host IP with the Docker host's address, because the container usually gets an internal 172.17.x.x address. It also offers a \`SYSTEM_IP\` environment variable as one way to set it.
+
+## How do DHCP option 43 and the unifi DNS name adopt devices on another subnet or VLAN?
+
+DHCP option 43 is the vendor-specific information option. [RFC 2132](https://www.rfc-editor.org/rfc/rfc2132) defines it as code 43 with a minimum length of 1, "an opaque object of n octets." A vendor that encodes several items inside it should use a sequence of code, length and value fields with no magic cookie, and code 255, if present, marks the end of the encapsulated items. The sub-option codes are left to the vendor. Ubiquiti's hex format fits that layout: \`01\` is its code for the application's IPv4 address, \`04\` is the length, and four address octets follow.
+
+On a UniFi gateway, the setting is a field named Option 43 Application Host Address in the network's settings, where the IP address of the remote Network application goes, per Ubiquiti's [Layer 3 article](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3) and the [UniFi support reply](https://forums.lawrencesystems.com/t/unifi-l3-persistent-inform-url/20405) quoted on the Lawrence Systems forum. Third-party DHCP servers need the hex. Ubiquiti's article gives two forms and says they can be joined in one value for redundancy, with the IP portion first. Unihosted says option 43 [can only be used with an IP address](https://www.unihosted.com/blog/how-to-set-inform-in-unifi-a-guide) and that a hostname is not allowed. That sits oddly with Ubiquiti's \`02\` form, which carries a full URL as text, so the IP form is the safe choice and the URL form is worth testing before relying on a hostname in it.
+
+| Form | Bytes | Hex for 192.168.3.10 | Layout |
+|---|---|---|---|
+| IP address | 6 | \`0104c0a8030a\` | \`01\`, length \`04\`, four address octets |
+| Inform URL | 33 | \`021f687474703a2f2f3139322e3136382e332e31303a383038302f696e666f726d\` | \`02\`, length \`1f\`, the URL as ASCII |
+| Both | 39 | the IP block followed by the URL block, no separators | Redundancy |
+
+The \`0104c0a8030a\` example and the \`02\` plus \`1f\` length byte come from [Ubiquiti's Layer 3 article](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3). The URL \`http://192.168.3.10:8080/inform\` is 31 characters, which is \`1f\`, so the URL form is 2 header bytes plus 31 for 33 bytes, and the combined value is 6 plus 33 for 39 bytes. A short script produces all three strings without hand conversion, and the [base converter](/tools/base-converter) checks a single byte.
+
+\`\`\`python
+import ipaddress
+ip = ipaddress.ip_address("192.168.3.10").packed
+url = b"http://192.168.3.10:8080/inform"
+sub1 = bytes([1, len(ip)]) + ip
+sub2 = bytes([2, len(url)]) + url
+print(sub1.hex(), sub2.hex(), (sub1 + sub2).hex(), sep="\\n")
+\`\`\`
+
+Some servers want the pairs separated by colons, such as \`01:04:c0:a8:03:0a\`. The ISC DHCP server builds option 43 from a vendor option space, so the IP form translates into sub-option 1 with an \`ip-address\` type. ISC's [option documentation](https://kb.isc.org/docs/isc-dhcp-44-manual-pages-dhcp-options) shows the \`option space\` and \`vendor-option-space\` statements and says regular scoping rules apply. ISC's examples do not cover UniFi, so the block below applies ISC's syntax to Ubiquiti's sub-option 1 layout, and the check below confirms the result.
+
+\`\`\`
+option space ubnt code width 1 length width 1 hash size 3;
+option ubnt.unifi-address code 1 = ip-address;
+
+subnet 192.168.20.0 netmask 255.255.255.0 {
+  range 192.168.20.100 192.168.20.200;
+  vendor-option-space ubnt;
+  option ubnt.unifi-address 192.168.3.10;
+}
+\`\`\`
+
+For dnsmasq, the [man page](https://www.thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html) lists colon-separated hex digits as a data type for \`--dhcp-option\`, so the raw form is a single line. The same page says \`--dhcp-option-force\` works the same way except that the option is always sent, even if the client does not ask for it in its parameter request list. As with ISC, the documentation does not mention UniFi, so confirm the result with the check below.
+
+\`\`\`
+dhcp-option=43,01:04:c0:a8:03:0a
+\`\`\`
+
+Confirm the server really sends it before blaming the device. A poster on the OpenWrt forum used nmap's \`broadcast-dhcp-discover\` script to read the value back, which printed \`Vendor Specific Information: 0104C0A80002\`. That [thread](https://forum.openwrt.org/t/dhcp-option-43-vendor-specific-information-and-unifi-ap/101648) never confirmed an adoption, so the output proves only that the option was on the wire. The [Nmap documentation](https://nmap.org/nsedoc/scripts/broadcast-dhcp-discover.html) says the script uses a fixed MAC address by default and needs a privileged user, so a server that filters option 43 by MAC address or client class may answer differently than it does for a real device. Run it from a host on the same VLAN as the device:
+
+\`\`\`bash
+sudo nmap --script broadcast-dhcp-discover
+\`\`\`
+
+A capture of the DHCP Offer and ACK shows the same bytes, and the [packet capture](/blog/troubleshooting-packet-captures) article covers where to take one.
+
+DNS needs no vendor option at all. Ubiquiti's Layer 3 article has a DNS method in which the DNS server is configured so that a name resolves to the remote Network installation, and Unihosted says a [factory-reset device always searches](https://www.unihosted.com/blog/how-to-set-inform-in-unifi-a-guide) for a hostname called exactly \`unifi\`. Check the record from a host on the device's VLAN with \`nslookup unifi\`, and read the [DNS fundamentals](/blog/dns-fundamentals-infrastructure) article if the answer depends on a search domain. Stale entries cause trouble with both methods: Unihosted's [troubleshooting guide](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks) lists a leftover option 43 or DNS override as a cause of a device reverting to an old controller, which fits the first-to-respond behavior above.
+
+For a site across the internet, use the application's public address or hostname with the same \`:8080/inform\` form. Ubiquiti's Layer 3 article says a controller behind a remote gateway with a public IP needs TCP 8080 forwarded to it, and that the method will not work when that gateway has a private address, which is double NAT. Ubiquiti's answer to that case is to contact the ISP.
+
+## Which ports must be open between the device and the Network application?
+
+Ubiquiti's [Required Ports Reference](https://help.ui.com/hc/en-us/articles/218506997-Required-Ports-Reference) says that in a full UniFi deployment with native gateways these ports are opened automatically, so the table matters on self-hosted servers, third-party gateways and restrictive firewalls. Ubiquiti lists TCP 8080 as ingress to the application.
+
+| Port | Purpose | Where it comes from |
+|---|---|---|
+| TCP 8080 | Device and application communication (the inform endpoint) | Ubiquiti's port reference; the one requirement in the Layer 3 article |
+| UDP 10001 | Device discovery during adoption | Ubiquiti's port reference; named with TCP 8080 in the Device Adoption article |
+| UDP 3478 | STUN, used for device adoption and communication | Ubiquiti's port reference; named with TCP 8080 as an example in the self-hosting article |
+| TCP 8443 | Application web GUI and API | Ubiquiti's port reference |
+| TCP 6789 | UniFi mobile speed test | Ubiquiti's port reference |
+| TCP 22 | SSH from the admin workstation to the device | [Unihosted's list](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks) |
+
+For containers, the [LinuxServer documentation](https://docs.linuxserver.io/images/docker-unifi-network-application/) adds two optional ports: UDP 1900 for the setting that makes the controller discoverable on the local network, and UDP 5514 for remote syslog. The [jacobalberty unifi-docker README](https://github.com/jacobalberty/unifi-docker) says a minimal installation requires 8080, 8443, 3478 and 10001 to be exposed.
+
+For a Layer 3 deployment, Ubiquiti's remote adoption article names one requirement, TCP 8080 between the device and the application. Ubiquiti's port reference also lists UDP 3478 for adoption and communication, so a rule that includes it matches the reference. UDP 10001 is the discovery port that the Device Adoption article ties to a device appearing as Pending Adoption, the same-network case that \`set-inform\` bypasses. Write the rule as a narrow allow from the management VLAN to the application's address, and use the [port reference tool](/tools/port-reference) to confirm the well-known services on the others.
+
+## Why does a device stay on Adopting or show Adoption Failed, and how do you factory reset it?
+
+These are the causes that Ubiquiti and the hosting guides document, ordered by how quickly each can be checked.
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Never appears as Pending Adoption | Different VLAN, or TCP 8080 and UDP 10001 blocked | Open them on the same network, or use set-inform, option 43 or DNS |
+| \`info\` shows \`Timeout\` or \`Server Reject\` | Firewall on TCP 8080, or a typo in the URL | Test from the device's VLAN, fix the URL |
+| Pending Adoption (Update Required) loops | The device needs newer firmware and the Adopt and Upgrade button fails | Update manually over SSH, per [HostiFi](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption) |
+| Managed by Other, or refuses adoption | Still bound to another application | Factory reset, or reassign it |
+| Adopts, then goes offline | Wrong inform host pushed (typical for containers), or fallback to the default URL after reboot, per [owner reports](https://forums.lawrencesystems.com/t/unifi-l3-persistent-inform-url/20405) | Correct Override Inform Host; use option 43 or DNS |
+| Nothing works across sites | Double NAT at the remote gateway | Contact the ISP, per Ubiquiti |
+
+For the firmware case, HostiFi links a guide to upgrading over SSH. The [LinITX guide](https://blog.linitx.com/?p=3884) runs \`upgrade\` followed by the download link from ui.com/download, and Unihosted [adds](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks) that firmware older than 3.x should be updated by hand and the device reset before retrying. Use the build that matches the model.
+
+For Managed by Other, Ubiquiti's [reset article](https://help.ui.com/hc/en-us/articles/205143490-How-to-Reset-UniFi-Devices-to-Factory-Defaults) says the label appears when a device was managed by another instance, including after a console was factory restored. Its three options are to restore the console from a backup taken while the device was managed, factory restore the device and adopt it again, or reassign it through the UniFi Network mobile app, which only the account owner can do and only if they signed in while the device was still managed.
+
+There are three ways to reset a device:
+
+1. **Physical button.** Ubiquiti says to hold Reset for 5 to 10 seconds depending on the device, or until the LEDs show the restore has begun, with power connected throughout. Too short a hold reboots the device and too long enters TFTP Recovery Mode. On a PoE device, keep the switch port energized for the whole hold; the [PoE](/blog/power-over-ethernet-poe) article covers the power budget.
+2. **Forget in the application.** Under the device's Manage section, Forget in UniFi Network unmanages the device and resets it to factory defaults, per Ubiquiti's [reset article](https://help.ui.com/hc/en-us/articles/205143490-How-to-Reset-UniFi-Devices-to-Factory-Defaults). The button alone [does not remove the device](https://help.ui.com/hc/en-us/articles/205143490-How-to-Reset-UniFi-Devices-to-Factory-Defaults) from the application it was adopted to, so a physically reset device can still be listed there.
+3. **SSH.** The command HostiFi lists is \`syswrapper.sh restore-default & set-default &\`, described as resetting the UniFi device to its factory default settings. [HostiFi's adoption guide](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption) also suggests \`set-default\` when \`info\` still shows the default inform URL. The LinITX guide prefixes \`sudo\`. Afterward the factory defaults in the credentials table apply again.
+
+\`\`\`bash
+syswrapper.sh restore-default
+\`\`\`
+
+## Which SSH credentials apply after adoption, and where are they set?
+
+Adopted devices stop using the factory defaults. Ubiquiti's SSH article says network devices take a random password, shown under UniFi Devices > Device Updates and Settings, in the Device SSH Settings menu, where Device SSH Authentication lives. Consoles and gateways use \`root\`, and a gateway that shares the Network application's password takes that one. Unihosted points to [the same menu](https://www.unihosted.com/blog/how-to-set-inform-in-unifi-a-guide) for previously adopted devices.
+
+HostiFi describes the older location: credentials are set per site under Settings > System > Advanced > Device Authentication, and with several sites the passwords differ and are [generated and set automatically by the controller](https://www.hostifi.com/support/unifi-ssh-commands-guide). Menu paths vary by version, so search the settings for "Device Authentication" if the one above is missing. Forgetting a device in the application resets it, as described in the reset section above, so the defaults in the first table apply again.
+
+Public keys go in the same area. Ubiquiti's [SSH keys article](https://help.ui.com/hc/en-us/articles/235247068-Adding-SSH-Keys-to-UniFi-Devices) gives Settings > System > Advanced > Device Authentication > SSH Keys and, in another step, Settings > Devices > Device Updates and Settings > Device SSH Settings, and says the private key must never be shared. The [SSH key authentication](/blog/ssh-key-based-authentication) article covers generating and restricting a key pair.
+
+## Sources
+
+- [Ubiquiti: Remote Adoption (Layer 3)](https://help.ui.com/hc/en-us/articles/204909754-Remote-Adoption-Layer-3)
+- [Ubiquiti: Required Ports Reference](https://help.ui.com/hc/en-us/articles/218506997-Required-Ports-Reference)
+- [Ubiquiti: UniFi - Device Adoption](https://help.ui.com/hc/en-us/articles/360012622613-UniFi-Device-Adoption)
+- [Ubiquiti: Connecting to UniFi with Debug Tools & SSH](https://help.ui.com/hc/en-us/articles/204909374-Connecting-to-UniFi-with-Debug-Tools-SSH)
+- [Ubiquiti: How to Reset UniFi Devices to Factory Defaults](https://help.ui.com/hc/en-us/articles/205143490-How-to-Reset-UniFi-Devices-to-Factory-Defaults)
+- [Ubiquiti: UniFi Zero-Touch Provisioning (ZTP) and Device Replacement](https://help.ui.com/hc/en-us/articles/23954985107351-UniFi-Zero-Touch-Provisioning-ZTP-and-Device-Replacement)
+- [Ubiquiti: Backups and Migration in UniFi](https://help.ui.com/hc/en-us/articles/360008976393-Backups-and-Migration-in-UniFi)
+- [Ubiquiti: Self-Hosting UniFi](https://help.ui.com/hc/en-us/articles/34210126298775-Self-Hosting-UniFi)
+- [Ubiquiti: Adding SSH Keys to UniFi Devices](https://help.ui.com/hc/en-us/articles/235247068-Adding-SSH-Keys-to-UniFi-Devices)
+- [IETF: RFC 2132, DHCP Options and BOOTP Vendor Extensions](https://www.rfc-editor.org/rfc/rfc2132)
+- [ISC: DHCP 4.4 manual pages, dhcp-options](https://kb.isc.org/docs/isc-dhcp-44-manual-pages-dhcp-options)
+- [dnsmasq: manual page](https://www.thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html)
+- [Nmap: broadcast-dhcp-discover NSE script](https://nmap.org/nsedoc/scripts/broadcast-dhcp-discover.html)
+- [HostiFi: UniFi SSH Commands Guide](https://www.hostifi.com/support/unifi-ssh-commands-guide)
+- [HostiFi: Troubleshooting UniFi Cloud Adoption](https://www.hostifi.com/support/unifi-troubleshooting-unifi-cloud-adoption)
+- [Unihosted: How to Set Inform in UniFi](https://www.unihosted.com/blog/how-to-set-inform-in-unifi-a-guide)
+- [Unihosted: Troubleshooting Device Adoption Across Networks](https://www.unihosted.com/blog/troubleshooting-device-adoption-across-networks)
+- [LinITX: How to Guide, Ubiquiti UniFi L3 SSH Connection and Adoption](https://blog.linitx.com/?p=3884)
+- [LinuxServer.io: unifi-network-application documentation](https://docs.linuxserver.io/images/docker-unifi-network-application/)
+- [GitHub: jacobalberty/unifi-docker README](https://github.com/jacobalberty/unifi-docker)
+- [Lawrence Systems forum: UniFi L3 persistent inform URL](https://forums.lawrencesystems.com/t/unifi-l3-persistent-inform-url/20405)
+- [OpenWrt forum: DHCP Option 43 (Vendor Specific Information) and Unifi AP](https://forum.openwrt.org/t/dhcp-option-43-vendor-specific-information-and-unifi-ap/101648)
+`,
+  },
+  {
+    slug: "wireguard-handshake-did-not-complete",
+    title: "WireGuard Handshake Did Not Complete After 5 Seconds: Causes and Fixes",
+    date: "2026-11-04",
+    tags: ["networking", "security", "troubleshooting", "linux", "homelab"],
+    excerpt:
+      "What WireGuard's \"did not complete after 5 seconds\" log means, how to tell whether packets reach the server, and which port, key, clock or NAT fault causes it.",
+    coverImage: "/images/blog/wireguard-handshake-did-not-complete.jpg",
+    content: `
+## The short answer
+
+"Handshake for peer 1 (endpoint) did not complete after 5 seconds, retrying (try 2)" is WireGuard's retransmit timer firing: a handshake initiation went out, no valid response came back within Rekey-Timeout, which is [5 seconds in the whitepaper](https://www.wireguard.com/papers/wireguard.pdf) and in the kernel's [messages.h](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h), and another one is sent. The kernel makes 20 attempts, about 100 seconds, then gives up until the next outgoing packet starts a new round. The line cannot say why, because WireGuard [sends no response to unauthenticated packets](https://www.wireguard.com/papers/wireguard.pdf) (section 5.1): a closed port, a wrong key and a lost reply look the same from the client. Each initiation is 148 bytes by the [message layout](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h), so \`wg show\` reading "0 B received, 592 B sent" means four unanswered attempts. Run \`tcpdump -ni eth0 udp port 51820\` on the server to see whether they arrive, and \`echo module wireguard +p > /sys/kernel/debug/dynamic_debug/control\`, from the [quickstart](https://www.wireguard.com/quickstart/), to see why the server dropped them. Usual causes are an unopened or unforwarded UDP port, a server behind carrier-grade NAT in [100.64.0.0/10](https://www.rfc-editor.org/rfc/rfc6598), a mismatched public or preshared key and a client clock that runs behind. PersistentKeepalive = 25 holds a NAT mapping open but does not repair a first handshake that never got through.
+
+## What does "did not complete after 5 seconds" mean, and where does the 5 come from?
+
+After sending an initiation, WireGuard waits Rekey-Timeout plus jitter for a handshake response and then sends a new initiation with fresh ephemeral keys, per [section 6.4 of the whitepaper](https://www.wireguard.com/papers/wireguard.pdf). The kernel adds a random delay below one third of a second ([REKEY_TIMEOUT_JITTER_MAX_JIFFIES = HZ / 3](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h)), so retries land about 5.0 to 5.33 seconds apart. The whitepaper's constants table sets the timers involved:
+
+| Timer | Value | Part in this failure |
+|---|---|---|
+| Rekey-Timeout | 5 s | Gap between initiations; the "5 seconds" in the log line |
+| Keepalive-Timeout | 10 s | Plus Rekey-Timeout, 15 s of silence after sending data restarts a handshake, per [timers.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c) |
+| Rekey-Attempt-Time | 90 s | How long retries continue |
+| Rekey-After-Time | 120 s | Age at which a working session is replaced |
+| Reject-After-Time | 180 s | Age at which a session's keys are refused |
+
+The kernel implements Rekey-Attempt-Time as a counter. [messages.h](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h) sets MAX_TIMER_HANDSHAKES to 90 / 5 = 18, and [timers.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c) gives up only when the counter exceeds 18. The log therefore counts from "try 2" to "try 20" and ends with "did not complete after 20 attempts, giving up", roughly 100 seconds after the first attempt. [wireguard-go](https://git.zx2c4.com/wireguard-go/tree/device/timers.go) uses the same test with a shorter message. Giving up does not end the story: the whitepaper says the counter "is reset when a peer explicitly attempts to send a new transport data message," so a continuous ping restarts the cycle and the log runs from "try 2" to "try 20" again and again.
+
+Two details explain why the line sometimes appears late or on the wrong machine.
+
+- A fresh tunnel starts no handshake by itself. The quickstart says WireGuard is ["not a chatty protocol"](https://www.wireguard.com/quickstart/) and transmits only when a peer wants to send. A peer with PersistentKeepalive set sends a keepalive when the interface comes up, per [device.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/device.c), which starts a handshake at once. Without it, a missing "latest handshake" line right after bring-up is normal.
+- Either side can log it. A poster running about 300 peers on a CentOS server [saw the line for roughly 200 of them](https://lists.zx2c4.com/pipermail/wireguard/2022-September/007821.html) and asked whether it was expected when the server initiates toward laptops that are off.
+
+The Linux module writes the line with \`pr_debug\`, so it appears only [after debug logging is enabled](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c). Owner threads on [MikroTik](https://forum.mikrotik.com/t/help-with-wireguard-setup-behind-nat/263748) and [OPNsense](https://forum.opnsense.org/index.php?topic=30540.0) quote it verbatim from router and client logs. A [GL.iNet forum thread](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814) opens by calling it a general message that carries no information about the reason.
+
+## How do you tell whether the initiation ever reached the server?
+
+Read the counters first, then capture on the server. \`wg show\` prints the transfer line only when a counter is nonzero, per [show.c](https://git.zx2c4.com/wireguard-tools/tree/src/show.c). The transmit counter grows only when the UDP stack accepts the packet ([socket.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/socket.c)), and the receive counter grows only for authenticated packets ([receive.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/receive.c)). Message sizes come from [messages.h](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h): an initiation is 4 + 4 + 32 + 48 + 28 + 16 + 16 = 148 bytes, a response is 92, a cookie reply is 64 and an empty keepalive is 32.
+
+| Client \`wg show wg0\` | What it means |
+|---|---|
+| No transfer line, no latest handshake | Nothing left the host: interface down, no route to the endpoint, or no traffic yet |
+| \`0 B received, 148 B sent\` (then 296, 444, 592 ...) | Initiations left, nothing authenticated came back |
+| \`latest handshake: 3 seconds ago\`, \`92 B received, 180 B sent\` | Done: 148 B initiation plus a 32 B empty [confirmation packet](https://www.wireguard.com/protocol/) sent, 92 B response received, if the tunnel was idle |
+
+On the server, a peer with no \`endpoint:\` line and no configured endpoint has not had a valid initiation accepted since the interface came up, because an unset endpoint is [learned from authenticated packets](https://www.wireguard.com/papers/wireguard.pdf) (section 2.1). Capture on the server's WAN interface; the [tcpdump manual](https://www.tcpdump.org/manpages/tcpdump.1.html) defines \`-i\` for the interface and \`-n\` for no name lookups.
+
+\`\`\`bash
+sudo tcpdump -ni eth0 'udp port 51820'
+\`\`\`
+
+A healthy exchange shows a 148-byte datagram in and a 92-byte datagram out, and a retrying client shows the 148-byte datagram repeating every 5 seconds. Where the capture stops tells you where to look:
+
+| On the server | Likely location of the fault |
+|---|---|
+| Nothing arrives | Path to the server: port forward, firewall in front, CGNAT, wrong endpoint |
+| 148-byte packets arrive, nothing leaves | Host firewall or WireGuard dropping them silently: keys or clock |
+| 92-byte replies leave, client counters stay at 0 B received | Reply lost on the way back (wrong egress interface or source address), or rejected by the client (preshared key mismatch) |
+
+One caveat applies to the middle row. Packet sockets work at the [device driver level](https://man7.org/linux/man-pages/man7/packet.7.html), while Netfilter's INPUT hook runs [after routing](https://www.netfilter.org/documentation/HOWTO/netfilter-hacking-HOWTO-3.html), so a capture proves arrival, not acceptance. [Wireshark](/blog/wireshark-packet-analysis) has a WireGuard dissector under the display filter [\`wg\`](https://wiki.wireshark.org/WireGuard), and the [Wireshark filter reference](/tools/wireshark-filters) and [packet capture troubleshooting](/blog/troubleshooting-packet-captures) cover the rest.
+
+## Is the server's UDP port open and forwarded, or is it behind CGNAT?
+
+Confirm the server listens where the client expects with \`wg show wg0 listen-port\`, a subcommand listed in [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8). That man page also says an unset ListenPort is chosen randomly, so a server without one can come back on a different port after a restart. Then open the port for UDP, not TCP:
+
+\`\`\`bash
+sudo ufw allow 51820/udp
+sudo firewall-cmd --permanent --add-port=51820/udp && sudo firewall-cmd --reload
+\`\`\`
+
+[ufw](https://manpages.ubuntu.com/manpages/noble/man8/ufw.8.html) takes the protocol as a "/protocol" suffix on the port, and [firewalld](https://firewalld.org/documentation/man-pages/firewall-cmd.html) takes \`--add-port=portid[-portid]/protocol\`. Cloud security groups and the router's port forward are separate layers. A forward must be UDP, must point at the server's LAN address and must target the ListenPort. The GL.iNet [thread](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814) names bad port forwards and ISPs that block UDP among the causes, including one modem that blocked incoming UDP despite a forward.
+
+Port checkers mislead here. Nmap says that when a UDP probe gets no response it ["cannot determine whether the port is open or filtered"](https://nmap.org/book/scan-methods-udp-scan.html), and WireGuard is built to be ["invisible to illegitimate peers and network scanners"](https://www.wireguard.com/papers/wireguard.pdf). A scan can never confirm the port, so use the tcpdump capture above.
+
+### Does the router have a public address?
+
+Compare the WAN address on the router's status page with the address a what-is-my-IP service reports from outside. A WAN address in [RFC 1918](https://www.rfc-editor.org/rfc/rfc1918) space (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) means another NAT sits upstream. An address in 100.64.0.0/10 is the block [RFC 6598](https://www.rfc-editor.org/rfc/rfc6598) reserved as Shared Address Space "to accommodate the needs of Carrier-Grade NAT (CGN) devices." In both cases a forward on your own router cannot be reached from the Internet. The fixes are a public address from the ISP, IPv6 on both ends (the endpoint syntax is \`[2607:5300:60:6b0::c05f:543]:2468\`, from [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8)), or reversing the roles: put the server on a host with a public address and let the home network connect out. The whitepaper notes that the [initiator and responder can transparently switch roles](https://www.wireguard.com/papers/wireguard.pdf). The [WireGuard and IPsec comparison](/blog/wireguard-vs-ipsec-tunnels) has an example peer block for a branch site.
+
+### Does the reply leave by the interface the request arrived on?
+
+On a multi-WAN firewall it may not. An OPNsense user with two WANs [reported](https://forum.opnsense.org/index.php?topic=30540.0) that "the response is going via the other WAN (not the one the request came from)," and the thread recorded no fix for that setup. The kernel remembers the local source address for a peer and, on each retry, [clears it "in case this is the cause of trouble"](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c), so the next attempt starts from a fresh route lookup. [Why replies take the wrong path](/blog/nothing-translates-the-reply) covers the NAT side and [policy-based routing on Linux](/blog/policy-based-routing-linux) covers pinning replies to the right uplink.
+
+## Do the keys, Endpoint, ListenPort and clock match on both sides?
+
+When packets arrive and nothing answers, the server rejected them silently. With debug logging on, each rejection reason gets its own line, and the whitepaper and kernel explain the difference:
+
+| Mistake | Server debug line | Why |
+|---|---|---|
+| Client holds the wrong server public key | \`Invalid MAC of handshake, dropping packet from 198.51.100.7:40122\` | mac1 is keyed from the receiver's public key, per [section 5.4.4](https://www.wireguard.com/papers/wireguard.pdf) and [cookie.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/cookie.c) |
+| Server has no peer with the client's key | \`Invalid handshake initiation from 198.51.100.7:40122\` | The MAC passes, then the [peer lookup](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/noise.c) of the decrypted static key fails |
+| Client timestamp not newer than the last one | Same \`Invalid handshake initiation\` line | The replay check is in the same function |
+| Wrong port or endpoint | None | The packet never arrives |
+
+Each line starts with \`wireguard: wg0:\`, where the module name comes from the [module's Makefile](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/Makefile) and the interface name from the device.
+
+### Are the public keys paired correctly?
+
+Each side needs the other side's public key in its [PublicKey field](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8). A private key pasted where a public key belongs matches no peer and produces one of the first two rows above. Derive the public key with \`wg pubkey < privatekey\` and compare it with the "public key" line in \`wg show\` on the same host.
+
+### Do the preshared keys agree?
+
+A PresharedKey enters the handshake in the response message, not the initiation ([protocol page](https://www.wireguard.com/protocol/), [noise.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/noise.c)). A server whose peer has a PSK that the client lacks, or sets differently, accepts the initiation and logs \`Receiving handshake initiation\` and \`Sending handshake response\` as if all were well. The client cannot authenticate the reply and logs \`Invalid handshake response from 203.0.113.10:51820\` ([receive.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/receive.c)). The server's \`wg show\` lists an endpoint for the peer but no latest handshake.
+
+### Does the Endpoint match, and does it stay current?
+
+The client's Endpoint port must equal the server's ListenPort, or the external port mapped to it. A GL.iNet owner [reported](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814) that a tunnel failing about every 24 hours came back immediately after changing the listen port, and the thread confirmed no root cause.
+
+A hostname Endpoint is resolved when the configuration is applied. [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) documents \`WG_ENDPOINT_RESOLUTION_RETRIES\`, default 15 retries with growing delays, for failed lookups. A later DNS change reaches the kernel only when something runs \`wg set\` again, which is why wireguard-tools ships [reresolve-dns](https://git.zx2c4.com/wireguard-tools/tree/contrib/reresolve-dns/README). Run from cron "every thirty seconds or so," it re-applies the endpoint of any peer whose [last handshake is older than 135 seconds](https://git.zx2c4.com/wireguard-tools/tree/contrib/reresolve-dns/reresolve-dns.sh).
+
+### Can a wrong clock stop the handshake?
+
+Yes. The first message carries an encrypted 12-byte TAI64N timestamp, and the responder "keeps track of the greatest timestamp received per peer and discards packets containing timestamps less than or equal to it" ([whitepaper](https://www.wireguard.com/papers/wireguard.pdf), section 5.1). The kernel builds the value from the [wall clock and rejects any initiation](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/noise.c) whose timestamp does not exceed the stored one. A client that moves backward past its last accepted time is ignored until its clock catches up, and a server restart clears the stored value. A FreeBSD user [reported](https://forums.freebsd.org/threads/wireguard-connection-not-established-due-to-clock-out-of-sync.84824/post-563707) a Raspberry Pi 3 client whose handshake to a pfSense server failed after boot with the system clock about an hour off, and succeeded after about an hour as ntpd closed the gap. The debug line is the same as for an unknown key, so rule out keys first, then compare \`date -u\` on both hosts. [Clock skew breaks other protocols](/blog/the-clock-is-the-last-thing-anybody-checks) with equally unhelpful messages.
+
+## Why can a handshake complete and still carry no traffic?
+
+That is a different failure with a different symptom: the client shows a recent "latest handshake," and no "did not complete" line appears. A finished handshake proves the port, the keys and the clock are right. What remains is AllowedIPs, routing, forwarding and MTU.
+
+[AllowedIPs](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) works in both directions: it lists the addresses "from which incoming traffic for this peer is allowed and to which outgoing traffic for this peer is directed." A packet from a source outside the list is dropped and, with debug logging on, [logged](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/receive.c) as \`Packet has unallowed src IP (10.99.0.9) from peer 1 (...)\`. Peer numbers come from a [module-wide counter](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/peer.c), not from the key. [wg-quick](https://git.zx2c4.com/wireguard-tools/about/src/man/wg-quick.8) "infers all routes from the list of peers' allowed IPs," so a missing prefix is also a missing route. \`ip route get 10.99.0.2\` prints the route [exactly as the kernel sees it](https://man7.org/linux/man-pages/man8/ip-route.8.html), including the interface.
+
+A server that forwards for a LAN needs forwarding on, and [ip_forward](https://docs.kernel.org/networking/ip-sysctl.html) defaults to 0, disabled. wg-quick's PostUp and PostDown keys run script snippets that its [man page](https://git.zx2c4.com/wireguard-tools/about/src/man/wg-quick.8) says are "most commonly used to configure custom DNS options or firewall rules."
+
+MTU is not a cause of a failed handshake. An initiation plus 28 bytes of IPv4 and UDP headers is 176 bytes. MTU problems show up only after the handshake, as small packets working and large transfers stalling, which the [MTU and jumbo frames](/blog/mtu-and-jumbo-frames) article describes. wg-quick sets the MTU [automatically from the endpoint or default route](https://git.zx2c4.com/wireguard-tools/about/src/man/wg-quick.8) unless the config names one, and the [MTU and MSS calculator](/tools/mtu-mss-calculator) does the arithmetic for the underlay.
+
+## When does PersistentKeepalive matter, and which side needs it?
+
+It matters for a peer behind NAT or a stateful firewall that must receive packets while it is not sending any. The quickstart says that such a peer must keep the NAT mapping valid by sending keepalives, that [25 seconds is "a sensible interval that works with a wide variety of firewalls,"](https://www.wireguard.com/quickstart/) and that the default is 0, off. [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) accepts 1 to 65535 seconds. A keepalive is an authenticated empty packet, 32 bytes by [messages.h](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h).
+
+The number 25 sits between published limits:
+
+| Source | Figure |
+|---|---|
+| [RFC 4787](https://www.rfc-editor.org/rfc/rfc4787), REQ-5 | NAT UDP mapping timer "MUST NOT expire in less than two minutes," except for well-known ports, with five minutes recommended |
+| [Linux conntrack](https://docs.kernel.org/networking/nf_conntrack-sysctl.html) | \`nf_conntrack_udp_timeout\` 30 s, \`nf_conntrack_udp_timeout_stream\` 120 s |
+| [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085) | Keepalives "SHOULD NOT" be sent more often than every 15 s, and "a significant fraction" of deployed middleboxes use shorter timeouts than RFC 4787's two minutes |
+
+Twenty-five seconds stays under a 30-second conntrack timer without breaching RFC 8085's floor. The side that needs it is the one behind NAT that the other side must reach first. A laptop that always initiates does not need it, because the whitepaper says roaming means [no requirement for NAT to keep sessions open for long](https://www.wireguard.com/papers/wireguard.pdf). A server with a public address does not need it for its own sake. A site that must accept connections from a public server, such as a home network behind NAT, does. One reply in a MikroTik thread said the setting [belongs on the client device, not on the router](https://forum.mikrotik.com/t/help-with-wireguard-setup-behind-nat/263748) acting as the server, and the thread recorded no confirmed fix.
+
+PersistentKeepalive does not fix a first handshake that cannot get through. It sends traffic, and the failed handshake shows up immediately as a "retrying" line instead of waiting for the first user packet.
+
+## How do you turn on WireGuard's debug log, and what does each line mean?
+
+On Linux, with the kernel module, enable dynamic debug for it, as the [quickstart](https://www.wireguard.com/quickstart/) and [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) both describe:
+
+\`\`\`bash
+sudo modprobe wireguard
+echo module wireguard +p | sudo tee /sys/kernel/debug/dynamic_debug/control
+sudo dmesg --follow | grep wireguard
+echo module wireguard -p | sudo tee /sys/kernel/debug/dynamic_debug/control
+\`\`\`
+
+The [dynamic debug guide](https://docs.kernel.org/admin-guide/dynamic-debug-howto.html) says \`/proc/dynamic_debug/control\` exists when the kernel supports it, and that you may need to adjust the kernel loglevel or use ignore_loglevel to see output. The \`-p\` flag clears it again. [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) says that on OpenBSD and FreeBSD debugging output is turned on per interface with \`ifconfig wg0 debug\`, and that on userspace implementations it is customary to set the \`LOG_LEVEL\` environment variable to \`verbose\`.
+
+Lines in the packet path go through [net_dbg_ratelimited](https://github.com/torvalds/linux/blob/master/include/linux/net.h), which checks the kernel's rate limiter, so a burst of failures can be thinned out. The timer lines do not use it. The lines below come from [send.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/send.c), [receive.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/receive.c), [socket.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/socket.c), [noise.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/noise.c) and [timers.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c):
+
+| Line, after the \`wireguard: wg0:\` prefix | Meaning |
+|---|---|
+| \`Sending handshake initiation to peer 1 (203.0.113.10:51820)\` | An attempt left; sends are limited to one per 5 s |
+| \`Handshake for peer 1 (...) did not complete after 5 seconds, retrying (try 2)\` | No valid response yet |
+| \`Handshake for peer 1 (...) did not complete after 20 attempts, giving up\` | Retries exhausted; staged packets are purged |
+| \`No route to 203.0.113.10:51820, error ...\` | Local routing failed; nothing was sent |
+| \`Receiving handshake initiation from peer 1 (...)\` | Server accepted a valid initiation |
+| \`Sending handshake response to peer 1 (...)\` | Server replied |
+| \`Receiving handshake response from peer 1 (...)\` | Client got it; the handshake is done |
+| \`Invalid handshake response from 203.0.113.10:51820\` | A reply arrived but did not authenticate, for example because the preshared keys differ |
+| \`Keypair 2 created for peer 1\` | Session keys exist |
+| \`Receiving cookie response from ...\` | The responder is [under load](https://www.wireguard.com/papers/wireguard.pdf) (section 5.3), not facing a key mismatch |
+| \`Retrying handshake with peer 1 (...) because we stopped hearing back after 15 seconds\` | A session that had sent data went silent: Keepalive-Timeout plus Rekey-Timeout |
+| \`Zeroing out all keys for peer 1 (...), since we haven't received a new one in 540 seconds\` | Reject-After-Time times three expired |
+
+The last two rows match the [GL.iNet thread](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814), whose server log showed the 15-second retry line, then the retry lines, then the same 540-second line.
+
+A working order, cheapest check first:
+
+1. Read the transfer counters on the client and the endpoint line on the server.
+2. Capture UDP 51820 on the server while the client retries.
+3. If nothing arrives, check the forward, the firewall and the WAN address for 100.64.0.0/10.
+4. If packets arrive, enable debug logging on both hosts and match the lines to the tables above.
+5. Compare \`date -u\` on both hosts, then Endpoint and ListenPort, then add PersistentKeepalive = 25 on the side behind NAT.
+
+## Sources
+
+- [WireGuard: Next Generation Kernel Network Tunnel (whitepaper)](https://www.wireguard.com/papers/wireguard.pdf)
+- [WireGuard: Protocol and Cryptography](https://www.wireguard.com/protocol/)
+- [WireGuard: Quickstart](https://www.wireguard.com/quickstart/)
+- [WireGuard: wg(8) manual page](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8)
+- [WireGuard: wg-quick(8) manual page](https://git.zx2c4.com/wireguard-tools/about/src/man/wg-quick.8)
+- [WireGuard: wireguard-tools show.c](https://git.zx2c4.com/wireguard-tools/tree/src/show.c)
+- [WireGuard: reresolve-dns README](https://git.zx2c4.com/wireguard-tools/tree/contrib/reresolve-dns/README)
+- [WireGuard: reresolve-dns.sh](https://git.zx2c4.com/wireguard-tools/tree/contrib/reresolve-dns/reresolve-dns.sh)
+- [WireGuard: wireguard-go device/timers.go](https://git.zx2c4.com/wireguard-go/tree/device/timers.go)
+- [Linux kernel: wireguard timers.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/timers.c)
+- [Linux kernel: wireguard messages.h](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/messages.h)
+- [Linux kernel: wireguard send.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/send.c)
+- [Linux kernel: wireguard receive.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/receive.c)
+- [Linux kernel: wireguard socket.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/socket.c)
+- [Linux kernel: wireguard noise.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/noise.c)
+- [Linux kernel: wireguard cookie.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/cookie.c)
+- [Linux kernel: wireguard device.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/device.c)
+- [Linux kernel: wireguard peer.c](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/peer.c)
+- [Linux kernel: wireguard Makefile](https://github.com/torvalds/linux/blob/master/drivers/net/wireguard/Makefile)
+- [Linux kernel: include/linux/net.h](https://github.com/torvalds/linux/blob/master/include/linux/net.h)
+- [Linux kernel: Dynamic debug how-to](https://docs.kernel.org/admin-guide/dynamic-debug-howto.html)
+- [Linux kernel: IP sysctl](https://docs.kernel.org/networking/ip-sysctl.html)
+- [Linux kernel: Netfilter conntrack sysctl](https://docs.kernel.org/networking/nf_conntrack-sysctl.html)
+- [Linux man-pages: packet(7)](https://man7.org/linux/man-pages/man7/packet.7.html)
+- [Linux man-pages: ip-route(8)](https://man7.org/linux/man-pages/man8/ip-route.8.html)
+- [Netfilter: Hacking HOWTO, Netfilter Architecture](https://www.netfilter.org/documentation/HOWTO/netfilter-hacking-HOWTO-3.html)
+- [tcpdump: manual page](https://www.tcpdump.org/manpages/tcpdump.1.html)
+- [Wireshark: WireGuard dissector](https://wiki.wireshark.org/WireGuard)
+- [Nmap: UDP scan](https://nmap.org/book/scan-methods-udp-scan.html)
+- [Ubuntu manpages: ufw(8)](https://manpages.ubuntu.com/manpages/noble/man8/ufw.8.html)
+- [firewalld: firewall-cmd manual](https://firewalld.org/documentation/man-pages/firewall-cmd.html)
+- [IETF: RFC 1918, Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918)
+- [IETF: RFC 6598, IANA-Reserved IPv4 Prefix for Shared Address Space](https://www.rfc-editor.org/rfc/rfc6598)
+- [IETF: RFC 4787, NAT Behavioral Requirements for Unicast UDP](https://www.rfc-editor.org/rfc/rfc4787)
+- [IETF: RFC 8085, UDP Usage Guidelines](https://www.rfc-editor.org/rfc/rfc8085)
+- [WireGuard mailing list: Constant stream of handshake for peer did not complete](https://lists.zx2c4.com/pipermail/wireguard/2022-September/007821.html)
+- [OPNsense forum: Handshake did not complete after 5 seconds, multi-WAN outgoing issue](https://forum.opnsense.org/index.php?topic=30540.0)
+- [MikroTik forum: Help with WireGuard setup behind NAT](https://forum.mikrotik.com/t/help-with-wireguard-setup-behind-nat/263748)
+- [GL.iNet forum: 4.x WireGuard REKEY-TIMEOUT troubleshooting](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814)
+- [FreeBSD forums: Wireguard connection not established due to clock out of sync](https://forums.freebsd.org/threads/wireguard-connection-not-established-due-to-clock-out-of-sync.84824/post-563707)
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
