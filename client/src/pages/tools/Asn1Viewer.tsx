@@ -300,6 +300,9 @@ export function Asn1Viewer() {
   const inputError = fileError ?? (input && !input.ok ? input.error : block?.error ?? null);
   const topCount = parsed?.roots.length ?? 0;
 
+  // Hitting the element or depth cap means part of the input was never read.
+  const partial = parsed !== null && (parsed.nodeCapHit || parsed.depthCapHit);
+
   const summary = parsed
     ? `${formatCount(parsed.nodes.length)} ${parsed.nodes.length === 1 ? "element" : "elements"} in ${formatCount(bytes?.length ?? 0)} bytes${
         topCount > 1 ? `, ${topCount} top level elements` : ""
@@ -310,7 +313,9 @@ export function Asn1Viewer() {
             ? `${parsed.invalidIssues} encoding ${parsed.invalidIssues === 1 ? "problem" : "problems"}.`
             : parsed.derIssues
               ? "Valid BER, not DER."
-              : "No DER violations found."
+              : partial
+                ? "No DER violations found in the part that was read."
+                : "No DER violations found."
       }`
     : inputError
       ? "Nothing parsed."
@@ -338,11 +343,17 @@ export function Asn1Viewer() {
             title: "Valid BER, not DER",
             text: `${parsed.derIssues} ${parsed.derIssues === 1 ? "place uses" : "places use"} an encoding BER allows and DER forbids. Anything that hashes or signs these bytes (a certificate, a CMS signature) needs the DER form.`,
           }
-        : {
-            tone: "ok" as const,
-            title: "No DER violations found",
-            text: "Every length is definite and minimal, and every value checked is in its canonical form. Rules that need the ASN.1 module, such as omitting DEFAULT values, are not checked.",
-          };
+        : partial
+          ? {
+              tone: "warn" as const,
+              title: "Checked in part",
+              text: "No violations turned up in the elements that were read, but some of the input was not read (see below), so this is not a clean result.",
+            }
+          : {
+              tone: "ok" as const,
+              title: "No DER violations found",
+              text: "Every length is definite and minimal, and every value checked is in its canonical form. Rules that need the ASN.1 module, such as omitting DEFAULT values, are not checked.",
+            };
 
   return (
     <ToolShell slug="asn1-viewer">

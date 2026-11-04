@@ -1276,7 +1276,7 @@ function keyFindings(line: KeyLine, key: DecodedKey, nowMs: number): void {
       } else if (bits < RECOMMENDED_RSA_BITS) {
         f.push({
           tone: "danger",
-          text: `A ${bits} bit RSA key is below the ${RECOMMENDED_RSA_BITS} bit minimum NIST has required since 2014 (SP 800-131A). Replace it with Ed25519 or RSA of at least 3072 bits.`,
+          text: `A ${bits} bit RSA key is below the ${RECOMMENDED_RSA_BITS} bit minimum in NIST SP 800-131A. Replace it with Ed25519 or RSA of at least 3072 bits.`,
         });
       } else {
         f.push({ tone: "ok", text: `RSA with a ${bits} bit modulus meets the ${RECOMMENDED_RSA_BITS} bit minimum.` });
@@ -1498,8 +1498,9 @@ export function inspectKeys(text: string, nowMs: number): InspectResult {
   // line whose key matches and whose options accept the connection.
   const seen = new Map<string, number>();
   for (const l of lines) {
-    // A line sshd cannot use never takes part in a match, so it is not a duplicate of anything.
-    if (!l.sha256 || l.error !== null || l.source !== "authorized_keys") continue;
+    // sshd skips a line it cannot read and a line with an invalid option, so
+    // neither takes part in a match or counts as a duplicate of anything.
+    if (!l.sha256 || l.error !== null || l.options.some((o) => o.error !== null) || l.source !== "authorized_keys") continue;
     const first = seen.get(l.sha256);
     if (first !== undefined) {
       l.findings.push({
