@@ -259,9 +259,14 @@ for (const bad of ["0", "65536", "70000", "99999999999999999999", "-5", "80.5", 
   assert.strictEqual(r.parts.join(" "), "iperf3 -s", `port ${bad} is left out`);
   assert.strictEqual(r.ignored.length, 1, `port ${bad} is reported`);
 }
-// The same limits guard duration (1 to 86400), streams (1 to 128) and MSS (1 to 32767).
+// The same limits guard duration (0 to 86400), streams (1 to 128) and MSS (1 to 32767).
 assert.ok(buildIperf3Command(opts({ host: "h", duration: "86400" })).includes("-t 86400"));
 assert.ok(!buildIperf3Command(opts({ host: "h", duration: "86401" })).includes("-t"));
+// -t 0 is valid in iperf3 (the client creates no duration timer): it runs until stopped.
+assert.strictEqual(buildIperf3Command(opts({ host: "h", duration: "0" })), "iperf3 -c h -t 0");
+assert.ok(buildIperf3Parts(opts({ host: "h", duration: "0" })).flags.some((f) => f.flag === "-t 0" && /until you stop/i.test(f.explanation)));
+assert.deepStrictEqual(buildIperf3Parts(opts({ host: "h", duration: "0" })).ignored, []);
+assert.ok(!buildIperf3Command(opts({ host: "h", duration: "-1" })).includes("-t"));
 assert.ok(buildIperf3Command(opts({ host: "h", parallel: "128" })).includes("-P 128"));
 assert.ok(!buildIperf3Command(opts({ host: "h", parallel: "129" })).includes("-P"));
 assert.ok(buildIperf3Command(opts({ host: "h", mss: "32767" })).includes("-M 32767"));

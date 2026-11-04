@@ -74,7 +74,7 @@ export const DEFAULT_IPERF3_OPTIONS: Iperf3Options = {
  */
 const LIMITS = {
   port: { min: 1, max: 65535 },
-  duration: { min: 1, max: 86400 },
+  duration: { min: 0, max: 86400 },
   parallel: { min: 1, max: 128 },
   mss: { min: 1, max: 32767 },
   interval: { min: 0.1, max: 60 },
@@ -183,7 +183,11 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
     }
 
     const dur = whole(o.duration, LIMITS.duration, "Duration");
-    if (dur && dur !== "10") add(`-t ${dur}`, "Run for this many seconds (the default is 10).");
+    if (dur === "0") {
+      add("-t 0", "No time limit: the test keeps running until you stop it, for example with Ctrl-C.");
+    } else if (dur && dur !== "10") {
+      add(`-t ${dur}`, "Run for this many seconds (the default is 10).");
+    }
 
     const streams = whole(o.parallel, LIMITS.parallel, "Parallel streams");
     if (streams && streams !== "1") {

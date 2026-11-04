@@ -101,6 +101,51 @@ function cleanToken(raw: string, pattern: RegExp): string | null {
   return pattern.test(value) ? value : null;
 }
 
+/**
+ * Number rules from the nmap source (nmap.cc and scan_lists.cc), so a typed
+ * value is only kept when nmap would run with it:
+ * --top-ports takes a whole number from 1 to 65535, --min-rate and --max-rate
+ * take a positive real number (0.1 is a documented rate), and -p takes
+ * comma separated ports 0 to 65535, ranges that run forward, an open end on
+ * either side of a hyphen, and an optional T:, U: or S: prefix.
+ */
+function topPortsValue(raw: string): string | null {
+  const value = raw.trim();
+  if (!/^[0-9]{1,5}$/.test(value)) return null;
+  const n = Number(value);
+  return n >= 1 && n <= 65535 ? String(n) : null;
+}
+
+function rateValue(raw: string): string | null {
+  const value = raw.trim();
+  if (!/^[0-9]{1,12}(?:\.[0-9]{1,12})?$/.test(value)) return null;
+  return Number(value) > 0 ? value : null;
+}
+
+function portSpecValue(raw: string): string | null {
+  const value = raw.trim();
+  if (value === "") return null;
+  const items: string[] = [];
+  for (const segment of value.split(",")) {
+    let rest = segment.trim();
+    let prefix = "";
+    const tagged = /^([TUS]):\s*(.*)$/.exec(rest);
+    if (tagged) {
+      prefix = `${tagged[1]}:`;
+      rest = tagged[2].trim();
+    }
+    if (rest === "") return null;
+    const range = /^([0-9]{1,5})?(?:-([0-9]{1,5})?)?$/.exec(rest);
+    if (!range) return null;
+    const lo = range[1] === undefined ? undefined : Number(range[1]);
+    const hi = range[2] === undefined ? undefined : Number(range[2]);
+    if ((lo !== undefined && lo > 65535) || (hi !== undefined && hi > 65535)) return null;
+    if (lo !== undefined && hi !== undefined && hi < lo) return null;
+    items.push(prefix + rest);
+  }
+  return items.join(",");
+}
+
 function cleanTarget(raw: string): string {
   const value = raw.trim();
   if (value === "") return "TARGET";
@@ -134,12 +179,17 @@ export interface NmapFlag {
   explanation: string;
 }
 
-export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFlag[] } {
+export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFlag[]; ignored: string[] } {
   const parts: string[] = ["nmap"];
   const flags: NmapFlag[] = [];
   const add = (flag: string, explanation: string) => {
     parts.push(flag);
     flags.push({ flag, explanation });
+  };
+  const ignored: string[] = [];
+  /** A typed value nmap would refuse: say which field was left out and what it accepts. */
+  const skip = (label: string, raw: string, rule: string) => {
+    ignored.push(`${label} "${raw.trim().slice(0, 24)}" was left out. ${rule}`);
   };
 
   add(`-${o.scanType}`, SCAN_LABEL[o.scanType]);
@@ -163,11 +213,15 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
     } else if (o.portMode === "all") {
       add("-p-", "Scan all 65535 TCP ports.");
     } else if (o.portMode === "top") {
-      const n = cleanToken(o.topPorts, /^[0-9]+$/);
+      const n = topPortsValue(o.topPorts);
       if (n) add(`--top-ports ${n}`, "Scan the most common ports by frequency.");
+      else if (o.topPorts.trim() !== "") skip("Top ports", o.topPorts, "nmap accepts a whole number from 1 to 65535.");
     } else if (o.portMode === "list") {
-      const list = cleanToken(o.portList, /^[0-9,\s-]+(?:[TUS]:[0-9,\s-]+)*$/) ?? cleanToken(o.portList, /^[0-9,\s-]+$/);
-      if (list) add(`-p ${list.replace(/\s+/g, "")}`, "Scan exactly these ports or ranges.");
+      const list = portSpecValue(o.portList);
+      if (list) add(`-p ${list}`, "Scan exactly these ports or ranges.");
+      else if (o.portList.trim() !== "") {
+        skip("Port list", o.portList, "nmap accepts ports 0 to 65535, ranges that run upward such as 1-1024, and a T:, U: or S: prefix, separated by commas.");
+      }
     }
   }
 
@@ -179,6 +233,8 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
         `--version-intensity ${intensity}`,
         "How hard version detection tries, from 0 (light) to 9 (every probe).",
       );
+    } else if (o.versionIntensity.trim() !== "") {
+      skip("Version intensity", o.versionIntensity, "nmap accepts a single digit from 0 to 9.");
     }
   }
 
@@ -191,12 +247,16 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
   const timing = cleanToken(o.timing, /^[0-5]$/);
   if (timing && timing !== "3") {
     add(`-T${timing}`, "Timing template: higher is faster and louder, lower is slower and stealthier.");
+  } else if (!timing && o.timing.trim() !== "") {
+    skip("Timing", o.timing, "nmap accepts a single digit from 0 to 5.");
   }
 
-  const minRate = cleanToken(o.minRate, /^[0-9]+$/);
+  const minRate = rateValue(o.minRate);
   if (minRate) add(`--min-rate ${minRate}`, "Send at least this many packets per second.");
-  const maxRate = cleanToken(o.maxRate, /^[0-9]+$/);
+  else if (o.minRate.trim() !== "") skip("Minimum rate", o.minRate, "nmap accepts a positive number, and a fraction such as 0.1 is fine.");
+  const maxRate = rateValue(o.maxRate);
   if (maxRate) add(`--max-rate ${maxRate}`, "Send no more than this many packets per second.");
+  else if (o.maxRate.trim() !== "") skip("Maximum rate", o.maxRate, "nmap accepts a positive number, and a fraction such as 0.1 is fine.");
 
   if (o.outputMode !== "none") {
     const name = cleanToken(o.outputFile, /^[A-Za-z0-9._-]+$/) ?? "scan";
@@ -212,7 +272,7 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
   }
 
   parts.push(shellTarget(o.target));
-  return { parts, flags };
+  return { parts, flags, ignored };
 }
 
 export function buildNmapCommand(o: NmapOptions): string {
@@ -258,11 +318,11 @@ export function describeNmapCommand(o: NmapOptions): string[] {
     if (o.portMode === "fast") out.push("Check the 100 most common ports.");
     else if (o.portMode === "all") out.push("Check all 65535 TCP ports, which takes much longer.");
     else if (o.portMode === "top") {
-      const n = cleanToken(o.topPorts, /^[0-9]+$/) ?? "100";
-      out.push(`Check the ${n} most common ports.`);
+      const n = topPortsValue(o.topPorts);
+      out.push(n ? `Check the ${n} most common ports.` : "Check the default 1000 most common ports.");
     } else if (o.portMode === "list") {
-      const list = o.portList.trim();
-      out.push(list === "" ? "Check the default 1000 ports." : `Check ports ${list.replace(/\s+/g, "")}.`);
+      const list = portSpecValue(o.portList);
+      out.push(list ? `Check ports ${list}.` : "Check the default 1000 ports.");
     } else {
       out.push("Check the default 1000 most common ports.");
     }

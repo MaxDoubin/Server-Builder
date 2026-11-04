@@ -183,7 +183,7 @@ export function NmapCommandBuilder() {
         : [...prev.pingTypes, probe],
     }));
 
-  const { parts, flags } = useMemo(() => buildNmapParts(o), [o]);
+  const { parts, flags, ignored } = useMemo(() => buildNmapParts(o), [o]);
   const command = parts.join(" ");
   const description = useMemo(() => describeNmapCommand(o), [o]);
   const rootReasons = useMemo(() => nmapRootReasons(o), [o]);
@@ -391,6 +391,15 @@ export function NmapCommandBuilder() {
         </ToolPanel>
 
         <ToolPanel title="Flags in this command">
+          {ignored.length > 0 && (
+            <ul className="mb-4 list-disc space-y-1 pl-5" role="status" data-testid="list-ignored">
+              {ignored.map((message) => (
+                <li key={message} className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]">
+                  {message}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-left">
               <thead>

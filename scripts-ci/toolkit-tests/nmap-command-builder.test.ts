@@ -2,6 +2,7 @@ import assert from "node:assert";
 import {
   DEFAULT_NMAP_OPTIONS,
   buildNmapCommand,
+  buildNmapParts,
   describeNmapCommand,
   nmapRootReasons,
   type NmapOptions,
@@ -204,5 +205,60 @@ assert.ok(buildNmapCommand(opts({ target: "192.168.0.*", scanType: "sS", portMod
 assert.ok(buildNmapCommand(opts({ target: "10.0.0.* host.example", scanType: "sS", portMode: "default", timing: "3" })).endsWith(" '10.0.0.*' host.example"));
 // The plain-language description shows the target without quotes.
 assert.ok(describeNmapCommand(opts({ target: "192.168.0.*", scanType: "sS", portMode: "default", timing: "3" }))[0].includes("192.168.0.*"));
+
+// Number rules come from the nmap source (nmap.cc, scan_lists.cc).
+const base = { target: "h", scanType: "sS" as const, timing: "3" };
+// --min-rate and --max-rate take a positive real number; 0.1 is a documented rate.
+assert.ok(buildNmapCommand(opts({ ...base, maxRate: "0.1" })).includes("--max-rate 0.1"));
+assert.ok(buildNmapCommand(opts({ ...base, minRate: "2.5", maxRate: "1000" })).includes("--min-rate 2.5 --max-rate 1000"));
+for (const bad of ["0", "0.0", "-1", "1e3", "abc", ".5", "5.", "1,5", "99999999999999999999"]) {
+  const r = buildNmapParts(opts({ ...base, maxRate: bad }));
+  assert.ok(!r.parts.join(" ").includes("--max-rate"), `max-rate ${bad} left out`);
+  assert.strictEqual(r.ignored.length, 1, `max-rate ${bad} reported`);
+}
+// --top-ports is 1 to 65535.
+assert.ok(buildNmapCommand(opts({ ...base, portMode: "top", topPorts: "1" })).includes("--top-ports 1"));
+assert.ok(buildNmapCommand(opts({ ...base, portMode: "top", topPorts: "65535" })).includes("--top-ports 65535"));
+for (const bad of ["0", "65536", "-1", "10.5", "abc", "1e2"]) {
+  const r = buildNmapParts(opts({ ...base, portMode: "top", topPorts: bad }));
+  assert.ok(!r.parts.join(" ").includes("--top-ports"), `top-ports ${bad} left out`);
+  assert.strictEqual(r.ignored.length, 1, `top-ports ${bad} reported`);
+  // The description must match the command: no --top-ports means nmap's default 1000.
+  assert.ok(describeNmapCommand(opts({ ...base, portMode: "top", topPorts: bad })).some((x) => x.includes("default 1000")), `description for top-ports ${bad}`);
+}
+// -p follows getpts: ports 0 to 65535, forward ranges, open ends, T:/U:/S: prefixes.
+for (const [typed, emitted] of [
+  ["22", "22"],
+  ["22,80,443", "22,80,443"],
+  [" 22 , 80 ", "22,80"],
+  ["1-1024", "1-1024"],
+  ["-1024", "-1024"],
+  ["1024-", "1024-"],
+  ["-", "-"],
+  ["0", "0"],
+  ["65535", "65535"],
+  ["0-65535", "0-65535"],
+  ["T:80,443,U:53", "T:80,443,U:53"],
+  ["U:53", "U:53"],
+  ["S:132", "S:132"],
+  ["T: 22-25", "T:22-25"],
+] as const) {
+  const cmd = buildNmapCommand(opts({ ...base, portMode: "list", portList: typed }));
+  assert.ok(cmd.includes(` -p ${emitted} `) || cmd.endsWith(` -p ${emitted}`) || cmd.includes(`-p ${emitted} h`), `port list ${JSON.stringify(typed)} -> ${cmd}`);
+  assert.deepStrictEqual(buildNmapParts(opts({ ...base, portMode: "list", portList: typed })).ignored, [], `port list ${typed} reports nothing`);
+}
+for (const bad of ["70000", "65536", "80-70", "22 80", "22,,80", "22,", ",22", "T:", "X:80", "80--90", "1-2-3", "a", "22;ls", "-5-", "1e3", "99999-"]) {
+  const r = buildNmapParts(opts({ ...base, portMode: "list", portList: bad }));
+  assert.ok(!r.parts.includes("-p") && !r.parts.some((x) => x.startsWith("-p ")), `port list ${JSON.stringify(bad)} left out`);
+  assert.strictEqual(r.ignored.length, 1, `port list ${JSON.stringify(bad)} reported`);
+  assert.ok(describeNmapCommand(opts({ ...base, portMode: "list", portList: bad })).some((x) => x.includes("default 1000")), `description for port list ${bad}`);
+}
+// "22 80" must not be glued into 2280.
+assert.ok(!buildNmapCommand(opts({ ...base, portMode: "list", portList: "22 80" })).includes("2280"));
+// Version intensity and timing outside their digits are reported too.
+assert.strictEqual(buildNmapParts(opts({ ...base, serviceVersion: true, versionIntensity: "10" })).ignored.length, 1);
+assert.strictEqual(buildNmapParts(opts({ ...base, timing: "6" })).ignored.length, 1);
+// Valid, empty or default input reports nothing.
+assert.deepStrictEqual(buildNmapParts(opts({ ...base, portMode: "top", topPorts: "", minRate: "", maxRate: "" })).ignored, []);
 
 console.log("nmap-command-builder: verifier reference cases passed");
