@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 323 of them. Regenerate with script/generatePostIndex.ts.
+ * 324 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -41,13 +41,23 @@ export interface PostMeta {
 
 export const postIndex: PostMeta[] = [
   {
+    slug: "rescue-a-google-jamboard-without-flashing",
+    title: "Repurpose a Google Jamboard Without Flashing It: Android 7, No ADB",
+    date: "2026-11-04",
+    tags: ["hardware","homelab","troubleshooting","security"],
+    excerpt: "Google ended Jamboard support in October 2024. A plain USB keyboard unlocked the locked-down Android 7 board with no flashing, root or adb. What worked, what did not, and what to be careful of.",
+    coverImage: "/images/blog/rescue-a-google-jamboard-without-flashing.jpg",
+    wordCount: 1427,
+  },
+  {
     slug: "three-apple-afterburner-cards",
     title: "Apple Afterburner Benchmark: Three Cards in One Mac Pro",
     date: "2026-11-04",
+    updated: "2026-11-04",
     tags: ["apple","mac-pro","hardware","performance"],
     excerpt: "I measured three Afterburner cards in one Mac Pro: 27 real-time 4K streams, decode that CPU load barely touched, an FPGA I chose not to flash, and files recovered bit for bit through the decoder.",
     coverImage: "/images/blog/three-apple-afterburner-cards.jpg",
-    wordCount: 7593,
+    wordCount: 10076,
   },
   {
     slug: "dell-hba330-vs-h330",
@@ -3163,10 +3173,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 323;
+export const POST_COUNT = 324;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and twenty three";
+export const POST_COUNT_SPELLED = "three hundred and twenty four";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3175,10 +3185,10 @@ export const POST_COUNT_SPELLED = "three hundred and twenty three";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2743;
+export const CITATION_COUNT = 2751;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 181;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2905;
+export const CHECKED_URL_COUNT = 2913;

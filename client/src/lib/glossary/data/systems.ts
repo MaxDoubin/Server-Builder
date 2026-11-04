@@ -456,4 +456,13 @@ export const SYSTEMS: Term[] = [
       "The percentage is a duty cycle, not a share of the fan's top speed. Speed and duty do not move together in a straight line, and every fan has a floor below which it stalls or reports zero RPM, so a requested percentage and the speed you hear do not match one to one.",
     see: ["BMC", "IPMI"],
   },
+  {
+    term: "BGRA",
+    expansion: "blue, green, red, alpha",
+    field: "systems",
+    definition:
+      "A 32-bit pixel format that stores each pixel as four bytes in blue, green, red, alpha order. Video and graphics interfaces offer it because the bytes are easy to read directly, at the price of a conversion whenever the decoder's own output format is something else.",
+    confusion:
+      "Asking for BGRA is a request, not a free default. A decoder that produces another format natively has to convert to hand it over, and on the Afterburner cards that conversion cut one 4K stream's decode rate by 42 percent and produced a throughput ceiling and a cliff that native output did not have.",
+  },
 ];
