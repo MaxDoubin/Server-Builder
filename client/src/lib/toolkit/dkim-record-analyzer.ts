@@ -87,7 +87,8 @@ export interface Base64Decoded {
 
 /**
  * Standard base64 (RFC 4648 section 4). Whitespace is folding inside a DKIM
- * tag value and carries no data (RFC 6376 section 2.4), so it is dropped.
+ * base64 value and carries no data (RFC 6376 sections 3.5 and 3.6.1), so it
+ * is dropped.
  * Missing padding is tolerated and reported; a stray character is not.
  */
 export function decodeBase64(text: string): Result<Base64Decoded> {
@@ -159,6 +160,8 @@ export interface TxtRecord {
   strings: string[] | null;
   /** UTF-8 length of the longest single string, or of the whole text when unquoted. */
   longest: number;
+  /** True when curly quotation marks in the paste were read as straight ones. */
+  curlyQuotes: boolean;
 }
 
 /** At most this many quoted strings are read from one paste. */
@@ -169,7 +172,11 @@ export const MAX_TXT_STRINGS = 64;
  * strings are collected and joined; outside quotes a semicolon starts a
  * zone file comment, which is what opendkim-genkey writes after the record.
  */
-export function extractTxt(input: string): Result<TxtRecord> {
+export function extractTxt(raw: string): Result<TxtRecord> {
+  // A word processor or a web page turns " into curly quotes. They are never
+  // part of a record, so they are read as the straight quotes they stand for.
+  const curlyQuotes = /[\u201C\u201D]/.test(raw);
+  const input = curlyQuotes ? raw.replace(/[\u201C\u201D]/g, '"') : raw;
   if (!input.includes('"')) {
     let text = input.trim();
     const firstEq = text.indexOf("=");
@@ -180,7 +187,7 @@ export function extractTxt(input: string): Result<TxtRecord> {
     if (text.startsWith("(")) text = text.slice(1);
     if (text.endsWith(")")) text = text.slice(0, -1);
     text = text.trim();
-    return ok({ text, strings: null, longest: utf8Length(text) });
+    return ok({ text, strings: null, longest: utf8Length(text), curlyQuotes });
   }
 
   const strings: string[] = [];
@@ -230,7 +237,7 @@ export function extractTxt(input: string): Result<TxtRecord> {
   }
   const text = strings.join("");
   const longest = strings.reduce((max, s) => Math.max(max, utf8Length(s)), 0);
-  return ok({ text, strings, longest });
+  return ok({ text, strings, longest, curlyQuotes });
 }
 
 /**
@@ -1080,6 +1087,13 @@ export function analyzeKeyRecord(input: string): Outcome<KeyRecord> {
     }
   }
 
+  if (txt.value.curlyQuotes) {
+    findings.push({
+      tone: "info",
+      text: "The paste had curly quotation marks, which usually come from a word processor or a web page. They were read as straight quotes. A record published with curly quotes would not parse.",
+    });
+  }
+
   // How the record sits in DNS.
   const strings = txt.value.strings;
   if (strings) {
@@ -1206,6 +1220,8 @@ export interface SignatureInfo {
   domain: string | null;
   selector: string | null;
   dnsName: string | null;
+  /** True when dnsName is a well-formed DNS name, which is also what makes it safe to paste into a shell. */
+  dnsNameValid: boolean;
   auid: string | null;
   auidDomain: string | null;
   signedHeaders: string[];
@@ -1234,9 +1250,24 @@ function isoSeconds(seconds: number): string {
   return new Date(ms).toISOString().replace(".000Z", "Z");
 }
 
-/** Strips a leading field name and joins folded lines. */
+/**
+ * Strips a leading field name and joins folded lines. Reading stops at a blank
+ * line (the end of the header section) or at the next header field, so a paste
+ * that carries other headers along does not leak them into the last tag. A
+ * line that has lost its fold indent is still joined, because a tag list line
+ * never starts with "Name:" followed by a space.
+ */
 export function unfoldSignature(input: string): string {
-  return input.replace(/^\s*DKIM-Signature\s*:/i, "").replace(/\r\n|\r|\n/g, "");
+  const lines = input.replace(/\r\n|\r/g, "\n").split("\n");
+  let first = 0;
+  while (first < lines.length && lines[first].trim() === "") first++;
+  const kept: string[] = [];
+  for (let i = first; i < lines.length; i++) {
+    const line = lines[i];
+    if (i > first && (line.trim() === "" || /^[A-Za-z][A-Za-z0-9-]*:[ \t]/.test(line))) break;
+    kept.push(line);
+  }
+  return kept.join("").replace(/^\s*DKIM-Signature\s*:/i, "");
 }
 
 /** Analyzes a DKIM-Signature header field. `nowMs` is the clock x= is compared with. */
@@ -1352,9 +1383,11 @@ export function analyzeSignature(input: string, nowMs: number): Outcome<Signatur
     }
   }
   let dnsName: string | null = null;
+  let dnsNameValid = false;
   if (domain && selector) {
     dnsName = keyQueryName(selector, domain);
     const check = checkDnsName(dnsName, true);
+    dnsNameValid = check.ok;
     if (!check.ok) {
       findings.push({ tone: "danger", text: `The key name ${clip(dnsName, 48)} cannot exist in DNS: ${check.reason}.` });
     }
@@ -1376,7 +1409,7 @@ export function analyzeSignature(input: string, nowMs: number): Outcome<Signatur
     } else if (fromCount > 1) {
       findings.push({
         tone: "ok",
-        text: `From is listed ${fromCount} times. Naming a field more often than it appears (over-signing) means a second From added later breaks the signature (RFC 6376 section 5.4.2).`,
+        text: `From is listed ${fromCount} times. Naming a field more often than it appears (over-signing) means a second From added later breaks the signature (RFC 6376 section 5.4).`,
       });
     }
     const unsigned = RECOMMENDED_SIGNED.filter((h) => !lower.includes(h));
@@ -1530,6 +1563,7 @@ export function analyzeSignature(input: string, nowMs: number): Outcome<Signatur
       domain,
       selector,
       dnsName,
+      dnsNameValid,
       auid,
       auidDomain,
       signedHeaders,

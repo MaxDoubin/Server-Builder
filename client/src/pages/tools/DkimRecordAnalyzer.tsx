@@ -300,7 +300,10 @@ function KeyResults({ record }: { record: KeyRecord }) {
 }
 
 function SignatureResults({ sig }: { sig: SignatureInfo }) {
-  const dig = sig.dnsName ? `dig +short TXT ${sig.dnsName}` : null;
+  // Only a well-formed name goes into the command. d= and s= come from the
+  // message, so a hostile one could otherwise carry shell syntax into a command
+  // the reader is about to copy and run.
+  const dig = sig.dnsName && sig.dnsNameValid ? `dig +short TXT ${sig.dnsName}` : null;
   return (
     <>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

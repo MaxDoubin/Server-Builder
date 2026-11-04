@@ -794,7 +794,7 @@ const OPTION_SPECS: OptionSpec[] = [
   {
     canonical: "expiry-time",
     takesValue: true,
-    explanation: "The key is refused after this time. YYYYMMDD or YYYYMMDDHHMM[SS], read in the server's time zone unless it ends in Z for UTC.",
+    explanation: "The key is refused after this time. YYYYMMDD or YYYYMMDDHHMM[SS], read in the server's time zone unless it ends in Z for UTC. Servers older than OpenSSH 9.1 do not accept the Z suffix.",
   },
   {
     canonical: "from",
@@ -1001,7 +1001,8 @@ function describeOption(name: string, value: string | null, nowMs: number): Auth
       const patterns = value.split(",").map((p) => p.trim()).filter(Boolean);
       if (patterns.length === 0) opt.error = "from= needs at least one pattern.";
       else {
-        const names = patterns.filter((p) => /[a-zA-Z]/.test(p.replace(/^!/, "")) && !p.includes(":") && !/^[0-9a-fA-F.:/*?!]+$/.test(p));
+        // Addresses are digits, dots, slashes and wildcards (IPv4 and CIDR) or contain a colon (IPv6); anything else is a host name pattern.
+        const names = patterns.filter((p) => !p.includes(":") && !/^!?[0-9.*?/]+$/.test(p));
         opt.detail = `Patterns: ${patterns.join("  ")}.${
           names.length
             ? " Host name patterns only match when sshd_config has UseDNS yes; with the default (no), sshd compares addresses only."
@@ -1448,11 +1449,13 @@ export function inspectKeys(text: string, nowMs: number): InspectResult {
       break;
     }
     const raw = trimSpaceTab(rows[n]);
-    if (raw === "") {
+    // A byte order mark in front of a blank or comment line changes nothing.
+    const unmarked = raw.charCodeAt(0) === 0xfeff ? trimSpaceTab(raw.slice(1)) : raw;
+    if (unmarked === "") {
       blankLines++;
       continue;
     }
-    if (raw.startsWith("#")) {
+    if (unmarked.startsWith("#")) {
       commentLines++;
       continue;
     }
@@ -1495,7 +1498,8 @@ export function inspectKeys(text: string, nowMs: number): InspectResult {
   // line whose key matches and whose options accept the connection.
   const seen = new Map<string, number>();
   for (const l of lines) {
-    if (!l.sha256 || l.source !== "authorized_keys") continue;
+    // A line sshd cannot use never takes part in a match, so it is not a duplicate of anything.
+    if (!l.sha256 || l.error !== null || l.source !== "authorized_keys") continue;
     const first = seen.get(l.sha256);
     if (first !== undefined) {
       l.findings.push({
@@ -1515,7 +1519,63 @@ function splitKeyAndComment(rest: string): { type: string; data: string; comment
   return { type: m[1], data: m[2] ?? "", comment: (m[3] ?? "").trim() };
 }
 
+/**
+ * Characters that look like a space, or like nothing, but are not the space
+ * and tab that sshd splits fields on (sshkey_read uses strcspn(cp, " \t")).
+ * They arrive with text copied from a web page, a chat window, a word
+ * processor, or a file saved with a byte order mark.
+ */
+const LOOKS_LIKE_SPACE = /[\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/g;
+const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
+const STRAY = /[\u00A0\u1680\u2000-\u200F\u2028\u2029\u202A-\u202F\u205F\u2060\u3000\uFEFF]/;
+
+const STRAY_NAMES: Record<number, string> = {
+  0x00a0: "no-break space",
+  0x2028: "line separator",
+  0x2029: "paragraph separator",
+  0x202f: "narrow no-break space",
+  0x200b: "zero width space",
+  0x200c: "zero width non-joiner",
+  0x200d: "zero width joiner",
+  0x2060: "word joiner",
+  0x3000: "ideographic space",
+  0xfeff: "byte order mark",
+};
+
+function strayName(ch: string): string {
+  const cp = ch.codePointAt(0) ?? 0;
+  const code = `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`;
+  return STRAY_NAMES[cp] ? `${code} (${STRAY_NAMES[cp]})` : code;
+}
+
+/**
+ * Parse one line. When the line fails and holds a look-alike space or an
+ * invisible character, retry with those cleaned up. If that reads as a
+ * valid key, the character was the whole problem, and saying so is far more
+ * useful than the generic message the broken line produces.
+ */
 export function parseLine(raw: string, lineNumber: number, nowMs: number): KeyLine {
+  const line = parseLineCore(raw, lineNumber, nowMs);
+  if (line.error === null) return line;
+  const found = STRAY.exec(raw);
+  if (!found) return line;
+  const variants: [string, string][] = [
+    [raw.replace(LOOKS_LIKE_SPACE, " ").replace(INVISIBLE, ""), "replaced by a plain space"],
+    [raw.replace(LOOKS_LIKE_SPACE, "").replace(INVISIBLE, ""), "removed"],
+  ];
+  for (const [text, action] of variants) {
+    const fixed = parseLineCore(trimSpaceTab(text), lineNumber, nowMs);
+    if (fixed.error !== null || fixed.key === null) continue;
+    fixed.raw = raw;
+    fixed.keygen = null;
+    fixed.keygenMd5 = null;
+    fixed.error = `This line contains ${strayName(found[0])} at character ${found.index + 1}. It is not a plain space or tab, which are the only characters sshd splits a line on, so sshd cannot read this line and skips it. It usually comes from copying the text out of a web page, a chat window or a word processor, or from a file saved with a byte order mark. With the character ${action} the line reads as key type ${fixed.key.type}, and the details below are for that cleaned line.`;
+    return fixed;
+  }
+  return line;
+}
+
+function parseLineCore(raw: string, lineNumber: number, nowMs: number): KeyLine {
   const line = newLine(lineNumber, raw, "authorized_keys");
   let rest = raw;
 

@@ -1098,9 +1098,9 @@ export function decodeUtcTime(text: string): { ok: true; iso: string; issues: As
 
 /** GeneralizedTime, X.680 section 46, with the DER rules of X.690 11.7. */
 export function decodeGeneralizedTime(text: string): { ok: true; iso: string; issues: Asn1Issue[] } | { ok: false; error: string } {
-  const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(?:([.,])(\d+))?(Z|[+-]\d{4})?$/.exec(text);
+  const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(?:([.,])(\d+))?(Z|[+-]\d{2}(?:\d{2})?)?$/.exec(text);
   if (!m || (m[6] && !m[5])) {
-    return { ok: false, error: `"${text}" is not a GeneralizedTime. Expected YYYYMMDDHH[MM[SS[.fff]]] and optionally Z or an offset.` };
+    return { ok: false, error: `"${text}" is not a GeneralizedTime. Expected YYYYMMDDHH[MM[SS[.fff]]] and optionally Z or an offset such as +01 or +0100.` };
   }
   const year = Number(m[1]);
   const [mo, d, h] = [m[2], m[3], m[4]].map(Number);
@@ -1117,7 +1117,8 @@ export function decodeGeneralizedTime(text: string): { ok: true; iso: string; is
   // is a fraction of that unit rather than of a second.
   const digits = m[8] && m[8].length > 30 ? `${m[8].slice(0, 30)}...` : m[8];
   const frac = !digits ? "" : m[6] ? `.${digits}` : ` plus .${digits} of the last ${m[5] ? "minute" : "hour"}`;
-  const zone = m[9] === undefined ? "local time (no zone given)" : m[9] === "Z" ? "UTC" : `UTC${m[9].slice(0, 3)}:${m[9].slice(3)}`;
+  // X.680 section 46 allows the offset as +hh or +hhmm.
+  const zone = m[9] === undefined ? "local time (no zone given)" : m[9] === "Z" ? "UTC" : `UTC${m[9].slice(0, 3)}:${m[9].length > 3 ? m[9].slice(3) : "00"}`;
   return {
     ok: true,
     iso: `${year}-${pad2(mo)}-${pad2(d)} ${pad2(h)}:${pad2(mi)}:${pad2(s)}${frac} ${zone}`,
@@ -1160,8 +1161,17 @@ function tryEncapsulated(
   end: number,
   depth: number,
   primitives: Set<number> = ENCAPSULATED_PRIMITIVES,
+  allowEmpty = true,
 ): Asn1Node[] | null {
-  if (end - start < 3 || depth >= MAX_DEPTH) return null;
+  if (depth >= MAX_DEPTH) return null;
+  // Three bytes is the least a clean element of a common type can take, with
+  // one exception: an empty SEQUENCE or SET (30 00, 31 00). X.509 writes it as
+  // the value of a basicConstraints extension on every end-entity certificate
+  // (CA false is the DEFAULT, so it is left out), and it is rare enough in
+  // random bytes (one in 32,768) to accept where an OCTET STRING holds it.
+  const size = end - start;
+  const emptyConstructed = size === 2 && (ctx.buf[start] === 0x30 || ctx.buf[start] === 0x31) && ctx.buf[start + 1] === 0;
+  if (size < 3 && !(allowEmpty && emptyConstructed)) return null;
   const sub: Ctx = { buf: ctx.buf, count: ctx.count, strict: true, errors: [], depthCapHit: false, issues: 0 };
   const out: Asn1Node[] = [];
   try {
@@ -1269,7 +1279,7 @@ function decodePrimitive(ctx: Ctx, node: Asn1Node, depth: number): void {
       }
       node.summary = `${formatCount(bitCount)} bits${unused ? `, ${unused} unused` : ""}: ${hexPreview(buf, node.contentStart + 1, node.contentEnd)}`;
       if (unused === 0) {
-        const inner = tryEncapsulated(ctx, node.contentStart + 1, node.contentEnd, depth + 1, BIT_STRING_PRIMITIVES);
+        const inner = tryEncapsulated(ctx, node.contentStart + 1, node.contentEnd, depth + 1, BIT_STRING_PRIMITIVES, false);
         if (inner) {
           node.children = inner;
           node.encapsulated = true;
@@ -1439,6 +1449,8 @@ export function parseAsn1(buf: Uint8Array): Asn1ParseResult {
   const walk = (n: Asn1Node, depth: number) => {
     n.id = nodes.length;
     n.depth = depth;
+    // Parents of the element where the node cap hit never reach describeConstructed.
+    if (n.summary === "" && n.constructed) n.summary = "parsing stopped inside this element";
     nodes.push(n);
     for (const issue of n.issues) {
       if (issue.level === "der") derIssues++;

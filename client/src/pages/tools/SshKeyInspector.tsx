@@ -35,7 +35,7 @@ const EXAMPLE_AUTHORIZED_KEYS = [
   'expiry-time="20240101" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDwh3AbhATG3GJnVGknQrimKoC4E3kZFhPDpcHWSIPCTnLj23UrgvU85CYTKR+jvAbiSeErfLbOVZA94iS3hmDYlWoDEWQyrAZAXBSw03NuM0VsZIh7eYhpadPxZo1EafXaWthpDgsEpn3rEt7lox2DLQS/KpIC25+5GxNukkwB5w== deploy@ci',
   "ssh-dss AAAAB3NzaC1kc3MAAACBAI+bVpsOrXpIZ8fhu28+lNEn2vzmrlLwVZfvD38LqyUxLWlxMaYJOEDMUcU1R4arMlCmBNK7cVdmKswwsfrN7AmmVAk/QT+1nr4ISOYcZZDbmkNmlCi0Rk/vo+Ns9eeyBqG1QhhVZapkiDFCW/ImKhAQOQ7LRyL6cFRidYMSNkbHAAAAFQCt9p6g2IdJO1m6D4/phqh7NkAF7QAAAIEAgrq+WEfebBzUB4R2j3jc2ueeXvW7cMzNVtJCWxbX/xYJRWJfDnhUb8VJ13dYCUpTdcvoNftrLSTOTM7tj39lCQIoWhax/E0pD09Mw+dNKVpvFHfkIYUFQ79ka1A8yflzvfODQOfdpRwIwBLb9PlUJfgxxLhAuC7/q6aTKxBnUdEAAACATaSWuzX2BLay+qUQYDyM8Tn7vqMWCH8M5QJBdRLupzPpwxIOAiQQ/yL5XRyk3itWYbU0yqL2MXD96yuaUK/xNP0ymCDMMa2l8UvJgngnpg4OcTGNxK2Y9sBdHepnaqUQJfVuukP2IDp1VZkQHJug9qECjMG7pZz858jzdUBNFD8= legacy@oldbox",
   "# Hardware security key",
-  "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIKzWvvlVpO+UtBPKOEICiaE996iZruwytHCPnxSZmpvtAAAABHNzaDo= alice@yubikey",
+  "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIH3gjzt3y7O2GeA7014fKL039x9E2kXwJ1LO7Y26UFkFAAAABHNzaDo= alice@yubikey",
 ].join("\n");
 
 /** github.com's published host keys, which a reader can check against GitHub's own fingerprint list. */

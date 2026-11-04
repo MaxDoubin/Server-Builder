@@ -663,7 +663,9 @@ export function parseReceived(value: string): Omit<ReceivedHop, "index" | "delay
   const peerIp = commentIps[0] ?? bareIps[0] ?? null;
   const heloIp = bareIps.find((ip) => ip.address !== peerIp?.address) ?? null;
   const fromHosts = from ? extractHostnames(from) : [];
-  const protocol = withClause ? firstToken(withClause) : null;
+  // Usually one word (ESMTPS), but Exchange writes "Microsoft SMTP Server".
+  const protocolText = withClause ? stripComments(withClause).text : "";
+  const protocol = protocolText ? clip(protocolText, 60) : null;
   const idClause = clauses.get("id");
   const forClause = clauses.get("for");
 
@@ -787,8 +789,13 @@ function tokenizeAuth(value: string): { segments: AuthToken[][]; comments: strin
       i++;
       continue;
     }
+    // The word after "=" is a value, and a value may hold further "=" signs: a
+    // VERP envelope sender is smtp.mailfrom=bounce+user=example.org@host.example
+    // (the local part is a dot-atom, RFC 5322 section 3.2.3) and a base64
+    // header.b ends in "==". Only a word that is not a value stops at "=".
+    const afterEq = segments[seg].length > 0 && segments[seg][segments[seg].length - 1].t === "eq";
     let j = i;
-    while (j < value.length && !/[\s=;"()]/.test(value[j])) j++;
+    while (j < value.length && !/[\s;"()]/.test(value[j]) && (afterEq || value[j] !== "=")) j++;
     segments[seg].push({ t: "word", v: value.slice(i, j) });
     i = j;
   }
@@ -1004,7 +1011,10 @@ export function decodeEncodedWords(value: string): DecodedText {
       errors.push(`"${clip(m[0], 32)}" is not valid base64, so it was left as is`);
       out += m[0];
     } else if (pending && (pending as { charset: string }).charset === charset) {
-      (pending as { bytes: number[]; raw: string }).bytes.push(...bytes);
+      // A loop, not push(...bytes): one encoded word can decode to hundreds of
+      // thousands of bytes, and spreading that many arguments overflows the stack.
+      const target = (pending as { bytes: number[] }).bytes;
+      for (const byte of bytes) target.push(byte);
       (pending as { raw: string }).raw += m[0];
     } else {
       flush();
@@ -1142,7 +1152,11 @@ export function relaxedAligned(a: string | null, b: string | null): boolean {
 /* -------------------------------------------------------- suspicious text */
 
 const BIDI = /[‎‏‪-‮⁦-⁩]/;
-const INVISIBLE = /[­​-‍⁠﻿]/;
+// Zero width space, word joiner, byte order mark and soft hyphen are never
+// needed in a name or subject. The joiner and non-joiner (U+200C, U+200D) are
+// ordinary letters of Persian, Indic and emoji text, so they count only when
+// they sit next to a Latin letter, where they can split a word invisibly.
+const INVISIBLE = /[\u00AD\u200B\u2060\uFEFF]|[A-Za-z][\u200C\u200D]|[\u200C\u200D][A-Za-z]/;
 
 /** A word that mixes Latin letters with Cyrillic or Greek ones, the usual homoglyph trick. */
 export function mixedScriptWord(text: string): string | null {
@@ -1455,7 +1469,12 @@ export function analyzeHeaders(raw: string): Outcome<EmailAnalysis> {
       const signer = domainOf(r.identity);
       if (r.result === "pass") add("ok", `DKIM pass${signer ? ` for ${signer}` : ""}.`);
       else if (r.result === "fail") {
-        add("danger", `DKIM fail${who}: a signature was present but did not verify. The signed content changed after signing, the published key no longer matches, or the signature is forged.`);
+        const cause = "a signature was present but did not verify. The signed content changed after signing, the published key no longer matches, or the signature is forged";
+        // A message can carry several signatures, and DMARC needs only one aligned
+        // pass (RFC 7489 section 3.1.1). A mailing list that appends a footer
+        // breaks the author's signature and adds its own, so the failure is a note.
+        if (dmarcPassed) add("info", `DKIM fail${who}: ${cause}. DMARC still passed, through SPF or another signature.`);
+        else add("danger", `DKIM fail${who}: ${cause}.`);
       } else if (r.result === "none") add("warn", "DKIM none: the message carried no signature that was checked.");
       else add("warn", `DKIM ${r.result}${who}: the signature could not be evaluated cleanly.`);
     } else if (r.method === "dmarc") {
