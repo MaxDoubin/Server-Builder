@@ -105,7 +105,12 @@ function cleanTarget(raw: string): string {
   const value = raw.trim();
   if (value === "") return "TARGET";
   // Accept hostnames, IPv4, CIDR, simple ranges and space separated lists.
-  return /^[A-Za-z0-9 .:/_*-]+$/.test(value) ? value : "TARGET";
+  if (!/^[A-Za-z0-9 .:/_*-]+$/.test(value)) return "TARGET";
+  // nmap reads a token that starts with a hyphen as an option, so
+  // "127.0.0.1 -oN /tmp/out" is a target plus an option that writes a file,
+  // not a target list. A hyphen inside a range (192.168.1.1-50) is fine.
+  if (value.split(/\s+/).some((token) => token.startsWith("-"))) return "TARGET";
+  return value;
 }
 
 export interface NmapFlag {

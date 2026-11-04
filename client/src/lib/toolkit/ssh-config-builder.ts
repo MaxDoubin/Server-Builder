@@ -117,6 +117,22 @@ function shellQuote(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`;
 }
 
+/*
+  What may go into the copyable one-off command. It is pasted into a terminal,
+  so a field is kept only when it could be what it says it is. Quoting alone
+  would not be enough for the destination: ssh reads an argument that starts
+  with a hyphen as an option, so "-oProxyCommand=..." in HostName would still
+  run, and a name or login that really starts with a hyphen does not exist.
+*/
+/** A host name or address: letters, digits and . : _ % -, not starting with a hyphen. */
+const NAME_OK = /^[A-Za-z0-9_][A-Za-z0-9._:%-]*$/;
+/** A login name. */
+const USER_OK = /^[A-Za-z0-9_][A-Za-z0-9._-]*$/;
+/** A forward's host: a name, an IPv4 address, or an IPv6 address in brackets. */
+const FORWARD_HOST_OK = /^(?:[A-Za-z0-9_][A-Za-z0-9._-]*|\[[0-9A-Fa-f:.]+\])$/;
+/** A forward's bind address: as a forward host, or * for every interface. */
+const BIND_OK = /^(?:[A-Za-z0-9_][A-Za-z0-9._-]*|\*|\[[0-9A-Fa-f:.]+\])$/;
+
 /** The listen side of a forward, as bind:port or just port. */
 function forwardListen(f: Forward): string {
   const port = f.listenPort.trim();
@@ -131,6 +147,18 @@ export function validateBlock(block: HostBlock): FieldError[] {
   }
   if (block.port.trim() !== "" && parsePort(block.port) === null) {
     errors.push({ field: "port", message: "Port must be a whole number from 1 to 65535." });
+  }
+  if (block.hostName.trim() !== "" && !NAME_OK.test(block.hostName.trim())) {
+    errors.push({
+      field: "hostName",
+      message: "HostName is a host name or an address: letters, digits and . : _ % -, and it cannot start with a hyphen.",
+    });
+  }
+  if (block.user.trim() !== "" && !USER_OK.test(block.user.trim())) {
+    errors.push({
+      field: "user",
+      message: "User is a login name: letters, digits and . _ -, and it cannot start with a hyphen.",
+    });
   }
   if (block.serverAliveInterval.trim() !== "" && parseSeconds(block.serverAliveInterval) === null) {
     errors.push({
@@ -148,9 +176,20 @@ export function validateBlock(block: HostBlock): FieldError[] {
     if (parsePort(f.listenPort) === null) {
       errors.push({ field: `forward-${i}-listen`, message: "The listening port must be 1 to 65535." });
     }
+    if (f.bindAddress.trim() !== "" && !BIND_OK.test(f.bindAddress.trim())) {
+      errors.push({
+        field: `forward-${i}-bind`,
+        message: "The bind address is a name, an address, or * for every interface.",
+      });
+    }
     if (f.kind !== "dynamic") {
       if (f.destHost.trim() === "") {
         errors.push({ field: `forward-${i}-host`, message: "This forward needs a destination host." });
+      } else if (!FORWARD_HOST_OK.test(f.destHost.trim())) {
+        errors.push({
+          field: `forward-${i}-host`,
+          message: "The destination host is a name or an address, with an IPv6 address in brackets.",
+        });
       }
       if (parsePort(f.destPort) === null) {
         errors.push({ field: `forward-${i}-destport`, message: "The destination port must be 1 to 65535." });
@@ -228,11 +267,11 @@ export function sshCommand(block: HostBlock): string {
 
   for (const f of block.forwards) {
     if (f.kind === "dynamic") {
-      if (f.listenPort.trim() !== "") args.push("-D", forwardListen(f));
+      if (f.listenPort.trim() !== "") args.push("-D", shellQuote(forwardListen(f)));
     } else {
       const flag = f.kind === "local" ? "-L" : "-R";
       if (f.listenPort.trim() !== "" && f.destHost.trim() !== "" && f.destPort.trim() !== "") {
-        args.push(flag, `${forwardListen(f)}:${f.destHost.trim()}:${f.destPort.trim()}`);
+        args.push(flag, shellQuote(`${forwardListen(f)}:${f.destHost.trim()}:${f.destPort.trim()}`));
       }
     }
   }
@@ -240,12 +279,20 @@ export function sshCommand(block: HostBlock): string {
   if (block.serverAliveInterval.trim() !== "" && parseSeconds(block.serverAliveInterval) !== null) {
     args.push("-o", `ServerAliveInterval=${block.serverAliveInterval.trim()}`);
   }
-  if (block.controlMaster) args.push("-o", `ControlMaster=${block.controlMaster}`);
+  if (block.controlMaster) args.push("-o", shellQuote(`ControlMaster=${block.controlMaster}`));
   if (block.controlPath.trim() !== "") args.push("-o", `ControlPath=${shellQuote(block.controlPath.trim())}`);
-  if (block.controlPersist.trim() !== "") args.push("-o", `ControlPersist=${block.controlPersist.trim()}`);
-  if (block.strictHostKeyChecking) args.push("-o", `StrictHostKeyChecking=${block.strictHostKeyChecking}`);
+  if (block.controlPersist.trim() !== "") {
+    args.push("-o", shellQuote(`ControlPersist=${block.controlPersist.trim()}`));
+  }
+  if (block.strictHostKeyChecking) {
+    args.push("-o", shellQuote(`StrictHostKeyChecking=${block.strictHostKeyChecking}`));
+  }
 
-  const dest = block.user.trim() !== "" ? `${block.user.trim()}@${target}` : target;
+  /* A destination that could not be a name, or a login that could not be one, is shown as a placeholder. */
+  const safeTarget = NAME_OK.test(target) ? target : "HOST";
+  const login = block.user.trim();
+  const safeLogin = login === "" ? "" : USER_OK.test(login) ? login : "USER";
+  const dest = safeLogin !== "" ? `${safeLogin}@${safeTarget}` : safeTarget;
   return ["ssh", ...args, dest].join(" ");
 }
 

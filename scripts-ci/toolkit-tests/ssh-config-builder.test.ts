@@ -205,4 +205,39 @@ eq(parsePort("+22"), null);
 eq(parsePort("22.5"), null);
 eq(parsePort("99999999999999999999"), null);
 
+// The one-off command is pasted into a terminal. A destination, login or argument that could not be one is
+// replaced or quoted, and a destination that starts with a hyphen (ssh would read it as an option) never appears.
+{
+  const base = (patch: Partial<HostBlock>): HostBlock => ({ ...emptyBlock(), host: "h", hostName: "host.example.com", ...patch });
+  for (const hostile of ["server.example; touch /tmp/x", "-oProxyCommand=id", "a b", "$(id)", "`id`", "h|id", "h&&id", "h'x", 'h"x', "h>o", "-h"]) {
+    eq(sshCommand(base({ hostName: hostile })), "ssh HOST", `HostName ${JSON.stringify(hostile)}`);
+    ok(validateBlock(base({ hostName: hostile })).some((e) => e.field === "hostName"), `error for HostName ${hostile}`);
+  }
+  for (const hostile of ["x; id", "-oProxyCommand=id", "a b", "$(id)", "u'", "-l"]) {
+    eq(sshCommand(base({ user: hostile })), "ssh USER@host.example.com", `User ${JSON.stringify(hostile)}`);
+    ok(validateBlock(base({ user: hostile })).some((e) => e.field === "user"), `error for User ${hostile}`);
+  }
+  // A Host alias used as the target is held to the same rule.
+  eq(sshCommand({ ...emptyBlock(), host: "x;id", hostName: "" }), "ssh HOST");
+  eq(sshCommand({ ...emptyBlock(), host: "-oProxyCommand=id", hostName: "" }), "ssh HOST");
+  // Valid names and addresses pass through untouched.
+  for (const good of ["10.0.4.12", "host.example.com", "fe80::1%eth0", "2001:db8::1", "my_host-1.lan", "A.B-c.d"]) {
+    eq(sshCommand(base({ hostName: good, user: "deploy" })), `ssh deploy@${good}`, `HostName ${good}`);
+    eq(validateBlock(base({ hostName: good })).filter((e) => e.field === "hostName").length, 0, good);
+  }
+  // Forward targets, bind addresses and option values are quoted rather than pasted in raw.
+  const fwd = (patch: Partial<HostBlock["forwards"][number]>) =>
+    base({ forwards: [{ kind: "local", bindAddress: "", listenPort: "8080", destHost: "db.internal", destPort: "5432", ...patch }] });
+  ok(sshCommand(fwd({ destHost: "h; rm -rf /" })).includes("-L '8080:h; rm -rf /:5432'"), "hostile forward host quoted");
+  ok(validateBlock(fwd({ destHost: "h; rm -rf /" })).some((e) => e.field === "forward-0-host"), "forward host error");
+  ok(sshCommand(fwd({ bindAddress: "x;id" })).includes("-L 'x;id:8080:db.internal:5432'"), "hostile bind quoted");
+  ok(validateBlock(fwd({ bindAddress: "x;id" })).some((e) => e.field === "forward-0-bind"), "bind error");
+  ok(sshCommand(fwd({ destHost: "[::1]" })).includes("-L '8080:[::1]:5432'"), "bracketed IPv6 forward is quoted for the shell and valid");
+  eq(validateBlock(fwd({ destHost: "[::1]", bindAddress: "*" })).length, 0, "bracketed IPv6 and * bind are valid");
+  ok(sshCommand(fwd({})).includes("-L 8080:db.internal:5432"), "an ordinary forward stays unquoted");
+  ok(sshCommand(base({ controlPersist: "10m; id" })).includes("-o 'ControlPersist=10m; id'"), "ControlPersist quoted");
+  ok(sshCommand(base({ controlPersist: "10m" })).includes("-o ControlPersist=10m"), "ControlPersist ordinary stays unquoted");
+  ok(sshCommand(base({ forwards: [{ kind: "dynamic", bindAddress: "x;id", listenPort: "1080", destHost: "", destPort: "" }] })).includes("-D 'x;id:1080'"), "dynamic bind quoted");
+}
+
 console.log(`ssh-config-builder: ${count} assertions passed`);

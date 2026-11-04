@@ -159,11 +159,13 @@ export function SshConfigBuilder() {
 
                 <div>
                   <label className={LABEL} htmlFor={`${block.id}-hostname`}>HostName</label>
-                  <input id={`${block.id}-hostname`} className={INPUT} value={block.hostName} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="10.0.4.12 or host.example.com" onChange={(e) => patch(block.id, { hostName: e.target.value })} />
+                  <input id={`${block.id}-hostname`} className={INPUT} value={block.hostName} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="10.0.4.12 or host.example.com" onChange={(e) => patch(block.id, { hostName: e.target.value })} aria-invalid={err("hostName") !== null} />
+                  {err("hostName") ? <p className={ERR} role="alert">{err("hostName")}</p> : null}
                 </div>
                 <div>
                   <label className={LABEL} htmlFor={`${block.id}-user`}>User</label>
-                  <input id={`${block.id}-user`} className={INPUT} value={block.user} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="deploy" onChange={(e) => patch(block.id, { user: e.target.value })} />
+                  <input id={`${block.id}-user`} className={INPUT} value={block.user} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="deploy" onChange={(e) => patch(block.id, { user: e.target.value })} aria-invalid={err("user") !== null} />
+                  {err("user") ? <p className={ERR} role="alert">{err("user")}</p> : null}
                 </div>
                 <div>
                   <label className={LABEL} htmlFor={`${block.id}-port`}>Port</label>
@@ -235,7 +237,7 @@ export function SshConfigBuilder() {
                           <select aria-label={`Forward ${fi + 1} type`} className={`${SELECT} sm:col-span-2`} value={f.kind} onChange={(e) => patchForward(block.id, fi, { kind: e.target.value as ForwardKind })}>
                             {FORWARD_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
                           </select>
-                          <input aria-label={`Forward ${fi + 1} bind address`} className={INPUT} value={f.bindAddress} spellCheck={false} placeholder="bind (optional)" onChange={(e) => patchForward(block.id, fi, { bindAddress: e.target.value })} />
+                          <input aria-label={`Forward ${fi + 1} bind address`} className={INPUT} value={f.bindAddress} spellCheck={false} placeholder="bind (optional)" onChange={(e) => patchForward(block.id, fi, { bindAddress: e.target.value })} aria-invalid={err(`forward-${fi}-bind`) !== null} />
                           <input aria-label={`Forward ${fi + 1} listen port`} className={INPUT} inputMode="numeric" value={f.listenPort} spellCheck={false} placeholder="port" onChange={(e) => patchForward(block.id, fi, { listenPort: e.target.value })} aria-invalid={err(`forward-${fi}-listen`) !== null} />
                           {f.kind !== "dynamic" ? (
                             <>

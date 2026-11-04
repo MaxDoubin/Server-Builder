@@ -176,4 +176,25 @@ assert.doesNotThrow(() => buildNmapCommand(opts({ target: "a".repeat(100000), sc
 // Garbage timing/topPorts leave those flags off rather than emitting broken tokens.
 assert.ok(!buildNmapCommand(opts({ target: "h", scanType: "sS", portMode: "top", topPorts: "abc", timing: "3" })).includes("--top-ports"));
 
+// A target is names and addresses. A token that starts with a hyphen would be read as an option, so it falls back to the placeholder.
+for (const hostile of [
+  "127.0.0.1 -oN /tmp/result",
+  "127.0.0.1 --script vuln",
+  "-iL /etc/hosts",
+  "host -sV",
+  "a  -b",
+  "-oX x",
+  "host; id",
+  "$(id)",
+]) {
+  const cmd = buildNmapCommand(opts({ target: hostile, scanType: "sS", portMode: "default", timing: "3" }));
+  assert.ok(cmd.includes(" TARGET"), `target ${JSON.stringify(hostile)} becomes TARGET: ${cmd}`);
+  assert.ok(!cmd.includes("/tmp/result") && !cmd.includes("vuln") && !cmd.includes("/etc/hosts"), `no smuggled option in ${cmd}`);
+}
+// Ranges, lists, CIDR and wildcards that really are targets still pass, a hyphen inside a token included.
+for (const good of ["192.168.1.1-50", "10.0.0.0/24", "scanme.nmap.org example.com", "192.168.0.*", "fe80::1", "a-b.example.com", "10.0.1-3.1"]) {
+  const cmd = buildNmapCommand(opts({ target: good, scanType: "sS", portMode: "default", timing: "3" }));
+  assert.ok(cmd.endsWith(` ${good}`), `target ${good} kept: ${cmd}`);
+}
+
 console.log("nmap-command-builder: verifier reference cases passed");
