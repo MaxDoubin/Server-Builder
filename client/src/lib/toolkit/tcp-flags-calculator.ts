@@ -4,8 +4,9 @@
  * Layout (RFC 9293 section 3.1, RFC 3168 section 6.1 for CWR and ECE):
  * byte 12 of the TCP header holds the 4-bit data offset, three reserved
  * bits and the AE bit (once the NS bit of RFC 3540, which RFC 8311 moved
- * to Historic). Byte 13 holds CWR, ECE, URG, ACK, PSH, RST, SYN and FIN,
- * most significant first. Wireshark's tcp.flags field is the low 12 bits
+ * to Historic; RFC 9768 renamed it AE). Byte 13 holds CWR, ECE, URG, ACK,
+ * PSH, RST, SYN and FIN, most significant first. Wireshark's tcp.flags
+ * field is the low 12 bits
  * of bytes 12 and 13 together, which is why it prints SYN-ACK as 0x012.
  *
  * Throughout this file a flags value is that 12-bit number.
@@ -42,7 +43,7 @@ export const FLAGS: FlagDef[] = [
     name: "AE",
     long: "Accurate ECN",
     meaning:
-      "Low bit of byte 12. Used by Accurate ECN negotiation and feedback. It was the ECN nonce (NS) bit until RFC 8311 retired that experiment.",
+      "Low bit of byte 12. Accurate ECN (RFC 9768) uses it in negotiation and feedback. It was the ECN nonce (NS) bit until RFC 8311 retired that experiment.",
     tcpdumpName: null,
     letter: "e",
     wiresharkField: null,

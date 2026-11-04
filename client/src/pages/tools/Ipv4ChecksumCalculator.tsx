@@ -468,7 +468,7 @@ export function Ipv4ChecksumCalculator() {
                         label="Flags, offset"
                         value={`${[header.dontFragment ? "DF" : null, header.moreFragments ? "MF" : null, header.reservedFlag ? "reserved" : null]
                           .filter(Boolean)
-                          .join(" + ") || "none"}, offset ${header.fragmentOffset}`}
+                          .join(" + ") || "none"}, fragment offset ${header.fragmentOffset} (${header.fragmentOffset * 8} bytes)`}
                       />
                       <ToolResult label="TTL" value={header.ttl} />
                       <ToolResult label="Protocol" value={`${header.protocol} (${protocolName(header.protocol)})`} />
