@@ -363,6 +363,12 @@ t("exp and nbf boundaries follow RFC 7519 4.1.4 and 4.1.5 exactly", () => {
   assert.ok(ms.notes.some((n) => n.text.includes("milliseconds")));
   assert.ok(checkClaims({ iat: NOW + 3600 }, NOW, "verify").notes.some((n) => n.text.includes("future")));
   assert.equal(checkClaims({ exp: 1e300 }, NOW, "verify").blocking, null);
+  // A not-before pasted in milliseconds is still far in the future as seconds, so the token is not valid yet.
+  const nbfMs = checkClaims({ nbf: NOW * 1000 }, NOW, "verify");
+  assert.ok(nbfMs.blocking && /nbf/.test(nbfMs.blocking), "nbf in milliseconds blocks");
+  assert.ok(nbfMs.notes.some((n) => n.text.includes("milliseconds")), "and the milliseconds hint is kept");
+  assert.ok(checkClaims({ nbf: 1e300 }, NOW, "verify").blocking, "a huge nbf blocks too");
+  assert.equal(checkClaims({ iat: NOW * 1000 }, NOW, "verify").blocking, null, "an oversized iat only warns");
 });
 t("claim helpers and header alg rewrite", () => {
   const r = setNumericClaim('{"sub":"a"}', "exp", NOW + 900.7);

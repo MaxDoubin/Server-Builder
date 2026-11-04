@@ -223,7 +223,10 @@ function parseElement(buf: Uint8Array, pos: number, limit: number, depth: number
 export function isUniversal(node: DerNode, tag: number): boolean;
 export function isUniversal(node: DerNode | undefined, tag: number): node is DerNode;
 export function isUniversal(node: DerNode | undefined, tag: number): boolean {
-  return node !== undefined && node.cls === 0 && node.tag === tag;
+  // DER (X.690 8.x, 10.2) makes SEQUENCE and SET constructed and every other
+  // universal type used here primitive, including the string types, so a
+  // constructed INTEGER or OCTET STRING is not the type it names.
+  return node !== undefined && node.cls === 0 && node.tag === tag && node.constructed === (tag === 16 || tag === 17);
 }
 
 export function isContext(node: DerNode, tag: number): boolean;
@@ -236,6 +239,12 @@ export function isContext(node: DerNode | undefined, tag: number): boolean {
 export function expectTag(node: DerNode | undefined, tag: number, what: string, at: number): DerNode {
   if (!node) throw new DerError(`The ${what} is missing`, at);
   if (!isUniversal(node, tag)) {
+    if (node.cls === 0 && node.tag === tag) {
+      throw new DerError(
+        `The ${what} is ${node.constructed ? "a constructed" : "a primitive"} ${UNIVERSAL_NAMES[tag] ?? `tag ${tag}`}, which DER forbids: it must be ${node.constructed ? "primitive" : "constructed"} (X.690 10.2)`,
+        node.start,
+      );
+    }
     throw new DerError(`Expected ${UNIVERSAL_NAMES[tag] ?? `tag ${tag}`} for the ${what}, found ${describeTag(node)}`, node.start);
   }
   return node;

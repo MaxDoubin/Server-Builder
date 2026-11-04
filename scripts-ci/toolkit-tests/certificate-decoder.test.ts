@@ -919,6 +919,54 @@ await test("W6: a same-name certificate without a subject key ID is only probabl
   assert.ok(plainRoot.ok && plainRoot.cert.selfSigned && !plainRoot.cert.selfSignedUnconfirmed);
 });
 
+await test("W8: constructed primitives and padded serial integers are not DER", () => {
+  // A constructed INTEGER (tag byte 22) is not an INTEGER, and a primitive SEQUENCE (10) is not a SEQUENCE.
+  const constructedInt = parseDer(new Uint8Array([0x22, 0x03, 0x02, 0x01, 0x05]));
+  assert.throws(() => asn1.expectTag(constructedInt, 2, "serial number", 0), /constructed INTEGER, which DER forbids/);
+  const primitiveSeq = parseDer(new Uint8Array([0x10, 0x01, 0x05]));
+  assert.throws(() => asn1.expectTag(primitiveSeq, 16, "certificate", 0), /primitive SEQUENCE, which DER forbids/);
+  assert.ok(asn1.isUniversal(parseDer(new Uint8Array([0x02, 0x01, 0x05])), 2));
+  assert.ok(asn1.isUniversal(parseDer(new Uint8Array([0x30, 0x00])), 16));
+  assert.ok(!asn1.isUniversal(parseDer(new Uint8Array([0x04, 0x01, 0x05])), 2));
+  // A real certificate with its serial tag turned into the constructed form no longer decodes.
+  const der = new Uint8Array(readFileSync(FIX + "leaf.der"));
+  const root = parseDer(der);
+  const tbs = root.children[0];
+  const serialAt = tbs.children[0].cls === 2 ? tbs.children[1].start : tbs.children[0].start;
+  assert.equal(der[serialAt], 0x02);
+  const constructedSerial = der.slice();
+  constructedSerial[serialAt] = 0x22;
+  assert.equal(parseCertificate(constructedSerial).ok, false);
+  // Serial 02 02 00 01: a redundant leading zero. Re-encode a real serial with one, adjusting both outer lengths.
+  const serialNode = tbs.children[0].cls === 2 ? tbs.children[1] : tbs.children[0];
+  const content = der.subarray(serialNode.contentStart, serialNode.end);
+  assert.ok(serialNode.contentStart - serialNode.start === 2 && (content[0] & 0x80) === 0, "fixture serial is short-form and positive");
+  assert.equal(der[1], 0x82);
+  assert.equal(der[5], 0x82);
+  const padded = new Uint8Array(der.length + 1);
+  padded.set(der.subarray(0, serialAt + 1), 0);
+  padded[serialAt + 1] = content.length + 1;
+  padded[serialAt + 2] = 0x00;
+  padded.set(content, serialAt + 3);
+  padded.set(der.subarray(serialNode.end), serialNode.end + 1);
+  const bump = (at: number) => {
+    const n = ((padded[at] << 8) | padded[at + 1]) + 1;
+    padded[at] = n >> 8;
+    padded[at + 1] = n & 0xff;
+  };
+  bump(2); // certificate SEQUENCE
+  bump(6); // TBSCertificate SEQUENCE
+  const entry = parseCertificate(padded);
+  assert.ok(entry.ok, entry.ok ? "" : entry.error);
+  if (!entry.ok) return;
+  assert.equal(entry.cert.serial.minimal, false);
+  assert.ok(reviewCertificate(entry.cert, NOW).some((f) => f.tone === "danger" && /redundant leading octet/.test(f.text)));
+  // The original serial is minimal and draws no such finding.
+  const original = parseCertificate(der);
+  assert.ok(original.ok && original.cert.serial.minimal);
+  assert.ok(original.ok && !reviewCertificate(original.cert, NOW).some((f) => /redundant leading octet/.test(f.text)));
+});
+
 await test("W7: DER lengths must be minimal, so a padded or needlessly long length is refused", () => {
   const body = (n: number) => new Uint8Array(n).fill(5);
   // Minimal long form for 128 is accepted: 30 81 80 <128 bytes>.

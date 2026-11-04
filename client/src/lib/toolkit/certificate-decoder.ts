@@ -66,6 +66,8 @@ export interface SerialInfo {
   negative: boolean;
   /** Encoded length in octets, which RFC 5280 caps at 20. */
   octets: number;
+  /** False when the INTEGER has a redundant leading 00 or FF octet, which DER forbids (X.690 8.3.2). */
+  minimal: boolean;
 }
 
 export interface CertificateInfo {
@@ -146,7 +148,8 @@ function serialInfo(bytes: Uint8Array): SerialInfo {
     const digits = (-value).toString(16).toUpperCase();
     hex = `-${(digits.length % 2 ? `0${digits}` : digits).replace(/(..)(?=.)/g, "$1:")}`;
   }
-  return { hex, decimal: value.toString(), negative, octets: bytes.length };
+  const minimal = !(bytes.length > 1 && ((bytes[0] === 0x00 && (bytes[1] & 0x80) === 0) || (bytes[0] === 0xff && (bytes[1] & 0x80) !== 0)));
+  return { hex, decimal: value.toString(), negative, octets: bytes.length, minimal };
 }
 
 /** Parses one DER certificate. `allowTrailing` is for OpenSSL's TRUSTED CERTIFICATE, which appends trust settings. */
@@ -425,6 +428,7 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
 
   // Serial.
   const s = cert.serial;
+  if (!s.minimal) out.push({ tone: "danger", text: "The serial number has a redundant leading octet (00 before a byte below 80, or FF before a byte of 80 or more). DER requires the shortest INTEGER encoding (X.690 8.3.2), so strict parsers reject this certificate even though its signature can still verify." });
   if (s.negative) out.push({ tone: "warn", text: "The serial number is negative. RFC 5280 4.1.2.2 requires a positive integer, and strict parsers reject this." });
   else if (s.decimal === "0") out.push({ tone: "warn", text: "The serial number is zero. RFC 5280 requires a positive integer." });
   if (s.octets > 20) out.push({ tone: "warn", text: `The serial number is ${s.octets} octets. RFC 5280 caps it at 20, and some software refuses longer ones.` });

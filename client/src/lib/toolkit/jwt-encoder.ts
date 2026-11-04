@@ -906,6 +906,9 @@ export function checkClaims(payload: JsonObject, now: number, mode: "build" | "v
             ? `${claim} is ${v}, which as seconds is ${v < 8.64e12 ? `in the year ${new Date(v * 1000).getUTCFullYear()}` : "past the last date JavaScript can represent"}. It looks like milliseconds; NumericDate is seconds (${formatUtc(v / 1000)} if divided by 1000).`
             : `${claim} is ${v}, far beyond any real date even as milliseconds. NumericDate is seconds since 1970; a number this large is usually microseconds or nanoseconds.`,
       });
+      // As seconds this is far in the future, so a not-before this large still
+      // means the token is not valid yet, whatever the writer meant.
+      if (claim === "nbf" && v > now) blocking ??= "the token is not valid yet (nbf)";
       continue;
     }
     const delta = v - now;
