@@ -257,7 +257,7 @@ export function DefangRefang() {
               />
               <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {scope === "strict"
-                  ? "Only text that parses as a URL, an email address, an IP, or a name ending in a delegated TLD is touched. Sentences, version numbers and file names are left alone."
+                  ? "Only text that parses as a URL, an email address, an IP, or a name ending in a delegated TLD is touched. Sentences, file names and short version numbers like 2.1 are left alone. A four-part number like 1.2.3.4 reads as an IPv4 address and is converted."
                   : direction === "defang"
                     ? "Every dot between two letters or digits, every @ inside a word, and every http, https and ftp scheme is rewritten as well, which catches internal names like db01.corp and also rewrites report.pdf and 2.1."
                     : "Every defang token anywhere is reversed, including ones that are not part of an indicator, such as (.) in a regex."}

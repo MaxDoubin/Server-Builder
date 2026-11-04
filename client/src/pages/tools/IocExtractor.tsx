@@ -205,6 +205,7 @@ export function IocExtractor() {
   let summary: string;
   if (!result.ok) summary = "Nothing extracted.";
   else if (text.trim() === "") summary = "Paste text to extract indicators.";
+  else if (activeTypes === 0) summary = "No indicator types are selected. Turn at least one on.";
   else if (result.indicators.length === 0) summary = "No indicators found in this text.";
   else {
     const kinds = IOC_TYPES.filter((t) => result.byType[t.id].length > 0).length;
