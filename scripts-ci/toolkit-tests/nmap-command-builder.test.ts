@@ -255,6 +255,21 @@ for (const bad of ["70000", "65536", "80-70", "22 80", "22,,80", "22,", ",22", "
 }
 // "22 80" must not be glued into 2280.
 assert.ok(!buildNmapCommand(opts({ ...base, portMode: "list", portList: "22 80" })).includes("2280"));
+// nmap stops with "--min-rate must be less than or equal to --max-rate" (NmapOps.cc): a floor above the ceiling is left out.
+{
+  const r = buildNmapParts(opts({ ...base, minRate: "100", maxRate: "10" }));
+  assert.ok(!r.parts.join(" ").includes("--min-rate"), `floor above ceiling dropped: ${r.parts.join(" ")}`);
+  assert.ok(r.parts.join(" ").includes("--max-rate 10"), "the ceiling is kept");
+  assert.strictEqual(r.ignored.length, 1);
+  assert.ok(r.ignored[0].includes("maximum rate 10"), r.ignored[0]);
+  // Decimal comparison, not text comparison.
+  assert.ok(buildNmapCommand(opts({ ...base, minRate: "9", maxRate: "10.5" })).includes("--min-rate 9 --max-rate 10.5"));
+  assert.ok(!buildNmapCommand(opts({ ...base, minRate: "10.5", maxRate: "9" })).includes("--min-rate"));
+  assert.ok(buildNmapCommand(opts({ ...base, minRate: "10", maxRate: "9" })).includes("--max-rate 9"));
+  assert.ok(buildNmapCommand(opts({ ...base, minRate: "100", maxRate: "100" })).includes("--min-rate 100 --max-rate 100"), "equal is allowed");
+  assert.ok(buildNmapCommand(opts({ ...base, minRate: "500" })).includes("--min-rate 500"), "a floor alone is fine");
+  assert.deepStrictEqual(buildNmapParts(opts({ ...base, minRate: "500" })).ignored, []);
+}
 // Version intensity and timing outside their digits are reported too.
 assert.strictEqual(buildNmapParts(opts({ ...base, serviceVersion: true, versionIntensity: "10" })).ignored.length, 1);
 assert.strictEqual(buildNmapParts(opts({ ...base, timing: "6" })).ignored.length, 1);

@@ -252,9 +252,14 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
   }
 
   const minRate = rateValue(o.minRate);
-  if (minRate) add(`--min-rate ${minRate}`, "Send at least this many packets per second.");
-  else if (o.minRate.trim() !== "") skip("Minimum rate", o.minRate, "nmap accepts a positive number, and a fraction such as 0.1 is fine.");
   const maxRate = rateValue(o.maxRate);
+  // nmap stops with "--min-rate must be less than or equal to --max-rate" (NmapOps.cc),
+  // so when the floor is above the ceiling the floor is the one left out: the ceiling
+  // is what keeps a scan from flooding a network.
+  const floorAboveCeiling = minRate !== null && maxRate !== null && Number(minRate) > Number(maxRate);
+  if (minRate && !floorAboveCeiling) add(`--min-rate ${minRate}`, "Send at least this many packets per second.");
+  else if (floorAboveCeiling) skip("Minimum rate", o.minRate, `It is higher than the maximum rate ${maxRate}, and nmap refuses a floor above the ceiling.`);
+  else if (o.minRate.trim() !== "") skip("Minimum rate", o.minRate, "nmap accepts a positive number, and a fraction such as 0.1 is fine.");
   if (maxRate) add(`--max-rate ${maxRate}`, "Send no more than this many packets per second.");
   else if (o.maxRate.trim() !== "") skip("Maximum rate", o.maxRate, "nmap accepts a positive number, and a fraction such as 0.1 is fine.");
 

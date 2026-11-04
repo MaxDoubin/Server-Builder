@@ -125,6 +125,24 @@ function validControlPersist(raw: string): boolean {
   return Number.isSafeInteger(total) && total <= SSH_MAX_SECONDS;
 }
 
+/** A line break or other control character ends the config line, so what follows would read as a new keyword. */
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
+
+/**
+ * A value as ssh_config reads it. OpenSSH splits a line into tokens at spaces
+ * (argv_split in misc.c), so a path with a space is several arguments and the
+ * whole file is refused ("extra arguments at end of line"). Inside double
+ * quotes a space is ordinary, and a backslash or a quote needs a backslash in
+ * front of it. A value with whitespace, a quote, a backslash or a hash is
+ * therefore written in double quotes; null means the value cannot be written
+ * on one line at all.
+ */
+function configValue(raw: string): string | null {
+  const value = raw.trim();
+  if (value === "" || CONTROL_CHARS.test(value)) return null;
+  return /[\s"'\\#]/.test(value) ? `"${value.replace(/["\\]/g, "\\$&")}"` : value;
+}
+
 /** Quote a value for an ssh -o option or a shell argument when it has spaces. */
 function shellQuote(value: string): string {
   if (value === "") return "''";
@@ -159,6 +177,18 @@ export function validateBlock(block: HostBlock): FieldError[] {
   const errors: FieldError[] = [];
   if (block.host.trim() === "") {
     errors.push({ field: "host", message: "A Host block needs at least one pattern, such as a short alias." });
+  }
+  if (block.host.trim() !== "" && CONTROL_CHARS.test(block.host)) {
+    errors.push({ field: "host", message: "A Host pattern is one line: it cannot contain line breaks or control characters." });
+  }
+  for (const [field, label, value] of [
+    ["proxyJump", "ProxyJump", block.proxyJump],
+    ["identityFile", "IdentityFile", block.identityFile],
+    ["controlPath", "ControlPath", block.controlPath],
+  ] as const) {
+    if (CONTROL_CHARS.test(value)) {
+      errors.push({ field, message: `${label} is one line: it cannot contain line breaks or control characters.` });
+    }
   }
   if (block.port.trim() !== "" && parsePort(block.port) === null) {
     errors.push({ field: "port", message: "Port must be a whole number from 1 to 65535." });
@@ -216,11 +246,12 @@ export function validateBlock(block: HostBlock): FieldError[] {
 
 /** The config text for one Host block. Only keywords with a value are emitted. */
 export function renderBlock(block: HostBlock): string {
-  const host = block.host.trim() || "unnamed";
+  const typedHost = block.host.trim();
+  const host = typedHost === "" || CONTROL_CHARS.test(typedHost) ? "unnamed" : typedHost;
   const lines: string[] = [`Host ${host}`];
   const add = (keyword: string, value: string) => {
-    const v = value.trim();
-    if (v !== "") lines.push(`    ${keyword} ${v}`);
+    const v = configValue(value);
+    if (v !== null) lines.push(`    ${keyword} ${v}`);
   };
 
   add("HostName", block.hostName);
@@ -273,11 +304,11 @@ export function sshCommand(block: HostBlock): string {
   if (block.port.trim() !== "" && parsePort(block.port) !== null) {
     args.push("-p", block.port.trim());
   }
-  if (block.identityFile.trim() !== "") {
+  if (block.identityFile.trim() !== "" && !CONTROL_CHARS.test(block.identityFile)) {
     args.push("-i", shellQuote(block.identityFile.trim()));
   }
   if (block.identitiesOnly) args.push("-o", "IdentitiesOnly=yes");
-  if (block.proxyJump.trim() !== "") args.push("-J", shellQuote(block.proxyJump.trim()));
+  if (block.proxyJump.trim() !== "" && !CONTROL_CHARS.test(block.proxyJump)) args.push("-J", shellQuote(block.proxyJump.trim()));
   if (block.forwardAgent) args.push("-A");
 
   for (const f of block.forwards) {
@@ -295,7 +326,10 @@ export function sshCommand(block: HostBlock): string {
     args.push("-o", `ServerAliveInterval=${block.serverAliveInterval.trim()}`);
   }
   if (block.controlMaster) args.push("-o", shellQuote(`ControlMaster=${block.controlMaster}`));
-  if (block.controlPath.trim() !== "") args.push("-o", `ControlPath=${shellQuote(block.controlPath.trim())}`);
+  // ssh reads a -o value with the same tokenizer as the config file, so the value is
+  // quoted for ssh first and the whole option is then quoted for the shell.
+  const controlPath = configValue(block.controlPath);
+  if (controlPath !== null) args.push("-o", shellQuote(`ControlPath=${controlPath}`));
   if (block.controlPersist.trim() !== "" && validControlPersist(block.controlPersist)) {
     args.push("-o", shellQuote(`ControlPersist=${block.controlPersist.trim()}`));
   }

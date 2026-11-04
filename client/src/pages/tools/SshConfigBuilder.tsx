@@ -174,11 +174,13 @@ export function SshConfigBuilder() {
                 </div>
                 <div>
                   <label className={LABEL} htmlFor={`${block.id}-proxyjump`}>ProxyJump</label>
-                  <input id={`${block.id}-proxyjump`} className={INPUT} value={block.proxyJump} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="bastion or b1,b2" onChange={(e) => patch(block.id, { proxyJump: e.target.value })} />
+                  <input id={`${block.id}-proxyjump`} className={INPUT} value={block.proxyJump} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="bastion or b1,b2" onChange={(e) => patch(block.id, { proxyJump: e.target.value })} aria-invalid={err("proxyJump") !== null} />
+                  {err("proxyJump") ? <p className={ERR} role="alert">{err("proxyJump")}</p> : null}
                 </div>
                 <div className="sm:col-span-2">
                   <label className={LABEL} htmlFor={`${block.id}-identity`}>IdentityFile</label>
-                  <input id={`${block.id}-identity`} className={INPUT} value={block.identityFile} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="~/.ssh/id_ed25519" onChange={(e) => patch(block.id, { identityFile: e.target.value })} />
+                  <input id={`${block.id}-identity`} className={INPUT} value={block.identityFile} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="~/.ssh/id_ed25519" onChange={(e) => patch(block.id, { identityFile: e.target.value })} aria-invalid={err("identityFile") !== null} />
+                  {err("identityFile") ? <p className={ERR} role="alert">{err("identityFile")}</p> : null}
                 </div>
 
                 <label className={CHECK}>
@@ -215,7 +217,8 @@ export function SshConfigBuilder() {
                 </div>
                 <div className="sm:col-span-2">
                   <label className={LABEL} htmlFor={`${block.id}-cpath`}>ControlPath</label>
-                  <input id={`${block.id}-cpath`} className={INPUT} value={block.controlPath} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="~/.ssh/cm-%r@%h:%p" onChange={(e) => patch(block.id, { controlPath: e.target.value })} />
+                  <input id={`${block.id}-cpath`} className={INPUT} value={block.controlPath} spellCheck={false} autoCapitalize="off" autoCorrect="off" placeholder="~/.ssh/cm-%r@%h:%p" onChange={(e) => patch(block.id, { controlPath: e.target.value })} aria-invalid={err("controlPath") !== null} />
+                  {err("controlPath") ? <p className={ERR} role="alert">{err("controlPath")}</p> : null}
                 </div>
               </div>
 
