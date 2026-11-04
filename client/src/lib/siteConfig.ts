@@ -394,6 +394,16 @@ export const siteConfig = {
 
   projects: [
     {
+      id: "afterburner",
+      title: "Three Apple Afterburner Cards",
+      description:
+        "ProRes decode benchmarks on three Apple Afterburner cards in a Mac Pro 7,1, and an investigation into whether each card's Xilinx FPGA could be reprogrammed, stopped deliberately before any flash write. A demonstration also encodes arbitrary data as ProRes video, a working executable included, and recovers it bit-exact through the cards' hardware decoder.",
+      tech: ["ProRes", "VideoToolbox", "IOKit", "FPGA", "Benchmarking"],
+      category: "security",
+      link: "/afterburner",
+      coverImage: "/images/projects/afterburner.jpg",
+    },
+    {
       id: "hyperscale",
       title: "Hyperscale: Data Center Architect",
       description:

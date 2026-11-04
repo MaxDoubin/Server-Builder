@@ -811,6 +811,14 @@ jobs:
       - name: Port sharing
         run: npx tsx scripts-ci/check-reuseport.ts
 
+      # The Afterburner companion. The demo's block code is round tripped and
+      # also read back one pixel per block without averaging, so the decoder
+      # is not checked against itself; the report's figures are checked
+      # against each other wherever the report states one twice, as a
+      # percentage beside its two rates or a ratio beside its two sides.
+      - name: Afterburner measurements and block code
+        run: npx tsx scripts-ci/check-afterburner.ts
+
       # What free() gives back. The model reasons in regions, a top chunk and
       # a count of pinned pages, so the gate lays the heap out and walks it a
       # page at a time from the pages rather than from the survivors, and

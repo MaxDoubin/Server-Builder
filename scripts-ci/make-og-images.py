@@ -88,6 +88,7 @@ PAGE_EYEBROWS = {
     "game": "BUILD SIMULATOR",
     "timeline": "TIMELINE",
     "now": "NOW",
+    "afterburner": "ORIGINAL RESEARCH",
     "uses": "USES",
     "links": "LINKS",
     "faq": "QUESTIONS",

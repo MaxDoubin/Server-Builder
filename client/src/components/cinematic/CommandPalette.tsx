@@ -83,6 +83,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Now", href: "/now", terms: "current" },
   { kind: "Page", title: "Uses", href: "/uses", terms: "setup kit gear" },
   { kind: "Page", title: "Teardown", href: "/teardown" },
+  { kind: "Page", title: "Three Afterburner cards, measured", href: "/afterburner", detail: "Interactive results and a data-in-video demo", terms: "apple afterburner prores mac pro fpga videotoolbox decode streams research benchmark" },
   { kind: "Page", title: "FAQ", href: "/faq", terms: "questions" },
   { kind: "Page", title: "Links", href: "/links" },
   { kind: "Page", title: "Ask me anything", href: "/ask" },
