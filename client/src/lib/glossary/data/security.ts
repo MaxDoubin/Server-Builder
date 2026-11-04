@@ -220,4 +220,34 @@ export const SECURITY: Term[] = [
       "A domain controller holding the directory is the keys to the whole network, not just another server. Compromise of one account with the right privileges is compromise of every machine that trusts the domain, which is why admin accounts are tiered.",
     see: ["RADIUS", "NTLM"],
   },
+  {
+    term: "SHA",
+    expansion: "Secure Hash Algorithm",
+    field: "security",
+    definition:
+      "A family of hash functions published by NIST: SHA-1 with a 160-bit output, the SHA-2 group that includes SHA-256 and SHA-512, and SHA-3. Each turns any input into a fixed-size fingerprint that cannot be run backwards.",
+    confusion:
+      "SHA-1 is not safe for anything that depends on collisions being hard: researchers produced two different files with the same SHA-1 in 2017, and certificates and signatures have left it behind. And a SHA digest is not encryption. It hides nothing that can be guessed, so a bare SHA-256 of a password is easy to crack without a salt and a slow function.",
+    see: ["hash", "salt", "NIST"],
+  },
+  {
+    term: "AES",
+    expansion: "Advanced Encryption Standard",
+    field: "security",
+    definition:
+      "The symmetric block cipher that almost everything uses to encrypt bulk data, standardized by NIST in 2001. It works on 128-bit blocks with a key of 128, 192 or 256 bits, and modern CPUs have instructions that make it fast.",
+    confusion:
+      "The cipher alone is not the whole security. The mode decides what an attacker learns: ECB shows repeated blocks as repeated ciphertext, and a mode without authentication, unlike GCM, lets someone alter the data without being noticed. Choosing 256 bits over 128 is rarely where the real weakness is.",
+    see: ["NIST", "TLS"],
+  },
+  {
+    term: "RSA",
+    expansion: "Rivest, Shamir and Adleman",
+    field: "security",
+    definition:
+      "A public-key algorithm from 1977 whose security rests on the difficulty of factoring the product of two large primes. It signs data and wraps keys, which is how a certificate proves who holds a name and how some key exchanges move a secret.",
+    confusion:
+      "Its key lengths are not comparable with AES's. A 2048-bit RSA key gives roughly the strength of a 112-bit symmetric key, which is why RSA keys are so much longer. It is also slow, so it protects a small secret or a hash rather than the bulk of the data.",
+    see: ["certificate", "AES", "TLS"],
+  },
 ];

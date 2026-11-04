@@ -278,4 +278,14 @@ export const PROTOCOLS: Term[] = [
       "Turning on \"SSL\" in a config is not weaker than turning on TLS; it is the same handshake under an older label. What matters is which protocol versions are allowed, and every SSL version has been broken for years.",
     see: ["TLS", "certificate"],
   },
+  {
+    term: "IKE",
+    expansion: "Internet Key Exchange",
+    field: "protocols",
+    definition:
+      "The protocol IPsec uses to authenticate the two ends, agree on the algorithms and derive the keys before any traffic is protected. IKEv1 does it in two phases and IKEv2, defined in RFC 7296, in a shorter exchange that sets up the tunnel and its child security associations.",
+    confusion:
+      "\"No proposal chosen\" does not mean the credentials were wrong. It means the proposals the two sides offered did not overlap on something, such as the encryption, the integrity algorithm or the Diffie-Hellman group, and a wrong pre-shared key fails later with a different message. Reading both ends' proposal lists side by side is the fix.",
+    see: ["TLS", "NIST"],
+  },
 ];

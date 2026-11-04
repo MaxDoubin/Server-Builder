@@ -386,4 +386,74 @@ export const SYSTEMS: Term[] = [
       "The socket number is not a performance tier; it only says what physically seats. A board and a processor can share an LGA number and still be incompatible over chipset, firmware or power, so the supported-CPU list is what decides.",
     see: ["CPU", "DIMM"],
   },
+  {
+    term: "SMR",
+    expansion: "Shingled Magnetic Recording",
+    field: "storage",
+    definition:
+      "A way of writing a hard drive's platters in which tracks overlap like roof shingles, so more of them fit. Rewriting one track means rewriting the tracks it overlaps, so the drive absorbs random writes in a small conventional region and reorganizes them into its shingled bands in the background.",
+    confusion:
+      "Sustained random writes are what a RAID rebuild or a ZFS resilver is, and that is the workload an SMR drive handles worst: it can stall to a crawl once the cache region fills, and some arrays have dropped such a drive as failed. Several vendors sold SMR drives in NAS-marketed lines without saying so on the product page until they disclosed it in 2020, so the model number, not the marketing name, is what to check.",
+    see: ["CMR", "RAID", "rebuild", "ZFS"],
+  },
+  {
+    term: "CMR",
+    expansion: "Conventional Magnetic Recording",
+    field: "storage",
+    definition:
+      "The ordinary way of writing a hard drive's platters, with tracks that do not overlap, so any sector can be rewritten in place without disturbing its neighbors. It is the name given to drives that are not SMR.",
+    confusion:
+      "A drive that never says SMR is not thereby shown to be CMR, and a NAS label or a 7200 rpm figure proves neither. Only the vendor's published recording technology for that exact model number does, and CMR names a recording method, not a speed rating.",
+    see: ["SMR", "NAS"],
+  },
+  {
+    term: "NAND",
+    expansion: "NOT-AND",
+    field: "storage",
+    definition:
+      "The kind of flash memory inside SSDs, USB sticks and phones. Data is written a page at a time but erased only a whole block at a time, which is why an SSD needs a controller that moves live data around before it can reclaim space.",
+    confusion:
+      "More bits per cell (TLC, QLC) buys capacity at the price of endurance and write speed, so two SSDs of the same size can differ a great deal in how much they can be written. Cells wear out from erase cycles, not from being read.",
+    see: ["SSD"],
+  },
+  {
+    term: "NAS",
+    expansion: "Network Attached Storage",
+    field: "storage",
+    definition:
+      "A box that holds its own disks and serves files from them over the network, usually with SMB or NFS, and manages the disks itself. The Synology and QNAP appliances are the familiar ones, and a TrueNAS machine is the same idea built from parts.",
+    confusion:
+      "A NAS is not a backup. It is one more copy that lives on the same network, subject to the same ransomware and the same fire as the machines it serves. And \"NAS drive\" is a marketing label on a disk, not a promise that the disk is CMR.",
+    see: ["RAID", "SMB", "NFS", "SMR"],
+  },
+  {
+    term: "ARC",
+    expansion: "Adaptive Replacement Cache",
+    field: "storage",
+    definition:
+      "The Adaptive Replacement Cache, the read cache ZFS keeps in RAM. It holds the blocks and metadata read recently or often, and it is why a ZFS box with plenty of memory answers repeat reads without touching the disks. In email authentication the same three letters name the Authenticated Received Chain; the surrounding article says which is meant.",
+    confusion:
+      "A ZFS server that seems to be using most of its memory is working as designed: the cache grows to fill what is free and gives it back under pressure. On Linux the ARC sits apart from the kernel's own page cache, so some tools count it as used memory that nothing else can have.",
+    see: ["ZFS"],
+  },
+  {
+    term: "HA",
+    expansion: "High availability",
+    field: "systems",
+    definition:
+      "Arranging a service so that it keeps running when a component fails, by having another one ready to take over. In a Proxmox cluster the HA manager restarts a guest on another node when its own node has stopped responding and has been fenced off.",
+    confusion:
+      "High availability is not a backup, because a failover copies the problem along with the service and a deleted file is deleted on every node. And two nodes cannot hold a majority vote alone: a two-node cluster needs a third vote, such as a QDevice, or one node going away stops the other.",
+    see: ["hypervisor", "VM"],
+  },
+  {
+    term: "PWM",
+    expansion: "Pulse-Width Modulation",
+    field: "hardware",
+    definition:
+      "Controlling something by switching it fully on and off very quickly and varying the share of time it spends on. A four-pin computer fan takes a PWM signal on its control wire, at about 25 kHz, and the percentage is how much of each cycle the signal is high.",
+    confusion:
+      "The percentage is a duty cycle, not a share of the fan's top speed. Speed and duty do not move together in a straight line, and every fan has a floor below which it stalls or reports zero RPM, so a requested percentage and the speed you hear do not match one to one.",
+    see: ["BMC", "IPMI"],
+  },
 ];

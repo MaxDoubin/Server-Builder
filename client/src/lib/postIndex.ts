@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 308 of them. Regenerate with script/generatePostIndex.ts.
+ * 323 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -3025,13 +3025,148 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/three-copies-one-credential.jpg",
     wordCount: 1561,
   },
+  {
+    slug: "cisco-acl-wildcard-mask",
+    title: "Cisco ACL Wildcard Masks: How to Calculate Them and Where They Bite",
+    date: "2026-11-04",
+    tags: ["networking","cisco","security","learning"],
+    excerpt: "A wildcard mask is the subnet mask inverted: 0 bits must match, 1 bits are ignored. How to calculate one, and what a mistyped mask silently matches.",
+    coverImage: "/images/blog/cisco-acl-wildcard-mask.jpg",
+    wordCount: 3417,
+  },
+  {
+    slug: "dell-mem0701-correctable-memory-error",
+    title: "Dell MEM0701 and MEM0702: Correctable Memory Error Rate Exceeded",
+    date: "2026-11-04",
+    tags: ["dell","servers","troubleshooting","hardware"],
+    excerpt: "What Dell's MEM0701, MEM0702 and MEM0802 mean, why one correctable error rarely means a bad DIMM, and why a restart for Post Package Repair comes first.",
+    coverImage: "/images/blog/dell-mem0701-correctable-memory-error.jpg",
+    wordCount: 3447,
+  },
+  {
+    slug: "fortigate-local-in-policy-trusted-hosts",
+    title: "FortiGate Trusted Hosts vs Local-In Policy: Locking Down Admin Access",
+    date: "2026-11-04",
+    tags: ["fortinet","firewall","security","networking"],
+    excerpt: "Local-in policies run before trusted hosts and have no implicit deny. See the two-rule lockdown Fortinet gives for CVE-2022-40684 and CVE-2024-55591.",
+    coverImage: "/images/blog/fortigate-local-in-policy-trusted-hosts.jpg",
+    wordCount: 3474,
+  },
+  {
+    slug: "gmail-550-5-7-26",
+    title: "Gmail 550 5.7.26: Which of Three Failures You Hit and the Fix",
+    date: "2026-11-04",
+    tags: ["email","security","dns","troubleshooting"],
+    excerpt: "Gmail's 550 5.7.26 covers three failures: no SPF or DKIM pass, an SPF hard fail, or a DMARC rejection. Read the bounce text, then fix the right record.",
+    coverImage: "/images/blog/gmail-550-5-7-26.jpg",
+    wordCount: 3406,
+  },
+  {
+    slug: "ilo-4-embedded-flash-sd-card-failed",
+    title: "iLO 4 Embedded Flash/SD-CARD Failed: NAND Format or New Board",
+    date: "2026-11-04",
+    tags: ["servers","troubleshooting","hardware","homelab"],
+    excerpt: "HPE's documented fix for the iLO 4 Embedded Flash/SD-CARD error: firmware minimums, five NAND format methods, the AC power pull and when it is the board.",
+    coverImage: "/images/blog/ilo-4-embedded-flash-sd-card-failed.jpg",
+    wordCount: 3403,
+  },
+  {
+    slug: "ipsec-no-proposal-chosen",
+    title: "IPsec NO_PROPOSAL_CHOSEN: Matching IKEv2 Proposals Between Vendors",
+    date: "2026-11-04",
+    tags: ["networking","security","firewall","troubleshooting","fortinet"],
+    excerpt: "How to read IKEv2 NO_PROPOSAL_CHOSEN errors on FortiGate, strongSwan, pfSense and Cisco, and which transforms, DH groups and PFS settings must match.",
+    coverImage: "/images/blog/ipsec-no-proposal-chosen.jpg",
+    wordCount: 3466,
+  },
+  {
+    slug: "mikrotik-bridge-vlan-filtering",
+    title: "MikroTik VLANs on RouterOS 7: Bridge VLAN Filtering Without Lockout",
+    date: "2026-11-04",
+    tags: ["networking","switching","homelab","security"],
+    excerpt: "Build RouterOS 7 trunk and access ports with bridge VLAN filtering, keep management access with Safe Mode, and check which chips offload it in hardware.",
+    coverImage: "/images/blog/mikrotik-bridge-vlan-filtering.jpg",
+    wordCount: 3459,
+  },
+  {
+    slug: "proxmox-ve-8-to-9-upgrade",
+    title: "Proxmox VE 8 to 9 Upgrade: pve8to9, Trixie Repos and What Breaks",
+    date: "2026-11-04",
+    tags: ["proxmox","virtualization","operations","homelab"],
+    excerpt: "How to upgrade Proxmox VE 8 to 9 with pve8to9 and trixie .sources repos, one node at a time, plus the sysctl.conf, cgroup v1 and NIC changes that break hosts.",
+    coverImage: "/images/blog/proxmox-ve-8-to-9-upgrade.jpg",
+    wordCount: 3516,
+  },
+  {
+    slug: "selinux-avc-denied",
+    title: "SELinux avc: denied: How to Read It and Fix the Right Thing",
+    date: "2026-11-04",
+    tags: ["linux","security","troubleshooting","operations"],
+    excerpt: "How to read an SELinux avc: denied record, tell a label from a port or boolean, fix it with semanage and restorecon, and when audit2allow is acceptable.",
+    coverImage: "/images/blog/selinux-avc-denied.jpg",
+    wordCount: 3483,
+  },
+  {
+    slug: "smr-vs-cmr-hard-drives",
+    title: "SMR vs CMR Hard Drives: How to Tell Which You Have and Why ZFS Cares",
+    date: "2026-11-04",
+    tags: ["storage","hardware","homelab"],
+    excerpt: "Which WD, Seagate and Toshiba models are SMR, why the Linux zoned flag cannot show it, and how DM-SMR stretched one ZFS resilver to nearly 230 hours.",
+    coverImage: "/images/blog/smr-vs-cmr-hard-drives.jpg",
+    wordCount: 3472,
+  },
+  {
+    slug: "ssh-no-matching-key-exchange-method-cisco",
+    title: "SSH to an Old Cisco Switch: No Matching Key Exchange Method Found",
+    date: "2026-11-04",
+    tags: ["networking","cisco","security","troubleshooting"],
+    excerpt: "Which OpenSSH releases dropped group1, group14-sha1 and ssh-rsa, the exact -o options and Host block for one switch, and the IOS 15 and IOS XE fixes.",
+    coverImage: "/images/blog/ssh-no-matching-key-exchange-method-cisco.jpg",
+    wordCount: 3465,
+  },
+  {
+    slug: "supermicro-fans-ramping-up-and-down",
+    title: "Supermicro Fans Ramping Up and Down: Fix the IPMI Fan Thresholds",
+    date: "2026-11-04",
+    tags: ["servers","hardware","homelab","troubleshooting"],
+    excerpt: "Why a Supermicro BMC sends quiet fans to full speed and back every few seconds, and how to lower the IPMI fan thresholds with ipmitool for Noctua-class fans.",
+    coverImage: "/images/blog/supermicro-fans-ramping-up-and-down.jpg",
+    wordCount: 3463,
+  },
+  {
+    slug: "supermicro-ipmi-default-password",
+    title: "Supermicro IPMI Default Password: ADMIN, Sticker and ipmicfg Reset",
+    date: "2026-11-04",
+    tags: ["servers","security","homelab","troubleshooting"],
+    excerpt: "The login is ADMIN, but boards since late 2019 ship a unique 10-letter sticker password. Where it is, how to reset it with ipmicfg, and why 47 bits is thin.",
+    coverImage: "/images/blog/supermicro-ipmi-default-password.jpg",
+    wordCount: 3446,
+  },
+  {
+    slug: "unifi-set-inform-adoption",
+    title: "UniFi Set-Inform: Adopting Devices Over SSH, DHCP Option 43 and DNS",
+    date: "2026-11-04",
+    tags: ["networking","wireless","homelab","troubleshooting"],
+    excerpt: "How to adopt a UniFi device across VLANs: set-inform over SSH, default logins, DHCP option 43 hex, the unifi DNS name and the ports to open.",
+    coverImage: "/images/blog/unifi-set-inform-adoption.jpg",
+    wordCount: 3448,
+  },
+  {
+    slug: "wireguard-handshake-did-not-complete",
+    title: "WireGuard Handshake Did Not Complete After 5 Seconds: Causes and Fixes",
+    date: "2026-11-04",
+    tags: ["networking","security","troubleshooting","linux","homelab"],
+    excerpt: "What WireGuard's \"did not complete after 5 seconds\" log means, how to tell whether packets reach the server, and which port, key, clock or NAT fault causes it.",
+    coverImage: "/images/blog/wireguard-handshake-did-not-complete.jpg",
+    wordCount: 3459,
+  },
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 308;
+export const POST_COUNT = 323;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and eight";
+export const POST_COUNT_SPELLED = "three hundred and twenty three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3040,10 +3175,10 @@ export const POST_COUNT_SPELLED = "three hundred and eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2383;
+export const CITATION_COUNT = 2743;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 181;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2545;
+export const CHECKED_URL_COUNT = 2905;

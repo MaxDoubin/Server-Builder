@@ -240,4 +240,24 @@ export const NETWORKING: Term[] = [
       "It routes within one network, where BGP routes between them. Reaching for BGP inside a small site, or for OSPF between two separate companies, is using the wrong half of the pair.",
     see: ["BGP"],
   },
+  {
+    term: "ACL",
+    expansion: "Access control list",
+    field: "networking",
+    definition:
+      "An ordered list of permit and deny rules checked against traffic or against a user's request. On a router it filters packets by address, protocol and port, and the first rule that matches decides.",
+    confusion:
+      "Order matters, and a Cisco ACL ends in an implicit deny that is not shown in the configuration, so a list that only permits what you meant to allow also blocks everything else. On a file server the same word means a per-file list of who may do what, which is a different thing.",
+    see: ["firewall", "RBAC"],
+  },
+  {
+    term: "AP",
+    expansion: "Access point",
+    field: "networking",
+    definition:
+      "A wireless access point, the device that joins Wi-Fi clients to the wired network. It bridges at layer 2 and usually takes its power over the Ethernet cable.",
+    confusion:
+      "An AP is not a router, and adding a second one on the same network does not create a second network: both feed the same broadcast domain unless they are put on different VLANs. More access points do not mean more range if they are close enough to talk over each other on the same channel.",
+    see: ["VLAN", "broadcast domain"],
+  },
 ];

@@ -201,6 +201,16 @@ const NOT_JARGON: Record<string, string> = {
   FG: "shorthand for FortiGate in CLI output and model names, not a term",
   CN: "the Common Name field of an X.509 certificate, covered by the certificate entry",
   ROM: "Read-Only Memory; appears as DVD-ROM, firmware ROM and Boot ROM, each named in context",
+  ADMIN: "the literal default account name on many server management boards, quoted as a credential rather than used as a term",
+  WD: "a company name (Western Digital), like HPE and AMD",
+  GUI: "assumed knowledge for this audience",
+  XE: "part of the Cisco product name IOS XE",
+  MUST: "a requirement keyword in capitals, quoted from standards (RFC 2119) rather than used as jargon",
+  SHOULD: "a requirement keyword in capitals, quoted from standards (RFC 2119) rather than used as jargon",
+  IETF: "a standards body, like IEEE",
+  IPMICFG: "the name of Supermicro's command-line utility, cited as a tool and explained where it is first used",
+  AC: "ambiguous between alternating current and product names; each article says which",
+  X11: "a Supermicro motherboard generation name, like R730 for Dell; the articles that use it say what it is",
 };
 
 const THRESHOLD = 25;
