@@ -110,7 +110,7 @@ export function ReverseDnsName() {
     }
     if (input.kind === "ptr" && input.classless && isAddress) {
       notes.push(
-        `${input.name.replace(/\.$/, "")} is an RFC 2317 target name. A resolver asking for ${ptrName(4, value)} finds a CNAME in the /24 zone pointing here, and the PTR record is answered from the delegated child zone.`,
+        `${input.name.replace(/\.$/, "")} is an RFC 2317 name. A resolver asking for ${ptrName(4, value)} finds a CNAME in the /24 zone that points into the child zone, and the PTR record is answered from there.`,
       );
     }
     if (input.kind === "ptr" && input.note) notes.push(input.note);

@@ -299,6 +299,12 @@ function annotate(detail: SumDetail, labelFor: (offset: number) => { label: stri
 
 export type AddressParse = { ok: true; bytes: [number, number, number, number] } | { ok: false; error: string };
 
+/** Cuts pasted text short before it is echoed in an error, so a long run of junk cannot widen the page. */
+function clip(text: string, max = 12): string {
+  const chars = Array.from(text);
+  return chars.length > max ? `${chars.slice(0, max).join("")}...` : text;
+}
+
 export function parseIpv4(raw: string, name: string): AddressParse {
   const text = raw.trim();
   if (text === "") return { ok: false, error: `Enter the ${name} address.` };
@@ -309,7 +315,7 @@ export function parseIpv4(raw: string, name: string): AddressParse {
   const out: number[] = [];
   for (const part of parts) {
     if (!/^\d{1,3}$/.test(part)) {
-      return { ok: false, error: `"${part}" in the ${name} address is not a number from 0 to 255.` };
+      return { ok: false, error: `"${clip(part)}" in the ${name} address is not a number from 0 to 255.` };
     }
     if (part.length > 1 && part.startsWith("0")) {
       // inet_aton reads a leading zero as octal, so 010 is 8 there and 10 here.

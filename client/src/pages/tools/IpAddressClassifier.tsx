@@ -388,7 +388,7 @@ export function IpAddressClassifier() {
                 ) : (
                   <p className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {top
-                      ? `${top.entry.name} comes from the ${REGISTRY_LABEL[top.entry.registry]}, which does not publish the source, destination, forwardable and reachability columns. The description on the left says how the block behaves.`
+                      ? `${top.entry.name} comes from the ${REGISTRY_LABEL[top.entry.registry]}, which does not publish the source, destination, forwardable and reachability columns. The description under the classification says how the block behaves.`
                       : result.fallback?.kind === "reserved"
                         ? "No special-purpose entry applies, so the registry has no attributes to report. This address is in space the IETF has not allocated for any use, so it should not appear as a source or a destination in real traffic."
                         : "No special-purpose entry applies, so the registry has no attributes to report. An ordinary unicast address is valid as a source and a destination and may be forwarded and reached globally, subject to whoever routes it."}

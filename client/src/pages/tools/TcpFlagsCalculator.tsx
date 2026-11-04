@@ -171,7 +171,7 @@ export function TcpFlagsCalculator() {
                 id="tcp-flags-error"
                 role="alert"
                 data-testid="text-flags-error"
-                className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]"
+                className="mt-2 break-words font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]"
               >
                 {draftError}
               </p>

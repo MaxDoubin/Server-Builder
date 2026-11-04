@@ -347,6 +347,10 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   // F, E and e are also hex digits, so "FF", "FE" or a lone "F" could be
   // either; guessing would silently read 0xff as FIN.
   if (/^[FEe]+$/.test(text)) {
+    // More than four digits cannot be flags in either reading (and tcpdump
+    // letters never repeat), so a long run is simply too big, and is not
+    // echoed back in full.
+    if (text.length > 4) return TOO_BIG;
     // tcpdump never repeats a letter, so "FF" or "EE" can only be hex.
     const repeated = new Set(text).size !== text.length;
     return {
