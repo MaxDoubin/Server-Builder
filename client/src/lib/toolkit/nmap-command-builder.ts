@@ -113,6 +113,22 @@ function cleanTarget(raw: string): string {
   return value;
 }
 
+/**
+ * Single-quote a token that holds a shell wildcard. Nmap accepts 192.168.0.*
+ * and --script http-*, but a shell expands an unquoted * against filenames in
+ * the current directory first, so the pasted command would scan or run the
+ * wrong thing. Everything else the allowlists let through is already inert.
+ */
+function quoteGlob(token: string): string {
+  return token.includes("*") ? `'${token}'` : token;
+}
+
+/** The target as it goes into the command: each space separated token stays its own argument. */
+function shellTarget(raw: string): string {
+  const target = cleanTarget(raw);
+  return target.split(/\s+/).map(quoteGlob).join(" ");
+}
+
 export interface NmapFlag {
   flag: string;
   explanation: string;
@@ -170,7 +186,7 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
   if (o.defaultScripts) add("-sC", "Run the default safe NSE script set, the same as --script=default.");
 
   const scripts = cleanToken(o.scripts, /^[A-Za-z0-9,._*-]+$/);
-  if (scripts) add(`--script ${scripts}`, "Run these named NSE scripts or categories.");
+  if (scripts) add(`--script ${quoteGlob(scripts)}`, "Run these named NSE scripts or categories.");
 
   const timing = cleanToken(o.timing, /^[0-5]$/);
   if (timing && timing !== "3") {
@@ -195,7 +211,7 @@ export function buildNmapParts(o: NmapOptions): { parts: string[]; flags: NmapFl
     flags.push({ flag: `${flag} ${name}`, explanation });
   }
 
-  parts.push(cleanTarget(o.target));
+  parts.push(shellTarget(o.target));
   return { parts, flags };
 }
 

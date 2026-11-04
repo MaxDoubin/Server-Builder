@@ -143,7 +143,9 @@ assert.strictEqual(
   "nmap -sT h",
 );
 // A legitimate category plus wildcard survives.
-assert.ok(buildNmapCommand(opts({ target: "h", scanType: "sT", scripts: "vuln,http-*", timing: "3" })).includes("--script vuln,http-*"));
+assert.ok(buildNmapCommand(opts({ target: "h", scanType: "sT", scripts: "vuln,http-*", timing: "3" })).includes("--script 'vuln,http-*'"));
+// ...and the wildcard is quoted so a shell cannot expand it against filenames in the current directory.
+assert.ok(!buildNmapCommand(opts({ target: "h", scanType: "sT", scripts: "http-*", timing: "3" })).includes(" http-*"));
 
 // V5. Output filename with path traversal is replaced by the safe default "scan".
 assert.strictEqual(
@@ -194,7 +196,13 @@ for (const hostile of [
 // Ranges, lists, CIDR and wildcards that really are targets still pass, a hyphen inside a token included.
 for (const good of ["192.168.1.1-50", "10.0.0.0/24", "scanme.nmap.org example.com", "192.168.0.*", "fe80::1", "a-b.example.com", "10.0.1-3.1"]) {
   const cmd = buildNmapCommand(opts({ target: good, scanType: "sS", portMode: "default", timing: "3" }));
-  assert.ok(cmd.endsWith(` ${good}`), `target ${good} kept: ${cmd}`);
+  const expected = good.split(/\s+/).map((t) => (t.includes("*") ? `'${t}'` : t)).join(" ");
+  assert.ok(cmd.endsWith(` ${expected}`), `target ${good} kept: ${cmd}`);
 }
+// A wildcard target is single quoted so the shell leaves it for nmap; a list keeps one argument per token.
+assert.ok(buildNmapCommand(opts({ target: "192.168.0.*", scanType: "sS", portMode: "default", timing: "3" })).endsWith(" '192.168.0.*'"));
+assert.ok(buildNmapCommand(opts({ target: "10.0.0.* host.example", scanType: "sS", portMode: "default", timing: "3" })).endsWith(" '10.0.0.*' host.example"));
+// The plain-language description shows the target without quotes.
+assert.ok(describeNmapCommand(opts({ target: "192.168.0.*", scanType: "sS", portMode: "default", timing: "3" }))[0].includes("192.168.0.*"));
 
 console.log("nmap-command-builder: verifier reference cases passed");
