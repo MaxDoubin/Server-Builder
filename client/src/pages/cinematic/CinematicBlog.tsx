@@ -6,6 +6,7 @@ import type { PostMeta } from "@/lib/postIndex";
 import { BlogSearch } from "@/components/blog/BlogSearch";
 import { ContinueReading } from "@/components/blog/ContinueReading";
 import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
+import { FeaturedResearch } from "@/components/blog/FeaturedResearch";
 import { DIFFICULTIES, postDifficulty, type Difficulty } from "@/lib/postDifficulty";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
@@ -235,6 +236,14 @@ export function CinematicBlog() {
           />
 
           {/*
+            The lead card, above search on purpose: it is the one item this
+            page points at before the archive, and searching or filtering the
+            list below leaves it where it is. Renders nothing until its post
+            is published.
+          */}
+          <FeaturedResearch />
+
+          {/*
             Search, random pick, and the two hub pages.
 
             relative z-40 on the reveal wrapper is load bearing: framer's
@@ -446,7 +455,14 @@ export function CinematicBlog() {
                                     img.src = post.coverImage;
                                   }
                                 }}
-                                alt={post.title}
+                                /*
+                                  Empty alt: the title is the heading inside
+                                  this same link, so naming the image after
+                                  it made a screen reader read the title
+                                  twice, and it described each photo as
+                                  something it may not show.
+                                */
+                                alt=""
                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 loading="lazy"
                                 decoding="async"

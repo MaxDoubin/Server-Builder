@@ -242,9 +242,10 @@ export function CinematicProjects() {
                                 the grid around as it loaded. Every cover is
                                 16:9 at 1600x900.
                               */}
+                              {/* Empty alt: the card's h2 already names the project. */}
                               <img
                                 src={project.coverImage}
-                                alt={project.title}
+                                alt=""
                                 width={1600}
                                 height={900}
                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"

@@ -360,9 +360,15 @@ export function CinematicBlogPost() {
           data-print-unstack
           className="relative h-[70vh] w-full overflow-hidden"
         >
+          {/*
+            Empty alt: the title is laid over this photo as the page's h1, so
+            alt={post.title} made screen readers read it twice, and on a post
+            whose cover is a photo of something else it described the photo
+            wrongly.
+          */}
           <img
             src={post.coverImage}
-            alt={post.title}
+            alt=""
             data-print-hide
             className="absolute inset-0 h-full w-full object-cover"
             width="1600"

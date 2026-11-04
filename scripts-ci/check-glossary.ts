@@ -173,6 +173,7 @@ const NOT_JARGON: Record<string, string> = {
   S2: "part of the BOSS-S2 model name, covered by the BOSS entry",
   N1: "part of the BOSS-N1 model name, covered by the BOSS entry",
   VE: "part of the product name Proxmox VE",
+  RAW: "part of the codec name Apple ProRes RAW, not an acronym; the Afterburner posts explain the format where they use it",
   DC: "ambiguous between direct current and product-line prefixes such as Intel DC; each article says which",
   CLI: "assumed knowledge for this audience",
   ISO: "assumed knowledge: an installer disk image",

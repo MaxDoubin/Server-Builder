@@ -200,6 +200,9 @@ const CinematicOdirect = lazyWithRetry(() =>
 const CinematicReuseport = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicReuseport").then((m) => ({ default: m.CinematicReuseport })),
 );
+const CinematicAfterburner = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAfterburner").then((m) => ({ default: m.CinematicAfterburner })),
+);
 const CinematicMalloctrim = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicMalloctrim").then((m) => ({ default: m.CinematicMalloctrim })),
 );
@@ -1292,6 +1295,11 @@ function AnimatedRoutes() {
           <Route path="/reuseport">
             <Suspense fallback={<RouteLoading />}>
               <CinematicReuseport />
+            </Suspense>
+          </Route>
+          <Route path="/afterburner">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAfterburner />
             </Suspense>
           </Route>
           <Route path="/malloctrim">
