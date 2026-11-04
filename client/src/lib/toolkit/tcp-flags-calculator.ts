@@ -10,8 +10,8 @@
  *
  * Throughout this file a flags value is that 12-bit number.
  *
- * tcpdump letters follow print-tcp.c: F S R P . U E W, and since tcpdump
- * 4.99.7 a lowercase e for AE. Older tcpdump releases leave AE out.
+ * tcpdump letters follow print-tcp.c: F S R P . U E W, and in recent
+ * releases a lowercase e for AE. Older tcpdump releases leave AE out.
  *
  * Pure functions, no React and no DOM.
  */
@@ -168,7 +168,7 @@ export function setFlags(value: number): FlagDef[] {
 /**
  * tcpdump's bracket notation. Order follows tcpdump's own table
  * (tcp_flag_values in print-tcp.c): F, S, R, P, then "." for ACK, U, E, W,
- * and e for AE (tcpdump 4.99.7 and later). No flags prints as [none].
+ * and e for AE (recent tcpdump releases only). No flags prints as [none].
  * The reserved bits have no letter.
  */
 export function tcpdumpNotation(value: number): string {
@@ -329,8 +329,15 @@ export function parseFlagsInput(raw: string): ParsedFlags | null {
   if (/^-\s*(\d|0x|0b)/i.test(text)) return { ok: false, error: "Flags are bits, so the value is never negative." };
   if (/^\d+$/.test(text)) {
     const digits = text.replace(/^0+(?=.)/, "");
-    if (digits.length > 5) return TOO_BIG;
-    return fromNumber(Number(digits), "decimal");
+    const parsed = digits.length > 5 ? TOO_BIG : fromNumber(Number(digits), "decimal");
+    // A run of 0s and 1s of an unusual length was probably meant as binary.
+    if (!parsed.ok && /^[01]+$/.test(text) && text.length > 1) {
+      return {
+        ok: false,
+        error: `Read as decimal, ${text.length > 12 ? "that" : text} is larger than 16 bits. For binary, add 0b or use exactly 8, 9, 12 or 16 digits.`,
+      };
+    }
+    return parsed;
   }
 
   // Bare tcpdump letters, such as S. or FPU or SEWe. Uppercase as tcpdump

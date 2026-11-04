@@ -325,7 +325,7 @@ export function TransceiverReference() {
               {emptyMessage}
             </p>
           ) : null}
-          <div className={rows.length === 0 ? "hidden" : "overflow-x-auto"}>
+          <div className={rows.length === 0 ? "hidden" : "relative overflow-x-auto"}>
             <table className="w-full min-w-[1120px] border-collapse text-left" data-testid="table-transceivers">
               <caption className="sr-only">
                 Transceiver modules with form factor, speed, media, wavelength, reach, connector, lanes and notes
@@ -381,7 +381,7 @@ export function TransceiverReference() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ToolPanel title="Form factors">
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[520px] border-collapse text-left" data-testid="table-form-factors">
                 <caption className="sr-only">Pluggable form factors, their electrical lanes and what their ports accept</caption>
                 <thead>
@@ -415,7 +415,7 @@ export function TransceiverReference() {
           </ToolPanel>
 
           <ToolPanel title="Fiber types">
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[480px] border-collapse text-left" data-testid="table-fiber-types">
                 <caption className="sr-only">Multimode and single-mode fiber grades with core size, bandwidth and jacket color</caption>
                 <thead>

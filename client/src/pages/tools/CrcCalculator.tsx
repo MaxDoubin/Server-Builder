@@ -181,7 +181,11 @@ export function CrcCalculator() {
     stop before it touches state.
   */
   useEffect(() => {
-    if (mode !== "file" || !file || !params) return;
+    if (mode !== "file" || !file || !params) {
+      // A read cancelled by the cleanup below must not leave the progress bar up.
+      setFileStatus((current) => (current === "reading" ? "idle" : current));
+      return;
+    }
     const run = ++runRef.current;
     setFileError(null);
     if (file.size > MAX_FILE_BYTES) {

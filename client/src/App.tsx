@@ -506,6 +506,18 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const IopsCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/IopsCalculator").then((m) => ({ default: m.IopsCalculator })),
+);
+const PoeBudgetCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/PoeBudgetCalculator").then((m) => ({ default: m.PoeBudgetCalculator })),
+);
+const StorageGrowthForecast = lazyWithRetry(() =>
+  import("@/pages/tools/StorageGrowthForecast").then((m) => ({ default: m.StorageGrowthForecast })),
+);
+const ZfsCapacityCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/ZfsCapacityCalculator").then((m) => ({ default: m.ZfsCapacityCalculator })),
+);
 const FirewallRuleBuilder = lazyWithRetry(() =>
   import("@/pages/tools/FirewallRuleBuilder").then((m) => ({ default: m.FirewallRuleBuilder })),
 );
@@ -1727,6 +1739,26 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/iops-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <IopsCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/poe-budget-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <PoeBudgetCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/storage-growth-forecast">
+            <Suspense fallback={<RouteLoading />}>
+              <StorageGrowthForecast />
+            </Suspense>
+          </Route>
+          <Route path="/tools/zfs-capacity-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <ZfsCapacityCalculator />
             </Suspense>
           </Route>
           <Route path="/tools/firewall-rule-builder">

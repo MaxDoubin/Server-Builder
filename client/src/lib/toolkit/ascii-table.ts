@@ -211,7 +211,11 @@ export const ENTITY_SYNONYMS = new Map<string, number>([
 
 /* ------------------------------------------------------------- C1 */
 
-/** C1 controls, 0x80 to 0x9F, in ISO/IEC 6429 order. */
+/**
+ * C1 controls, 0x80 to 0x9F, with the Unicode NameAliases names. Most come
+ * from ISO/IEC 6429; 0x80, 0x81 and 0x99 were never approved (see
+ * C1_FIGMENTS), and IND at 0x84 was withdrawn from the 1992 edition.
+ */
 const C1: ControlSpec[] = [
   { abbr: "PAD", name: "Padding character" },
   { abbr: "HOP", name: "High octet preset" },
@@ -507,7 +511,9 @@ function latin1Row(code: number): CodeRow {
         : "A reference to this control is a parse error in HTML.",
       note: C1_FIGMENTS.has(code)
         ? "Proposed in a draft standard but never approved; the name survives only as a Unicode alias."
-        : null,
+        : code === 0x84
+          ? "Deprecated and then withdrawn from ISO/IEC 6429. It moved down one line, which LF already does."
+          : null,
       aliases: spec.aliases ?? [],
       differsInCp1252: cp1252 !== null,
     };

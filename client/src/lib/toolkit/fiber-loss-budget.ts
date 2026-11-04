@@ -173,7 +173,7 @@ export const TRANSCEIVERS: Transceiver[] = [
     channelLossNote: "300 m of OM3",
     mmfReachM: { OM3: 300, OM4: 400, OM5: 400 },
     clause: "IEEE 802.3 Clause 52",
-    note: "Very little budget. 2.6 dB is roughly two connector pairs at 0.75 dB plus 300 m of fiber.",
+    note: "Very little budget. 2.6 dB is roughly two connector pairs at 0.75 dB plus 300 m of fiber. It is the 300 m OM3 figure, so it is cautious for OM4 runs out to 400 m.",
   },
   {
     id: "10gbase-lr",
@@ -203,7 +203,7 @@ export const TRANSCEIVERS: Transceiver[] = [
     channelLossNote: "100 m of OM4",
     mmfReachM: { OM3: 70, OM4: 100, OM5: 100 },
     clause: "IEEE 802.3by Clause 112",
-    note: "The tightest budget here: 1.9 dB is two connector pairs at 0.75 dB plus a little fiber.",
+    note: "Tied with 100GBASE-SR4 for the tightest budget here: 1.9 dB is two connector pairs at 0.75 dB plus a little fiber.",
   },
   {
     id: "100gbase-sr4",
@@ -266,11 +266,13 @@ export const RX_RANGE_DBM = { min: -50, max: 10 };
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; message: string };
 
-const PLAIN = /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$|^[+-]?\.\d+$/;
+/** A trailing point ("-9.") is accepted so typing a decimal never flashes an error. */
+const PLAIN = /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$|^[+-]?\.\d+$/;
 
 /** A decimal number, with optional thousands commas. Null for an empty string. */
 export function parseDecimal(raw: string): Parsed<number | null> {
-  const text = raw.trim();
+  // U+2212 is the minus sign that datasheets and PDFs use in place of a hyphen.
+  const text = raw.trim().replace(/\u2212/g, "-");
   if (text === "") return { ok: true, value: null };
   if (text.length > 24) return { ok: false, message: "That is too long to be a number here." };
   if (!PLAIN.test(text)) return { ok: false, message: `"${text}" is not a number. Use digits, such as 0.75 or -9.5.` };

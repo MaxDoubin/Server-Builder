@@ -300,7 +300,7 @@ export const CATALOG: CatalogEntry[] = [
   entry("common", "crc-16-xmodem", "CRC-16/XMODEM", ["CRC-16/ACORN", "CRC-16/LTE", "CRC-16/V-41-MSB", "XMODEM", "ZMODEM"], 16, 0x1021n, 0n, false, false, 0n, 0x31c3n, "XMODEM file transfer."),
   entry("common", "crc-16-modbus", "CRC-16/MODBUS", ["MODBUS"], 16, 0x8005n, F16, true, true, 0n, 0x4b37n, "Modbus RTU frames, which send the low byte first."),
   entry("common", "crc-32", "CRC-32 (ISO-HDLC)", ["CRC-32", "CRC-32/ADCCP", "CRC-32/V-42", "PKZIP"], 32, 0x04c11db7n, F32, true, true, F32, 0xcbf43926n, "Ethernet frame check sequence, gzip, ZIP and PNG."),
-  entry("common", "crc-32c", "CRC-32C (Castagnoli)", ["CRC-32/ISCSI", "CRC-32/CASTAGNOLI"], 32, 0x1edc6f41n, F32, true, true, F32, 0xe3069283n, "iSCSI (RFC 3720), SCTP (RFC 4960), and ext4 and Btrfs metadata."),
+  entry("common", "crc-32c", "CRC-32C (Castagnoli)", ["CRC-32/ISCSI", "CRC-32/CASTAGNOLI"], 32, 0x1edc6f41n, F32, true, true, F32, 0xe3069283n, "iSCSI (RFC 3720), SCTP (RFC 4960), ext4 metadata checksums and Btrfs."),
   entry("common", "crc-32-bzip2", "CRC-32/BZIP2", ["CRC-32/AAL5", "CRC-32/DECT-B", "B-CRC-32"], 32, 0x04c11db7n, F32, false, false, F32, 0xfc891918n, "bzip2. The CRC-32 polynomial processed most significant bit first."),
   entry("common", "crc-64-ecma-182", "CRC-64/ECMA-182", ["CRC-64"], 64, 0x42f0e1eba9ea3693n, 0n, false, false, 0n, 0x6c40df5f0b497347n, "The polynomial standardized in ECMA-182."),
   entry("common", "crc-64-xz", "CRC-64/XZ", ["CRC-64/GO-ECMA"], 64, 0x42f0e1eba9ea3693n, F64, true, true, F64, 0x995dc9bbdf1939fan, "The xz file format and the ECMA table in Go's hash/crc64."),

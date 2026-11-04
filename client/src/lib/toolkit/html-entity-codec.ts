@@ -233,6 +233,8 @@ export type RefIssue =
   | "attribute-legacy"
   /** "&name;" where name is not in this table. A browser may know it. */
   | "unknown-name"
+  /** "&name" with no semicolon where name is a real but non-legacy name: left as typed, not a parse error. */
+  | "needs-semicolon"
   /** "&#" or "&#x" with no digits after it: left as typed. */
   | "no-digits"
   /** &#0; becomes U+FFFD. */
@@ -426,6 +428,13 @@ export function decodeEntities(input: string, context: DecodeContext = "text"): 
       record({ start: amp, end: runEnd + 1, raw, kind: "named", decoded: false, result: raw, semicolon: true, issue: "unknown-name" });
       i = runEnd + 1;
     } else {
+      const known = runLength <= MAX_NAME ? BY_IDENTIFIER.get(s.slice(amp + 1, runEnd) + ";") : undefined;
+      if (known) {
+        // Not an error in the standard, but the likeliest surprise: "&hellip"
+        // is a real name that only exists with its semicolon.
+        const raw = s.slice(amp, runEnd);
+        record({ start: amp, end: runEnd, raw, kind: "named", decoded: false, result: raw, semicolon: false, issue: "needs-semicolon", name: known.name });
+      }
       i = runEnd;
     }
   }

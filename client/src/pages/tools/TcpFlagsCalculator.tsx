@@ -222,7 +222,7 @@ export function TcpFlagsCalculator() {
             ) : null}
             {ae ? (
               <p className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                tcpdump 4.99.7 and later print AE as a lowercase e. Older releases leave it out of the brackets.
+                Recent tcpdump releases print AE as a lowercase e. Older releases leave it out of the brackets.
               </p>
             ) : null}
             {value & RESERVED_MASK ? (

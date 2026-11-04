@@ -733,6 +733,38 @@ export const TOOLS: ToolEntry[] = [
     category: "systems",
     keywords: ["umask", "umask -s", "default permissions", "file mode", "chmod", "octal", "setgid", "default acl", "linux"],
   },
+  {
+    slug: "iops-calculator",
+    name: "IOPS calculator",
+    blurb:
+      "Front-end IOPS of a disk array from disk type, RAID write penalty and read/write mix, plus the disks needed for a target workload. Runs in your browser.",
+    category: "infrastructure",
+    keywords: ["iops", "raid", "write penalty", "raid5", "raid10", "hdd", "ssd", "nvme", "storage performance", "disk count"],
+  },
+  {
+    slug: "poe-budget-calculator",
+    name: "PoE budget calculator",
+    blurb:
+      "Add PoE devices by 802.3 class or measured draw, compare them to a switch's budget and port type, and see PSE to PD cable loss. Runs in your browser.",
+    category: "infrastructure",
+    keywords: ["poe", "power over ethernet", "802.3af", "802.3at", "802.3bt", "poe budget", "pse", "pd", "lldp", "switch power"],
+  },
+  {
+    slug: "storage-growth-forecast",
+    name: "Storage growth forecast",
+    blurb:
+      "Project when a volume crosses its alert thresholds and fills, with linear or compound growth, a capacity what-if and an SVG chart. Runs in your browser.",
+    category: "infrastructure",
+    keywords: ["storage", "capacity planning", "disk full", "growth rate", "forecast", "threshold", "capacity", "compound growth", "trend", "sysadmin"],
+  },
+  {
+    slug: "zfs-capacity-calculator",
+    name: "ZFS capacity calculator",
+    blurb:
+      "Usable space of a ZFS pool from vdev layout, disk size, ashift and recordsize, with RAIDZ padding, slop space, the 80% line and fault tolerance.",
+    category: "infrastructure",
+    keywords: ["zfs", "zpool", "raidz", "raidz2", "mirror", "vdev", "ashift", "recordsize", "slop space", "openzfs"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

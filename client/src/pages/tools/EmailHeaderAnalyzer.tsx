@@ -477,7 +477,15 @@ function Results({ a }: { a: EmailAnalysis }) {
 
 export function EmailHeaderAnalyzer() {
   const [raw, setRaw] = useState("");
-  const outcome = useMemo(() => analyzeHeaders(raw), [raw]);
+  const outcome = useMemo<ReturnType<typeof analyzeHeaders>>(() => {
+    // The analyzer is written not to throw; this guard keeps an unforeseen
+    // input from ever taking the page down.
+    try {
+      return analyzeHeaders(raw);
+    } catch {
+      return { kind: "error", message: "These headers could not be analyzed. Check that the paste is plain header text." };
+    }
+  }, [raw]);
   const a = outcome.kind === "ok" ? outcome.value : null;
 
   const summary = a

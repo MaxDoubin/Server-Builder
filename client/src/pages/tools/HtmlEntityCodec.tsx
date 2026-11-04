@@ -105,6 +105,8 @@ const ISSUE_TEXT: Record<RefIssue, string> = {
   "attribute-legacy":
     "Left as typed. In an attribute value, a legacy name with no semicolon followed by = or a letter or digit is not decoded.",
   "unknown-name": `Not one of the ${TABLE_SIZE} names in this table. A browser decodes it only if it is one of the other HTML5 names; otherwise it stays as typed.`,
+  "needs-semicolon":
+    `Left as typed. This name exists only with its semicolon; just ${LEGACY_NAME_COUNT} legacy names decode without one.`,
   "no-digits": "No digits follow, so this is not a reference and stays as typed.",
   null: "A reference to NUL is never NUL: the parser substitutes U+FFFD.",
   "out-of-range": "Past U+10FFFF, the end of Unicode, so the parser substitutes U+FFFD.",

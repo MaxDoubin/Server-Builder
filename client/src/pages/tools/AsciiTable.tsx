@@ -640,7 +640,8 @@ export function AsciiTable() {
             </div>
           )}
           <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-            * A numeric reference to this control is a parse error in HTML, or, for 0, is replaced with U+FFFD.
+            * Writing this control as a numeric reference is a parse error in HTML. The parser replaces &amp;#0; with
+            U+FFFD and maps &amp;#128; to &amp;#159; through Windows-1252 where that table assigns a character.
           </p>
         </ToolPanel>
       </div>

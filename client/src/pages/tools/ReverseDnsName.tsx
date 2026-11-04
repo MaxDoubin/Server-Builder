@@ -501,8 +501,8 @@ export function ReverseDnsName() {
                         <CodeBlock text={zoneFiles.child} label="Copy the child zone records" testId="text-child-zone" />
                       </div>
                       <p className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
-                        RFC 2317 does not fix the child label. Its examples use a slash, but it advises a more
-                        conservative character such as a hyphen, because some DNS software handles the slash badly.
+                        RFC 2317 does not fix the child label. Its examples use a slash; a hyphen is a common
+                        alternative, because a slash is not valid in host names and some tools refuse it.
                         Blocks from /{CLASSLESS_MIN} to /32 are handled here.
                       </p>
                     </>

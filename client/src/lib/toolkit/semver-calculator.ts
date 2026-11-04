@@ -22,7 +22,7 @@ export const MAX_LENGTH = 256;
 /** Largest number npm's semver accepts in major, minor or patch (2^53 - 1). */
 export const MAX_SAFE = 9007199254740991n;
 /** Longest range this tool will evaluate, after whitespace is collapsed. */
-export const MAX_RANGE_LENGTH = 2048;
+export const MAX_RANGE_LENGTH = 1024;
 /** Most `||` alternatives this tool will evaluate in one range. */
 export const MAX_RANGE_SETS = 64;
 /** Most versions read from a list. */

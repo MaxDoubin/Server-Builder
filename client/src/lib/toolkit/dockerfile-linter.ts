@@ -650,23 +650,26 @@ const RESERVED = new Set(["if", "then", "else", "elif", "fi", "do", "done", "whi
 export function shellCommands(text: string): ShellCmd[] {
   const cmds: ShellCmd[] = [];
   let words: ShellWord[] = [];
-  let cur: string | null = null;
+  let cur = "";
+  let inWord = false;
   let curPos = 0;
   let skipTarget = false;
   const n = text.length;
   let i = 0;
 
   const begin = () => {
-    if (cur === null) {
+    if (!inWord) {
+      inWord = true;
       cur = "";
       curPos = i;
     }
   };
   const endWord = () => {
-    if (cur !== null) {
+    if (inWord) {
       if (skipTarget) skipTarget = false;
       else words.push({ text: cur, pos: curPos });
-      cur = null;
+      inWord = false;
+      cur = "";
     }
   };
   const endCmd = (sep: string) => {
@@ -742,11 +745,14 @@ export function shellCommands(text: string): ShellCmd[] {
       while (k < n && text[k] !== "`") k += text[k] === "\\" ? 2 : 1;
       cur += text.slice(i, Math.min(k + 1, n));
       i = k + 1;
-    } else if (c === "#" && cur === null) {
+    } else if (c === "#" && !inWord) {
       while (i < n && text[i] !== "\n") i++;
     } else if (c === ">" || c === "<" || (c === "&" && text[i + 1] === ">")) {
       // A redirection. A bare number before it names the descriptor.
-      if (cur !== null && /^\d+$/.test(cur)) cur = null;
+      if (inWord && /^\d+$/.test(cur)) {
+        inWord = false;
+        cur = "";
+      }
       else endWord();
       let j = i;
       if (text[j] === "&") j++;

@@ -486,7 +486,9 @@ export function SemverCalculator() {
                   </div>
                 ))}
               </div>
-              {/-0(?![0-9A-Za-z.-])/.test(range.normalized) ? (
+              {range.sets.some((set) =>
+                set.comparators.some((c) => c.semver !== null && c.semver.prerelease.length === 1 && c.semver.prerelease[0] === "0"),
+              ) ? (
                 <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                   -0 is the lowest possible prerelease, so an upper bound such as &lt;2.0.0-0 keeps out 2.0.0 and every
                   2.0.0 prerelease too.

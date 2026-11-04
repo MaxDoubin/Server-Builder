@@ -258,7 +258,7 @@ function Matrix() {
 
   return (
     <ToolPanel title="Speed and distance">
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[680px] border-collapse text-left" data-testid="table-speed-matrix">
           <caption className="sr-only">Maximum channel length for each Ethernet speed on each cable category</caption>
           <thead>
@@ -474,7 +474,7 @@ function Pinout() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="relative mt-6 overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-left" data-testid="table-pinout">
           <caption className="sr-only">T568A and T568B wire colors with pair numbers and signals for each pin</caption>
           <thead>
@@ -724,7 +724,7 @@ function CrimpCheck() {
 function PoeTable() {
   return (
     <ToolPanel title="Power over Ethernet">
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[620px] border-collapse text-left" data-testid="table-poe">
           <caption className="sr-only">IEEE PoE types with pairs used, power at the switch and at the device, and current</caption>
           <thead>
@@ -881,7 +881,7 @@ function Shielding() {
 function Categories() {
   return (
     <ToolPanel title="Categories">
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[980px] border-collapse text-left" data-testid="table-categories">
           <caption className="sr-only">Twisted-pair cable categories with bandwidth, standard, construction and fastest supported Ethernet</caption>
           <thead>

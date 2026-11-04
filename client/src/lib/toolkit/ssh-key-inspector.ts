@@ -333,8 +333,25 @@ function mpintBits(bytes: Uint8Array): number {
 function checkMpint(bytes: Uint8Array, what: string, problems: string[]): void {
   if (bytes.length && bytes[0] & 0x80) problems.push(`${capitalize(what)} is negative, which is never valid for a public key.`);
   if (bytes.length > 1 && bytes[0] === 0 && (bytes[1] & 0x80) === 0) {
-    problems.push(`${capitalize(what)} has a superfluous leading zero byte, which RFC 4251 forbids.`);
+    problems.push(
+      `${capitalize(what)} has a superfluous leading zero byte, which RFC 4251 forbids. OpenSSH strips it when reading the key, so the fingerprints here are computed over the minimal encoding, as ssh-keygen does.`,
+    );
   }
+}
+
+/**
+ * The minimal RFC 4251 encoding of a non-negative mpint: leading zero bytes
+ * removed, then one 0x00 added back if the top bit is set. OpenSSH re-encodes
+ * keys this way before hashing them for a fingerprint. A negative value is
+ * returned as written; OpenSSH refuses it anyway.
+ */
+function mpintMinimal(bytes: Uint8Array): Uint8Array {
+  if (bytes.length && bytes[0] & 0x80) return bytes;
+  let i = 0;
+  while (i < bytes.length && bytes[i] === 0) i++;
+  if (i === bytes.length) return new Uint8Array(0);
+  if (bytes[i] & 0x80) i--;
+  return bytes.subarray(i);
 }
 
 function mpintValue(bytes: Uint8Array): bigint {
@@ -382,8 +399,9 @@ const CERT_TYPES: Record<string, string> = {
 /**
  * Names that OpenSSH also reads as a key type, mapped to the type ssh-keygen
  * writes. sshkey.c lists the rsa-sha2-* signature algorithms and the webauthn
- * ECDSA-SK variant as key implementations of the same key type, so both
- * sshkey_read() (the line's type field) and the blob parser accept them.
+ * ECDSA-SK signature variant as implementations of the same key type, and
+ * sshkey_type_from_name() matches on those names, so both sshkey_read() (the
+ * line's type field) and the blob parser accept them.
  */
 const TYPE_ALIASES: Record<string, string> = {
   "rsa-sha2-256": "ssh-rsa",
@@ -391,7 +409,6 @@ const TYPE_ALIASES: Record<string, string> = {
   "rsa-sha2-256-cert-v01@openssh.com": "ssh-rsa-cert-v01@openssh.com",
   "rsa-sha2-512-cert-v01@openssh.com": "ssh-rsa-cert-v01@openssh.com",
   "webauthn-sk-ecdsa-sha2-nistp256@openssh.com": "sk-ecdsa-sha2-nistp256@openssh.com",
-  "webauthn-sk-ecdsa-sha2-nistp256-cert-v01@openssh.com": "sk-ecdsa-sha2-nistp256-cert-v01@openssh.com",
 };
 
 /** The type name ssh-keygen would write for this name, or null when OpenSSH does not read it as a key type. */
@@ -475,6 +492,8 @@ function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 interface KeyFields {
+  /** The key fields re-encoded the way OpenSSH writes them, for the fingerprint. */
+  canonical: Uint8Array;
   bits: number | null;
   details: Detail[];
   rsaBits: number | null;
@@ -485,7 +504,8 @@ interface KeyFields {
 /** Read the public key fields that follow the type (and, in a certificate, the nonce). */
 function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields {
   const details: Detail[] = [];
-  const out: KeyFields = { bits: null, details, rsaBits: null, rsaExponent: null, application: null };
+  const out: KeyFields = { canonical: new Uint8Array(0), bits: null, details, rsaBits: null, rsaExponent: null, application: null };
+  const parts: Uint8Array[] = [];
   switch (info.family) {
     case "rsa": {
       // RFC 4253 6.6 orders e before n; PROTOCOL.certkeys keeps that order.
@@ -493,6 +513,7 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
       const n = r.string("the RSA modulus");
       checkMpint(e, "the RSA public exponent", problems);
       checkMpint(n, "the RSA modulus", problems);
+      parts.push(sshString(mpintMinimal(e)), sshString(mpintMinimal(n)));
       const bits = mpintBits(n);
       const exponent = e.length <= 64 ? mpintValue(e) : null;
       out.bits = bits;
@@ -519,6 +540,7 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
         [y, "the DSA public value y"],
       ] as const) {
         checkMpint(v, name, problems);
+        parts.push(sshString(mpintMinimal(v)));
       }
       out.bits = mpintBits(p);
       details.push({ label: "Prime p", value: `${mpintBits(p)} bits` });
@@ -529,6 +551,7 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
     case "ecdsa-sk": {
       const curve = r.text("the curve name");
       const point = r.string("the public point");
+      parts.push(sshString(new TextEncoder().encode(curve)), sshString(point));
       const want = info.curve as string;
       if (curve !== want) problems.push(`The blob names curve "${curve}" but the key type requires "${want}" (RFC 5656 3.1).`);
       out.bits = CURVE_BITS[want];
@@ -545,7 +568,9 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
         problems.push(`The public point is ${point.length} bytes ${start}, which is not a valid SEC1 encoding for ${want}.`);
       }
       if (info.family === "ecdsa-sk") {
-        out.application = utf8(r.string("the FIDO application string"));
+        const app = r.string("the FIDO application string");
+        parts.push(sshString(app));
+        out.application = utf8(app);
         details.push({ label: "Application", value: out.application || "(empty)" });
       }
       break;
@@ -553,23 +578,28 @@ function readKeyFields(r: Reader, info: TypeInfo, problems: string[]): KeyFields
     case "ed25519":
     case "ed25519-sk": {
       const pk = r.string("the Ed25519 public key");
+      parts.push(sshString(pk));
       if (pk.length !== 32) problems.push(`An Ed25519 public key is exactly 32 bytes; this one is ${pk.length} (RFC 8709).`);
       out.bits = 256;
       details.push({ label: "Public key", value: toHex(pk) });
       if (info.family === "ed25519-sk") {
-        out.application = utf8(r.string("the FIDO application string"));
+        const app = r.string("the FIDO application string");
+        parts.push(sshString(app));
+        out.application = utf8(app);
         details.push({ label: "Application", value: out.application || "(empty)" });
       }
       break;
     }
     case "ed448": {
       const pk = r.string("the Ed448 public key");
+      parts.push(sshString(pk));
       if (pk.length !== 57) problems.push(`An Ed448 public key is exactly 57 bytes; this one is ${pk.length} (RFC 8709).`);
       out.bits = null;
       details.push({ label: "Public key", value: toHex(pk) });
       break;
     }
   }
+  out.canonical = parts.reduce(concat, new Uint8Array(0));
   return out;
 }
 
@@ -604,11 +634,9 @@ export function formatCertTime(t: bigint): string {
   return new Date(Number(t) * 1000).toISOString().replace(".000Z", "Z").replace("T", " ");
 }
 
-function readCertificate(r: Reader, info: TypeInfo, blob: Uint8Array, problems: string[]): { fields: KeyFields; cert: CertInfo; plainBlob: Uint8Array } {
+function readCertificate(r: Reader, info: TypeInfo, problems: string[]): { fields: KeyFields; cert: CertInfo } {
   r.string("the certificate nonce");
-  const keyStart = r.pos;
   const fields = readKeyFields(r, info, problems);
-  const keyEnd = r.pos;
   const serial = r.uint64("the certificate serial");
   const certTypeNum = r.uint32("the certificate type");
   const keyId = utf8(r.string("the key id"));
@@ -658,10 +686,7 @@ function readCertificate(r: Reader, info: TypeInfo, blob: Uint8Array, problems: 
     caFingerprint,
     signatureAlgorithm,
   };
-  // ssh-keygen fingerprints a certificate by the plain key inside it, so the
-  // plain blob is rebuilt: the plain type name, then the key fields verbatim.
-  const plainBlob = concat(sshString(new TextEncoder().encode(info.plain)), blob.subarray(keyStart, keyEnd));
-  return { fields, cert, plainBlob };
+  return { fields, cert };
 }
 
 export type DecodeResult = { ok: true; key: DecodedKey } | { ok: false; error: string };
@@ -684,15 +709,18 @@ export function decodeKeyBlob(blob: Uint8Array): DecodeResult {
     const problems: string[] = [];
     let fields: KeyFields;
     let cert: CertInfo | null = null;
-    let plainBlob = blob;
     if (info.cert) {
-      const c = readCertificate(r, info, blob, problems);
+      const c = readCertificate(r, info, problems);
       fields = c.fields;
       cert = c.cert;
-      plainBlob = c.plainBlob;
     } else {
       fields = readKeyFields(r, info, problems);
     }
+    // sshkey_fingerprint_raw() hashes to_blob(key, force_plain=1): the plain
+    // type name ssh-keygen writes, then the key fields re-encoded. For a
+    // certificate that is the key inside it; for an ordinary key it is the
+    // blob itself unless the blob used an alias name or an overlong mpint.
+    const plainBlob = concat(sshString(new TextEncoder().encode(info.plain)), fields.canonical);
     if (r.remaining > 0) problems.push(`${r.remaining} unexpected bytes follow the key fields. OpenSSH rejects a blob with trailing data.`);
     return {
       ok: true,
@@ -938,7 +966,7 @@ function describeOption(name: string, value: string | null, nowMs: number): Auth
       name,
       canonical: null,
       value,
-      explanation: "Not an option sshd knows. sshd logs \"bad key options\" and skips this whole line, so the key cannot log in through it.",
+      explanation: "Not an option sshd knows. sshd skips this whole line (logging \"bad key options\" at debug level), so the key cannot log in through it.",
       detail: null,
       error: `Unknown option "${name}".`,
       expired: false,
@@ -1169,11 +1197,7 @@ function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number
   line.typeField = typeField;
   const typeKnown = isKeyType(typeField);
   if (!typeKnown) {
-    if (/^rsa-sha2-(256|512)$/.test(typeField)) {
-      line.error = `${typeField} is a signature algorithm name, not a key type. An RSA public key line starts with ssh-rsa, whichever hash it signs with.`;
-    } else {
-      line.error = `"${typeField}" is not an SSH public key type. Expected ssh-ed25519, ssh-rsa, ecdsa-sha2-nistp256 and the like.`;
-    }
+    line.error = `"${typeField}" is not an SSH public key type. Expected ssh-ed25519, ssh-rsa, ecdsa-sha2-nistp256 and the like.`;
   }
   if (!data) {
     line.error ??= "The key type is not followed by any key data.";
@@ -1191,11 +1215,20 @@ function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number
   }
   const key = decoded.key;
   line.key = key;
-  if (!typeKnown && !/^rsa-sha2-(256|512)$/.test(typeField)) {
+  const typeMatches = typeKnown && canonicalType(typeField) === canonicalType(key.type);
+  if (!typeKnown) {
     line.error = `"${typeField}" is not an SSH public key type. The key data is ${key.type}, so the line should read "${key.type} ${data.slice(0, 12)}...".`;
-  }
-  if (typeKnown && key.type !== typeField) {
+  } else if (!typeMatches) {
     line.error = `The line says ${typeField} but the key data inside is ${key.type}. OpenSSH rejects the mismatch, so the line was probably edited by hand.`;
+  }
+  for (const name of new Set([typeField, key.type])) {
+    const canon = canonicalType(name);
+    if (canon !== null && canon !== name) {
+      line.findings.push({
+        tone: "info",
+        text: `${name} is a signature algorithm name that OpenSSH also accepts as another name for ${canon}. ssh-keygen writes ${canon}, and other SSH implementations may not accept the alias.`,
+      });
+    }
   }
   if (!b64.padded) {
     line.findings.push({
@@ -1213,7 +1246,7 @@ function finishKey(line: KeyLine, typeField: string, data: string, nowMs: number
   // ssh-keygen prints nothing for a line its own key reader refuses: an
   // unknown type, a type that does not match the blob, or Base64 that
   // OpenSSH's decoder rejects.
-  const keygenReads = typeKnown && key.type === typeField && b64.padded && b64.canonical;
+  const keygenReads = typeMatches && b64.padded && b64.canonical;
   if (keygenReads && key.bits !== null && key.family !== "ed448") {
     const comment = keygenComment(line.comment, firstField);
     line.keygen = `${key.bits} ${line.sha256} ${comment} (${key.label})`;

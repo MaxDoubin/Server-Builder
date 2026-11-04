@@ -522,7 +522,7 @@ export function CronToSystemdTimer() {
               checked={o.persistent}
               onChange={(v) => set("persistent", v)}
               label="Persistent=true"
-              hint="If the machine was off or asleep at a scheduled time, the missed run happens once, as soon as the timer starts again. Cron skips it. The last run time is kept on disk."
+              hint="If the machine was off at a scheduled time, the missed run happens once, as soon as the timer starts again. Cron skips it. The last run time is kept on disk."
               testId="checkbox-persistent"
             />
             <Toggle

@@ -832,7 +832,14 @@ export async function buildToken(input: BuildInput): Promise<BuildResult> {
       if (!imported.ok) return { ok: false, error: imported.error, notes };
       notes.push(...imported.notes);
       key = imported.key;
-      publicPem = await publicPemFromPrivate(alg, key);
+      // Some WebCrypto builds cannot derive the public half (for example an EC
+      // PKCS#8 key without its optional public point). Signing still works.
+      try {
+        publicPem = await publicPemFromPrivate(alg, key);
+      } catch {
+        publicPem = null;
+        notes.push({ tone: "info", text: "This browser could not derive the public key from the private key, so it is not shown. The signature is unaffected." });
+      }
     }
     const sig = await signSegments(alg, key, headerSeg, payloadSeg);
     const signatureSeg = base64urlEncode(sig);

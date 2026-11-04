@@ -562,7 +562,7 @@ export function FiberLossBudget() {
                 className={INPUT_CLASS}
               />
               <p id="fiber-splices-msg" className={spliceP.ok ? HINT_CLASS : ERROR_CLASS}>
-                {spliceP.ok ? "Permanent joints along the run, usually one per cable reel." : spliceP.message}
+                {spliceP.ok ? "Permanent joints, such as where two cable reels meet or where pigtails join the cable at a panel." : spliceP.message}
               </p>
             </div>
             <div>

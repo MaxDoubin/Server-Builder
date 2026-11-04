@@ -497,8 +497,8 @@ export const IPV4_RELATED: SpecialEntry[] = [
   entry(4, "v4-mcast-test-net", ["233.252.0.0/24"], "MCAST-TEST-NET (documentation)", ["RFC 5771", "RFC 6676"], NONE,
     "Multicast addresses reserved for documentation and example code.",
     { registry: "multicast" }),
-  entry(4, "v4-mcast-admin", ["239.0.0.0/8"], "Organization-Local Scope", ["RFC 2365"], NONE,
-    "Administratively scoped multicast, the counterpart of private space: used inside an organization and filtered at its boundary.",
+  entry(4, "v4-mcast-admin", ["239.0.0.0/8"], "Administratively Scoped Block", ["RFC 2365"], NONE,
+    "Administratively scoped multicast, the counterpart of private space: used inside an organization or a smaller scope and filtered at its boundary. 239.255.0.0/16 is the IPv4 Local Scope and 239.192.0.0/14 the IPv4 Organization Local Scope.",
     { registry: "multicast" }),
 ];
 
@@ -517,7 +517,7 @@ export const IPV6_SPECIAL: SpecialEntry[] = [
   entry(6, "v6-discard", ["100::/64"], "Discard-Only Address Block", ["RFC 6666"], [T, T, T, F, F],
     "For remotely triggered black hole routing: traffic routed here is meant to be dropped, so operators have a prefix that is known to go nowhere."),
   entry(6, "v6-dummy", ["100:0:0:1::/64"], "Dummy IPv6 Prefix", ["RFC 9780"], [T, F, F, F, F],
-    "Used as the destination in the inner IPv6 header of MPLS OAM packets, such as LSP Ping echo requests and multipoint BFD. The packet travels by label switching, and a destination that is valid only as a source makes the receiving router treat it as an exception and answer it instead of forwarding it. RFC 9780 recommends it over the IPv4-mapped loopback ::ffff:127.0.0.1 used before."),
+    "Reserved by RFC 9780 as a placeholder prefix for cases where a protocol needs an IPv6 address that is never routed. The registry marks it valid only as a source, not forwardable and not globally reachable."),
   entry(6, "v6-ietf", ["2001::/23"], "IETF Protocol Assignments", ["RFC 2928"], [F, F, F, F, F],
     "Held by the IETF for protocol assignments. Not usable unless a more specific entry assigns the address.",
     { footnote: MORE_SPECIFIC_FOOTNOTE }),

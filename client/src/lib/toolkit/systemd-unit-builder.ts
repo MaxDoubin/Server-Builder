@@ -140,10 +140,10 @@ export const SERVICE_TYPES: { value: ServiceType; label: string; detail: string 
 
 export const RESTART_POLICIES: { value: RestartPolicy; detail: string }[] = [
   { value: "no", detail: "Never restart. This is the default." },
-  { value: "on-failure", detail: "Restart after a non-zero exit, a signal, a timeout or a watchdog failure. A clean exit stays stopped." },
+  { value: "on-failure", detail: "Restart after a non-zero exit, an unclean signal, a timeout or a watchdog failure. A clean exit stays stopped." },
   { value: "always", detail: "Restart whatever the reason, including a clean exit. An explicit systemctl stop still stops it." },
   { value: "on-success", detail: "Restart only after a clean exit." },
-  { value: "on-abnormal", detail: "Restart after a signal, a timeout or a watchdog failure, but not after a non-zero exit code." },
+  { value: "on-abnormal", detail: "Restart after an unclean signal, a timeout or a watchdog failure, but not after a non-zero exit code." },
   { value: "on-abort", detail: "Restart only after an uncaught signal." },
   { value: "on-watchdog", detail: "Restart only when the watchdog timeout expires." },
 ];
@@ -778,6 +778,7 @@ export function parseTimespan(raw: string): number | null {
     us: 1e-6,
     usec: 1e-6,
     "μs": 1e-6,
+    "\u00b5s": 1e-6,
     ms: 1e-3,
     msec: 1e-3,
     s: 1,
@@ -807,18 +808,25 @@ export function parseTimespan(raw: string): number | null {
   };
   let total = 0;
   let pos = 0;
-  const token = /\s*(\d+(?:\.\d+)?)\s*([A-Za-zμ]*)\s*/y;
+  let lastBare = false;
+  // Both the Greek mu (U+03BC) and the micro sign (U+00B5) spell microseconds.
+  const token = /\s*(\d+(?:\.\d+)?|\.\d+)\s*([A-Za-z\u03bc\u00b5]*)\s*/y;
   while (pos < text.length) {
     token.lastIndex = pos;
     const m = token.exec(text);
     if (!m || m[0].length === 0) return null;
+    // ".5" may start a component, but not straight after a bare number: systemd refuses "1.5.2".
+    if (lastBare && m[1].startsWith(".")) return null;
+    lastBare = m[2] === "" && !/\s$/.test(m[0]);
     const unit = m[2] === "" ? "s" : m[2];
     const factor = unitSeconds[unit];
     if (factor === undefined) return null;
     total += Number(m[1]) * factor;
     pos = token.lastIndex;
   }
-  return Number.isFinite(total) ? total : null;
+  // systemd stores spans as 64-bit microseconds (2^64 us is about 18446744073709 s) and refuses an overflow.
+  if (!Number.isFinite(total) || total >= 18446744073709) return null;
+  return total;
 }
 
 /** A unit name without its suffix, validated per systemd.unit(5). */
@@ -939,7 +947,7 @@ export function buildUnit(o: UnitOptions): UnitBuild {
     add(
       "info",
       "after",
-      "network.target is only about shutdown ordering and does not mean the network is up. A service that connects out when it starts wants network-online.target in both Wants= and After=, and that works only if a wait-online service such as systemd-networkd-wait-online or NetworkManager-wait-online is enabled.",
+      "network.target matters mostly for shutdown ordering and does not mean the network is up. A service that connects out when it starts wants network-online.target in both Wants= and After=, and that works only if a wait-online service such as systemd-networkd-wait-online or NetworkManager-wait-online is enabled.",
     );
   }
   if (wants.includes("network-online.target") && !after.includes("network-online.target")) {
@@ -1069,7 +1077,7 @@ export function buildUnit(o: UnitOptions): UnitBuild {
       add(
         "info",
         "restartSec",
-        `If the program exits immediately, the restarts use up the ${effBurst} starts allowed in ${effInterval} seconds within ${took}. systemd then refuses further starts and the unit shows start-limit-hit until you run systemctl reset-failed. Raise RestartSec= if you want it to keep retrying.`,
+        `If the program exits immediately, the restarts use up the ${effBurst} starts allowed in ${effInterval} seconds within ${took}. systemd then stops restarting it and the unit fails with start-limit-hit. Further starts are refused until the interval has passed or you run systemctl reset-failed. Raise RestartSec= if you want it to keep retrying.`,
       );
     }
   }
@@ -1093,7 +1101,7 @@ export function buildUnit(o: UnitOptions): UnitBuild {
     add(
       "warn",
       "user",
-      "No User= means the service runs as root, which also means a bug in it has root's reach. A dedicated unprivileged account limits that.",
+      user === "" ? "No User= means the service runs as root, which also means a bug in it has root's reach. A dedicated unprivileged account limits that." : "The service runs as root, which also means a bug in it has root's reach. A dedicated unprivileged account limits that.",
     );
   }
 

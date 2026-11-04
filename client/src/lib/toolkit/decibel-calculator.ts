@@ -141,6 +141,16 @@ export function parseLevelList(text: string): Parsed<LevelEntry[]> {
       error: `The list is longer than ${MAX_LIST_CHARS.toLocaleString("en-US")} characters. Use the 12 x 55 form for repeated sources.`,
     };
   }
+  // A comma separates entries, so 52,5 would silently become 52 and 5. Refuse
+  // the one-digit-after-comma form and say how to write either reading.
+  const comma = /\d+,\d(?![\d.])/.exec(text);
+  if (comma) {
+    const [whole, tenth] = comma[0].split(",");
+    return {
+      ok: false,
+      error: `"${comma[0]}" is ambiguous. A comma separates levels, so it would be read as ${whole} and ${tenth}. Write ${whole}.${tenth} for a decimal, or put a space after the comma to list two levels.`,
+    };
+  }
   const entries: LevelEntry[] = [];
   const pieces = text.split(/[\n\r,;]+/);
   for (const piece of pieces) {

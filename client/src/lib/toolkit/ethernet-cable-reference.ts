@@ -295,7 +295,7 @@ export function lengthAdvice(meters: number): string | null {
     return "No twisted-pair Ethernet speed is specified past 100 m. Put a switch in the middle or use fiber.";
   }
   if (meters > 90) {
-    return "Over 90 m only works if that is the whole channel, patch cords included. TIA-568 limits the permanent link to 90 m and leaves 10 m for cords.";
+    return "Between 90 and 100 m the figure has to include every patch cord. TIA-568 limits the permanent link to 90 m and allows 10 m of cords on top of it.";
   }
   return null;
 }

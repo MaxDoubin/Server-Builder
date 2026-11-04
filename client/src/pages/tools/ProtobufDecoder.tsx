@@ -667,7 +667,13 @@ function VarintRows({ field }: { field: PbField }) {
       <ToolResult label="Varint bytes" value={`${raw.length}`} />
       <ToolResult label="uint64 / uint32" value={v.uint32 !== null ? `${v.uint64}` : `${v.uint64} (too big for uint32)`} testId="text-protobuf-uint" />
       <ToolResult label="int64" value={v.int64} />
-      <ToolResult label="int32" value={v.int32 ?? "not a valid int32 encoding"} />
+      <ToolResult
+        label="int32"
+        value={
+          v.int32 ??
+          `${BigInt.asIntN(32, raw.value)} if cut to the low 32 bits, as parsers do; standard encoders never write this value for an int32`
+        }
+      />
       <ToolResult label="sint32 / sint64 (ZigZag)" value={v.sint} testId="text-protobuf-sint" />
       {v.bool !== null ? <ToolResult label="bool" value={v.bool} /> : null}
       <ToolResult label="Hex" value={v.hex} />

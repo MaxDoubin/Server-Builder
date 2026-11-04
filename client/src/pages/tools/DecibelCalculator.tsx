@@ -334,7 +334,7 @@ function SoundView() {
             </p>
           ) : (
             <p id="db-levels-message" className={HINT_TEXT}>
-              Commas and spaces also separate levels, and 12 x 55 means twelve identical sources at 55 dB. Up to{" "}
+              Commas and spaces also separate levels, so write decimals with a period. 12 x 55 means twelve identical sources at 55 dB. Up to{" "}
               {MAX_ENTRIES} entries. Add levels that share one weighting: all dBA, or all unweighted.
             </p>
           )}

@@ -3021,4 +3021,92 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       ", because editors, cron jobs and services each run with whatever mask their own parent gave them.",
     ],
   ],
+  "iops-calculator": [
+    [
+      "IOPS counts input/output operations per second. For small random requests to a hard disk the figure is set by mechanics rather than by the interface: each operation moves the head to the right track, then waits for the sector to rotate under it. At 7,200 rpm the average rotational wait is half a turn, 4.17 ms, and with an average seek near 8.5 ms that is about 80 operations per second. At 15,000 rpm the half turn is 2 ms and a seek near 3.5 ms gives about 180. Sequential transfers skip most of that travel, so the same disk that manages 80 random 4 KiB operations, about 328 kB/s, streams well over 100 MB/s when reading in order.",
+    ],
+    [
+      "Reads cost one disk operation at every RAID level, which is why the write penalty is the part that differs. A small write to RAID 0 is one operation. To RAID 1 or RAID 10 it is two, one per copy. To RAID 5 it is four: read the old data and old parity, then write the new data and new parity. To RAID 6 it is six, because there are two parity blocks to read and write. These penalties describe small random writes. A write that fills a whole stripe needs no reads, because parity is computed from the new data alone, so sequential writes to parity RAID run far closer to the disks' full speed.",
+    ],
+    [
+      "With R raw disk operations per second, a read fraction r and write fraction w, each request costs r plus w times P disk operations on average, so the array serves R divided by that many requests per second. The widely quoted functional IOPS formula, R times r plus R times w divided by P, splits the disk operations by the mix instead of the requests, so whenever writes carry a penalty it overstates a mixed load. Eight disks of 180 IOPS in RAID 5 at 70 percent reads give 1,440 raw operations. The balanced figure is 758 requests per second. The common formula says 1,116, but serving that many requests would take 2,120 operations per second, more than the disks have.",
+    ],
+    [
+      "A write-back controller cache hides write cost for short bursts and can merge adjacent small writes into full stripes, but once it fills, sustained load runs at the pace of the disks. It is only safe with a battery or flash backup, since writes it has acknowledged would otherwise be lost in a power failure. Queue depth matters too. A hard disk given several requests at once reorders them to shorten head travel, using NCQ on SATA or tagged command queuing on SAS, which raises IOPS at the price of longer latency per request. Flash needs many outstanding requests to reach its rated figures. Datasheet numbers are usually measured at high queue depth, and consumer datasheets often quote a fresh, empty drive. Sustained random writes after the whole drive has been written over can run several times lower.",
+    ],
+    [
+      "Sizing for operations as well as capacity matters most for databases, virtual machine hosts and mail stores, which can run out of IOPS long before they run out of space; a few large disks can hold the data while delivering only a few hundred IOPS. These formulas also describe a healthy array. In a degraded RAID 5 or RAID 6 set, a read of a block on the failed disk has to be rebuilt from the matching blocks on the other disks of the stripe, and a rebuild reads the surviving disks end to end, so the same workload sees fewer IOPS and higher latency for as long as the rebuild takes. Headroom for that period belongs in the sizing.",
+    ],
+  ],
+  "poe-budget-calculator": [
+    [
+      "A PoE switch has one power budget for all of its ports together, set by its power supplies, and the budget is usually far smaller than the port count times the port maximum. A 24 port switch whose ports can each supply 30 W would need 720 W to run them all flat out, and a 370 W PoE budget covers about half of that. What counts against the budget depends on how the switch allocates. One that allocates by class reserves the class maximum for each port when the device is classified, whether or not the device ever draws it. The reserved total can exceed the budget while real consumption sits well under it, and a port that does not fit is refused power.",
+    ],
+    [
+      "IEEE 802.3 defines four PSE types. Type 1 (802.3af) delivers up to 15.4 W per port and Type 2 (802.3at, PoE+) up to 30 W, both over two pairs, while Type 3 and Type 4 (802.3bt) reach 60 W and 90 W over all four. Devices signal a class from 0 to 8: classes 1 to 3 are 4 W, 7 W and 15.4 W at the PSE, class 4 is 30 W, classes 5 to 8 are 45, 60, 75 and 90 W, and class 0, a device with no class signature, is budgeted at 15.4 W. A device of a higher class than the port supports gets the most the port's type allows: a Type 1 port treats class 4 and up as class 0, a Type 2 port grants class 4, and a Type 3 port class 6. The device must stay within that, often by turning features off.",
+    ],
+    [
+      "Each class has two figures because a cable is a resistor. The PSE figure is the power leaving the switch port. The PD figure is the most a device of that class may draw, which is what still arrives after the cable takes its share, I squared times R, over 100 m at maximum loop resistance and the lowest PSE voltage. For Type 1 that is 44 V and 20 ohm: 15.4 W is 350 mA, the cable dissipates 0.35 squared times 20, or 2.45 W, and 12.95 W reaches the device. For Type 2, 30 W at 50 V is 600 mA, 12.5 ohm loses 4.5 W, and 25.5 W arrives. Loss grows with the square of the current and in proportion to length, so a short run wastes less than the class figures assume, and copper-clad aluminum cable, with more resistance than copper, wastes more.",
+    ],
+    [
+      "Class is a coarse signal: a class 4 access point that needs 18 W still reserves 30 W under class allocation. 802.3at added a second mechanism, data link layer classification, carried in LLDP in the ",
+      { code: "Power via MDI" },
+      " TLV. The device states the power it requests and the switch answers with the power it allocates, both in units of 0.1 W, and either side can change the figure while the link is up. When both ends support it and the switch allocates by the negotiated figure, it can reserve 18 W instead of 30 W and the budget goes further. When one end does not, the device gets only what physical classification granted, which can be less than it needs, and some access points then turn off radios or USB ports to stay within it. Cisco's CDP carries a comparable proprietary exchange.",
+    ],
+    [
+      "The usual sizing mistake is adding up the PD figures, which understates what the switch must reserve. Size with the PSE figures, leave headroom, and check the result against measured draw. The budget also decides which devices stay up when many ask for power at once, such as after a switch reboot or a power outage. Many switches let each port have a priority, and when reservations pass the budget the lowest priority ports are refused first, so a camera or phone fails to come up while the rest work. For security, a port with PoE enabled can power a rogue device that needs no wall outlet nearby, so turn PoE off on ports that are not in use, or shut those ports down.",
+    ],
+  ],
+  "storage-growth-forecast": [
+    [
+      "A capacity forecast takes the amount used now, the total, and a growth rate, and solves for the time at which usage reaches a target. With linear growth a fixed amount is added each month, so the months to a target are ",
+      { code: "(target - used) / growth" },
+      ". With compound growth a fixed percentage of the current size is added each month, so usage after t months is used times (1 + g) to the power t, and the months to a target are ",
+      { code: "ln(target / used) / ln(1 + g)" },
+      ". A rate can also be estimated from two dated readings: the difference divided by the months between them for linear, or the ratio raised to one over the months, minus one, for compound.",
+    ],
+    [
+      "Choosing the model matters more than the arithmetic. Data written at a steady rate, such as nightly backups or logs before retention starts pruning, grows close to linearly. Data that grows because the business or the user base grows tends to compound. The two agree over a few months and separate over years: 3 percent a month is 42.6 percent a year and doubles usage in about 23.4 months, so over a long horizon a compound forecast reaches full sooner than a straight line fitted to the same first few months. Few systems stay exponential for long, so treat a compound date past a year or two as a warning, not a promise.",
+    ],
+    [
+      "Most bad forecasts come from the inputs. Capacity should be usable capacity after RAID parity, replication and filesystem overhead, not the sum of the raw disks. A TiB is about 10 percent larger than a TB and a PiB about 12.6 percent larger than a PB, so mixing binary and decimal units shifts every date. A rate taken from a short window mostly measures whatever happened that week, such as a one-time import or a purge, so use readings at least a month apart and compare them with older ones. Flat or shrinking usage never reaches a threshold above it, so the honest answer is that the threshold is not reached at this rate, not a date far in the future.",
+    ],
+    [
+      "Alert thresholds exist to buy lead time, so pick them from how long it takes to act, not from round numbers. If ordering, delivering and provisioning disks takes three months, the alert has to fire at least three months before full. Many systems also misbehave before 100 percent: ext4 reserves 5 percent of blocks for root by default, so writes from ordinary processes fail with that much still free, and copy-on-write filesystems such as ZFS and Btrfs are commonly kept below roughly 80 to 90 percent because allocation slows as free space runs out. Adding capacity changes the denominator, not the usage, so every percentage drops at the moment it arrives, and a threshold crossed earlier can be crossed again later.",
+    ],
+    [
+      "A full volume is an availability failure and often a security one. Databases stop accepting writes or shut down, uploads fail, and a log partition that fills stops recording, leaving a gap in the audit trail at the moment someone needs it. Filling a disk with junk files or log noise is a known way to cause that on purpose, so log volumes deserve their own quotas and alerts. A sudden change in slope is worth investigating before it becomes a capacity problem, since it often means a runaway log, a retention job that stopped pruning, or a copy of data nobody planned for.",
+    ],
+  ],
+  "zfs-capacity-calculator": [
+    [
+      "A ZFS pool is a stripe of top-level vdevs, and each vdev is a group of disks with its own redundancy: a single disk, a mirror, or a RAIDZ group. Disk redundancy exists only inside a vdev, and ZFS cannot rebuild a missing top-level vdev from the others. If any one vdev loses more disks than it can tolerate, the pool is lost, whatever state the other vdevs are in. That makes the failure arithmetic different from what the disk count suggests. Two mirrored pairs survive one failure for certain, and two failures only if they land in different pairs. Adding a lone single-disk vdev to a mirrored pool makes the whole pool as fragile as that one disk. Adding vdevs adds capacity and parallelism, never safety.",
+    ],
+    [
+      "A mirror stores one disk's worth of data per vdev however many disks it has, and a RAIDZ vdev with n disks and p parity stores at most n minus p disks' worth. RAIDZ reaches that only for some block sizes, because every block is allocated on its own. The block is split into sectors of ",
+      { code: "2^ashift" },
+      " bytes, every row of up to n minus p data sectors gets p parity sectors, and the total is rounded up to a multiple of p plus 1 so that no freed gap is too small to reuse. A 128 KiB record on a 10-wide RAIDZ2 with 4 KiB sectors is 32 data sectors, 8 parity sectors and 2 skip sectors, 42 in all. Data fills 76.2 percent of that space, not the 80 percent the layout suggests.",
+    ],
+    [
+      "The loss grows as blocks shrink. A 4 KiB block on RAIDZ2 with 4 KiB sectors takes one data sector and two parity sectors, three in all, exactly what a three-way mirror would use. An 8 KiB block on a 6-wide RAIDZ2 takes six sectors to hold two sectors of data. Large records spread the parity and skip sectors over many data sectors; small blocks, such as a dataset tuned to a database's 8 KiB pages or a zvol with a small ",
+      { code: "volblocksize" },
+      ", do not. Because the result depends on what is written, no calculator can give an exact RAIDZ capacity in advance. Estimates assume every block is one full record, and small files and compressed blocks, which are smaller than a record, tend to pad worse.",
+    ],
+    [
+      "ZFS never lets ordinary writes use the last slice of the pool. The reserve, called slop space, is 1/32 of the pool, at least 128 MiB (or half the pool, if it is smaller than 256 MiB) and, in current OpenZFS, at most 128 GiB. It exists because a copy-on-write filesystem must write new metadata before it can free anything, so a completely full pool could not even delete a file; deletes and most administrative operations may dip into part of the reserve. Separately, the usual guidance is to keep a pool below about 80 percent full. As free space shrinks and fragments, the allocator works harder to find room and writes slow down. The 80 percent figure is a rule of thumb that varies with workload and record size, not a point where behavior suddenly changes.",
+    ],
+    [
+      "Drive labels use decimal units, where 1 TB is 10^12 bytes, while ",
+      { code: "zpool" },
+      " and ",
+      { code: "zfs" },
+      " print binary units with a bare suffix, so the T in their output means TiB, 2^40 bytes. A 12 TB drive is 10.91 TiB, and a pool that looks 9 percent smaller than the labels promise is usually this and nothing more. The two commands also count differently. For RAIDZ, ",
+      { code: "zpool list" },
+      " reports SIZE as every disk including parity, while ",
+      { code: "zfs list" },
+      " reports space after parity, converted with a ratio fixed from a 128 KiB block whatever the recordsize. For mirrors both count one copy, so they differ mainly by slop space. Choose ",
+      { code: "ashift" },
+      " when the vdev is created, normally 12 for 4 KiB sectors, because it cannot be changed on an existing vdev.",
+    ],
+  ],
 };

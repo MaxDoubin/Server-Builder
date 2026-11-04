@@ -392,12 +392,33 @@ export function DkimRecordAnalyzer() {
   const [record, setRecord] = useState("");
   const [signature, setSignature] = useState("");
 
-  const keyOutcome = useMemo(() => analyzeKeyRecord(record), [record]);
+  // The analyzers are written not to throw; these guards keep an unforeseen
+  // input from ever taking the page down.
+  const keyOutcome = useMemo<ReturnType<typeof analyzeKeyRecord>>(() => {
+    try {
+      return analyzeKeyRecord(record);
+    } catch {
+      return { kind: "error", message: "This record could not be analyzed. Check that the paste is the TXT record text." };
+    }
+  }, [record]);
   // x= and t= are judged against this device's clock at the moment of pasting.
-  const sigOutcome = useMemo(() => analyzeSignature(signature, Date.now()), [signature]);
+  const sigOutcome = useMemo<ReturnType<typeof analyzeSignature>>(() => {
+    try {
+      return analyzeSignature(signature, Date.now());
+    } catch {
+      return { kind: "error", message: "This signature could not be analyzed. Check that the paste is one DKIM-Signature field." };
+    }
+  }, [signature]);
   const key = keyOutcome.kind === "ok" ? keyOutcome.value : null;
   const sig = sigOutcome.kind === "ok" ? sigOutcome.value : null;
-  const pair = useMemo(() => (key && sig ? crossCheck(key, sig) : []), [key, sig]);
+  const pair = useMemo(() => {
+    if (!key || !sig) return [];
+    try {
+      return crossCheck(key, sig);
+    } catch {
+      return [];
+    }
+  }, [key, sig]);
 
   const parts: string[] = [];
   if (key) parts.push(`Key: ${keySummary(key)}, ${key.verdict.label.toLowerCase()}.`);
