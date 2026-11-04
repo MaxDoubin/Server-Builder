@@ -75,8 +75,8 @@ Every number here is a measurement from this one machine and these test clips, n
 The host is a Mac Pro 7,1 with an Intel Xeon of 16 physical and 32 logical cores, running macOS. It holds three Apple Afterburner cards, each built around a Xilinx Kintex UltraScale+ XCKU15P and each enumerating as PCI device \`106b:0205\`, and two AMD Radeon Pro Vega II MPX modules, which I kept out of every test. Unrelated Metal compute work on one of the two GPUs had caused a kernel panic earlier the same day, and one of them drives the display, where heavy compute can trip the WindowServer watchdog. (Compute on those GPUs is its own subject, in [GPU compute on the Mac Pro](/blog/mac-pro-gpu-compute).) What a single card does is in [my earlier post on the Afterburner card](/blog/mac-pro-afterburner-card).
 
 <figure>
-<img src="/images/blog/three-apple-afterburner-cards/vega-ii-mpx-modules.jpg" alt="A close, angled view of two enclosures labeled Radeon Pro Vega II MPX Module, with three more full-length cards above them, part of the logic board at the top and a slot latch panel at the right" width="1320" height="1526" loading="lazy" decoding="async">
-<figcaption>The two Radeon Pro Vega II MPX modules in my Mac Pro. These are the GPUs I excluded; nothing ran on them.</figcaption>
+<img src="/images/blog/three-apple-afterburner-cards/vega-ii-mpx-modules.jpg" alt="A close, angled view of the three Afterburner cards edge-on in slots 5 to 7, above two enclosures labeled Radeon Pro Vega II MPX Module, with part of the logic board at the top and a slot latch panel at the right" width="1320" height="1526" loading="lazy" decoding="async">
+<figcaption>The three Afterburner cards, edge-on in slots 5 to 7, above the two Radeon Pro Vega II MPX modules. The Vega II GPUs are the ones I excluded; nothing ran on them.</figcaption>
 </figure>
 
 ### Where the three cards sit
@@ -92,8 +92,8 @@ Apple's slot table gives slots 1, 3, 4 and 5 up to sixteen lanes and slots 2, 6 
 Apple says "Up to three Afterburner cards will provide increased performance of ProRes and ProRes RAW decoding" ([Apple Support](https://support.apple.com/en-us/101662)), and that its driver "will load-balance ProRes decode tasks across multiple Afterburner cards if installed" ([Larry Jordan](https://larryjordan.com/articles/thoughts-on-afterburner-a-prores-gpu-for-the-2019-mac-pro/)), but it publishes no performance figure for more than one card. The machine's wider layout is in [my engineering analysis of the 2019 Mac Pro](/blog/mac-pro-2019-teardown-analysis).
 
 <figure>
-<img src="/images/blog/three-apple-afterburner-cards/mac-pro-interior.jpg" alt="Inside a Mac Pro: the Mac Pro label beside the finned processor heat sink, three full-length cards below it, and two Radeon Pro Vega II MPX Module enclosures at the bottom" width="1320" height="1580" loading="lazy" decoding="async">
-<figcaption>Inside the Mac Pro: the processor heat sink beside the Mac Pro label, and the two Vega II MPX modules lower down. Neither GPU was used for any test.</figcaption>
+<img src="/images/blog/three-apple-afterburner-cards/mac-pro-interior.jpg" alt="Inside a Mac Pro: the Mac Pro label beside the finned processor heat sink, the three Afterburner cards edge-on below it, and two Radeon Pro Vega II MPX Module enclosures at the bottom" width="1320" height="1580" loading="lazy" decoding="async">
+<figcaption>Inside the Mac Pro: the processor heat sink beside the Mac Pro label, the three Afterburner cards edge-on below it, and the two Vega II MPX modules at the bottom. Neither GPU was used for any test.</figcaption>
 </figure>
 
 ## How I measured, and why my numbers are not Apple's
