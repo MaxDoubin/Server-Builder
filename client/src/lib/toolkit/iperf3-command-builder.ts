@@ -82,6 +82,23 @@ function sizeToken(raw: string): string | null {
   return value;
 }
 
+/**
+ * The server field, kept only when it could be a host name or an address.
+ *
+ * The command is meant to be pasted into a terminal, so a value that carries
+ * a semicolon, a quote, a space or a substitution would run as more than an
+ * argument. Letters, digits and the few characters names and addresses use
+ * (including the colons of IPv6 and a zone after a percent sign) are
+ * accepted. Anything else is replaced by a placeholder, the way the bind
+ * address is dropped and the way the nmap builder falls back to TARGET.
+ */
+function cleanHost(raw: string): { host: string; rejected: boolean } {
+  const value = raw.trim();
+  if (value === "") return { host: "HOST", rejected: false };
+  if (/^[A-Za-z0-9:._%-]+$/.test(value)) return { host: value, rejected: false };
+  return { host: "HOST", rejected: true };
+}
+
 /** One flag the command may carry, with a short reason it is there. */
 export interface Iperf3Flag {
   flag: string;
@@ -103,9 +120,14 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
   if (o.role === "server") {
     add("-s", "Run as a server and wait for an incoming test.");
   } else {
-    const host = o.host.trim() === "" ? "HOST" : o.host.trim();
+    const { host, rejected } = cleanHost(o.host);
     parts.push("-c", host);
-    flags.push({ flag: `-c ${host}`, explanation: "Run as a client and connect to this server." });
+    flags.push({
+      flag: `-c ${host}`,
+      explanation: rejected
+        ? "The server field holds characters that are not part of a host name or address, so HOST is shown instead. Type a name such as iperf.example.com or an address."
+        : "Run as a client and connect to this server.",
+    });
 
     if (o.protocol === "udp") {
       add("-u", "Use UDP instead of TCP. UDP reports loss and jitter and never retransmits.");
@@ -134,8 +156,20 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
       );
     }
 
-    if (o.reverse) add("-R", "Reverse the test so the server sends and the client receives.");
-    if (o.bidir) add("--bidir", "Test both directions at the same time.");
+    /*
+      iperf3 refuses the two together ("cannot be both reverse and
+      bidirectional"), and bidirectional already covers the reverse
+      direction, so when both are set it is the one that stays.
+    */
+    if (o.reverse && !o.bidir) add("-R", "Reverse the test so the server sends and the client receives.");
+    if (o.bidir) {
+      add(
+        "--bidir",
+        o.reverse
+          ? "Test both directions at the same time. iperf3 refuses -R together with --bidir, so -R is left out."
+          : "Test both directions at the same time.",
+      );
+    }
 
     const win = sizeToken(o.window);
     if (win) {

