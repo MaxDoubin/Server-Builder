@@ -1,0 +1,21 @@
+[req]
+distinguished_name=dn
+prompt=no
+x509_extensions=ext
+[dn]
+C=US
+ST=Nevada
+O=Verify Org
+CN=leaf.example.org
+[ext]
+basicConstraints=critical,CA:FALSE
+keyUsage=critical,digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth,clientAuth,1.3.6.1.5.5.7.3.3
+subjectAltName=DNS:leaf.example.org,DNS:*.example.org,IP:192.0.2.7,IP:2001:db8::1,email:a@example.org,URI:https://example.org/x
+authorityInfoAccess=OCSP;URI:http://ocsp.example.org,caIssuers;URI:http://ca.example.org/ca.crt
+crlDistributionPoints=URI:http://crl.example.org/ca.crl
+certificatePolicies=2.23.140.1.2.1,@pol
+subjectKeyIdentifier=hash
+[pol]
+policyIdentifier=1.3.6.1.4.1.99999.1
+CPS.1=http://example.org/cps

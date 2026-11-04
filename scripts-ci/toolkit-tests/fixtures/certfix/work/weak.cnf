@@ -1,0 +1,11 @@
+[req]
+prompt = no
+distinguished_name = dn
+attributes = attrs
+req_extensions = ext
+[dn]
+CN = portal.example.com
+[attrs]
+challengePassword = hunter2
+[ext]
+subjectAltName = DNS:*.example.com,DNS:intranet

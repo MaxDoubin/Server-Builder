@@ -506,6 +506,54 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const IpAddressClassifier = lazyWithRetry(() =>
+  import("@/pages/tools/IpAddressClassifier").then((m) => ({ default: m.IpAddressClassifier })),
+);
+const Ipv4ChecksumCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/Ipv4ChecksumCalculator").then((m) => ({ default: m.Ipv4ChecksumCalculator })),
+);
+const ReverseDnsName = lazyWithRetry(() =>
+  import("@/pages/tools/ReverseDnsName").then((m) => ({ default: m.ReverseDnsName })),
+);
+const TcpFlagsCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/TcpFlagsCalculator").then((m) => ({ default: m.TcpFlagsCalculator })),
+);
+const CertificateDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/CertificateDecoder").then((m) => ({ default: m.CertificateDecoder })),
+);
+const CsrDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/CsrDecoder").then((m) => ({ default: m.CsrDecoder })),
+);
+const DefangRefang = lazyWithRetry(() =>
+  import("@/pages/tools/DefangRefang").then((m) => ({ default: m.DefangRefang })),
+);
+const DkimRecordAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/DkimRecordAnalyzer").then((m) => ({ default: m.DkimRecordAnalyzer })),
+);
+const EmailHeaderAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/EmailHeaderAnalyzer").then((m) => ({ default: m.EmailHeaderAnalyzer })),
+);
+const IocExtractor = lazyWithRetry(() =>
+  import("@/pages/tools/IocExtractor").then((m) => ({ default: m.IocExtractor })),
+);
+const JwtEncoder = lazyWithRetry(() =>
+  import("@/pages/tools/JwtEncoder").then((m) => ({ default: m.JwtEncoder })),
+);
+const CookieAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/CookieAnalyzer").then((m) => ({ default: m.CookieAnalyzer })),
+);
+const SshKeyInspector = lazyWithRetry(() =>
+  import("@/pages/tools/SshKeyInspector").then((m) => ({ default: m.SshKeyInspector })),
+);
+const AsciiTable = lazyWithRetry(() =>
+  import("@/pages/tools/AsciiTable").then((m) => ({ default: m.AsciiTable })),
+);
+const Asn1Viewer = lazyWithRetry(() =>
+  import("@/pages/tools/Asn1Viewer").then((m) => ({ default: m.Asn1Viewer })),
+);
+const MorseCodeTranslator = lazyWithRetry(() =>
+  import("@/pages/tools/MorseCodeTranslator").then((m) => ({ default: m.MorseCodeTranslator })),
+);
 const IopsCalculator = lazyWithRetry(() =>
   import("@/pages/tools/IopsCalculator").then((m) => ({ default: m.IopsCalculator })),
 );
@@ -1739,6 +1787,86 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ip-address-classifier">
+            <Suspense fallback={<RouteLoading />}>
+              <IpAddressClassifier />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ipv4-checksum-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <Ipv4ChecksumCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/reverse-dns-name">
+            <Suspense fallback={<RouteLoading />}>
+              <ReverseDnsName />
+            </Suspense>
+          </Route>
+          <Route path="/tools/tcp-flags-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <TcpFlagsCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/certificate-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <CertificateDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/csr-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <CsrDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/defang-refang">
+            <Suspense fallback={<RouteLoading />}>
+              <DefangRefang />
+            </Suspense>
+          </Route>
+          <Route path="/tools/dkim-record-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <DkimRecordAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/email-header-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <EmailHeaderAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ioc-extractor">
+            <Suspense fallback={<RouteLoading />}>
+              <IocExtractor />
+            </Suspense>
+          </Route>
+          <Route path="/tools/jwt-encoder">
+            <Suspense fallback={<RouteLoading />}>
+              <JwtEncoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/cookie-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <CookieAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ssh-key-inspector">
+            <Suspense fallback={<RouteLoading />}>
+              <SshKeyInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ascii-table">
+            <Suspense fallback={<RouteLoading />}>
+              <AsciiTable />
+            </Suspense>
+          </Route>
+          <Route path="/tools/asn1-viewer">
+            <Suspense fallback={<RouteLoading />}>
+              <Asn1Viewer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/morse-code-translator">
+            <Suspense fallback={<RouteLoading />}>
+              <MorseCodeTranslator />
             </Suspense>
           </Route>
           <Route path="/tools/iops-calculator">

@@ -1,0 +1,99 @@
+{
+ "keys": {
+  "rsa4096": {
+   "line": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDat71pK0d6UGcgU3FpUdMXzHNqaVqzhux4noGfvvfR99lNUBPr4+yPAQx0hwovoUJC8vc7VXxYan0T6brYWGYJ+a+jzkgHaOKRpjrEYcKy0yQIitgH6WTqawsncg/buGkVHb6L+xI+OdYUlo7Ge+FRn1VA65EmwQNWh3CSwadKpTgXUbH4YvqfJiQFpNf8bKYMZB9gv5gqYxUKa4Mg07NL/lKHVXvxUwrROJq1U0SDA24BtI+KH5qUltZamMZSss2/qfrjFOeZInYT646jd5Fq+g8ZDd79RkQfU0Wm6tU0cIUd2pOw7fOIK+RFyX8Z0PDeuY8qJb6ZMDFeFvNzLYZkc4LD7jrPS/yCrWfZXcnwlTQA20suD8Sg1SzQ85tThMfitocZXbcIxCyo1o3V9T6kgbOgZ8vKmJgy95YtVS4THxmJ3KPbJpw6xWQagQIID2nxzlvUrDIsJeNmde3tvgIaMBB03lieZw0/PHnAcjOZ9tyWTQrUIIGKF/aTk5mjGO3P2YHwBQhsSXKU4vmt9/lQbFw3Kt23G9VO8wwzTa7R51/aGzY3QIfr6NJ3c6rIw4q1ikw2bMhNW09NHzVXRYNFzFCh/UND/sQcyfhLz7B5o/e/H7Yq7LUHaphygUA0GbNJOEPxJH0F8S3V5M685HMO8buMgxD4jfgcaxIxnM3XRw==",
+   "type": "ssh-rsa",
+   "bits": 4096,
+   "label": "RSA",
+   "sha256": "SHA256:zcch0MEIMgSixo6zeVODmhY9EpVmsT9IIVtCjsupsXY",
+   "md5": "MD5:23:73:dd:56:56:cf:8d:3c:37:ea:ef:61:87:91:53:24"
+  },
+  "rsa1536": {
+   "line": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAwQDO9mSHK1CxuzMG15WeflTEWAgj3Ja4yvcz5QVhmQpDw9fWQBYvWmVXlsJYfWHJKIc8CzuoebXXrOUkDgFFPaAnDnk1o2kISRLoOKEDr/yWtwpHBmhXY76uG6jyBZnpthlJkHxaeVia5WWuiNT7EgQxnK8o+7s7Gl+4zX4UwkBajX/FXjEtyePolkXjH95Id/qObu3ssMq1VvsWYmfCo0l0jWUMQUmV9RbVYSUIw1Fd7bnlTbmhCnvoFC5WI2TttxM=",
+   "type": "ssh-rsa",
+   "bits": 1536,
+   "label": "RSA",
+   "sha256": "SHA256:qVtLiGn/30iC3/w56LDPkUZNBBl5rYdBD6mSFC9HmcQ",
+   "md5": "MD5:ed:6e:fe:eb:22:39:a4:5d:b7:ed:21:07:f2:dc:7d:49"
+  },
+  "p256": {
+   "line": "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCLHSuhKEeJa6Xky2sk3gp5xeXZzgOxJHKif1xJlnmyJE4DHGRLl59bcDW63HBdC4jKHdy4HLdEG0axU7MH3ufg=",
+   "type": "ecdsa-sha2-nistp256",
+   "bits": 256,
+   "label": "ECDSA",
+   "sha256": "SHA256:lslS4jwK7q1Ry5MVOZHFnLvxJg80meHeoSAvtSA38AQ",
+   "md5": "MD5:07:4b:3a:97:f2:22:21:87:97:bd:94:84:11:c8:f4:24"
+  },
+  "p521": {
+   "line": "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBAAxJWwWiCfuKEMfHI4zzLoP6XMb3k9B0H8/18xMnmqlEqPOHo5j3hGGlIwbp4agUgktrh5zKdgeSF4EQL61C8x0ZADCRZnbsXwNvSo8QcCK2ppNm5VDuajR73v13tqihxcMrI7rZA8YeXb0PekJ/gqzru9rf82gSwMySHf6VUm1Iuv0Zw==",
+   "type": "ecdsa-sha2-nistp521",
+   "bits": 521,
+   "label": "ECDSA",
+   "sha256": "SHA256:DMuKTdKurnqBTgjwdzeE87aWm6xnowA1lSUM4CI50Zk",
+   "md5": "MD5:da:48:7f:ef:43:43:c9:60:0e:4e:f3:20:2a:a2:bf:73"
+  },
+  "ed25519": {
+   "line": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJjVBZh0GgkiyCxGJioRKh9LwTemqCj9RYGLpLW9n5Hj",
+   "type": "ssh-ed25519",
+   "bits": 256,
+   "label": "ED25519",
+   "sha256": "SHA256:POsaoo8mMhkrtqeMdGBzj6oHHfvl4wsmjq1As+aBGnY",
+   "md5": "MD5:c9:45:ce:6a:f2:ae:69:c7:d8:4f:2f:49:7c:7f:e8:2a"
+  }
+ },
+ "certs": {
+  "ed25519_user": {
+   "line": "ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdjAxQG9wZW5zc2guY29tAAAAIKnMgaT4Nb458bfhe22hTSZUnMaQxHElsbJgov/qCX/PAAAAIJjVBZh0GgkiyCxGJioRKh9LwTemqCj9RYGLpLW9n5HjAAAAAAAAEJIAAAABAAAADWFsaWNlQGV4YW1wbGUAAAATAAAABWFsaWNlAAAABmRlcGxveQAAAABpVbkAAAAAAGs27IAAAAAmAAAADWZvcmNlLWNvbW1hbmQAAAARAAAADS91c3IvYmluL3RydWUAAAAwAAAAFnBlcm1pdC1wb3J0LWZvcndhcmRpbmcAAAAAAAAACnBlcm1pdC1wdHkAAAAAAAAAAAAAADMAAAALc3NoLWVkMjU1MTkAAAAgF/sehWoS32/+gdr/yyKME/3xzJ7jg3zRchxKZ8by+JcAAABTAAAAC3NzaC1lZDI1NTE5AAAAQAe8vVBunpUtCJgYAYSLugEVQvrxA6CtOzB7x5/j1awKWMxtkRCPGjin+QtbU440a68w7rUDEkJWeqax5QVCzg0= alice-cert",
+   "plain_sha256": "SHA256:POsaoo8mMhkrtqeMdGBzj6oHHfvl4wsmjq1As+aBGnY",
+   "plain_md5": "MD5:c9:45:ce:6a:f2:ae:69:c7:d8:4f:2f:49:7c:7f:e8:2a",
+   "serial": "4242",
+   "key_id": "alice@example",
+   "principals": [
+    "alice",
+    "deploy"
+   ],
+   "valid_after": 1767225600,
+   "valid_before": 1798761600,
+   "ca_sha256": "SHA256:83NwN1kKkt+NYpbPDPwWWo1Nxsd3p5unonTMoK9oQBc",
+   "ca_type": "ssh-ed25519",
+   "sig_alg": "ssh-ed25519",
+   "label": "ED25519-CERT",
+   "bits": 256,
+   "critical": {
+    "force-command": "/usr/bin/true"
+   },
+   "extensions": [
+    "permit-port-forwarding",
+    "permit-pty"
+   ]
+  },
+  "p256_host": {
+   "line": "ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYTItbmlzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAggYF2o7/g3JnFPmK+w0u1dcJfsAuq4hJcDH7CRCZk6isAAAAIbmlzdHAyNTYAAABBBCLHSuhKEeJa6Xky2sk3gp5xeXZzgOxJHKif1xJlnmyJE4DHGRLl59bcDW63HBdC4jKHdy4HLdEG0axU7MH3ufj//////////wAAAAIAAAAAAAAAAAAAAAAAAAAA//////////8AAAAAAAAAAAAAAAAAAAEXAAAAB3NzaC1yc2EAAAADAQABAAABAQC5NNiTcwXRckl2iTrcxi4EOgbpbm2StULeJ8QBumxlhyxizc0nta0eTwRRY8wjc1OGSu8zM+ze+p1lmfvXrKjgh3rRrE3DsXxLAFDTbXPY2ncSe1tSjw593iSWUXeba6N5CvjsVMHhXiKvNr6tlujT2zpLou1G8HI6+QT4p5xAXaOuWFyJeG7otxMbepQtqSdFSkMGcKyLtVwKEhjOC1BvySHhtVs8rknL+IR3nCQPgSA/iZCri+kUqsxMB4O3sThT2Pz6KRk3ELbfjmKrY1fQgUF4JRj09uYjnrw68Lu/htZwoV7AcQ1Shu4pk+T/vdJMUo4I2YSEd0fKK+LCHG0pAAABFAAAAAxyc2Etc2hhMi01MTIAAAEAOfjNT3MDZMD25O6SDY0xCVmcVPt6FKVFM6aQWU/brFtsRZwQeuI2w75PmBJjd99Oglt1hamfqjAmMzi2rY/B7RCJAgkrhcj+HVHHxrKfLPDtMSBUgDtTXo2wFdprMI3f3HVoaRBP/8HXpEDCqFqfHvnKGdB6jJDsMHVVaFg6lKwLUdLEes3VXL2MQFtt/OX7WntNoX839CD4oge66WeOuI3AVgb2WDjvpeGuWC0vlr3PwydqSy3d+ngM5dONCPZbTZThGt6PKHLYt8eZr5izLFszgQOomSSVCH9MZfCdj+GasUL9bky/p9jGcPmnRFZnW+BIO4sOeWUuI30fZ7U7iQ==",
+   "plain_sha256": "SHA256:lslS4jwK7q1Ry5MVOZHFnLvxJg80meHeoSAvtSA38AQ",
+   "plain_md5": "MD5:07:4b:3a:97:f2:22:21:87:97:bd:94:84:11:c8:f4:24",
+   "serial": "18446744073709551615",
+   "key_id": "",
+   "principals": [],
+   "ca_sha256": "SHA256:1kZUvwOsOf6BBKiZ2vLn5XI97lQCYnFY3eDRvRKTJyE",
+   "ca_type": "ssh-rsa",
+   "sig_alg": "rsa-sha2-512",
+   "label": "ECDSA-CERT",
+   "bits": 256
+  }
+ },
+ "hand": {
+  "p256_compressed": {
+   "line": "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAAAhAiLHSuhKEeJa6Xky2sk3gp5xeXZzgOxJHKif1xJlnmyJ compressed",
+   "sha256": "SHA256:gFhBzhvP+xlpz1Qop6dX/mxvHhkmZkqJypiMLLYodKk"
+  },
+  "rsa_e_leading_zero": {
+   "line": "ssh-rsa AAAAB3NzaC1yc2EAAAAEAAEAAQAAAgEA2re9aStHelBnIFNxaVHTF8xzamlas4bseJ6Bn7730ffZTVAT6+PsjwEMdIcKL6FCQvL3O1V8WGp9E+m62FhmCfmvo85IB2jikaY6xGHCstMkCIrYB+lk6msLJ3IP27hpFR2+i/sSPjnWFJaOxnvhUZ9VQOuRJsEDVodwksGnSqU4F1Gx+GL6nyYkBaTX/GymDGQfYL+YKmMVCmuDINOzS/5Sh1V78VMK0TiatVNEgwNuAbSPih+alJbWWpjGUrLNv6n64xTnmSJ2E+uOo3eRavoPGQ3e/UZEH1NFpurVNHCFHdqTsO3ziCvkRcl/GdDw3rmPKiW+mTAxXhbzcy2GZHOCw+46z0v8gq1n2V3J8JU0ANtLLg/EoNUs0PObU4TH4raHGV23CMQsqNaN1fU+pIGzoGfLypiYMveWLVUuEx8Zidyj2yacOsVkGoECCA9p8c5b1KwyLCXjZnXt7b4CGjAQdN5YnmcNPzx5wHIzmfbclk0K1CCBihf2k5OZoxjtz9mB8AUIbElylOL5rff5UGxcNyrdtxvVTvMMM02u0edf2hs2N0CH6+jSd3OqyMOKtYpMNmzITVtPTR81V0WDRcxQof1DQ/7EHMn4S8+weaP3vx+2Kuy1B2qYcoFANBmzSThD8SR9BfEt1eTOvORzDvG7jIMQ+I34HGsSMZzN10c=",
+   "sha256": "SHA256:sZ1Rd1Y951Vtv2/PZfs2R1ZAFGFxm/FBeM5Q4Gnh+q8"
+  },
+  "rfc4716": {
+   "text": "---- BEGIN SSH2 PUBLIC KEY ----\nComment: \"256-bit ED25519, converted by \\\nalice@example\"\nAAAAC3NzaC1lZDI1NTE5AAAAIJjVBZh0GgkiyCxGJioRKh9LwTemqCj9RYGLpLW9n5Hj\n---- END SSH2 PUBLIC KEY ----",
+   "sha256": "SHA256:POsaoo8mMhkrtqeMdGBzj6oHHfvl4wsmjq1As+aBGnY",
+   "comment": "256-bit ED25519, converted by alice@example"
+  }
+ }
+}
