@@ -752,6 +752,13 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
     }
   } else {
     const udpLength = (segment[4] << 8) | segment[5];
+    if (udpLength < 8 && (override === null || override === undefined)) {
+      // RFC 768: the length counts the 8-byte header, so 0 to 7 is impossible.
+      return {
+        ok: false,
+        error: `The UDP length field says ${byteCount(udpLength)}, but a UDP datagram is at least 8 bytes because the length includes the header (RFC 768). The field is wrong, so no checksum can be verified or completed. To sum these bytes anyway, set the length override.`,
+      };
+    }
     if (udpLength > segment.length && (override === null || override === undefined)) {
       // A checksum covers the whole datagram. With part of it missing there is
       // nothing to verify and no finished checksum to compute, so refuse.

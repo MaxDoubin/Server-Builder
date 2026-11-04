@@ -641,7 +641,10 @@ test("verifier 2: singular and plural byte counts in warnings", () => {
   const mismatch = analyzeIpv4Header(hex("4500 0015 0000 4000 4011 0000 c0a8 0101 c0a8 0102 ff ee"));
   assert.ok(mismatch.ok && mismatch.warnings.some((w) => w.includes("2 bytes after the header were") && w.includes("payload is 1 byte.")));
   const udp1 = analyzeTransport({ source: "1.1.1.1", destination: "2.2.2.2", protocol: 17, segment: hex("0001 0002 0001 0000") });
-  assert.ok(udp1.ok && udp1.warnings.some((w) => w.includes("says 1 byte,")));
+  // A length of 1 is impossible, so it is refused, and the message still counts "1 byte" in the singular.
+  assert.ok(!udp1.ok && udp1.error.includes("says 1 byte,"));
+  const udpOverride = analyzeTransport({ source: "1.1.1.1", destination: "2.2.2.2", protocol: 17, segment: hex("0001 0002 0001 0000"), lengthOverride: 8 });
+  assert.ok(udpOverride.ok && udpOverride.warnings.some((w) => w.includes("says 1 byte,")));
 });
 
 test("verifier 2: boundary headers and dumps", () => {
@@ -674,7 +677,9 @@ test("verifier 2: transport inputs at the limits", () => {
   assert.ok(r.ok && r.warnings.some((w) => w.includes("60 bytes")));
   // Largest segment that fits behind a 20-byte header, all zero: sum is the
   // pseudo-header alone.
-  const max = analyzeTransport({ source: "0.0.0.0", destination: "0.0.0.0", protocol: 17, segment: new Uint8Array(65515) });
+  // The length field of this all-zero segment says 0, which is impossible, so the override
+  // states the real length on purpose.
+  const max = analyzeTransport({ source: "0.0.0.0", destination: "0.0.0.0", protocol: 17, segment: new Uint8Array(65515), lengthOverride: 65515 });
   assert.ok(max.ok);
   if (!max.ok) return;
   // Pseudo-header 0000 0000 0000 0000 0011 ffeb: 0x11 + 0xffeb = 0xfffc.
@@ -874,6 +879,12 @@ test("UDP checksums cover exactly the declared length, not trailing bytes", () =
   assert.ok(!short.ok && short.error.includes("paste the rest of it"));
   const intended = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000"), lengthOverride: 32 });
   assert.ok(intended.ok);
+  // A length field of 0 to 7 cannot be right: the length includes the 8-byte header.
+  for (const len of ["0000", "0007"]) {
+    const bad = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex(`0001 0002 ${len} 0000 6869`) });
+    assert.ok(!bad.ok && bad.error.includes("at least 8 bytes"), len);
+  }
+  assert.ok(analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0008 0000") }).ok);
   // TCP has no length field, so nothing is trimmed.
   const tcp = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 6, segment: new Uint8Array(24) });
   assert.ok(tcp.ok && tcp.length === 24);
