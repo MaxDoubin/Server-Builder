@@ -693,11 +693,14 @@ function buildUfw(r: Ready): ToolOutput {
   // Without a protocol ufw applies a port to both TCP and UDP, but it insists
   // on a protocol for lists and ranges (ufw(8)), so those split in two.
   const single = (list: PortList | null) => list === null || (list.items.length === 1 && list.items[0].lo === list.items[0].hi);
+  // A rule with no port and no proto is not "TCP and UDP": it matches every
+  // protocol, ICMP included. So the one-rule shortcut needs a port to carry it.
+  const noPorts = r.sports === null && r.dports === null;
   const protos: (string | null)[] =
     spec.protocol === "any"
       ? [null]
       : spec.protocol === "tcpudp"
-        ? single(r.sports) && single(r.dports)
+        ? !noPorts && single(r.sports) && single(r.dports)
           ? [null]
           : ["tcp", "udp"]
         : [spec.protocol];
@@ -715,7 +718,13 @@ function buildUfw(r: Ready): ToolOutput {
   });
 
   if (spec.protocol === "tcpudp" && protos[0] === null) notes.push("With no proto clause, ufw applies the port to TCP and UDP both.");
-  if (spec.protocol === "tcpudp" && protos[0] !== null) notes.push("ufw needs a protocol for port lists and ranges, so TCP and UDP get a rule each.");
+  if (spec.protocol === "tcpudp" && protos[0] !== null) {
+    notes.push(
+      noPorts
+        ? "With no port, a ufw rule without a proto clause would match every protocol, ICMP included, so TCP and UDP get a rule each."
+        : "ufw needs a protocol for port lists and ranges, so TCP and UDP get a rule each.",
+    );
+  }
   if (spec.state === "new") {
     notes.push("ufw has no state option. Its user rules only see packets that before.rules did not already accept as ESTABLISHED or RELATED.");
   }

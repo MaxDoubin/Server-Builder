@@ -238,4 +238,40 @@ assert.doesNotThrow(() => parseIperf3Summary("x".repeat(2_000_000)));
 // V11. A line that says "sender" but has no bitrate is not counted as a row.
 assert.strictEqual(parseIperf3Summary("this is the sender").rows.length, 0);
 
+// Numeric fields follow iperf3's own limits (esnet/iperf src/iperf.h and iperf_error.c).
+// -i 0 is real: it turns the periodic reports off, so it must reach the command.
+assert.strictEqual(buildIperf3Command(opts({ host: "h", interval: "0" })), "iperf3 -c h -i 0");
+assert.ok(buildIperf3Parts(opts({ host: "h", interval: "0" })).flags.some((f) => f.flag === "-i 0" && /off/i.test(f.explanation)));
+assert.strictEqual(buildIperf3Command(opts({ host: "h", interval: "0.5" })), "iperf3 -c h -i 0.5");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", interval: "60" })), "iperf3 -c h -i 60");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", interval: "0.1" })), "iperf3 -c h -i 0.1");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", interval: "1.0" })), "iperf3 -c h", "1.0 is the default of 1");
+for (const bad of ["0.05", "61", "-1", "1e3", "abc", "1.", ".5"]) {
+  const r = buildIperf3Parts(opts({ host: "h", interval: bad }));
+  assert.strictEqual(r.parts.join(" "), "iperf3 -c h", `interval ${bad} is left out`);
+  assert.strictEqual(r.ignored.length, 1, `interval ${bad} is reported`);
+}
+// Ports are 1 to 65535.
+assert.strictEqual(buildIperf3Command(opts({ role: "server", port: "65535" })), "iperf3 -s -p 65535");
+assert.strictEqual(buildIperf3Command(opts({ role: "server", port: "1" })), "iperf3 -s -p 1");
+for (const bad of ["0", "65536", "70000", "99999999999999999999", "-5", "80.5", "08x"]) {
+  const r = buildIperf3Parts(opts({ role: "server", port: bad }));
+  assert.strictEqual(r.parts.join(" "), "iperf3 -s", `port ${bad} is left out`);
+  assert.strictEqual(r.ignored.length, 1, `port ${bad} is reported`);
+}
+// The same limits guard duration (1 to 86400), streams (1 to 128) and MSS (1 to 32767).
+assert.ok(buildIperf3Command(opts({ host: "h", duration: "86400" })).includes("-t 86400"));
+assert.ok(!buildIperf3Command(opts({ host: "h", duration: "86401" })).includes("-t"));
+assert.ok(buildIperf3Command(opts({ host: "h", parallel: "128" })).includes("-P 128"));
+assert.ok(!buildIperf3Command(opts({ host: "h", parallel: "129" })).includes("-P"));
+assert.ok(buildIperf3Command(opts({ host: "h", mss: "32767" })).includes("-M 32767"));
+assert.ok(!buildIperf3Command(opts({ host: "h", mss: "32768" })).includes("-M"));
+assert.strictEqual(buildIperf3Parts(opts({ host: "h", duration: "86401", parallel: "129", mss: "32768", port: "70000" })).ignored.length, 4);
+// Empty fields mean "default" and are not reported; valid input reports nothing.
+assert.deepStrictEqual(buildIperf3Parts(opts({ host: "h", duration: "", parallel: "", mss: "", port: "", interval: "" })).ignored, []);
+assert.deepStrictEqual(buildIperf3Parts(opts({ host: "h", duration: "30", parallel: "4", port: "5202" })).ignored, []);
+// A typed value with leading zeros is normalized, so "05201" is the default port and "010" seconds is the default 10.
+assert.strictEqual(buildIperf3Command(opts({ role: "server", port: "05201" })), "iperf3 -s");
+assert.strictEqual(buildIperf3Command(opts({ host: "h", duration: "010" })), "iperf3 -c h");
+
 console.log("iperf3-command-builder: verifier reference cases passed");

@@ -156,7 +156,7 @@ export function Iperf3CommandBuilder() {
   const set = <K extends keyof Iperf3Options>(key: K, value: Iperf3Options[K]) =>
     setO((prev) => ({ ...prev, [key]: value }));
 
-  const { parts, flags } = useMemo(() => buildIperf3Parts(o), [o]);
+  const { parts, flags, ignored } = useMemo(() => buildIperf3Parts(o), [o]);
   const command = parts.join(" ");
 
   const summary = useMemo(() => (pasted.trim() === "" ? null : parseIperf3Summary(pasted)), [pasted]);
@@ -321,6 +321,16 @@ export function Iperf3CommandBuilder() {
             </pre>
             <CopyButton value={command} label="Copy iperf3 command" testId="button-copy-command" />
           </div>
+
+          {ignored.length > 0 && (
+            <ul className="mt-4 list-disc space-y-1 pl-5" role="status" data-testid="list-ignored">
+              {ignored.map((message) => (
+                <li key={message} className="font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-danger))]">
+                  {message}
+                </li>
+              ))}
+            </ul>
+          )}
 
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-left">

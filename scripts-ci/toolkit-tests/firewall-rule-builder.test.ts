@@ -566,6 +566,19 @@ ok(!all.includes("—"));
   ok(cmds(dns, "nftables").at(-1)!.includes("meta l4proto { tcp, udp } th dport 53"));
   eq(cmds(dns, "iptables").length, 2);
   ok(!cmds(dns, "ufw")[0].includes("proto"));
+  // TCP and UDP with no port at all: a bare ufw rule would match every protocol (ICMP too), so it splits in two.
+  const portless = rule({ protocol: "tcpudp", destPorts: "", sourcePorts: "", source: "192.168.1.0/24" });
+  eq(cmds(portless, "ufw"), [
+    "ufw allow in proto tcp from 192.168.1.0/24 to any",
+    "ufw allow in proto udp from 192.168.1.0/24 to any",
+  ]);
+  ok(out(portless, "ufw").notes.some((n) => n.includes("every protocol")));
+  // "Any protocol" with no port really does mean every protocol, so it stays one rule without proto.
+  eq(cmds(rule({ protocol: "any", destPorts: "", sourcePorts: "", source: "192.168.1.0/24" }), "ufw"), [
+    "ufw allow in from 192.168.1.0/24 to any",
+  ]);
+  // A single port on TCP and UDP stays one rule, since ufw applies a bare port to both.
+  eq(cmds(rule({ protocol: "tcpudp", destPorts: "53", sourcePorts: "" }), "ufw").length, 1);
   // firewalld: family comes first among the rule attributes, then priority.
   const topFw = cmds(rule({ placement: "top" }), "firewalld")[0];
   ok(topFw.includes(`rule family="ipv4" priority="-1" source address=`), topFw);

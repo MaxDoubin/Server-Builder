@@ -65,13 +65,38 @@ export const DEFAULT_IPERF3_OPTIONS: Iperf3Options = {
   bind: "",
 };
 
-/** A numeric field is kept only when it parses to a positive number. */
-function positive(raw: string): string | null {
+/**
+ * The limits iperf3 itself enforces (src/iperf.h and iperf_error.c in the
+ * esnet/iperf source): a port is 1 to 65535, a test lasts 0 to 86400 seconds,
+ * there are 1 to 128 parallel streams, the MSS is at most 32767 bytes, and a
+ * report interval is 0 (reports off) or 0.1 to 60 seconds. A value outside its
+ * range makes iperf3 refuse to run, so the builder leaves it out and says so.
+ */
+const LIMITS = {
+  port: { min: 1, max: 65535 },
+  duration: { min: 1, max: 86400 },
+  parallel: { min: 1, max: 128 },
+  mss: { min: 1, max: 32767 },
+  interval: { min: 0.1, max: 60 },
+} as const;
+
+/** A whole number inside [min, max], or null. Leading zeros are dropped. */
+function wholeInRange(raw: string, min: number, max: number): string | null {
   const value = raw.trim();
-  if (value === "") return null;
   if (!/^[0-9]+$/.test(value)) return null;
-  if (Number(value) <= 0) return null;
-  return value;
+  const n = Number(value);
+  if (!Number.isSafeInteger(n) || n < min || n > max) return null;
+  return String(n);
+}
+
+/** The report interval: 0 turns reports off, otherwise 0.1 to 60 seconds. */
+function intervalValue(raw: string): string | null {
+  const value = raw.trim();
+  if (!/^[0-9]+(?:\.[0-9]+)?$/.test(value)) return null;
+  const n = Number(value);
+  if (n === 0) return "0";
+  if (!Number.isFinite(n) || n < LIMITS.interval.min || n > LIMITS.interval.max) return null;
+  return String(n);
 }
 
 /** A size field (-b, -w, -M) accepts a plain number or a number with a K/M/G/T suffix. */
@@ -109,12 +134,24 @@ export interface Iperf3Flag {
  * Build the argument pieces and a parallel list of flag explanations, so the
  * command string and the per-flag table never disagree.
  */
-export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Iperf3Flag[] } {
+export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Iperf3Flag[]; ignored: string[] } {
   const parts: string[] = ["iperf3"];
   const flags: Iperf3Flag[] = [];
   const add = (flag: string, explanation: string) => {
     parts.push(flag);
     flags.push({ flag, explanation });
+  };
+  const ignored: string[] = [];
+  /** A typed number that is not usable: say which field was left out and why. */
+  const skip = (label: string, raw: string, rule: string) => {
+    ignored.push(`${label} "${raw.trim().slice(0, 24)}" was left out. ${rule}`);
+  };
+  /** A whole-number field with iperf3's own limits. Empty means "use the default". */
+  const whole = (raw: string, limit: { min: number; max: number }, label: string): string | null => {
+    if (raw.trim() === "") return null;
+    const v = wholeInRange(raw, limit.min, limit.max);
+    if (v === null) skip(label, raw, `iperf3 accepts a whole number from ${limit.min} to ${limit.max}.`);
+    return v;
   };
 
   if (o.role === "server") {
@@ -145,10 +182,10 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
       }
     }
 
-    const dur = positive(o.duration);
+    const dur = whole(o.duration, LIMITS.duration, "Duration");
     if (dur && dur !== "10") add(`-t ${dur}`, "Run for this many seconds (the default is 10).");
 
-    const streams = positive(o.parallel);
+    const streams = whole(o.parallel, LIMITS.parallel, "Parallel streams");
     if (streams && streams !== "1") {
       add(
         `-P ${streams}`,
@@ -179,14 +216,22 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
       );
     }
 
-    const mss = positive(o.mss);
+    const mss = whole(o.mss, LIMITS.mss, "MSS");
     if (mss) add(`-M ${mss}`, "Set the TCP maximum segment size, the largest payload per segment.");
 
-    const interval = positive(o.interval);
-    if (interval && interval !== "1") add(`-i ${interval}`, "Print a report every this many seconds.");
+    if (o.interval.trim() !== "") {
+      const interval = intervalValue(o.interval);
+      if (interval === null) {
+        skip("Report interval", o.interval, "iperf3 accepts 0 to turn reports off, or 0.1 to 60 seconds.");
+      } else if (interval === "0") {
+        add("-i 0", "Turn off the periodic reports. Only the final summary is printed.");
+      } else if (interval !== "1") {
+        add(`-i ${interval}`, "Print a report every this many seconds.");
+      }
+    }
   }
 
-  const port = positive(o.port);
+  const port = whole(o.port, LIMITS.port, "Port");
   if (port && port !== "5201") add(`-p ${port}`, "Use this port instead of the default 5201.");
 
   if (o.ipVersion === "4") add("-4", "Use IPv4 only.");
@@ -200,7 +245,7 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
 
   if (o.json) add("-J", "Emit JSON output for scripts instead of the human readable table.");
 
-  return { parts, flags };
+  return { parts, flags, ignored };
 }
 
 /** The command as a single shell line. */
