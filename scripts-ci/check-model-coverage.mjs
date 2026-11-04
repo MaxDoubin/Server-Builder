@@ -66,6 +66,14 @@ const NOT_LOGIC = new Set(["types.ts", "progress.ts", "index.ts"]);
  * rather than an entry here.
  */
 const DELIBERATELY_UNCOVERED = {
+  "toolkit/*":
+    "about seven hundred small parsers, calculators and decoders for the /tools pages, one group per" +
+    " tool. They are held to known answers by scripts-ci/run-toolkit-tests.ts, which runs one test" +
+    " file per tool (published vectors, worked examples from the governing RFC or standard, boundary" +
+    " values, malformed input and, for the parsers, structured fuzzing, 10,696 counted checks at the" +
+    " time of writing). The per-function naming rule suits a model with one gate; here the gate is a" +
+    " directory of files that each name what they test, and listing every export in one place would" +
+    " add a list to keep in step with the code and no check.",
   "motion/*":
     "six React hooks that read matchMedia, navigator and the scroll position. There is nothing for a Node gate to call, and what they do is exercised by the browser sweep across every route at 1440, 390, light theme and reduced motion, which is where a hook that misreads a preference actually shows up.",
 };

@@ -85,6 +85,23 @@ const DECIDED_IN_DATA = {
     " on every case and fails when the marked claim disagrees with what check() decides",
 };
 
+/**
+ * Directories under the lib folder that are not surfaces, with why.
+ *
+ * A surface is a page that offers a set of options with one marked right.
+ * The toolkit is the code behind the calculators and decoders under /tools:
+ * each takes input and returns a result, and none presents choices to mark.
+ * Some of its types do carry an options field (the command builders list the
+ * flags a user can pick) and a couple of its helpers have names this check
+ * is wide enough to catch, but neither makes it a quiz. Its logic is held by
+ * the known-answer tests that run-toolkit-tests runs.
+ */
+const NOT_SURFACES = {
+  toolkit:
+    "calculators and decoders for the /tools pages, not a set of options with one marked right;" +
+    " run-toolkit-tests holds its logic to known answers instead",
+};
+
 /** Comments are prose. A function named only in prose is not called. */
 const strip = (source) =>
   source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1 ");
@@ -108,6 +125,7 @@ for (const entry of readdirSync(LIB, { withFileTypes: true }).sort((a, b) =>
   a.name.localeCompare(b.name),
 )) {
   if (!entry.isDirectory()) continue;
+  if (entry.name in NOT_SURFACES) continue;
   const files = filesUnder(`${LIB}/${entry.name}`);
   const sources = files.map((file) => readFileSync(file, "utf8"));
 

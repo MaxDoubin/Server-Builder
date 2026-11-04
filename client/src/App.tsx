@@ -506,6 +506,168 @@ const XorTool = lazyWithRetry(() =>
 const ZipInspector = lazyWithRetry(() =>
   import("@/pages/tools/ZipInspector").then((m) => ({ default: m.ZipInspector })),
 );
+const IopsCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/IopsCalculator").then((m) => ({ default: m.IopsCalculator })),
+);
+const PoeBudgetCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/PoeBudgetCalculator").then((m) => ({ default: m.PoeBudgetCalculator })),
+);
+const StorageGrowthForecast = lazyWithRetry(() =>
+  import("@/pages/tools/StorageGrowthForecast").then((m) => ({ default: m.StorageGrowthForecast })),
+);
+const ZfsCapacityCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/ZfsCapacityCalculator").then((m) => ({ default: m.ZfsCapacityCalculator })),
+);
+const FirewallRuleBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/FirewallRuleBuilder").then((m) => ({ default: m.FirewallRuleBuilder })),
+);
+const SshdConfigAuditor = lazyWithRetry(() =>
+  import("@/pages/tools/SshdConfigAuditor").then((m) => ({ default: m.SshdConfigAuditor })),
+);
+const ByteUnitConverter = lazyWithRetry(() =>
+  import("@/pages/tools/ByteUnitConverter").then((m) => ({ default: m.ByteUnitConverter })),
+);
+const UmaskCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/UmaskCalculator").then((m) => ({ default: m.UmaskCalculator })),
+);
+const SshConfigBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/SshConfigBuilder").then((m) => ({ default: m.SshConfigBuilder })),
+);
+const SudoersExplainer = lazyWithRetry(() =>
+  import("@/pages/tools/SudoersExplainer").then((m) => ({ default: m.SudoersExplainer })),
+);
+const DhcpOption121Encoder = lazyWithRetry(() =>
+  import("@/pages/tools/DhcpOption121Encoder").then((m) => ({ default: m.DhcpOption121Encoder })),
+);
+const TcpdumpFilterBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/TcpdumpFilterBuilder").then((m) => ({ default: m.TcpdumpFilterBuilder })),
+);
+const HmacGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/HmacGenerator").then((m) => ({ default: m.HmacGenerator })),
+);
+const PlayfairCipher = lazyWithRetry(() =>
+  import("@/pages/tools/PlayfairCipher").then((m) => ({ default: m.PlayfairCipher })),
+);
+const RailFenceCipher = lazyWithRetry(() =>
+  import("@/pages/tools/RailFenceCipher").then((m) => ({ default: m.RailFenceCipher })),
+);
+const TotpGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/TotpGenerator").then((m) => ({ default: m.TotpGenerator })),
+);
+const EndiannessConverter = lazyWithRetry(() =>
+  import("@/pages/tools/EndiannessConverter").then((m) => ({ default: m.EndiannessConverter })),
+);
+const Ieee754Inspector = lazyWithRetry(() =>
+  import("@/pages/tools/Ieee754Inspector").then((m) => ({ default: m.Ieee754Inspector })),
+);
+const RaidRebuildRisk = lazyWithRetry(() =>
+  import("@/pages/tools/RaidRebuildRisk").then((m) => ({ default: m.RaidRebuildRisk })),
+);
+const UpsRuntimeCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/UpsRuntimeCalculator").then((m) => ({ default: m.UpsRuntimeCalculator })),
+);
+const AccessLogAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/AccessLogAnalyzer").then((m) => ({ default: m.AccessLogAnalyzer })),
+);
+const AffineCipher = lazyWithRetry(() =>
+  import("@/pages/tools/AffineCipher").then((m) => ({ default: m.AffineCipher })),
+);
+const BaconCipher = lazyWithRetry(() =>
+  import("@/pages/tools/BaconCipher").then((m) => ({ default: m.BaconCipher })),
+);
+const CspAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/CspAnalyzer").then((m) => ({ default: m.CspAnalyzer })),
+);
+const EntropyAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/EntropyAnalyzer").then((m) => ({ default: m.EntropyAnalyzer })),
+);
+const SecurityHeadersAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/SecurityHeadersAnalyzer").then((m) => ({ default: m.SecurityHeadersAnalyzer })),
+);
+const AsnConverter = lazyWithRetry(() =>
+  import("@/pages/tools/AsnConverter").then((m) => ({ default: m.AsnConverter })),
+);
+const BandwidthDelayProduct = lazyWithRetry(() =>
+  import("@/pages/tools/BandwidthDelayProduct").then((m) => ({ default: m.BandwidthDelayProduct })),
+);
+const BgpCommunityDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/BgpCommunityDecoder").then((m) => ({ default: m.BgpCommunityDecoder })),
+);
+const IpRangeToCidr = lazyWithRetry(() =>
+  import("@/pages/tools/IpRangeToCidr").then((m) => ({ default: m.IpRangeToCidr })),
+);
+const Iperf3CommandBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/Iperf3CommandBuilder").then((m) => ({ default: m.Iperf3CommandBuilder })),
+);
+const IpAddressConverter = lazyWithRetry(() =>
+  import("@/pages/tools/IpAddressConverter").then((m) => ({ default: m.IpAddressConverter })),
+);
+const MtuMssCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/MtuMssCalculator").then((m) => ({ default: m.MtuMssCalculator })),
+);
+const MulticastMacMapper = lazyWithRetry(() =>
+  import("@/pages/tools/MulticastMacMapper").then((m) => ({ default: m.MulticastMacMapper })),
+);
+const OspfCostCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/OspfCostCalculator").then((m) => ({ default: m.OspfCostCalculator })),
+);
+const PropagationDelayCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/PropagationDelayCalculator").then((m) => ({ default: m.PropagationDelayCalculator })),
+);
+const RouteSummarizer = lazyWithRetry(() =>
+  import("@/pages/tools/RouteSummarizer").then((m) => ({ default: m.RouteSummarizer })),
+);
+const TransferTimeCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/TransferTimeCalculator").then((m) => ({ default: m.TransferTimeCalculator })),
+);
+const VlanTagDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/VlanTagDecoder").then((m) => ({ default: m.VlanTagDecoder })),
+);
+const WifiChannelReference = lazyWithRetry(() =>
+  import("@/pages/tools/WifiChannelReference").then((m) => ({ default: m.WifiChannelReference })),
+);
+const WildcardMaskCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/WildcardMaskCalculator").then((m) => ({ default: m.WildcardMaskCalculator })),
+);
+const CvssCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/CvssCalculator").then((m) => ({ default: m.CvssCalculator })),
+);
+const DmarcRecordAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/DmarcRecordAnalyzer").then((m) => ({ default: m.DmarcRecordAnalyzer })),
+);
+const FileHashChecker = lazyWithRetry(() =>
+  import("@/pages/tools/FileHashChecker").then((m) => ({ default: m.FileHashChecker })),
+);
+const NmapCommandBuilder = lazyWithRetry(() =>
+  import("@/pages/tools/NmapCommandBuilder").then((m) => ({ default: m.NmapCommandBuilder })),
+);
+const NtlmHashGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/NtlmHashGenerator").then((m) => ({ default: m.NtlmHashGenerator })),
+);
+const PasswordGenerator = lazyWithRetry(() =>
+  import("@/pages/tools/PasswordGenerator").then((m) => ({ default: m.PasswordGenerator })),
+);
+const SpfRecordAnalyzer = lazyWithRetry(() =>
+  import("@/pages/tools/SpfRecordAnalyzer").then((m) => ({ default: m.SpfRecordAnalyzer })),
+);
+const UserAgentParser = lazyWithRetry(() =>
+  import("@/pages/tools/UserAgentParser").then((m) => ({ default: m.UserAgentParser })),
+);
+const LuhnChecker = lazyWithRetry(() =>
+  import("@/pages/tools/LuhnChecker").then((m) => ({ default: m.LuhnChecker })),
+);
+const SnowflakeDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/SnowflakeDecoder").then((m) => ({ default: m.SnowflakeDecoder })),
+);
+const UuidTool = lazyWithRetry(() =>
+  import("@/pages/tools/UuidTool").then((m) => ({ default: m.UuidTool })),
+);
+const Eui64Generator = lazyWithRetry(() =>
+  import("@/pages/tools/Eui64Generator").then((m) => ({ default: m.Eui64Generator })),
+);
+const Ipv6Calculator = lazyWithRetry(() =>
+  import("@/pages/tools/Ipv6Calculator").then((m) => ({ default: m.Ipv6Calculator })),
+);
 const CinematicTools = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTools").then((m) => ({ default: m.CinematicTools })),
 );
@@ -1577,6 +1739,276 @@ function AnimatedRoutes() {
           <Route path="/tools/zip-inspector">
             <Suspense fallback={<RouteLoading />}>
               <ZipInspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/iops-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <IopsCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/poe-budget-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <PoeBudgetCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/storage-growth-forecast">
+            <Suspense fallback={<RouteLoading />}>
+              <StorageGrowthForecast />
+            </Suspense>
+          </Route>
+          <Route path="/tools/zfs-capacity-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <ZfsCapacityCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/firewall-rule-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <FirewallRuleBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/sshd-config-auditor">
+            <Suspense fallback={<RouteLoading />}>
+              <SshdConfigAuditor />
+            </Suspense>
+          </Route>
+          <Route path="/tools/byte-unit-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <ByteUnitConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/umask-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <UmaskCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ssh-config-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <SshConfigBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/sudoers-explainer">
+            <Suspense fallback={<RouteLoading />}>
+              <SudoersExplainer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/dhcp-option-121-encoder">
+            <Suspense fallback={<RouteLoading />}>
+              <DhcpOption121Encoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/tcpdump-filter-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <TcpdumpFilterBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/hmac-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <HmacGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/playfair-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <PlayfairCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/rail-fence-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <RailFenceCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/totp-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <TotpGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/endianness-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <EndiannessConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ieee754-inspector">
+            <Suspense fallback={<RouteLoading />}>
+              <Ieee754Inspector />
+            </Suspense>
+          </Route>
+          <Route path="/tools/raid-rebuild-risk">
+            <Suspense fallback={<RouteLoading />}>
+              <RaidRebuildRisk />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ups-runtime-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <UpsRuntimeCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/access-log-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <AccessLogAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/affine-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <AffineCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/bacon-cipher">
+            <Suspense fallback={<RouteLoading />}>
+              <BaconCipher />
+            </Suspense>
+          </Route>
+          <Route path="/tools/csp-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <CspAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/entropy-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <EntropyAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/security-headers-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <SecurityHeadersAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/asn-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <AsnConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/bandwidth-delay-product">
+            <Suspense fallback={<RouteLoading />}>
+              <BandwidthDelayProduct />
+            </Suspense>
+          </Route>
+          <Route path="/tools/bgp-community-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <BgpCommunityDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ip-range-to-cidr">
+            <Suspense fallback={<RouteLoading />}>
+              <IpRangeToCidr />
+            </Suspense>
+          </Route>
+          <Route path="/tools/iperf3-command-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <Iperf3CommandBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ip-address-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <IpAddressConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/mtu-mss-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <MtuMssCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/multicast-mac-mapper">
+            <Suspense fallback={<RouteLoading />}>
+              <MulticastMacMapper />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ospf-cost-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <OspfCostCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/propagation-delay-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <PropagationDelayCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/route-summarizer">
+            <Suspense fallback={<RouteLoading />}>
+              <RouteSummarizer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/transfer-time-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <TransferTimeCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/vlan-tag-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <VlanTagDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/wifi-channel-reference">
+            <Suspense fallback={<RouteLoading />}>
+              <WifiChannelReference />
+            </Suspense>
+          </Route>
+          <Route path="/tools/wildcard-mask-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <WildcardMaskCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/cvss-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <CvssCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/dmarc-record-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <DmarcRecordAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/file-hash-checker">
+            <Suspense fallback={<RouteLoading />}>
+              <FileHashChecker />
+            </Suspense>
+          </Route>
+          <Route path="/tools/nmap-command-builder">
+            <Suspense fallback={<RouteLoading />}>
+              <NmapCommandBuilder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ntlm-hash-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <NtlmHashGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/password-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <PasswordGenerator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/spf-record-analyzer">
+            <Suspense fallback={<RouteLoading />}>
+              <SpfRecordAnalyzer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/user-agent-parser">
+            <Suspense fallback={<RouteLoading />}>
+              <UserAgentParser />
+            </Suspense>
+          </Route>
+          <Route path="/tools/luhn-checker">
+            <Suspense fallback={<RouteLoading />}>
+              <LuhnChecker />
+            </Suspense>
+          </Route>
+          <Route path="/tools/snowflake-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <SnowflakeDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/uuid-tool">
+            <Suspense fallback={<RouteLoading />}>
+              <UuidTool />
+            </Suspense>
+          </Route>
+          <Route path="/tools/eui64-generator">
+            <Suspense fallback={<RouteLoading />}>
+              <Eui64Generator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/ipv6-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <Ipv6Calculator />
             </Suspense>
           </Route>
           <Route path="/data">
