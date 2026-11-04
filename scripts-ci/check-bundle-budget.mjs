@@ -246,8 +246,15 @@ const INDEX = path.join(DIST, "index.html");
  * import, hover-prefetch row and registry entry. The four kilobytes above the
  * measurement are for catching an accident, not for the next batch, which
  * will measure its own cost and raise this again.
+ *
+ * 772 KB, raised from 765 by the sixteen-tool batch at 767.9. Seven
+ * kilobytes for sixteen routes is about four tenths of a kilobyte a tool, the
+ * same rate as the fifty-four-tool batch and for the same reason: each tool's
+ * page and notes are lazy chunks, so the entry carries only its route, lazy
+ * import, hover-prefetch row and registry entry. The four kilobytes above the
+ * measurement are for catching an accident, not for the next batch.
  */
-const BUDGET_BYTES = 765 * 1024;
+const BUDGET_BYTES = 772 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -1,0 +1,87 @@
+{
+ "rsa2048": {
+  "line": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD2q4Q9BaLW8eo3/nC1gW8smyhqZZsVBD00XSlmTr4RdPFdNh2sOaaMfgCqjIx+sAaEXBDSrtJKu2Ew52xg7acCTg0IFe+erX+OJB/F2kS/tkUJtfahU+MWkj7mckyUAPD/6OD92g1ikI9tIhpWNZOT1VXXsQOn+e5ImXtFyh1is3adrFiJch14ap02V4JliTexUnZqlqZQTG5CsvZdKnXswKDQfMcyEsx3eTnXGz12qUdi4CDRhIYpfrgbWk8x9Q0z+qJeOY4WdazVsb8LD7Uf0qmvjcMQgUSMWE2vs5i/rEFNdKCfnMCoLMnjDWOWGK0t1g2sOjpG/kCgnKWeJHen",
+  "type": "ssh-rsa",
+  "sha256": "SHA256:HS7fjXxENN70h+otqMPh0KFOsDQqs9UXGUaZwTED8hU",
+  "md5": "MD5:05:65:f4:f7:ae:a5:d1:aa:b4:ef:a4:32:e3:e3:cd:bb",
+  "bits": 2048
+ },
+ "rsa1024": {
+  "line": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDwh3AbhATG3GJnVGknQrimKoC4E3kZFhPDpcHWSIPCTnLj23UrgvU85CYTKR+jvAbiSeErfLbOVZA94iS3hmDYlWoDEWQyrAZAXBSw03NuM0VsZIh7eYhpadPxZo1EafXaWthpDgsEpn3rEt7lox2DLQS/KpIC25+5GxNukkwB5w==",
+  "type": "ssh-rsa",
+  "sha256": "SHA256:F2p5bIqJvBSZia3lAbLU4yUobG/AHVJHo+okKwkZYlc",
+  "md5": "MD5:40:4d:79:fb:af:a6:9f:73:d5:2c:0a:a0:f2:42:dd:61",
+  "bits": 1024
+ },
+ "rsa3072_e3": {
+  "line": "ssh-rsa AAAAB3NzaC1yc2EAAAABAwAAAYEAp4xKxd3u1/Xq4O2G6BT+uRNmi3u9W6g8nLc8eKTI4rDY0qLYZztw946GwUo97MOr5CYZkFY5ixt8ymKyjWyaFKACWVj7lM8vbdITjo1sNszQMnTHaeA9s7dtCU7+Wa/oJTH4UfXzNDs82BXZdK34JpSSQeXFaz2QWHG1nf/n+RHzzc8pOneRcqpyv2Jwc4C6MnRvv79mz/3PaL93Cnzbb0a75eDY/nv+vilOpX3jMrAbJTY0e0GQKcjjLWZqHFQpyON86iyo+z+Qf9asoxdvVGwyt8/ZzsuYINWYQfo6ityCS4O6GXgzkZ3f5d9HQ7AstN8s9jTI+YdzMswjImyzva/ZT1h65gIZ0+aDwGS/Z1ju0kNz8r5uHmkeq4mBqft27zxO/ugPHdYUhljZWY9HI6WrAfQzHzqmbvI5a4a8ntLcjDrQ2t37v/Kc04iR2g9RmVtKKLlBP9XSj0mvAya6WQvXVVBY8lov4DsBKOIviTGZ7RstTEvmSjVXYZqtMwKn",
+  "type": "ssh-rsa",
+  "sha256": "SHA256:fj2scFTMAu2QdKY0MHfq+cjgeJ8k3Kbj9cr79Mpvwys",
+  "md5": "MD5:c0:9f:61:e5:a0:46:eb:66:e2:f8:01:01:ab:08:33:dd",
+  "bits": 3072
+ },
+ "dsa1024": {
+  "line": "ssh-dss AAAAB3NzaC1kc3MAAACBAI+bVpsOrXpIZ8fhu28+lNEn2vzmrlLwVZfvD38LqyUxLWlxMaYJOEDMUcU1R4arMlCmBNK7cVdmKswwsfrN7AmmVAk/QT+1nr4ISOYcZZDbmkNmlCi0Rk/vo+Ns9eeyBqG1QhhVZapkiDFCW/ImKhAQOQ7LRyL6cFRidYMSNkbHAAAAFQCt9p6g2IdJO1m6D4/phqh7NkAF7QAAAIEAgrq+WEfebBzUB4R2j3jc2ueeXvW7cMzNVtJCWxbX/xYJRWJfDnhUb8VJ13dYCUpTdcvoNftrLSTOTM7tj39lCQIoWhax/E0pD09Mw+dNKVpvFHfkIYUFQ79ka1A8yflzvfODQOfdpRwIwBLb9PlUJfgxxLhAuC7/q6aTKxBnUdEAAACATaSWuzX2BLay+qUQYDyM8Tn7vqMWCH8M5QJBdRLupzPpwxIOAiQQ/yL5XRyk3itWYbU0yqL2MXD96yuaUK/xNP0ymCDMMa2l8UvJgngnpg4OcTGNxK2Y9sBdHepnaqUQJfVuukP2IDp1VZkQHJug9qECjMG7pZz858jzdUBNFD8=",
+  "type": "ssh-dss",
+  "sha256": "SHA256:kFq7hcBvScPHPmznqq1lrhiuZbVKmSIDgRta43cW2aQ",
+  "md5": "MD5:85:06:d1:20:41:7d:87:c9:6f:e4:b9:34:55:27:f0:19",
+  "bits": 1024
+ },
+ "p256": {
+  "line": "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBACqruIfUpJGckErp7hErX8ipeHh5yelc5w4caH8H4aIo+OkwAy2IhhvWJdoWXZA3nTESeDgF+9iLVeBLQUWpoY=",
+  "type": "ecdsa-sha2-nistp256",
+  "sha256": "SHA256:pZBZiWHGfuS/TaXKD2RBXxZAiYUErktk6w5MuGD0XHo",
+  "md5": "MD5:f0:64:9b:c2:04:05:19:ef:e6:31:91:36:4c:69:c4:a9",
+  "bits": 256
+ },
+ "p384": {
+  "line": "ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBO6sDedAPNtp+yw6UxUj550G05afm3qYXo0jGt1GabNj1T+Vn6FXkEs9GN7feSnddTagJORxVPoqqIQpFt6IAhayd7K3jU+yuGJXC1oolJEW1Euy/FDJ+RWSqK5hR+S8+w==",
+  "type": "ecdsa-sha2-nistp384",
+  "sha256": "SHA256:zytmypN8shf1obNC8f+mJxaS5MSLjb7prECDRzvcQOI",
+  "md5": "MD5:e4:98:bf:96:af:ea:6f:68:d9:e1:1d:cb:cd:33:84:d8",
+  "bits": 384
+ },
+ "p521": {
+  "line": "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBADB6CF0JIrXgCRXihmzGGeqcMvnJD7Xs2hh0oggQKL3CB+bk+IMl8gCmfbTOKFlB+TWGBCN/f5aC2Q9qZs/wTlLhgCyGgud+QjbHBW4Z0RfIo9aD6UnmhZtEZgHWO9Lz0SF7f68CFIp1z3kmIX/NBgto1tberf6gIAAuKmFhoD4Bgjvnw==",
+  "type": "ecdsa-sha2-nistp521",
+  "sha256": "SHA256:cxaxcLAa54Vh9/V2tLXeCHSv4QDmXmgOlrBEwrh8iQ4",
+  "md5": "MD5:8d:3b:8a:8c:68:d0:75:ed:eb:f7:ed:86:0d:5c:14:a5",
+  "bits": 521
+ },
+ "ed25519": {
+  "line": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzWvvlVpO+UtBPKOEICiaE996iZruwytHCPnxSZmpvt",
+  "type": "ssh-ed25519",
+  "sha256": "SHA256:JflmALev21PiNulMCyJN+x3MF3o+oPGiUzaU63tMKjI",
+  "md5": "MD5:3e:16:bb:64:7d:55:f6:3e:07:f9:d8:12:a9:12:fe:12",
+  "bits": 256
+ },
+ "sk_ecdsa": {
+  "line": "sk-ecdsa-sha2-nistp256@openssh.com AAAAInNrLWVjZHNhLXNoYTItbmlzdHAyNTZAb3BlbnNzaC5jb20AAAAIbmlzdHAyNTYAAABBBACqruIfUpJGckErp7hErX8ipeHh5yelc5w4caH8H4aIo+OkwAy2IhhvWJdoWXZA3nTESeDgF+9iLVeBLQUWpoYAAAAEc3NoOg== yubikey@laptop",
+  "type": "sk-ecdsa-sha2-nistp256@openssh.com",
+  "sha256": "SHA256:ux3L8if4BuJtg0/Q2hH0bsMV0Nwh1JE1j7WZ5ZQwOTI",
+  "md5": "MD5:85:5a:84:99:cc:78:05:86:01:25:5a:fe:1f:d2:b4:f2",
+  "bits": 256
+ },
+ "sk_ed25519": {
+  "line": "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIKzWvvlVpO+UtBPKOEICiaE996iZruwytHCPnxSZmpvtAAAABHNzaDo= yubikey@laptop",
+  "type": "sk-ssh-ed25519@openssh.com",
+  "sha256": "SHA256:KAsFLrb4JLbi+uzPxAPG+/c84EX7H4Aprk7s9y/SUMI",
+  "md5": "MD5:ac:e7:e6:59:da:6b:d3:e5:f5:f2:32:0c:4d:60:e2:ad",
+  "bits": 256
+ },
+ "cert_ed25519": {
+  "line": "ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdjAxQG9wZW5zc2guY29tAAAAIMnIq+/Zt8edWKX2Ep+8RPHUpC5lcmcrXONRNtTTmQqCAAAAIKzWvvlVpO+UtBPKOEICiaE996iZruwytHCPnxSZmpvtAAAAAAAAMDkAAAABAAAADWFsaWNlQGV4YW1wbGUAAAATAAAABWFsaWNlAAAABmRlcGxveQAAAABlU/EAAAAAAHE/swAAAAAwAAAADWZvcmNlLWNvbW1hbmQAAAAbAAAAFy91c3IvYmluL3JzeW5jIC0tc2VydmVyAAAAEgAAAApwZXJtaXQtcHR5AAAAAAAAAAAAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIFFLpJGBoA2f7mWJHauUnSZG7RtUKfbF90JJQr47bq5+AAAAUwAAAAtzc2gtZWQyNTUxOQAAAEDGCszuKplw+DvnXJKQuJBsdtJLCsZeigfL74QMPcP1wSs9sjPoircUtap+fOIThucwO9wwhzrj0Jh1ga6eUDUP alice-cert",
+  "type": "ssh-ed25519-cert-v01@openssh.com",
+  "sha256": "SHA256:JflmALev21PiNulMCyJN+x3MF3o+oPGiUzaU63tMKjI",
+  "md5": "MD5:3e:16:bb:64:7d:55:f6:3e:07:f9:d8:12:a9:12:fe:12",
+  "bits": 256,
+  "ca_sha256": "SHA256:RHV4z1bFLbaik43s7NjtlUwXvPUjM8rf4vRARvxQ7ik"
+ },
+ "cert_rsa_host": {
+  "line": "ssh-rsa-cert-v01@openssh.com AAAAHHNzaC1yc2EtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgnd6q8o2C7ICxJJqAPiUBKVa7nHf7h1wFdXsDvlEbunAAAAADAQABAAABAQD2q4Q9BaLW8eo3/nC1gW8smyhqZZsVBD00XSlmTr4RdPFdNh2sOaaMfgCqjIx+sAaEXBDSrtJKu2Ew52xg7acCTg0IFe+erX+OJB/F2kS/tkUJtfahU+MWkj7mckyUAPD/6OD92g1ikI9tIhpWNZOT1VXXsQOn+e5ImXtFyh1is3adrFiJch14ap02V4JliTexUnZqlqZQTG5CsvZdKnXswKDQfMcyEsx3eTnXGz12qUdi4CDRhIYpfrgbWk8x9Q0z+qJeOY4WdazVsb8LD7Uf0qmvjcMQgUSMWE2vs5i/rEFNdKCfnMCoLMnjDWOWGK0t1g2sOjpG/kCgnKWeJHenAAAAAAAAAAcAAAACAAAABXdlYjAxAAAAFQAAABF3ZWIwMS5leGFtcGxlLmNvbQAAAAAAAAAA//////////8AAAAAAAAAAAAAAAAAAAGVAAAAB3NzaC1yc2EAAAABAwAAAYEAp4xKxd3u1/Xq4O2G6BT+uRNmi3u9W6g8nLc8eKTI4rDY0qLYZztw946GwUo97MOr5CYZkFY5ixt8ymKyjWyaFKACWVj7lM8vbdITjo1sNszQMnTHaeA9s7dtCU7+Wa/oJTH4UfXzNDs82BXZdK34JpSSQeXFaz2QWHG1nf/n+RHzzc8pOneRcqpyv2Jwc4C6MnRvv79mz/3PaL93Cnzbb0a75eDY/nv+vilOpX3jMrAbJTY0e0GQKcjjLWZqHFQpyON86iyo+z+Qf9asoxdvVGwyt8/ZzsuYINWYQfo6ityCS4O6GXgzkZ3f5d9HQ7AstN8s9jTI+YdzMswjImyzva/ZT1h65gIZ0+aDwGS/Z1ju0kNz8r5uHmkeq4mBqft27zxO/ugPHdYUhljZWY9HI6WrAfQzHzqmbvI5a4a8ntLcjDrQ2t37v/Kc04iR2g9RmVtKKLlBP9XSj0mvAya6WQvXVVBY8lov4DsBKOIviTGZ7RstTEvmSjVXYZqtMwKnAAABlAAAAAxyc2Etc2hhMi01MTIAAAGAgaS34aU+KPqB2jeN/Dv/hjpC+lpUBq1WeoXwO41qcEt9Yrgkq/BhLziVrATrDCol5RneEeUHHN2UgRM4oLUNp+x8A3Q+/7X7eqOKFKCxPPwSVtJO6Pygh3zdFV3phYS0X4YkvTDx2OXbgJ2MqKbYCmWiSvE+xrvM4llkiLijfBKumFAq5vhPcBiT+1zvynLiGwzTaZRkIzUNO5nrp/U36P+Xj1YGaKitdAt58EoJVpH9Uj01E7zdVdfsE2zbe7mkpPiNbCcyY7LXOymNaC01ryiQN1jNUCV8nNOW/Um29px56w3S1t/XJgaDAUsECuSdQNzIG7/gWkoQo2q/bDbAlz6fE0b6Mcxq3dACXjEbNficWF28yQVDW41mCmfOjNOMSbD6kpatuPGI+oFl7B0xdPnhY0ogfmtyBlnDdktCWQSmu3fa9dKsc0sVDBSShu+3kMsVuHD1gycxAAWYoM1u60bikEuaVsAXtdAXOlabSsp4cwHLZn3R7/pKUN6TACwI",
+  "type": "ssh-rsa-cert-v01@openssh.com",
+  "sha256": "SHA256:HS7fjXxENN70h+otqMPh0KFOsDQqs9UXGUaZwTED8hU",
+  "md5": "MD5:05:65:f4:f7:ae:a5:d1:aa:b4:ef:a4:32:e3:e3:cd:bb",
+  "bits": 2048
+ }
+}

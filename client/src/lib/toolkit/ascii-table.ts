@@ -1,0 +1,1012 @@
+/**
+ * ASCII, Latin-1 and Windows-1252, as data, plus a search that reads a
+ * query as a character, a number in any base, an escape, or a name.
+ *
+ * Sources: ASCII is ANSI X3.4-1986 (the same 128 codes as ISO/IEC 646 IRV).
+ * Control names are the Unicode aliases from NameAliases.txt, which follow
+ * ISO/IEC 6429 for C0 and C1. Latin-1 is ISO/IEC 8859-1 with the C0 and C1
+ * controls filled in (the IANA charset ISO-8859-1), whose 256 codes are the
+ * first 256 Unicode code points. Windows-1252 is the WHATWG Encoding
+ * Standard's index, which is also what the HTML parser's numeric character
+ * reference table uses for 0x80 to 0x9F. HTML entity names are from the
+ * WHATWG named character reference list.
+ *
+ * Every character here is stored as a number and turned into a string at
+ * run time, so the source never has to contain the characters it describes.
+ */
+
+export const MAX_QUERY_LENGTH = 64;
+
+export type Charset = "ascii" | "latin1" | "cp1252";
+
+export interface CodeRow {
+  /** The byte value, 0 to 255. */
+  code: number;
+  /** The Unicode code point this byte means under the chosen charset, or null for an undefined byte. */
+  codePoint: number | null;
+  /** True for a control character or an undefined byte: there is no glyph to draw. */
+  control: boolean;
+  /** Short name for a control or invisible character: NUL, ESC, NBSP. Null for an ordinary glyph. */
+  abbr: string | null;
+  /** Full name, in sentence case. Upper-cased, it is the Unicode name or alias. */
+  name: string;
+  /** Caret notation, ^@ to ^_ and ^?, for C0 controls and DEL. */
+  caret: string | null;
+  /** C simple escape sequence, where the language defines one. */
+  cEscape: string | null;
+  /** HTML named references, without the & and ;, most common first. */
+  entities: string[];
+  /** Numeric HTML reference that produces this character. */
+  numericRef: string;
+  /** Anything a reader should know about writing this one in HTML. */
+  htmlNote: string | null;
+  /** Further note: what is unusual about this code. */
+  note: string | null;
+  /** Lower case search terms beyond the name: common nicknames. */
+  aliases: string[];
+  /** True when this byte means something different in Windows-1252 than in Latin-1. */
+  differsInCp1252: boolean;
+}
+
+/* ------------------------------------------------------------- C0 + DEL */
+
+interface ControlSpec {
+  abbr: string;
+  name: string;
+  aliases?: string[];
+}
+
+/** ASCII control names. Upper-cased each is a Unicode alias for the code (BEL's alias is ALERT). */
+const C0: ControlSpec[] = [
+  { abbr: "NUL", name: "Null" },
+  { abbr: "SOH", name: "Start of heading" },
+  { abbr: "STX", name: "Start of text" },
+  { abbr: "ETX", name: "End of text", aliases: ["ctrl-c", "interrupt"] },
+  { abbr: "EOT", name: "End of transmission", aliases: ["ctrl-d", "eof"] },
+  { abbr: "ENQ", name: "Enquiry" },
+  { abbr: "ACK", name: "Acknowledge" },
+  { abbr: "BEL", name: "Bell", aliases: ["alert", "beep"] },
+  { abbr: "BS", name: "Backspace" },
+  { abbr: "HT", name: "Horizontal tabulation", aliases: ["tab", "character tabulation"] },
+  { abbr: "LF", name: "Line feed", aliases: ["newline", "new line", "end of line", "eol"] },
+  { abbr: "VT", name: "Vertical tabulation", aliases: ["vertical tab", "line tabulation"] },
+  { abbr: "FF", name: "Form feed", aliases: ["page break", "new page"] },
+  { abbr: "CR", name: "Carriage return", aliases: ["return", "enter"] },
+  { abbr: "SO", name: "Shift out" },
+  { abbr: "SI", name: "Shift in" },
+  { abbr: "DLE", name: "Data link escape" },
+  { abbr: "DC1", name: "Device control one", aliases: ["xon"] },
+  { abbr: "DC2", name: "Device control two" },
+  { abbr: "DC3", name: "Device control three", aliases: ["xoff"] },
+  { abbr: "DC4", name: "Device control four" },
+  { abbr: "NAK", name: "Negative acknowledge" },
+  { abbr: "SYN", name: "Synchronous idle" },
+  { abbr: "ETB", name: "End of transmission block" },
+  { abbr: "CAN", name: "Cancel" },
+  { abbr: "EM", name: "End of medium" },
+  { abbr: "SUB", name: "Substitute", aliases: ["ctrl-z"] },
+  { abbr: "ESC", name: "Escape", aliases: ["esc"] },
+  { abbr: "FS", name: "File separator", aliases: ["information separator four"] },
+  { abbr: "GS", name: "Group separator", aliases: ["information separator three"] },
+  { abbr: "RS", name: "Record separator", aliases: ["information separator two"] },
+  { abbr: "US", name: "Unit separator", aliases: ["information separator one"] },
+];
+
+/**
+ * C simple escape sequences (C11 6.4.4.4). \0 is strictly an octal escape
+ * with the value zero, listed because it is how everyone writes NUL; \e is
+ * a GNU extension, not standard C.
+ */
+const C_ESCAPES: Record<number, string> = {
+  0: "\\0",
+  7: "\\a",
+  8: "\\b",
+  9: "\\t",
+  10: "\\n",
+  11: "\\v",
+  12: "\\f",
+  13: "\\r",
+  27: "\\e",
+  34: '\\"',
+  39: "\\'",
+  63: "\\?",
+  92: "\\\\",
+};
+
+/* ------------------------------------------------------------- printable */
+
+/** Names for printable ASCII other than the letters and digits, which are generated. */
+const PRINTABLE: Record<number, { name: string; aliases?: string[] }> = {
+  32: { name: "Space", aliases: ["blank", "sp"] },
+  33: { name: "Exclamation mark", aliases: ["bang"] },
+  34: { name: "Quotation mark", aliases: ["double quote", "quote"] },
+  35: { name: "Number sign", aliases: ["hash", "pound", "octothorpe"] },
+  36: { name: "Dollar sign" },
+  37: { name: "Percent sign" },
+  38: { name: "Ampersand", aliases: ["and"] },
+  39: { name: "Apostrophe", aliases: ["single quote", "quote"] },
+  40: { name: "Left parenthesis", aliases: ["open paren", "parenthesis"] },
+  41: { name: "Right parenthesis", aliases: ["close paren", "parenthesis"] },
+  42: { name: "Asterisk", aliases: ["star"] },
+  43: { name: "Plus sign" },
+  44: { name: "Comma" },
+  45: { name: "Hyphen-minus", aliases: ["hyphen", "minus", "dash"] },
+  46: { name: "Full stop", aliases: ["period", "dot"] },
+  47: { name: "Solidus", aliases: ["slash", "forward slash"] },
+  58: { name: "Colon" },
+  59: { name: "Semicolon" },
+  60: { name: "Less-than sign", aliases: ["left angle bracket"] },
+  61: { name: "Equals sign" },
+  62: { name: "Greater-than sign", aliases: ["right angle bracket"] },
+  63: { name: "Question mark" },
+  64: { name: "Commercial at", aliases: ["at sign"] },
+  91: { name: "Left square bracket", aliases: ["open bracket", "bracket"] },
+  92: { name: "Reverse solidus", aliases: ["backslash"] },
+  93: { name: "Right square bracket", aliases: ["close bracket", "bracket"] },
+  94: { name: "Circumflex accent", aliases: ["caret", "hat"] },
+  95: { name: "Low line", aliases: ["underscore"] },
+  96: { name: "Grave accent", aliases: ["backtick", "backquote"] },
+  123: { name: "Left curly bracket", aliases: ["open brace", "brace"] },
+  124: { name: "Vertical line", aliases: ["pipe", "vertical bar"] },
+  125: { name: "Right curly bracket", aliases: ["close brace", "brace"] },
+  126: { name: "Tilde" },
+};
+
+const DIGIT_NAMES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+/** WHATWG named references for ASCII. Only these have names; every other character takes &#N;. */
+const ASCII_ENTITIES: Record<number, string[]> = {
+  9: ["Tab"],
+  10: ["NewLine"],
+  33: ["excl"],
+  34: ["quot"],
+  35: ["num"],
+  36: ["dollar"],
+  37: ["percnt"],
+  38: ["amp"],
+  39: ["apos"],
+  40: ["lpar"],
+  41: ["rpar"],
+  42: ["ast"],
+  43: ["plus"],
+  44: ["comma"],
+  46: ["period"],
+  47: ["sol"],
+  58: ["colon"],
+  59: ["semi"],
+  60: ["lt"],
+  61: ["equals"],
+  62: ["gt"],
+  63: ["quest"],
+  64: ["commat"],
+  91: ["lsqb", "lbrack"],
+  92: ["bsol"],
+  93: ["rsqb", "rbrack"],
+  94: ["Hat"],
+  95: ["lowbar"],
+  96: ["grave"],
+  123: ["lcub", "lbrace"],
+  124: ["verbar", "vert"],
+  125: ["rcub", "rbrace"],
+};
+
+/**
+ * The other WHATWG names for characters in these tables, accepted by the
+ * search but not shown in the rows: the upper-case legacy forms (&AMP;,
+ * &COPY;) and the MathML-era synonyms (&midast;, &CloseCurlyQuote;). With
+ * the names in the rows, this is every single-character reference the
+ * WHATWG list has for ASCII, Latin-1 and the Windows-1252 extras.
+ */
+export const ENTITY_SYNONYMS = new Map<string, number>([
+  ["QUOT", 34], ["AMP", 38], ["midast", 42], ["LT", 60], ["GT", 62], ["UnderBar", 95],
+  ["DiacriticalGrave", 96], ["VerticalLine", 124], ["NonBreakingSpace", 0xa0], ["die", 0xa8],
+  ["Dot", 0xa8], ["DoubleDot", 0xa8], ["COPY", 0xa9], ["circledR", 0xae], ["REG", 0xae],
+  ["strns", 0xaf], ["PlusMinus", 0xb1], ["pm", 0xb1], ["DiacriticalAcute", 0xb4],
+  ["CenterDot", 0xb7], ["centerdot", 0xb7], ["Cedilla", 0xb8], ["half", 0xbd], ["angst", 0xc5],
+  ["div", 0xf7], ["lsquor", 0x201a], ["ldquor", 0x201e], ["mldr", 0x2026], ["ddagger", 0x2021],
+  ["OpenCurlyQuote", 0x2018], ["CloseCurlyQuote", 0x2019], ["rsquor", 0x2019],
+  ["OpenCurlyDoubleQuote", 0x201c], ["CloseCurlyDoubleQuote", 0x201d], ["rdquor", 0x201d],
+  ["bullet", 0x2022], ["DiacriticalTilde", 0x02dc], ["TRADE", 0x2122],
+]);
+
+/* ------------------------------------------------------------- C1 */
+
+/**
+ * C1 controls, 0x80 to 0x9F, with the Unicode NameAliases names. Most come
+ * from ISO/IEC 6429; 0x80, 0x81 and 0x99 were never approved (see
+ * C1_FIGMENTS), and IND at 0x84 was withdrawn from the 1992 edition.
+ */
+const C1: ControlSpec[] = [
+  { abbr: "PAD", name: "Padding character" },
+  { abbr: "HOP", name: "High octet preset" },
+  { abbr: "BPH", name: "Break permitted here" },
+  { abbr: "NBH", name: "No break here" },
+  { abbr: "IND", name: "Index" },
+  { abbr: "NEL", name: "Next line" },
+  { abbr: "SSA", name: "Start of selected area" },
+  { abbr: "ESA", name: "End of selected area" },
+  { abbr: "HTS", name: "Character tabulation set" },
+  { abbr: "HTJ", name: "Character tabulation with justification" },
+  { abbr: "VTS", name: "Line tabulation set" },
+  { abbr: "PLD", name: "Partial line forward" },
+  { abbr: "PLU", name: "Partial line backward" },
+  { abbr: "RI", name: "Reverse line feed", aliases: ["reverse index"] },
+  { abbr: "SS2", name: "Single shift two" },
+  { abbr: "SS3", name: "Single shift three" },
+  { abbr: "DCS", name: "Device control string" },
+  { abbr: "PU1", name: "Private use one" },
+  { abbr: "PU2", name: "Private use two" },
+  { abbr: "STS", name: "Set transmit state" },
+  { abbr: "CCH", name: "Cancel character" },
+  { abbr: "MW", name: "Message waiting" },
+  { abbr: "SPA", name: "Start of guarded area" },
+  { abbr: "EPA", name: "End of guarded area" },
+  { abbr: "SOS", name: "Start of string" },
+  { abbr: "SGC", name: "Single graphic character introducer" },
+  { abbr: "SCI", name: "Single character introducer" },
+  { abbr: "CSI", name: "Control sequence introducer" },
+  { abbr: "ST", name: "String terminator" },
+  { abbr: "OSC", name: "Operating system command" },
+  { abbr: "PM", name: "Privacy message" },
+  { abbr: "APC", name: "Application program command" },
+];
+
+/** Codes whose C1 name was proposed in a draft and never approved; Unicode keeps it as a "figment" alias. */
+const C1_FIGMENTS = new Set([0x80, 0x81, 0x99]);
+
+/* ------------------------------------------------------------- Latin-1 upper half */
+
+/** 0xA0 to 0xFF: Unicode name (sentence case) and the HTML 4 Latin-1 entity name. */
+const LATIN1_UPPER: [string, string, string[]?][] = [
+  ["No-break space", "nbsp", ["nbsp", "non-breaking space"]],
+  ["Inverted exclamation mark", "iexcl"],
+  ["Cent sign", "cent"],
+  ["Pound sign", "pound", ["sterling"]],
+  ["Currency sign", "curren"],
+  ["Yen sign", "yen"],
+  ["Broken bar", "brvbar"],
+  ["Section sign", "sect"],
+  ["Diaeresis", "uml", ["umlaut"]],
+  ["Copyright sign", "copy"],
+  ["Feminine ordinal indicator", "ordf"],
+  ["Left-pointing double angle quotation mark", "laquo", ["guillemet"]],
+  ["Not sign", "not"],
+  ["Soft hyphen", "shy", ["shy"]],
+  ["Registered sign", "reg", ["registered trademark"]],
+  ["Macron", "macr"],
+  ["Degree sign", "deg"],
+  ["Plus-minus sign", "plusmn"],
+  ["Superscript two", "sup2", ["squared"]],
+  ["Superscript three", "sup3", ["cubed"]],
+  ["Acute accent", "acute"],
+  ["Micro sign", "micro", ["mu"]],
+  ["Pilcrow sign", "para", ["paragraph"]],
+  ["Middle dot", "middot"],
+  ["Cedilla", "cedil"],
+  ["Superscript one", "sup1"],
+  ["Masculine ordinal indicator", "ordm"],
+  ["Right-pointing double angle quotation mark", "raquo", ["guillemet"]],
+  ["Vulgar fraction one quarter", "frac14"],
+  ["Vulgar fraction one half", "frac12"],
+  ["Vulgar fraction three quarters", "frac34"],
+  ["Inverted question mark", "iquest"],
+  ["Latin capital letter A with grave", "Agrave"],
+  ["Latin capital letter A with acute", "Aacute"],
+  ["Latin capital letter A with circumflex", "Acirc"],
+  ["Latin capital letter A with tilde", "Atilde"],
+  ["Latin capital letter A with diaeresis", "Auml"],
+  ["Latin capital letter A with ring above", "Aring"],
+  ["Latin capital letter AE", "AElig"],
+  ["Latin capital letter C with cedilla", "Ccedil"],
+  ["Latin capital letter E with grave", "Egrave"],
+  ["Latin capital letter E with acute", "Eacute"],
+  ["Latin capital letter E with circumflex", "Ecirc"],
+  ["Latin capital letter E with diaeresis", "Euml"],
+  ["Latin capital letter I with grave", "Igrave"],
+  ["Latin capital letter I with acute", "Iacute"],
+  ["Latin capital letter I with circumflex", "Icirc"],
+  ["Latin capital letter I with diaeresis", "Iuml"],
+  ["Latin capital letter Eth", "ETH"],
+  ["Latin capital letter N with tilde", "Ntilde"],
+  ["Latin capital letter O with grave", "Ograve"],
+  ["Latin capital letter O with acute", "Oacute"],
+  ["Latin capital letter O with circumflex", "Ocirc"],
+  ["Latin capital letter O with tilde", "Otilde"],
+  ["Latin capital letter O with diaeresis", "Ouml"],
+  ["Multiplication sign", "times"],
+  ["Latin capital letter O with stroke", "Oslash"],
+  ["Latin capital letter U with grave", "Ugrave"],
+  ["Latin capital letter U with acute", "Uacute"],
+  ["Latin capital letter U with circumflex", "Ucirc"],
+  ["Latin capital letter U with diaeresis", "Uuml"],
+  ["Latin capital letter Y with acute", "Yacute"],
+  ["Latin capital letter Thorn", "THORN"],
+  ["Latin small letter sharp s", "szlig", ["eszett"]],
+  ["Latin small letter a with grave", "agrave"],
+  ["Latin small letter a with acute", "aacute"],
+  ["Latin small letter a with circumflex", "acirc"],
+  ["Latin small letter a with tilde", "atilde"],
+  ["Latin small letter a with diaeresis", "auml"],
+  ["Latin small letter a with ring above", "aring"],
+  ["Latin small letter ae", "aelig"],
+  ["Latin small letter c with cedilla", "ccedil"],
+  ["Latin small letter e with grave", "egrave"],
+  ["Latin small letter e with acute", "eacute"],
+  ["Latin small letter e with circumflex", "ecirc"],
+  ["Latin small letter e with diaeresis", "euml"],
+  ["Latin small letter i with grave", "igrave"],
+  ["Latin small letter i with acute", "iacute"],
+  ["Latin small letter i with circumflex", "icirc"],
+  ["Latin small letter i with diaeresis", "iuml"],
+  ["Latin small letter eth", "eth"],
+  ["Latin small letter n with tilde", "ntilde"],
+  ["Latin small letter o with grave", "ograve"],
+  ["Latin small letter o with acute", "oacute"],
+  ["Latin small letter o with circumflex", "ocirc"],
+  ["Latin small letter o with tilde", "otilde"],
+  ["Latin small letter o with diaeresis", "ouml"],
+  ["Division sign", "divide"],
+  ["Latin small letter o with stroke", "oslash"],
+  ["Latin small letter u with grave", "ugrave"],
+  ["Latin small letter u with acute", "uacute"],
+  ["Latin small letter u with circumflex", "ucirc"],
+  ["Latin small letter u with diaeresis", "uuml"],
+  ["Latin small letter y with acute", "yacute"],
+  ["Latin small letter thorn", "thorn"],
+  ["Latin small letter y with diaeresis", "yuml"],
+];
+
+/* ------------------------------------------------------------- Windows-1252 */
+
+/**
+ * Windows-1252 at 0x80 to 0x9F, from the WHATWG index. Null marks the five
+ * bytes Microsoft never assigned; the WHATWG decoder passes those through as
+ * the C1 control with the same number.
+ */
+const CP1252: ([number, string, string] | null)[] = [
+  [0x20ac, "Euro sign", "euro"],
+  null,
+  [0x201a, "Single low-9 quotation mark", "sbquo"],
+  [0x0192, "Latin small letter f with hook", "fnof"],
+  [0x201e, "Double low-9 quotation mark", "bdquo"],
+  [0x2026, "Horizontal ellipsis", "hellip"],
+  [0x2020, "Dagger", "dagger"],
+  [0x2021, "Double dagger", "Dagger"],
+  [0x02c6, "Modifier letter circumflex accent", "circ"],
+  [0x2030, "Per mille sign", "permil"],
+  [0x0160, "Latin capital letter S with caron", "Scaron"],
+  [0x2039, "Single left-pointing angle quotation mark", "lsaquo"],
+  [0x0152, "Latin capital ligature OE", "OElig"],
+  null,
+  [0x017d, "Latin capital letter Z with caron", "Zcaron"],
+  null,
+  null,
+  [0x2018, "Left single quotation mark", "lsquo"],
+  [0x2019, "Right single quotation mark", "rsquo"],
+  [0x201c, "Left double quotation mark", "ldquo"],
+  [0x201d, "Right double quotation mark", "rdquo"],
+  [0x2022, "Bullet", "bull"],
+  [0x2013, "En dash", "ndash"],
+  [0x2014, "Em dash", "mdash"],
+  [0x02dc, "Small tilde", "tilde"],
+  [0x2122, "Trade mark sign", "trade"],
+  [0x0161, "Latin small letter s with caron", "scaron"],
+  [0x203a, "Single right-pointing angle quotation mark", "rsaquo"],
+  [0x0153, "Latin small ligature oe", "oelig"],
+  null,
+  [0x017e, "Latin small letter z with caron", "zcaron"],
+  [0x0178, "Latin capital letter Y with diaeresis", "Yuml"],
+];
+
+const CP1252_ALIASES: Record<number, string[]> = {
+  0x2018: ["smart quote", "curly quote"],
+  0x2019: ["smart quote", "curly quote", "apostrophe"],
+  0x201c: ["smart quote", "curly quote"],
+  0x201d: ["smart quote", "curly quote"],
+  0x2122: ["trademark"],
+  0x2013: ["dash"],
+  0x2014: ["dash"],
+};
+
+/** Code point to Windows-1252 byte, for the characters that only exist in its 0x80 to 0x9F block. */
+export const CP1252_REVERSE = new Map<number, number>();
+CP1252.forEach((entry, i) => {
+  if (entry) CP1252_REVERSE.set(entry[0], 0x80 + i);
+});
+
+/* ------------------------------------------------------------- building rows */
+
+function hex(n: number, width = 2): string {
+  return n.toString(16).toUpperCase().padStart(width, "0");
+}
+
+/** U+0041 style code point label. */
+export function codePointLabel(cp: number): string {
+  return `U+${hex(cp, 4)}`;
+}
+
+/**
+ * HTML parsing (WHATWG, "numeric character reference end state"): &#0;
+ * becomes U+FFFD, and a reference to CR or to any control that is not ASCII
+ * whitespace is a parse error, although the character is still produced.
+ */
+function controlHtmlNote(code: number): string | null {
+  if (code === 0) return "&#0; is replaced with U+FFFD by every HTML parser.";
+  if (code === 9 || code === 10 || code === 12) return null;
+  return "A reference to this control is a parse error in HTML.";
+}
+
+function asciiRow(code: number): CodeRow {
+  const base = {
+    code,
+    codePoint: code,
+    numericRef: `&#${code};`,
+    differsInCp1252: false,
+    cEscape: C_ESCAPES[code] ?? null,
+    entities: ASCII_ENTITIES[code] ?? [],
+  };
+
+  if (code < 32 || code === 127) {
+    const spec = code === 127 ? { abbr: "DEL", name: "Delete", aliases: ["rubout"] } : C0[code];
+    return {
+      ...base,
+      control: true,
+      abbr: spec.abbr,
+      name: spec.name,
+      caret: `^${String.fromCharCode(code ^ 0x40)}`,
+      htmlNote: controlHtmlNote(code),
+      note:
+        code === 127
+          ? "All seven bits set: on paper tape, punching every hole over a character erased it."
+          : code === 27
+            ? "\\e is a GNU C extension; standard C writes \\x1b or \\033."
+            : code === 0
+              ? "\\0 is an octal escape with the value zero. C strings end at the first NUL."
+              : null,
+      aliases: spec.aliases ?? [],
+    };
+  }
+
+  let name: string;
+  let aliases: string[] = [];
+  if (code >= 48 && code <= 57) {
+    name = `Digit ${DIGIT_NAMES[code - 48]}`;
+  } else if (code >= 65 && code <= 90) {
+    name = `Latin capital letter ${String.fromCharCode(code)}`;
+  } else if (code >= 97 && code <= 122) {
+    name = `Latin small letter ${String.fromCharCode(code)}`;
+  } else {
+    const p = PRINTABLE[code];
+    name = p.name;
+    aliases = p.aliases ?? [];
+  }
+  return {
+    ...base,
+    control: false,
+    abbr: code === 32 ? "SP" : null,
+    name,
+    caret: null,
+    htmlNote: null,
+    note: code === 63 ? "\\? exists in C so that ?? cannot start a trigraph." : null,
+    aliases,
+  };
+}
+
+function latin1Row(code: number): CodeRow {
+  if (code < 0xa0) {
+    const spec = C1[code - 0x80];
+    const cp1252 = CP1252[code - 0x80];
+    return {
+      code,
+      codePoint: code,
+      control: true,
+      abbr: spec.abbr,
+      name: spec.name,
+      caret: null,
+      cEscape: null,
+      entities: [],
+      numericRef: `&#${code};`,
+      htmlNote: cp1252
+        ? `HTML does not give you this control from &#${code};: the parser maps that reference to ${codePointLabel(cp1252[0])}, the Windows-1252 character.`
+        : "A reference to this control is a parse error in HTML.",
+      note: C1_FIGMENTS.has(code)
+        ? "Proposed in a draft standard but never approved; the name survives only as a Unicode alias."
+        : code === 0x84
+          ? "Deprecated and then withdrawn from ISO/IEC 6429."
+          : null,
+      aliases: spec.aliases ?? [],
+      differsInCp1252: cp1252 !== null,
+    };
+  }
+  const [name, entity, aliases] = LATIN1_UPPER[code - 0xa0];
+  const invisible = code === 0xa0 || code === 0xad;
+  return {
+    code,
+    codePoint: code,
+    control: false,
+    abbr: code === 0xa0 ? "NBSP" : code === 0xad ? "SHY" : null,
+    name,
+    caret: null,
+    cEscape: null,
+    entities: [entity],
+    numericRef: `&#${code};`,
+    htmlNote: null,
+    note: invisible
+      ? code === 0xa0
+        ? "Renders like a space but is not 0x20. A test for the space character misses it, though JavaScript's \\s and Python's str.split() treat it as whitespace."
+        : "Invisible unless a line breaks at it. It can split a keyword without changing how it looks."
+      : null,
+    aliases: aliases ?? [],
+    differsInCp1252: false,
+  };
+}
+
+function cp1252Row(code: number): CodeRow {
+  const entry = CP1252[code - 0x80];
+  if (entry === null) {
+    return {
+      code,
+      codePoint: null,
+      control: true,
+      abbr: "n/a",
+      name: "Undefined in Windows-1252",
+      caret: null,
+      cEscape: null,
+      entities: [],
+      numericRef: `&#${code};`,
+      htmlNote: "A reference to this number is a parse error in HTML and yields the C1 control.",
+      note: `Browsers decode this byte as ${codePointLabel(code)}, the C1 control ${C1[code - 0x80].abbr}; strict decoders reject it.`,
+      aliases: ["undefined"],
+      differsInCp1252: false,
+    };
+  }
+  const [cp, name, entity] = entry;
+  return {
+    code,
+    codePoint: cp,
+    control: false,
+    abbr: null,
+    name,
+    caret: null,
+    cEscape: null,
+    entities: [entity],
+    numericRef: `&#${cp};`,
+    htmlNote: `&#${code}; also produces it, because HTML maps 128 to 159 through this table, but that form is a parse error.`,
+    note: `In Latin-1 and Unicode, ${hex(code)} is the C1 control ${C1[code - 0x80].abbr}.`,
+    aliases: CP1252_ALIASES[cp] ?? [],
+    differsInCp1252: true,
+  };
+}
+
+export const ASCII_ROWS: CodeRow[] = Array.from({ length: 128 }, (_, i) => asciiRow(i));
+export const LATIN1_ROWS: CodeRow[] = Array.from({ length: 128 }, (_, i) => latin1Row(128 + i));
+export const CP1252_ROWS: CodeRow[] = LATIN1_ROWS.map((row) =>
+  row.code >= 0x80 && row.code <= 0x9f ? cp1252Row(row.code) : row,
+);
+
+/** The rows a charset shows: always 0 to 127, then its upper half. */
+export function rowsFor(charset: Charset): CodeRow[] {
+  if (charset === "ascii") return ASCII_ROWS;
+  return [...ASCII_ROWS, ...(charset === "latin1" ? LATIN1_ROWS : CP1252_ROWS)];
+}
+
+/* ------------------------------------------------------------- formatting */
+
+export function toHex(code: number): string {
+  return hex(code);
+}
+
+export function toOctal(code: number): string {
+  return code.toString(8).padStart(3, "0");
+}
+
+/** Eight bits, split into nibbles: 0100 0001. */
+export function toBinary(code: number): string {
+  const bits = code.toString(2).padStart(8, "0");
+  return `${bits.slice(0, 4)} ${bits.slice(4)}`;
+}
+
+/** The text a glyph cell shows: the character, or its abbreviation when there is nothing visible to draw. */
+export function glyphOf(row: CodeRow): string | null {
+  if (row.control || row.abbr !== null || row.codePoint === null) return null;
+  return String.fromCodePoint(row.codePoint);
+}
+
+/** The best HTML form: a named reference when one exists, otherwise the numeric one. */
+export function htmlFormOf(row: CodeRow): string {
+  return row.entities.length ? `&${row.entities[0]};` : row.numericRef;
+}
+
+export type CopyFormat = "char" | "decimal" | "hex" | "binary" | "html" | "escape";
+
+/** What a row puts on the clipboard in each format. */
+export function copyValue(row: CodeRow, format: CopyFormat): string {
+  switch (format) {
+    case "decimal":
+      return String(row.code);
+    case "hex":
+      return `0x${hex(row.code)}`;
+    case "binary":
+      return row.code.toString(2).padStart(8, "0");
+    case "html":
+      return htmlFormOf(row);
+    case "escape":
+      if (row.cEscape && row.code !== 27) return row.cEscape;
+      if (!row.control && row.code >= 32 && row.code < 127) return String.fromCharCode(row.code);
+      return `\\x${hex(row.code).toLowerCase()}`;
+    case "char":
+    default:
+      return String.fromCodePoint(row.codePoint ?? row.code);
+  }
+}
+
+/* ------------------------------------------------------------- UTF-8 */
+
+/** UTF-8 encoding of one code point (RFC 3629, section 3). */
+export function utf8Bytes(cp: number): number[] {
+  if (cp < 0x80) return [cp];
+  if (cp < 0x800) return [0xc0 | (cp >> 6), 0x80 | (cp & 0x3f)];
+  if (cp < 0x10000) return [0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f)];
+  return [0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f)];
+}
+
+/**
+ * What a character's UTF-8 bytes look like when a program decodes them as
+ * Windows-1252, the most common mojibake there is. A byte with no
+ * Windows-1252 character is shown as <81> rather than as an invisible
+ * control. Returns null for ASCII, which survives the trip unchanged.
+ */
+export function mojibake(cp: number): string | null {
+  if (cp < 0x80) return null;
+  return utf8Bytes(cp)
+    .map((b) => {
+      if (b < 0x80) return String.fromCharCode(b);
+      if (b <= 0x9f) {
+        const entry = CP1252[b - 0x80];
+        return entry ? String.fromCodePoint(entry[0]) : `<${hex(b)}>`;
+      }
+      if (b === 0xa0) return "<A0>";
+      if (b === 0xad) return "<AD>";
+      return String.fromCharCode(b);
+    })
+    .join("");
+}
+
+/* ------------------------------------------------------------- the case bit */
+
+export function isAsciiLetter(code: number): boolean {
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+/**
+ * The four codes that share the low five bits with this one, one from each
+ * column of 32. Bits 6 and 5 pick the column: 00 controls, 01 digits and
+ * punctuation, 10 capitals, 11 small letters. Within the upper half the
+ * same layout repeats with bit 7 set.
+ */
+export function columnSiblings(code: number): number[] {
+  const base = code & ~0x60 & 0xff;
+  return [base, base | 0x20, base | 0x40, base | 0x60];
+}
+
+/* ------------------------------------------------------------- search */
+
+export interface Interpretation {
+  code: number;
+  /** How the query was read: "decimal", "hex", "character" and so on. */
+  via: string[];
+}
+
+export interface SearchResult {
+  /** Exact readings of the query, merged by code, in the order found. */
+  interpretations: Interpretation[];
+  /** Codes whose name, nickname, abbreviation or entity contains the query. */
+  nameMatches: number[];
+  /** Readings, and name matches, that do not land on a row of the charset showing, each explained. */
+  outOfRange: string[];
+  error: string | null;
+}
+
+/**
+ * How a prefixed number names a character. A byte value ("0x41", "%41",
+ * "\\101") is a row number in whatever charset is showing. A code point
+ * ("U+0041", "\\u0041") is a Unicode character, which Windows-1252 may keep at
+ * a different byte. An HTML reference is a code point after the HTML
+ * parser's own substitutions.
+ */
+type NumberKind = "byte" | "codepoint" | "html";
+
+const NUMBER_FORMS: { re: RegExp; radix: number; via: string; kind: NumberKind }[] = [
+  { re: /^&#x([0-9a-f]+);?$/i, radix: 16, via: "HTML hex reference", kind: "html" },
+  { re: /^&#([0-9]+);?$/, radix: 10, via: "HTML decimal reference", kind: "html" },
+  { re: /^(?:u\+|\\u)([0-9a-f]{1,6})$/i, radix: 16, via: "Unicode code point", kind: "codepoint" },
+  { re: /^\\u\{([0-9a-f]{1,6})\}$/i, radix: 16, via: "Unicode code point", kind: "codepoint" },
+  { re: /^(?:0x|\\x|\$)([0-9a-f]+)$/i, radix: 16, via: "hex", kind: "byte" },
+  // Assembler suffix form. MASM requires a leading digit (0FFh), which also
+  // keeps a word like "ah" from reading as hex.
+  { re: /^([0-9][0-9a-f]*)h$/i, radix: 16, via: "hex", kind: "byte" },
+  { re: /^%([0-9a-f]{2})$/i, radix: 16, via: "URL percent-encoding", kind: "byte" },
+  { re: /^0o([0-7]+)$/i, radix: 8, via: "octal", kind: "byte" },
+  { re: /^\\([0-7]{1,3})$/, radix: 8, via: "C octal escape", kind: "byte" },
+  { re: /^0b([01]+)$/i, radix: 2, via: "binary", kind: "byte" },
+];
+
+// A Map, not an object: "constructor" or "__proto__" in a plain object would
+// find Object.prototype members and read as a C escape.
+const ESCAPE_TO_CODE = new Map<string, number>();
+for (const [code, esc] of Object.entries(C_ESCAPES)) ESCAPE_TO_CODE.set(esc, Number(code));
+
+/**
+ * The byte that holds a Unicode code point in a charset, or null when the
+ * charset has no such character. Windows-1252 keeps 27 characters at 0x80 to
+ * 0x9F, so the C1 controls those bytes would mean in Latin-1 do not exist in
+ * it. Its five unassigned bytes decode, per the WHATWG index, to the C1
+ * control with the same number.
+ */
+export function byteForCodePoint(cp: number, charset: Charset): number | null {
+  if (!Number.isInteger(cp) || cp < 0) return null;
+  if (cp <= 0x7f) return cp;
+  if (charset === "ascii") return null;
+  if (charset === "latin1") return cp <= 0xff ? cp : null;
+  if (cp <= 0x9f) return CP1252[cp - 0x80] ? null : cp;
+  if (cp <= 0xff) return cp;
+  return CP1252_REVERSE.get(cp) ?? null;
+}
+
+/**
+ * The code point an HTML numeric character reference produces (WHATWG HTML,
+ * "numeric character reference end state"): zero, surrogates and anything
+ * past U+10FFFF become U+FFFD, and 0x80 to 0x9F go through the
+ * Windows-1252 table where it assigns a character.
+ */
+export function htmlReferenceCodePoint(n: number): number {
+  if (!Number.isFinite(n) || n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) return 0xfffd;
+  if (n >= 0x80 && n <= 0x9f) {
+    const entry = CP1252[n - 0x80];
+    if (entry) return entry[0];
+  }
+  return n;
+}
+
+/** Why a code point has no row in the charset showing, and where it does live. Null when it has a row. */
+function explainCodePoint(cp: number, charset: Charset, subject: string): { line: string; upper: boolean } | null {
+  if (byteForCodePoint(cp, charset) !== null) return null;
+  if (cp > 0x10ffff) return { line: `${subject} is past U+10FFFF, the last Unicode code point.`, upper: false };
+  if (cp >= 0x80 && cp <= 0x9f) {
+    const abbr = C1[cp - 0x80].abbr;
+    const entry = CP1252[cp - 0x80];
+    if (charset === "cp1252" && entry) {
+      return {
+        line: `${subject} is the C1 control ${abbr}. Windows-1252 has no such character; its byte 0x${hex(cp)} is ${codePointLabel(entry[0])}. Show Latin-1 to see the control.`,
+        upper: true,
+      };
+    }
+    return {
+      line: entry
+        ? `${subject} is the C1 control ${abbr}, byte 0x${hex(cp)} in Latin-1. Windows-1252 has no such character. Show Latin-1 to see it.`
+        : `${subject} is the C1 control ${abbr}, byte 0x${hex(cp)} in Latin-1, a byte Windows-1252 leaves unassigned. Show Latin-1 to see it.`,
+      upper: true,
+    };
+  }
+  if (cp <= 0xff) {
+    return {
+      line: `${subject} is byte 0x${hex(cp)} in Latin-1 and Windows-1252, outside 7-bit ASCII. Show either to see it.`,
+      upper: true,
+    };
+  }
+  const byte = CP1252_REVERSE.get(cp);
+  if (byte !== undefined) {
+    return {
+      line: `${subject} is not in Latin-1; it is byte 0x${hex(byte)} in Windows-1252. Show Windows-1252 to see it.`,
+      upper: true,
+    };
+  }
+  return { line: `${subject} is not in ASCII, Latin-1 or Windows-1252.`, upper: false };
+}
+
+const RADIX_PREFIX: Record<number, string> = { 2: "0b", 8: "0o", 10: "", 16: "0x" };
+
+/**
+ * Parse digits that have already matched a radix pattern. The value is a
+ * Number for comparing against the table, Infinity past 2^53 where a Number
+ * stops being exact; the text is the exact decimal value, from BigInt, for
+ * telling the reader how far out of range a long number is.
+ */
+function parseDigits(digits: string, radix: number): { value: number; exact: string } {
+  const trimmed = digits.replace(/^0+(?=.)/, "");
+  const big = BigInt(`${RADIX_PREFIX[radix] ?? ""}${trimmed}`);
+  const exact = big.toLocaleString("en-US");
+  return { value: big <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(big) : Number.POSITIVE_INFINITY, exact };
+}
+
+/**
+ * The query as it is searched. Surrounding whitespace is trimmed, except that
+ * a query of exactly one character is kept as typed: a pasted space, no-break
+ * space or byte order mark is a real question ("what is this character?"),
+ * and trim() would turn it into an empty search that matches everything.
+ */
+export function normalizeQuery(query: string): string {
+  return Array.from(query).length === 1 ? query : query.trim();
+}
+
+/**
+ * Read a query every way it could be meant. A bare number is ambiguous, so
+ * "65" comes back as decimal 65, hex 0x65 and octal 065, each labeled; a
+ * single character is that character; anything of two or more characters
+ * is also matched against names.
+ */
+export function searchCodes(query: string, charset: Charset): SearchResult {
+  const result: SearchResult = { interpretations: [], nameMatches: [], outOfRange: [], error: null };
+  if (query.length > MAX_QUERY_LENGTH) {
+    result.error = `Search is limited to ${MAX_QUERY_LENGTH} characters.`;
+    return result;
+  }
+  const q = normalizeQuery(query);
+  if (q === "") return result;
+
+  const maxCode = charset === "ascii" ? 127 : 255;
+  const add = (code: number, via: string) => {
+    const existing = result.interpretations.find((i) => i.code === code);
+    if (existing) {
+      if (!existing.via.includes(via)) existing.via.push(via);
+    } else {
+      result.interpretations.push({ code, via: [via] });
+    }
+  };
+  // Readings in the upper half are worth saying even when something else
+  // matched; readings past one byte only when nothing did.
+  const upperHalf: string[] = [];
+  const beyond: string[] = [];
+  const addNumber = ({ value, exact }: { value: number; exact: string }, via: string, shown: string) => {
+    if (value <= maxCode) add(value, via);
+    else if (value <= 255) upperHalf.push(`${shown} as ${via} is ${value}, in the upper half. Show Latin-1 or Windows-1252 to see it.`);
+    else beyond.push(`${shown} as ${via} is ${exact}, beyond one byte.`);
+  };
+  /** A Unicode character, named by itself or by its number: find the byte that holds it here. */
+  const addCodePoint = (cp: number, via: string, subject: string) => {
+    const byte = byteForCodePoint(cp, charset);
+    if (byte !== null) {
+      add(byte, via);
+      return;
+    }
+    const why = explainCodePoint(cp, charset, subject);
+    if (why) (why.upper ? upperHalf : beyond).push(why.line);
+  };
+
+  const chars = Array.from(q);
+  // A letter typed as a base letter plus a combining accent (e then U+0301)
+  // is one character to the reader; NFC composes it into the single code
+  // point the tables use. Only a sequence is composed: NFC would also turn a
+  // lone Kelvin sign into K, which is a different character.
+  const composed = chars.length > 1 ? q.normalize("NFC") : q;
+  const single = Array.from(composed).length === 1 ? composed : null;
+
+  // One character: the character itself.
+  if (single !== null) {
+    const cp = single.codePointAt(0) as number;
+    const byte = byteForCodePoint(cp, charset);
+    addCodePoint(cp, byte !== null && byte !== cp ? "Windows-1252 character" : "character", codePointLabel(cp));
+  }
+
+  // Prefixed and suffixed numbers.
+  let prefixed = false;
+  for (const form of NUMBER_FORMS) {
+    const m = form.re.exec(q);
+    if (!m) continue;
+    prefixed = true;
+    const parsed = parseDigits(m[1], form.radix);
+    if (form.kind === "byte") {
+      addNumber(parsed, form.via, q);
+      continue;
+    }
+    const value = parsed.value;
+    if (!Number.isFinite(value) || value > 0x10ffff) {
+      beyond.push(`${q} is past U+10FFFF, the last Unicode code point${form.kind === "html" ? ", so HTML parsers replace it with U+FFFD" : ""}.`);
+      continue;
+    }
+    if (form.kind === "codepoint") {
+      const label = codePointLabel(value);
+      addCodePoint(value, form.via, q.toUpperCase() === label ? label : `${q} (${label})`);
+      continue;
+    }
+    // An HTML reference names whatever the parser substitutes for it.
+    const cp = htmlReferenceCodePoint(value);
+    if (cp === 0xfffd && value !== 0xfffd) {
+      upperHalf.push(`HTML parsers replace ${q} with U+FFFD, the replacement character, so no reference produces ${value === 0 ? "NUL" : "this code point"}.`);
+      continue;
+    }
+    const subject = cp !== value ? `${q}, which HTML maps to ${codePointLabel(cp)},` : `${q} (${codePointLabel(cp)})`;
+    addCodePoint(cp, cp !== value ? `${form.via}, mapped through Windows-1252` : form.via, subject);
+  }
+
+  // Bare digits: every base they are valid in. Letters a to f alone count as
+  // hex only from two characters, so a single "a" stays the letter a. A
+  // prefix pins the base, so 0b101 is binary only, not also hex 0xB101.
+  if (!prefixed && /^[0-9a-f]+$/i.test(q)) {
+    if (/^[0-9]+$/.test(q)) addNumber(parseDigits(q, 10), "decimal", q);
+    if (/^[0-7]+$/.test(q)) addNumber(parseDigits(q, 8), "octal", q);
+    if (/[0-9]/.test(q) || q.length >= 2) addNumber(parseDigits(q, 16), "hex", q);
+    if (/^[01]+$/.test(q)) addNumber(parseDigits(q, 2), "binary", q);
+  }
+
+  // Caret notation: ^A is 1, ^? is DEL. Lower case letters work as Ctrl does.
+  const caret = /^\^(.)$/.exec(q);
+  if (caret) {
+    const raw = caret[1].charCodeAt(0);
+    // Only ASCII a to z fold to capitals. toUpperCase() would also map the
+    // sharp s, the long s and the dotless i onto S and I.
+    const c = raw >= 97 && raw <= 122 ? raw - 32 : raw;
+    if (c === 63) add(127, "caret notation");
+    else if (c >= 64 && c <= 95) add(c ^ 0x40, "caret notation");
+  }
+
+  // C escapes.
+  const escaped = ESCAPE_TO_CODE.get(q);
+  if (escaped !== undefined) add(escaped, "C escape");
+
+  // Named HTML references: exact first, then any case. Names are case
+  // sensitive in HTML (&amp; and &AMP; exist, &Amp; does not), so a match
+  // that needed case folding says so.
+  const entity = /^&([a-z][a-z0-9]*);?$/i.exec(q);
+  const rows = rowsFor(charset);
+  if (entity) {
+    const name = entity[1];
+    const exact = rows.find((r) => r.entities.includes(name));
+    const synonym = ENTITY_SYNONYMS.get(name);
+    const loose = exact
+      ? undefined
+      : rows.find((r) => r.entities.some((e) => e.toLowerCase() === name.toLowerCase()));
+    if (exact) {
+      add(exact.code, "HTML named reference");
+    } else if (synonym !== undefined) {
+      addCodePoint(synonym, "HTML named reference", `&${name}; (${codePointLabel(synonym)})`);
+    } else if (loose) {
+      add(loose.code, "HTML named reference, ignoring case");
+    } else {
+      // Not in the rows showing: say where it is, if it is anywhere here.
+      const other = [...LATIN1_ROWS, ...CP1252_ROWS].find((r) => r.entities.includes(name));
+      if (other && other.codePoint !== null) addCodePoint(other.codePoint, "HTML named reference", `&${name}; (${codePointLabel(other.codePoint)})`);
+    }
+  }
+
+  // Names, from two characters up; one letter would match nearly everything.
+  const names: string[] = [];
+  if (chars.length >= 2) {
+    const needle = q.toLowerCase();
+    const nameHit = (row: CodeRow) =>
+      [row.name, row.abbr, row.caret, row.cEscape, ...row.aliases, ...row.entities].some(
+        (f) => f !== null && f.toLowerCase().includes(needle),
+      );
+    for (const row of rows) {
+      if (nameHit(row)) result.nameMatches.push(row.code);
+    }
+    // Names that only a charset not showing has: say where they are rather
+    // than report no match. Rows 0xA0 to 0xFF are shared by both 8-bit sets.
+    const hidden =
+      charset === "ascii"
+        ? [...LATIN1_ROWS, ...CP1252_ROWS.filter((r) => r.differsInCp1252)]
+        : (charset === "latin1" ? CP1252_ROWS : LATIN1_ROWS).filter((r) => r.differsInCp1252);
+    const count = hidden.filter(nameHit).length;
+    if (count > 0) {
+      const them = count === 1 ? "it" : "them";
+      const lead = `The name ${result.nameMatches.length > 0 ? "also " : ""}matches ${count === 1 ? "1 code" : `${count} codes`}`;
+      names.push(
+        charset === "ascii"
+          ? `${lead} in the upper half, 128 to 255. Show Latin-1 or Windows-1252 to see ${them}.`
+          : charset === "latin1"
+            ? `${lead} that only Windows-1252 has, at 128 to 159. Show Windows-1252 to see ${them}.`
+            : `${lead} that only Latin-1 has, the C1 controls at 128 to 159. Show Latin-1 to see ${them}.`,
+      );
+    }
+  }
+
+  // "1000001" shows binary 65 without three lines about the other bases.
+  const nothing = result.interpretations.length === 0 && result.nameMatches.length === 0;
+  result.outOfRange = nothing ? [...upperHalf, ...names, ...beyond] : [...upperHalf, ...names];
+  return result;
+}
+
+/** Every code a search touches, sorted, for filtering the table. */
+export function matchedCodes(result: SearchResult): Set<number> {
+  return new Set([...result.interpretations.map((i) => i.code), ...result.nameMatches]);
+}

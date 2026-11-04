@@ -1,0 +1,13 @@
+[ca]
+default_ca = CA_default
+[CA_default]
+dir = ./ca
+database = ./ca/index.txt
+new_certs_dir = ./ca/newcerts
+serial = ./ca/serial
+default_md = sha384
+policy = policy_any
+unique_subject = no
+copy_extensions = none
+[policy_any]
+commonName = supplied

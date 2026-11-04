@@ -765,6 +765,134 @@ export const TOOLS: ToolEntry[] = [
     category: "infrastructure",
     keywords: ["zfs", "zpool", "raidz", "raidz2", "mirror", "vdev", "ashift", "recordsize", "slop space", "openzfs"],
   },
+  {
+    slug: "ip-address-classifier",
+    name: "IP address classifier",
+    blurb:
+      "Finds the IANA special-purpose block an IPv4 or IPv6 address is in, with its source, destination, forwarding and reachability attributes. Runs in your browser.",
+    category: "networking",
+    keywords: ["special-purpose", "rfc 6890", "rfc 1918", "bogon", "cgnat", "link-local", "loopback", "documentation range", "ula", "ssrf"],
+  },
+  {
+    slug: "ipv4-checksum-calculator",
+    name: "IPv4 checksum calculator",
+    blurb:
+      "Computes and verifies the Internet checksum for IPv4 headers, TCP and UDP segments, or raw bytes, showing every word, carry fold and complement.",
+    category: "networking",
+    keywords: ["checksum", "rfc 1071", "internet checksum", "ipv4 header", "ones complement", "pseudo-header", "tcp checksum", "udp checksum"],
+  },
+  {
+    slug: "reverse-dns-name",
+    name: "Reverse DNS name",
+    blurb:
+      "Turns an address into its in-addr.arpa or ip6.arpa PTR name and back, shows the delegation zone, and writes RFC 2317 records for blocks smaller than a /24.",
+    category: "networking",
+    keywords: ["ptr", "rdns", "in-addr.arpa", "ip6.arpa", "rfc 2317", "classless delegation", "dig -x", "nibble"],
+  },
+  {
+    slug: "tcp-flags-calculator",
+    name: "TCP flags calculator",
+    blurb:
+      "Toggle or type TCP flags to see the byte in hex, decimal and binary, name the combination, and get matching tcpdump and Wireshark filters.",
+    category: "networking",
+    keywords: ["tcp flags", "syn", "syn-ack", "rst", "xmas scan", "null scan", "tcpdump", "wireshark filter", "ecn", "handshake"],
+  },
+  {
+    slug: "certificate-decoder",
+    name: "Certificate decoder",
+    blurb:
+      "Decode X.509 certificates and chains from PEM or DER: names, SANs, validity, key, extensions, fingerprints and issuer links. Runs in your browser.",
+    category: "security",
+    keywords: ["x509", "ssl", "tls", "pem", "der", "certificate chain", "san", "fingerprint", "openssl", "pki"],
+  },
+  {
+    slug: "csr-decoder",
+    name: "CSR decoder",
+    blurb:
+      "Decode a PKCS#10 signing request, check its key, SANs and wildcards, and build an openssl req command with SANs. Runs in your browser.",
+    category: "security",
+    keywords: ["csr", "pkcs10", "certificate signing request", "openssl req", "san", "subjectaltname", "wildcard", "pem", "tls"],
+  },
+  {
+    slug: "defang-refang",
+    name: "Defang and refang",
+    blurb:
+      "Convert URLs, domains, IPs and emails between live and defanged forms in several styles, line by line. Strict mode leaves prose alone. Runs in your browser.",
+    category: "security",
+    keywords: ["defang", "refang", "defanged", "hxxp", "ioc", "url", "phishing", "threat intel", "indicator", "email"],
+  },
+  {
+    slug: "dkim-record-analyzer",
+    name: "DKIM record analyzer",
+    blurb:
+      "Decodes a DKIM key record and reports the RSA key size or Ed25519, flags weak or revoked keys, and reads a DKIM-Signature header. Runs in your browser.",
+    category: "security",
+    keywords: ["dkim", "rfc 6376", "dkim selector", "domainkey", "email authentication", "rsa key size", "ed25519", "dkim signature", "txt record", "email spoofing"],
+  },
+  {
+    slug: "email-header-analyzer",
+    name: "Email header analyzer",
+    blurb:
+      "Unfolds raw email headers, orders Received hops with delays, reads Authentication-Results, and compares From, Return-Path and Reply-To. Runs in your browser.",
+    category: "security",
+    keywords: ["email headers", "received", "authentication-results", "spf", "dkim", "dmarc", "phishing", "rfc 5322", "rfc 2047", "message id"],
+  },
+  {
+    slug: "ioc-extractor",
+    name: "IOC extractor",
+    blurb:
+      "Pull IPs, domains, URLs, emails, hashes, CVE IDs and Bitcoin addresses out of pasted text, defanged or live, with counts. Runs in your browser.",
+    category: "security",
+    keywords: ["ioc", "indicator of compromise", "threat intel", "extract", "defanged", "hash", "md5", "sha256", "cve", "bitcoin"],
+  },
+  {
+    slug: "jwt-encoder",
+    name: "JWT encoder",
+    blurb:
+      "Build and sign JSON Web Tokens with HMAC, RSA or ECDSA keys, and verify a signature with a secret or public key. Runs in your browser.",
+    category: "security",
+    keywords: ["jwt", "jws", "json web token", "hs256", "rs256", "es256", "hmac", "sign token", "verify signature", "webcrypto"],
+  },
+  {
+    slug: "cookie-analyzer",
+    name: "Set-Cookie analyzer",
+    blurb:
+      "Paste Set-Cookie headers to see whether browsers store them, their scope and lifetime, prefix rule violations, and decoded values. Runs in your browser.",
+    category: "security",
+    keywords: ["cookie", "set-cookie", "samesite", "httponly", "secure flag", "__host-", "session cookie", "rfc 6265bis", "csrf", "jwt"],
+  },
+  {
+    slug: "ssh-key-inspector",
+    name: "SSH key inspector",
+    blurb:
+      "Decode OpenSSH public keys and authorized_keys lines: type, size, SHA256 and MD5 fingerprints as ssh-keygen prints them, weak key warnings and options.",
+    category: "security",
+    keywords: ["ssh", "authorized_keys", "fingerprint", "ssh-keygen", "ed25519", "rsa", "openssh", "known_hosts", "public key", "certificate"],
+  },
+  {
+    slug: "ascii-table",
+    name: "ASCII table",
+    blurb:
+      "All 128 ASCII codes in decimal, hex, octal and binary, with control names, caret notation, C escapes and HTML entities, plus Latin-1 and Windows-1252.",
+    category: "encoding",
+    keywords: ["ascii", "character codes", "control characters", "hex", "caret notation", "html entities", "latin-1", "windows-1252", "unicode", "encoding"],
+  },
+  {
+    slug: "asn1-viewer",
+    name: "ASN.1 viewer",
+    blurb:
+      "Parse DER or BER from PEM, Base64, hex or a file into a tag tree with offsets, lengths, OIDs and times, and highlight each element's bytes.",
+    category: "encoding",
+    keywords: ["asn.1", "der", "ber", "pem", "x.509", "certificate", "oid", "tlv", "pkcs", "asn1parse"],
+  },
+  {
+    slug: "morse-code-translator",
+    name: "Morse code translator",
+    blurb:
+      "Translates text to Morse and back, prosigns included, and plays it as tone and light at adjustable speed with Farnsworth spacing. Runs in your browser.",
+    category: "encoding",
+    keywords: ["morse", "cw", "telegraph", "prosign", "sos", "farnsworth", "wpm", "ham radio", "decoder", "ctf"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

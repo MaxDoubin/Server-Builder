@@ -1,0 +1,9 @@
+V	460101000000Z		1F2E3D4C5B6A79880011223344556677	unknown	/C=US/O=Example PKI/CN=Example Root CA R1
+V	360101000000Z		6B8C1A2F9D3E4C5B7A6F	unknown	/C=US/O=Example PKI/CN=Example Issuing CA E1
+V	271101000000Z		03A1B2C3D4E5F60718293A4B5C6D7E8F	unknown	/CN=www.example.com
+V	160301000000Z		E3	unknown	/C=US/ST=Nevada/L=Las Vegas/O=Example Legacy Systems/CN=legacy.example.com
+V	270101000000Z		1092	unknown	/CN=pss.example.org
+V	260601000000Z		4D	unknown	/CN=rsa3072.example.org
+V	491231235959Z		0209	unknown	/CN=p521.example.org
+V	20500101000000Z		020A	unknown	/CN=p521.example.org
+V	280101000000Z		7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF	unknown	/DC=org/DC=example/OU=R&D+UID=jdoe/CN=Doe, Jane \+1 <test>/emailAddress=jane@example.org
