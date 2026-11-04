@@ -361,7 +361,9 @@ test("transport errors and warnings", () => {
   const badOffset = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 6, segment: new Uint8Array(20) });
   assert.ok(badOffset.ok && badOffset.warnings.some((w) => w.includes("below the minimum")));
   const udpLen = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000") });
-  assert.ok(udpLen.ok && udpLen.warnings.some((w) => w.includes("UDP length field says 32")));
+  assert.ok(!udpLen.ok && udpLen.error.includes("UDP length field says 32 bytes, but only 8 were pasted"));
+  const udpPartial = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000"), lengthOverride: 32 });
+  assert.ok(udpPartial.ok && udpPartial.warnings.some((w) => w.includes("UDP length field says 32")));
   const override = analyzeTransport({
     source: "1.2.3.4",
     destination: "1.2.3.4",
@@ -866,9 +868,12 @@ test("UDP checksums cover exactly the declared length, not trailing bytes", () =
   assert.equal(r.computed, base.computed);
   assert.equal(r.length, 10);
   assert.ok(r.warnings.some((w) => w.includes("6 bytes after the declared length are not part of the datagram")));
-  // A datagram shorter than its length field is still reported, not trimmed.
+  // A datagram shorter than its length field cannot be verified or completed, so it is refused
+  // unless the length override says the partial sum is intended.
   const short = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000") });
-  assert.ok(short.ok && short.warnings.some((w) => w.includes("UDP length field says 32 bytes, but 8 were pasted")));
+  assert.ok(!short.ok && short.error.includes("paste the rest of it"));
+  const intended = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000"), lengthOverride: 32 });
+  assert.ok(intended.ok);
   // TCP has no length field, so nothing is trimmed.
   const tcp = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 6, segment: new Uint8Array(24) });
   assert.ok(tcp.ok && tcp.length === 24);

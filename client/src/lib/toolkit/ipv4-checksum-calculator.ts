@@ -752,6 +752,14 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
     }
   } else {
     const udpLength = (segment[4] << 8) | segment[5];
+    if (udpLength > segment.length && (override === null || override === undefined)) {
+      // A checksum covers the whole datagram. With part of it missing there is
+      // nothing to verify and no finished checksum to compute, so refuse.
+      return {
+        ok: false,
+        error: `The UDP length field says ${byteCount(udpLength)}, but only ${segment.length} were pasted. A UDP checksum covers the whole datagram, so paste the rest of it. To sum a partial datagram on purpose, set the length override.`,
+      };
+    }
     if (udpLength !== segment.length) {
       warnings.push(
         `The UDP length field says ${byteCount(udpLength)}, but ${segment.length} were pasted. The checksum covers the bytes the length field names, so one of them is wrong or incomplete.`,
