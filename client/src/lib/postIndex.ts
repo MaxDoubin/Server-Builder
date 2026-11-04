@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 308 of them. Regenerate with script/generatePostIndex.ts.
+ * 309 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "rescue-a-google-jamboard-without-flashing",
+    title: "Repurpose a Google Jamboard Without Flashing It: Android 7, No ADB",
+    date: "2026-11-04",
+    tags: ["hardware","homelab","troubleshooting","security"],
+    excerpt: "Google ended Jamboard support in October 2024. A plain USB keyboard unlocked the locked-down Android 7 board with no flashing, root or adb. What worked, what did not, and what to be careful of.",
+    coverImage: "/images/blog/rescue-a-google-jamboard-without-flashing.jpg",
+    wordCount: 1427,
+  },
   {
     slug: "three-apple-afterburner-cards",
     title: "Apple Afterburner Benchmark: Three Cards in One Mac Pro",
@@ -3028,10 +3037,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 308;
+export const POST_COUNT = 309;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and eight";
+export const POST_COUNT_SPELLED = "three hundred and nine";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3040,10 +3049,10 @@ export const POST_COUNT_SPELLED = "three hundred and eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2383;
+export const CITATION_COUNT = 2391;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 181;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2545;
+export const CHECKED_URL_COUNT = 2553;
