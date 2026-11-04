@@ -100,11 +100,17 @@ function prefersReducedMotion(): boolean {
 }
 
 function formatSeconds(seconds: number): string {
-  if (seconds < 1) return `${Math.round(seconds * 1000)} ms`;
+  // 0.9996 s would round to "1000 ms"; the cut is where rounding to ms reaches 1000.
+  if (seconds < 0.9995) return `${Math.round(seconds * 1000)} ms`;
   if (seconds < 59.95) return `${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
   // Round once, then split, so 119.6 s reads 2 min 0 s rather than 1 min 60 s.
   const total = Math.round(seconds);
   return `${Math.floor(total / 60)} min ${total % 60} s`;
+}
+
+/** What to tell the reader when sound is on but cannot play. The light may be off too, so do not promise it. */
+function audioFailure(reason: string, lightOn: boolean): string {
+  return lightOn ? `${reason}, so playback is the light only.` : `${reason}. Turn on the light to see the message play.`;
 }
 
 /** Why playback stops early, in words. Only called for a truncated plan. */
@@ -213,7 +219,14 @@ export function MorseCodeTranslator() {
       halt();
       const ctx = ctxRef.current;
       ctxRef.current = null;
-      if (ctx) ctx.close().catch(() => undefined);
+      if (ctx) {
+        // Older Safari returned nothing from close(); newer browsers reject if it is already closed.
+        try {
+          void Promise.resolve(ctx.close()).catch(() => undefined);
+        } catch {
+          // Already closed.
+        }
+      }
     };
   }, [halt]);
 
@@ -244,7 +257,7 @@ export function MorseCodeTranslator() {
       if (sound) {
         const Ctor = audioContextConstructor();
         if (!Ctor) {
-          setAudioNote("This browser has no Web Audio support, so playback is the light only.");
+          setAudioNote(audioFailure("This browser has no Web Audio support", light));
         } else {
           try {
             const ctx = ctxRef.current ?? new Ctor();
@@ -283,7 +296,7 @@ export function MorseCodeTranslator() {
             osc = null;
             gain = null;
             clock = null;
-            setAudioNote("Audio could not start in this browser, so playback is the light only.");
+            setAudioNote(audioFailure("Audio could not start in this browser", light));
           }
         }
       }

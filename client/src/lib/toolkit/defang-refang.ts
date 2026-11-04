@@ -29,11 +29,11 @@ export const MAX_CHANGES_LISTED = 200;
 
 /**
  * Every delegated top-level domain, lowercased, from the IANA list at
- * https://data.iana.org/TLD/tlds-alpha-by-domain.txt (version 2026103100).
+ * https://data.iana.org/TLD/tlds-alpha-by-domain.txt (version 2026110304).
  * A dotted name only counts as a domain when its last label is in here,
  * which is what keeps report.pdf, node.js and e.g. out of the results.
  */
-export const TLD_LIST_VERSION = "2026103100";
+export const TLD_LIST_VERSION = "2026110304";
 
 const TLD_SOURCE = `
   aaa aarp abb abbott abbvie abc able abogado abudhabi ac academy accenture accountant accountants

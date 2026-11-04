@@ -512,7 +512,7 @@ function latin1Row(code: number): CodeRow {
       note: C1_FIGMENTS.has(code)
         ? "Proposed in a draft standard but never approved; the name survives only as a Unicode alias."
         : code === 0x84
-          ? "Deprecated and then withdrawn from ISO/IEC 6429. It moved down one line, which LF already does."
+          ? "Deprecated and then withdrawn from ISO/IEC 6429."
           : null,
       aliases: spec.aliases ?? [],
       differsInCp1252: cp1252 !== null,
@@ -820,6 +820,16 @@ function parseDigits(digits: string, radix: number): { value: number; exact: str
 }
 
 /**
+ * The query as it is searched. Surrounding whitespace is trimmed, except that
+ * a query of exactly one character is kept as typed: a pasted space, no-break
+ * space or byte order mark is a real question ("what is this character?"),
+ * and trim() would turn it into an empty search that matches everything.
+ */
+export function normalizeQuery(query: string): string {
+  return Array.from(query).length === 1 ? query : query.trim();
+}
+
+/**
  * Read a query every way it could be meant. A bare number is ambiguous, so
  * "65" comes back as decimal 65, hex 0x65 and octal 065, each labeled; a
  * single character is that character; anything of two or more characters
@@ -831,8 +841,7 @@ export function searchCodes(query: string, charset: Charset): SearchResult {
     result.error = `Search is limited to ${MAX_QUERY_LENGTH} characters.`;
     return result;
   }
-  // A lone space is a real query: the space character.
-  const q = query === " " ? " " : query.trim();
+  const q = normalizeQuery(query);
   if (q === "") return result;
 
   const maxCode = charset === "ascii" ? 127 : 255;

@@ -21,6 +21,7 @@ import {
   isAsciiLetter,
   matchedCodes,
   mojibake,
+  normalizeQuery,
   rowsFor,
   searchCodes,
   toBinary,
@@ -148,7 +149,7 @@ export function AsciiTable() {
 
   const rows = useMemo(() => rowsFor(charset), [charset]);
   const search = useMemo(() => searchCodes(query, charset), [query, charset]);
-  const active = query === " " || query.trim() !== "";
+  const active = normalizeQuery(query) !== "";
   const matched = useMemo(() => (active ? matchedCodes(search) : null), [active, search]);
   const visible = useMemo(() => (matched ? rows.filter((r) => matched.has(r.code)) : rows), [rows, matched]);
   const row = rows[selected] ?? rows[65];
