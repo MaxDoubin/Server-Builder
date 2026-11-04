@@ -99,12 +99,29 @@ function intervalValue(raw: string): string | null {
   return String(n);
 }
 
-/** A size field (-b, -w, -M) accepts a plain number or a number with a K/M/G/T suffix. */
+/** A size field (-b, -w) accepts a plain number or a number with a K/M/G/T suffix. */
 function sizeToken(raw: string): string | null {
   const value = raw.trim();
   if (value === "") return null;
   if (!/^[0-9]+(?:\.[0-9]+)?[KMGTkmgt]?$/.test(value)) return null;
   return value;
+}
+
+/**
+ * The socket buffer for -w. iperf3 rejects more than MAX_TCP_BUFFER, which
+ * iperf.h sets to 512 MiB, and unit_atof reads the K, M, G and T suffixes as
+ * powers of 1024 for it.
+ */
+const MAX_WINDOW_BYTES = 512 * 1024 * 1024;
+function windowToken(raw: string): string | null {
+  const value = sizeToken(raw);
+  if (value === null) return null;
+  const match = /^([0-9]+(?:\.[0-9]+)?)([KMGTkmgt]?)$/.exec(value);
+  if (!match) return null;
+  const unit = match[2].toLowerCase();
+  const factor = unit === "k" ? 1024 : unit === "m" ? 1024 ** 2 : unit === "g" ? 1024 ** 3 : unit === "t" ? 1024 ** 4 : 1;
+  const bytes = Number(match[1]) * factor;
+  return Number.isFinite(bytes) && bytes <= MAX_WINDOW_BYTES ? value : null;
 }
 
 /**
@@ -166,9 +183,18 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
         : "Run as a client and connect to this server.",
     });
 
+    /** The -b value, reported when something was typed that iperf3 would not read as a rate. */
+    const bandwidthValue = (): string | null => {
+      const bw = sizeToken(o.bandwidth);
+      if (bw === null && o.bandwidth.trim() !== "") {
+        skip("Bandwidth", o.bandwidth, "iperf3 accepts a number with an optional K, M, G or T suffix, such as 100M.");
+      }
+      return bw;
+    };
+
     if (o.protocol === "udp") {
       add("-u", "Use UDP instead of TCP. UDP reports loss and jitter and never retransmits.");
-      const bw = sizeToken(o.bandwidth);
+      const bw = bandwidthValue();
       if (bw) {
         add(
           `-b ${bw}`,
@@ -176,7 +202,7 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
         );
       }
     } else {
-      const bw = sizeToken(o.bandwidth);
+      const bw = bandwidthValue();
       if (bw) {
         add(`-b ${bw}`, "Rate limit for TCP. Without it TCP sends as fast as congestion control allows.");
       }
@@ -212,12 +238,14 @@ export function buildIperf3Parts(o: Iperf3Options): { parts: string[]; flags: Ip
       );
     }
 
-    const win = sizeToken(o.window);
+    const win = windowToken(o.window);
     if (win) {
       add(
         `-w ${win}`,
         "Set the socket buffer, which bounds the TCP window. The window must be at least the bandwidth-delay product to fill the link.",
       );
+    } else if (o.window.trim() !== "") {
+      skip("Window", o.window, "iperf3 accepts a number with an optional K, M, G or T suffix, up to 512M.");
     }
 
     const mss = whole(o.mss, LIMITS.mss, "MSS");

@@ -159,6 +159,24 @@ for (const bad of ["soon", "10x", "-5", "10 m"]) {
   ok(errs.some((e) => e.field === "controlPersist"), `ControlPersist ${bad} is rejected`);
 }
 
+// V4b. OpenSSH reads times with convtime(), which rejects anything above INT_MAX seconds (misc.c).
+const INT_MAX = 2147483647;
+ok(!validateBlock({ ...emptyBlock(), host: "h", serverAliveInterval: String(INT_MAX) }).some((e) => e.field === "serverAliveInterval"), "ServerAliveInterval at INT_MAX is valid");
+ok(validateBlock({ ...emptyBlock(), host: "h", serverAliveInterval: String(INT_MAX + 1) }).some((e) => e.field === "serverAliveInterval"), "ServerAliveInterval above INT_MAX is rejected");
+ok(validateBlock({ ...emptyBlock(), host: "h", serverAliveInterval: "99999999999999999999" }).some((e) => e.field === "serverAliveInterval"), "an oversized digit string is rejected");
+ok(!validateBlock({ ...emptyBlock(), host: "h", controlPersist: String(INT_MAX) }).some((e) => e.field === "controlPersist"), "ControlPersist at INT_MAX seconds is valid");
+ok(validateBlock({ ...emptyBlock(), host: "h", controlPersist: String(INT_MAX + 1) }).some((e) => e.field === "controlPersist"), "ControlPersist above INT_MAX seconds is rejected");
+// With a unit the total in seconds is what counts: 596523 hours fits, 596524 hours does not.
+ok(!validateBlock({ ...emptyBlock(), host: "h", controlPersist: "596523h" }).some((e) => e.field === "controlPersist"), "596523h fits");
+ok(validateBlock({ ...emptyBlock(), host: "h", controlPersist: "596524h" }).some((e) => e.field === "controlPersist"), "596524h does not");
+ok(validateBlock({ ...emptyBlock(), host: "h", controlPersist: "35791395m" }).some((e) => e.field === "controlPersist"), "35791395m does not");
+// An oversized value stays out of the copyable command, so ssh never prints "invalid time value".
+{
+  const oversized = { ...emptyBlock(), host: "h", hostName: "h.example", serverAliveInterval: String(INT_MAX + 1), controlPersist: String(INT_MAX + 1) };
+  const cmd = sshCommand(oversized);
+  ok(!cmd.includes("ServerAliveInterval") && !cmd.includes("ControlPersist"), `oversized times left out: ${cmd}`);
+}
+
 // V5. IdentitiesOnly emits a boolean keyword and the matching -o option.
 {
   const b: HostBlock = { ...emptyBlock(), host: "h", hostName: "x", identitiesOnly: true, identityFile: "~/.ssh/k" };
@@ -235,7 +253,7 @@ eq(parsePort("99999999999999999999"), null);
   ok(sshCommand(fwd({ destHost: "[::1]" })).includes("-L '8080:[::1]:5432'"), "bracketed IPv6 forward is quoted for the shell and valid");
   eq(validateBlock(fwd({ destHost: "[::1]", bindAddress: "*" })).length, 0, "bracketed IPv6 and * bind are valid");
   ok(sshCommand(fwd({})).includes("-L 8080:db.internal:5432"), "an ordinary forward stays unquoted");
-  ok(sshCommand(base({ controlPersist: "10m; id" })).includes("-o 'ControlPersist=10m; id'"), "ControlPersist quoted");
+  ok(!sshCommand(base({ controlPersist: "10m; id" })).includes("ControlPersist"), "a hostile ControlPersist never reaches the command");
   ok(sshCommand(base({ controlPersist: "10m" })).includes("-o ControlPersist=10m"), "ControlPersist ordinary stays unquoted");
   ok(sshCommand(base({ forwards: [{ kind: "dynamic", bindAddress: "x;id", listenPort: "1080", destHost: "", destPort: "" }] })).includes("-D 'x;id:1080'"), "dynamic bind quoted");
 }

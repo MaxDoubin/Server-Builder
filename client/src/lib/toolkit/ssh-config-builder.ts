@@ -103,11 +103,26 @@ export function parsePort(raw: string): number | null {
   return n;
 }
 
-/** A non negative integer count of seconds. */
+/** OpenSSH reads a time with convtime(), which rejects anything above INT_MAX seconds (misc.c). */
+const SSH_MAX_SECONDS = 2147483647;
+
+/** A non negative integer count of seconds, no larger than OpenSSH accepts. */
 function parseSeconds(raw: string): number | null {
   const s = raw.trim();
   if (!/^\d+$/.test(s)) return null;
-  return Number(s);
+  const n = Number(s);
+  return Number.isSafeInteger(n) && n <= SSH_MAX_SECONDS ? n : null;
+}
+
+/** ControlPersist is yes, no, or a time in seconds with an optional s, m or h, inside the same limit. */
+function validControlPersist(raw: string): boolean {
+  const s = raw.trim();
+  if (/^(yes|no)$/i.test(s)) return true;
+  const match = /^(\d+)([smh])?$/i.exec(s);
+  if (!match) return false;
+  const unit = (match[2] ?? "s").toLowerCase();
+  const total = Number(match[1]) * (unit === "h" ? 3600 : unit === "m" ? 60 : 1);
+  return Number.isSafeInteger(total) && total <= SSH_MAX_SECONDS;
 }
 
 /** Quote a value for an ssh -o option or a shell argument when it has spaces. */
@@ -163,13 +178,13 @@ export function validateBlock(block: HostBlock): FieldError[] {
   if (block.serverAliveInterval.trim() !== "" && parseSeconds(block.serverAliveInterval) === null) {
     errors.push({
       field: "serverAliveInterval",
-      message: "ServerAliveInterval is a count of seconds, so a non negative whole number.",
+      message: "ServerAliveInterval is a count of seconds, so a whole number from 0 to 2147483647.",
     });
   }
-  if (block.controlPersist.trim() !== "" && !/^(yes|no|\d+[smh]?)$/i.test(block.controlPersist.trim())) {
+  if (block.controlPersist.trim() !== "" && !validControlPersist(block.controlPersist)) {
     errors.push({
       field: "controlPersist",
-      message: "ControlPersist is yes, no, or a time such as 600 or 10m.",
+      message: "ControlPersist is yes, no, or a time such as 600 or 10m, up to 2147483647 seconds.",
     });
   }
   block.forwards.forEach((f, i) => {
@@ -281,7 +296,7 @@ export function sshCommand(block: HostBlock): string {
   }
   if (block.controlMaster) args.push("-o", shellQuote(`ControlMaster=${block.controlMaster}`));
   if (block.controlPath.trim() !== "") args.push("-o", `ControlPath=${shellQuote(block.controlPath.trim())}`);
-  if (block.controlPersist.trim() !== "") {
+  if (block.controlPersist.trim() !== "" && validControlPersist(block.controlPersist)) {
     args.push("-o", shellQuote(`ControlPersist=${block.controlPersist.trim()}`));
   }
   if (block.strictHostKeyChecking) {

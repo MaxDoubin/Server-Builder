@@ -279,4 +279,26 @@ assert.deepStrictEqual(buildIperf3Parts(opts({ host: "h", duration: "30", parall
 assert.strictEqual(buildIperf3Command(opts({ role: "server", port: "05201" })), "iperf3 -s");
 assert.strictEqual(buildIperf3Command(opts({ host: "h", duration: "010" })), "iperf3 -c h");
 
+// -w is a socket buffer: iperf3 rejects more than MAX_TCP_BUFFER (512 MiB, iperf.h), and unit_atof reads K, M, G, T as powers of 1024.
+for (const good of ["512M", "512m", "524288K", "0.5G", "536870912", "256M", "64K", "1.5M", "0"]) {
+  const r = buildIperf3Parts(opts({ host: "h", window: good }));
+  assert.ok(r.parts.includes(`-w ${good}`) || r.parts.join(" ").includes(`-w ${good}`), `window ${good} kept: ${r.parts.join(" ")}`);
+  assert.deepStrictEqual(r.ignored, [], `window ${good} reports nothing`);
+}
+for (const bad of ["513M", "1G", "1T", "524289K", "536870913", "0.51G", "abc", "-1M", "5X", "1e3"]) {
+  const r = buildIperf3Parts(opts({ host: "h", window: bad }));
+  assert.ok(!r.parts.join(" ").includes("-w"), `window ${bad} left out: ${r.parts.join(" ")}`);
+  assert.strictEqual(r.ignored.length, 1, `window ${bad} reported`);
+}
+// A bandwidth that iperf3 would not read as a rate is reported rather than dropped silently.
+assert.ok(buildIperf3Command(opts({ host: "h", bandwidth: "100M" })).includes("-b 100M"));
+assert.ok(buildIperf3Command(opts({ host: "h", protocol: "udp", bandwidth: "2.5G" })).includes("-b 2.5G"));
+for (const bad of ["fast", "10 M", "-5M", "M", "1e3"]) {
+  for (const protocol of ["tcp", "udp"] as const) {
+    const r = buildIperf3Parts(opts({ host: "h", protocol, bandwidth: bad }));
+    assert.ok(!r.parts.includes("-b") && !r.parts.some((p) => p.startsWith("-b ")), `bandwidth ${bad} ${protocol} left out`);
+    assert.strictEqual(r.ignored.length, 1, `bandwidth ${bad} ${protocol} reported`);
+  }
+}
+
 console.log("iperf3-command-builder: verifier reference cases passed");
