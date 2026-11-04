@@ -401,6 +401,31 @@ t("verifier: IPv4-only commands at a small inner MTU", () => {
   assert.equal(c.cisco, "interface Tunnel1\n ip mtu 546\n ip tcp adjust-mss 506");
 });
 
+/* WireGuard pads each packet to a multiple of 16 bytes, but both the Linux module
+ * (drivers/net/wireguard/send.c, calculate_skb_padding) and wireguard-go
+ * (device/send.go, calculatePaddingSize) clamp the padded size to the interface
+ * MTU. This ports that rule and checks, for budgets that are and are not a
+ * multiple of 16, that no packet up to the computed inner MTU makes an outer
+ * packet bigger than the budget, and that one byte more would not fit. */
+t("WireGuard: padding is clamped to the interface MTU, so the fixed overhead holds on unaligned links", () => {
+  const padded = (len: number, mtu: number) => Math.min(mtu, Math.ceil(len / 16) * 16);
+  for (const [outer, ip] of [["ipv4", 20], ["ipv6", 40]] as const) {
+    for (const budget of [1500, 1492, 1480, 1476, 1472, 1460, 1440, 1400, 1399, 1281]) {
+      const r = run(budget, [{ kind: "wireguard", outer }]);
+      const mtu = r.innerMtu;
+      assert.equal(mtu, budget - (ip + 8 + 32), `overhead for ${outer} on ${budget}`);
+      for (let len = 1; len <= mtu; len++) {
+        const outerPacket = ip + 8 + 32 + padded(len, mtu);
+        assert.ok(outerPacket <= budget, `${outer} ${budget}: inner ${len} makes a ${outerPacket} byte packet`);
+      }
+      // A full sized packet carries no padding at all, which is the claim in the row note.
+      assert.equal(ip + 8 + 32 + padded(mtu, mtu), budget);
+    }
+  }
+  // The case from review: 1492 link, IPv4 outer, inner MTU 1432 stays 1432 (not 1424).
+  assert.equal(run(1492, [{ kind: "wireguard", outer: "ipv4" }]).innerMtu, 1432);
+});
+
 /* Emit the nft rules so the shell step can syntax-check them with nft -c. */
 if (process.env.EMIT_NFT) {
   const c = clampCommands(1432, 1392, 1372, "wg0", "Tunnel0");

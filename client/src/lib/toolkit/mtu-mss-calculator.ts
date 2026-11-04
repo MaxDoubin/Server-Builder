@@ -410,6 +410,12 @@ export function computeStack(input: StackInput): StackResult {
         rowWarnings.push(`PPPoE is a session over Ethernet, and ${prevTitle} does not carry Ethernet frames.`);
       }
       if (layer.kind === "wireguard") {
+        // The protocol text says to pad to a multiple of 16, but the implementations
+        // clamp the padded size to the interface MTU: calculate_skb_padding in the
+        // Linux module (drivers/net/wireguard/send.c) and calculatePaddingSize in
+        // wireguard-go (device/send.go) both take min(mtu, ALIGN(len, 16)). A
+        // packet of the computed inner MTU therefore gets no padding, and the
+        // overhead stays 60 or 80 bytes on links that are not a multiple of 16.
         note = "WireGuard pads to a multiple of 16 bytes but never past the tunnel MTU, so a full sized packet carries no padding and the overhead is fixed.";
       }
       if (layer.kind === "vxlan") {
