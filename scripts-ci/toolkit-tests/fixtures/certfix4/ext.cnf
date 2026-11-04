@@ -13,3 +13,8 @@ keyUsage = critical,keyAgreement,encipherOnly,decipherOnly
 subjectAltName = DNS:ka.example.com,IP:2001:db8:0:0:1:0:0:1,IP:10.0.0.1,email:ops@example.com
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid
+[rollover_noski]
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,keyCertSign,cRLSign
+authorityKeyIdentifier = keyid:always
+subjectKeyIdentifier = none

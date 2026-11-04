@@ -371,7 +371,18 @@ export function CertificateDecoder() {
     const c = certs[i];
     if (c.selfSigned) {
       const v = current?.self[i];
-      return v ? { tone: VERIFY_TONE[v.status], text: `Self-signature: ${v.detail}` } : { tone: "info", text: "Checking the self-signature." };
+      if (!v) return { tone: "info", text: "Checking the self-signature." };
+      if (c.selfSignedUnconfirmed && v.status === "invalid") {
+        const next = current?.links[i];
+        if (next && next.status === "valid") {
+          return { tone: "ok", text: `Not self-signed: the key of certificate ${i + 2} signed it, a key rollover. Its own key did not.` };
+        }
+        return {
+          tone: "warn",
+          text: `Self-signature: ${v.detail} The issuer and subject names match, but its own key did not sign it, so an older key probably did (a key rollover) and it is not a self-signed root.`,
+        };
+      }
+      return { tone: VERIFY_TONE[v.status], text: `Self-signature: ${v.detail}` };
     }
     if (i + 1 < certs.length) {
       const v = current?.links[i];
@@ -381,6 +392,14 @@ export function CertificateDecoder() {
     }
     return { tone: "info", text: "Not checked: the issuer's certificate is not in the input." };
   }
+
+  // A same-name last certificate whose own key did not sign it is not a root:
+  // an older key did, and that certificate is missing from the input.
+  const lastIndex = certs.length - 1;
+  const lastCertNotes: Finding[] =
+    lastIndex >= 0 && certs[lastIndex].selfSignedUnconfirmed && current?.self[lastIndex]?.status === "invalid"
+      ? [{ tone: "warn", text: "The last certificate is not a root: its own key did not sign it, so the list stops at a self-issued certificate and the older key's certificate that signed it is missing." }]
+      : [];
 
   const host = exampleHost(certs[0]);
   const commands = [
@@ -499,7 +518,7 @@ export function CertificateDecoder() {
                           {i + 1}. {c.displayName}
                         </span>
                         <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
-                          {c.selfSigned ? "self-signed" : c.selfIssued ? "self-issued" : c.isCA ? "CA" : "end entity"} ·{" "}
+                          {c.selfSigned && !(c.selfSignedUnconfirmed && current?.self[i]?.status === "invalid") ? "self-signed" : c.selfIssued ? "self-issued" : c.isCA ? "CA" : "end entity"} ·{" "}
                           <span className={state === "valid" ? "text-[hsl(var(--brand-signal))]" : state === "expired" ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-amber))]"}>
                             {state.replace(/-/g, " ")}
                           </span>
@@ -519,7 +538,7 @@ export function CertificateDecoder() {
               })}
             </ol>
             <div className="mt-4 space-y-2">
-              <FindingList findings={[...chain.ending, ...chain.notes]} testId="list-chain-ending" />
+              <FindingList findings={[...chain.ending, ...lastCertNotes, ...chain.notes]} testId="list-chain-ending" />
             </div>
             <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
               A matching name and a verified signature show that each certificate was issued by the next. They do not show that the root is

@@ -851,4 +851,27 @@ test("verifier 3: adversarial input never throws", () => {
   }
 });
 
+test("UDP checksums cover exactly the declared length, not trailing bytes", () => {
+  // The hand example: 10-byte datagram from 192.168.1.1 to 192.168.1.2, valid as pasted.
+  const exact = hex("1234 0035 000a 01b4 6869");
+  const base = analyzeTransport({ source: "192.168.1.1", destination: "192.168.1.2", protocol: 17, segment: exact });
+  assert.ok(base.ok && base.valid);
+  // The same datagram with non-zero capture bytes after it must still verify, and the
+  // extra bytes must be reported as left out rather than summed.
+  const padded = hex("1234 0035 000a 01b4 6869 dead beef 0102");
+  const r = analyzeTransport({ source: "192.168.1.1", destination: "192.168.1.2", protocol: 17, segment: padded });
+  assert.ok(r.ok);
+  if (!r.ok || !base.ok) return;
+  assert.equal(r.valid, true);
+  assert.equal(r.computed, base.computed);
+  assert.equal(r.length, 10);
+  assert.ok(r.warnings.some((w) => w.includes("6 bytes after the declared length are not part of the datagram")));
+  // A datagram shorter than its length field is still reported, not trimmed.
+  const short = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 17, segment: hex("0001 0002 0020 0000") });
+  assert.ok(short.ok && short.warnings.some((w) => w.includes("UDP length field says 32 bytes, but 8 were pasted")));
+  // TCP has no length field, so nothing is trimmed.
+  const tcp = analyzeTransport({ source: "1.2.3.4", destination: "1.2.3.4", protocol: 6, segment: new Uint8Array(24) });
+  assert.ok(tcp.ok && tcp.length === 24);
+});
+
 console.log(`ipv4-checksum-calculator: ${passed} tests passed`);

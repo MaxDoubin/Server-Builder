@@ -302,6 +302,31 @@ export function isPublicSuffix(domain: string): boolean {
   return !domain.includes(".") || PUBLIC_SUFFIXES.has(domain);
 }
 
+/*
+  Second-level labels that registries under a country code use for their own
+  suffixes (co.id, com.my, ac.th, gov.pl). The subset above cannot list them
+  all, so a two-label domain of this shape that is not listed is reported as
+  unverified rather than as accepted.
+*/
+const REGISTRY_SECOND_LEVEL = new Set([
+  "com", "net", "org", "edu", "gov", "mil", "int", "info", "biz", "name", "web", "nom", "ltd", "plc", "sch",
+  "ac", "co", "go", "gv", "or", "ne", "ed", "gob", "gen", "firm", "ind", "res", "pro", "mod", "my", "id",
+]);
+
+/**
+ * True when the domain is not in the built-in subset but has the shape of a
+ * registry suffix: a country code under a short or conventional second-level
+ * label. A heuristic over an incomplete list, so it only ever downgrades a
+ * verdict to "unverified"; it never rejects a cookie on its own.
+ */
+export function mayBeUnlistedPublicSuffix(domain: string): boolean {
+  if (domain === "" || isIpAddress(domain) || PUBLIC_SUFFIXES.has(domain)) return false;
+  const labels = domain.split(".");
+  if (labels.length !== 2) return false;
+  const [second, tld] = labels;
+  return tld.length === 2 && (second.length <= 3 || REGISTRY_SECOND_LEVEL.has(second));
+}
+
 /** The registrable domain (eTLD+1) by the subset above, or null for a suffix or an IP. */
 export function registrableDomain(domain: string): string | null {
   if (domain === "" || isIpAddress(domain)) return null;
@@ -575,6 +600,12 @@ export interface CookieReport {
   effective: Effective;
   insights: ValueInsight[];
   authLike: boolean;
+  /**
+   * The Domain attribute is not in the built-in subset of the Public Suffix
+   * List but looks like a registry suffix, so whether a browser accepts it is
+   * not known from here.
+   */
+  suffixUnverified: boolean;
 }
 
 export interface Context {
@@ -693,7 +724,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     rejections.push(
       `It contains the control character 0x${hex2(ctl.code)} at position ${ctl.index + 1}. Section 5.6 step 1 ignores the whole line.`,
     );
-    return { line, source, name: "", value: "", attributes, rejections, findings, effective: empty, insights: [], authLike: false };
+    return { line, source, name: "", value: "", attributes, rejections, findings, effective: empty, insights: [], authLike: false, suffixUnverified: false };
   }
 
   // Steps 2 to 6: the name-value pair.
@@ -935,6 +966,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
   let hostOnly = true;
   let effectiveDomain: string | null = null;
   const rejectionsBeforeDomain = rejections.length;
+  let suffixUnverified = false;
   if (domainAttr !== "") {
     hostOnly = false;
     effectiveDomain = domainAttr;
@@ -970,6 +1002,13 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
   }
 
   const domainRefused = rejections.length > rejectionsBeforeDomain;
+  if (!domainRefused && domainAttr !== "" && mayBeUnlistedPublicSuffix(domainAttr)) {
+    suffixUnverified = true;
+    findings.push({
+      tone: "warn",
+      text: `Domain=${domainAttr} has the shape of a public suffix (a country-code registry label), and this page checks only ${PUBLIC_SUFFIX_SAMPLE_SIZE} suffixes from the Public Suffix List, not all of them. If ${domainAttr} is on the full list, browsers refuse the cookie (section 5.7 step 9). Look it up at publicsuffix.org before relying on it.`,
+    });
+  }
 
   /* ---- steps 11 to 13: path, Secure, secure origin */
   const pathFromAttribute = lastPath !== null;
@@ -1093,6 +1132,7 @@ export function analyzeSetCookie(source: string, line: number, ctx: Context): Co
     },
     insights,
     authLike,
+    suffixUnverified,
   });
 
   // An empty pair is refused outright, so advice about its flags is noise.

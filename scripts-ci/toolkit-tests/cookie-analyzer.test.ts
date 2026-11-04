@@ -10,6 +10,7 @@ import {
   isImfFixdate,
   looksLikeAuthName,
   isPublicSuffix,
+  mayBeUnlistedPublicSuffix,
   MAX_COOKIES,
   MAX_FINDINGS,
   MAX_INPUT_CHARS,
@@ -824,6 +825,30 @@ t("V3: seeded random fuzz of the paste parser never throws and respects the caps
     assert.ok(r.reports.length <= MAX_COOKIES);
     for (const rep of r.reports) assert.ok(rep.findings.length <= MAX_FINDINGS + 1);
   }
+});
+
+t("a Domain shaped like a registry suffix is reported as unverified, not as accepted", () => {
+  // co.id is on the Public Suffix List, and the built-in subset does not list it.
+  assert.ok(!isPublicSuffix("co.id"));
+  assert.ok(mayBeUnlistedPublicSuffix("co.id"));
+  assert.ok(mayBeUnlistedPublicSuffix("com.my"));
+  assert.ok(mayBeUnlistedPublicSuffix("ac.th"));
+  // Listed suffixes, ordinary registrable domains, single labels and IPs are not flagged.
+  assert.ok(!mayBeUnlistedPublicSuffix("co.uk"));
+  assert.ok(!mayBeUnlistedPublicSuffix("example.com"));
+  assert.ok(!mayBeUnlistedPublicSuffix("example.co.id"));
+  assert.ok(!mayBeUnlistedPublicSuffix("com"));
+  assert.ok(!mayBeUnlistedPublicSuffix("10.0.0.1"));
+  const r = a("sid=x; Domain=co.id; Secure; HttpOnly", at("https://shop.co.id/"));
+  assert.equal(r.rejections.length, 0);
+  assert.equal(r.suffixUnverified, true);
+  assert.ok(r.findings.some((f) => f.tone === "warn" && /could not|not all of them|publicsuffix\.org/.test(f.text)));
+  const ordinary = a("sid=x; Domain=example.com; Secure; HttpOnly", at("https://shop.example.com/"));
+  assert.equal(ordinary.suffixUnverified, false);
+  // A listed suffix is still refused outright.
+  const refused = a("sid=x; Domain=co.uk; Secure", at("https://shop.co.uk/"));
+  assert.ok(refused.rejections.length > 0);
+  assert.equal(refused.suffixUnverified, false);
 });
 
 console.log(`cookie-analyzer: ${passed} tests passed`);

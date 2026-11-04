@@ -884,6 +884,34 @@ await test("W8: an issuer whose key ID differs from the next certificate's subje
   assert.ok(r.links[0].findings.some((f) => f.tone === "danger" && /Same name, different key/.test(f.text)));
 });
 
+await test("W6: a same-name certificate without a subject key ID is only probably self-signed", async () => {
+  // Rollover certificate signed by the old root, with an authority key ID and no subject key ID.
+  const [oldRoot] = certs4("oldroot.pem");
+  const [rollover] = certs4("newwithold-noski.pem");
+  assert.equal(rollover.extensions.subjectKeyId, null);
+  assert.notEqual(rollover.extensions.authorityKeyId, null);
+  assert.equal(rollover.selfIssued, true);
+  // The key identifiers cannot say, so the classification is marked unconfirmed.
+  assert.equal(rollover.selfSignedUnconfirmed, true);
+  assert.equal(oldRoot.selfSignedUnconfirmed, false); // AKI equals SKI: confirmed by the identifiers
+  // The signature settles it: not its own key, the old root's key.
+  assert.equal((await verifySignature(rollover.signatureAlgorithm, rollover.publicKey, rollover.tbs, rollover.signature)).status, "invalid");
+  assert.equal((await verifySignature(rollover.signatureAlgorithm, oldRoot.publicKey, rollover.tbs, rollover.signature)).status, "valid");
+  // The text does not claim it is self-signed or that the list ends at a root.
+  const f = reviewCertificate(rollover, NOW);
+  assert.ok(f.some((x) => /^Self-issued, probably self-signed/.test(x.text)));
+  assert.ok(!f.some((x) => /^Self-signed:/.test(x.text)));
+  const ending = analyzeChain([rollover]).ending.map((e) => e.text).join(" ");
+  assert.ok(/shows whether it is a self-signed root or a certificate signed by an older key/.test(ending));
+  assert.ok(!/ends at a self-signed certificate/.test(ending));
+  // With both key IDs present the identifiers decide and no check is needed.
+  const [fullRollover] = certs4("newwithold.pem");
+  assert.equal(fullRollover.selfSignedUnconfirmed, false);
+  // A root that has a subject key ID is settled by the identifiers, so no signature check is needed to call it self-signed.
+  const plainRoot = decodeCertificates(readPemText(readFileSync(FIX4 + "oldroot.pem", "utf8"))).entries[0];
+  assert.ok(plainRoot.ok && plainRoot.cert.selfSigned && !plainRoot.cert.selfSignedUnconfirmed);
+});
+
 console.log(`certificate-decoder: ${passed} tests passed`);
 }
 

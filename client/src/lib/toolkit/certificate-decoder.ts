@@ -97,6 +97,16 @@ export interface CertificateInfo {
    * subject key ID is a key rollover certificate signed by an older key.
    */
   selfSigned: boolean;
+  /**
+   * selfSigned is a guess: the certificate has no subject key ID, so there is
+   * nothing for an authority key ID to be compared with, and the identifiers
+   * cannot show whether another key signed it. Only a signature check against
+   * its own key settles it, and a self-issued rollover certificate signed by
+   * an older key fails that check. A certificate with a subject key ID and no
+   * authority key ID is the ordinary root: RFC 5280 4.2.1.1 lets a CA omit the
+   * authority key ID only when it signed the certificate itself.
+   */
+  selfSignedUnconfirmed: boolean;
   isCA: boolean;
   /** Common name, first DNS name, or the whole subject, with invisible characters escaped. */
   displayName: string;
@@ -213,6 +223,7 @@ export function parseCertificate(der: Uint8Array, label = "CERTIFICATE", allowTr
       sha256: colonHex(sha256(certDer)),
       selfIssued,
       selfSigned: selfIssued && !(aki !== null && ski !== null && aki !== ski),
+      selfSignedUnconfirmed: selfIssued && ski === null,
       isCA,
       displayName: subject.commonNames.length > 0 ? visible(subject.commonNames[0]).text : (dns?.value ?? (subject.rfc4514 || "(empty subject)")),
     };
@@ -483,7 +494,9 @@ export function reviewCertificate(cert: CertificateInfo, nowMs: number): Finding
     out.push({ tone: "info", text: "OCSP Must-Staple is set: a client that honors it rejects this certificate unless the server staples a fresh OCSP response." });
   }
 
-  if (cert.selfSigned) {
+  if (cert.selfSignedUnconfirmed) {
+    out.push({ tone: "info", text: "Self-issued, probably self-signed: the issuer and subject are the same name, but there is no authority and subject key ID pair to show whether another key signed it. Its signature check against its own key settles it. If that check passes, it is trusted only where it is installed as a trust anchor; if it fails, an older key signed it, as when a CA rolls its key." });
+  } else if (cert.selfSigned) {
     out.push({ tone: "info", text: "Self-signed: the issuer and subject are the same name and the key identifiers do not point to another key. It is trusted only where it is installed as a trust anchor." });
   } else if (cert.selfIssued) {
     out.push({ tone: "info", text: "Self-issued but signed by a different key: the issuer and subject are the same name, while the authority key ID differs from the subject key ID. A CA issues this kind of certificate to link an old key to a new one when it rolls its key." });
@@ -568,7 +581,12 @@ export function analyzeChain(certs: CertificateInfo[]): ChainReport {
   }
 
   const last = certs[certs.length - 1];
-  if (last.selfSigned) {
+  if (last.selfSignedUnconfirmed) {
+    ending.push({
+      tone: "info",
+      text: `The list ends at ${last.displayName}, whose issuer and subject are the same name. Its signature check against its own key shows whether it is a self-signed root or a certificate signed by an older key that is not in the list.`,
+    });
+  } else if (last.selfSigned) {
     ending.push({
       tone: "info",
       text: `The list ends at a self-signed certificate, ${last.displayName}. ${certs.length > 1 ? "Servers normally leave the root out: a client must already trust it, and sending it only adds bytes to every handshake." : "It is trusted only where someone installed it as a trust anchor."}`,

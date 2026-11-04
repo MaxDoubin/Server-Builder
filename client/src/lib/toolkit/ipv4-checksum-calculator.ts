@@ -695,7 +695,8 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
   const dst = parseIpv4(input.destination, "destination");
   if (!dst.ok) return dst;
 
-  const { protocol, segment } = input;
+  const { protocol } = input;
+  let segment = input.segment;
   const isTcp = protocol === 6;
   const minimum = isTcp ? 20 : 8;
   if (segment.length < minimum) {
@@ -711,6 +712,23 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
     };
   }
 
+  /*
+    RFC 768: a UDP checksum covers the pseudo-header, the UDP header and the
+    data, which is exactly the number of bytes the length field names. Bytes
+    pasted after that (Ethernet padding, trailing capture data) are not part
+    of the datagram, so they are dropped here rather than summed.
+  */
+  const trimNotes: string[] = [];
+  if (!isTcp) {
+    const declared = (segment[4] << 8) | segment[5];
+    if (declared >= 8 && declared < segment.length) {
+      trimNotes.push(
+        `The UDP length field says ${byteCount(declared)} and ${segment.length} were pasted. The ${byteCount(segment.length - declared)} after the declared length ${segment.length - declared === 1 ? 'is' : 'are'} not part of the datagram (Ethernet padding or trailing capture data), so they are left out of the checksum.`,
+      );
+      segment = segment.slice(0, declared);
+    }
+  }
+
   const override = input.lengthOverride;
   if (override !== null && override !== undefined) {
     if (!Number.isInteger(override) || override < 0 || override > 0xffff) {
@@ -719,7 +737,7 @@ export function analyzeTransport(input: TransportInput): TransportOutcome {
   }
   const length = override ?? segment.length;
 
-  const warnings: string[] = [];
+  const warnings: string[] = [...trimNotes];
   let dataOffset = 20;
   if (isTcp) {
     dataOffset = (segment[12] >> 4) * 4;

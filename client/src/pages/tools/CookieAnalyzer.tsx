@@ -148,6 +148,7 @@ function shortValue(value: string): string {
 
 function CookieCard({ report, host }: { report: CookieReport; host: string | null }) {
   const refused = report.rejections.length > 0;
+  const unverified = !refused && report.suffixUnverified;
   const rows = report.attributes.slice(0, MAX_ATTRIBUTE_ROWS);
   // The panel heading is uppercase and letter-spaced and cannot wrap, so the
   // name, which can be 4 KB, gets its own heading that breaks anywhere.
@@ -157,10 +158,16 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
       <h3 className="mb-3 break-all font-mono-tight text-sm text-[hsl(var(--brand-bone))]">{shownName || "(no name)"}</h3>
       <div
         data-testid={`text-verdict-${report.line}`}
-        className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : TONE_STYLE.ok}`}
+        className={`break-words rounded-lg border p-3 font-mono-tight text-xs leading-relaxed ${refused ? TONE_STYLE.danger : unverified ? TONE_STYLE.warn : TONE_STYLE.ok}`}
       >
         <div className="uppercase tracking-[0.24em]">
-          {refused ? "Refused by the browser" : report.effective.lifetime.kind === "delete" ? "Accepted as a deletion" : "Stored by the browser"}
+          {refused
+            ? "Refused by the browser"
+            : unverified
+              ? "Stored, unless the Domain is a public suffix"
+              : report.effective.lifetime.kind === "delete"
+                ? "Accepted as a deletion"
+                : "Stored by the browser"}
         </div>
         {refused ? (
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -170,7 +177,7 @@ function CookieCard({ report, host }: { report: CookieReport; host: string | nul
           </ul>
         ) : (
           <p className="mt-1 text-[hsl(var(--brand-bone-dim))]">
-            Nothing in RFC 6265bis makes a browser drop this line{host ? "" : ", as far as can be judged without the response URL"}
+            {unverified ? "The Domain looks like a registry suffix that this page cannot rule out, and a browser refuses one. Apart from that, nothing" : "Nothing"} in RFC 6265bis makes a browser drop this line{host ? "" : ", as far as can be judged without the response URL"}
             {report.effective.lifetime.kind === "delete" ? ". Its lifetime has already ended, so it removes any stored cookie with the same name, Domain and Path instead of adding one." : "."}
           </p>
         )}
