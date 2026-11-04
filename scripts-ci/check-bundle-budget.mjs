@@ -237,8 +237,17 @@ const INDEX = path.join(DIST, "index.html");
  * surface each: the tools themselves are lazy chunks, so the entry carries
  * only their route, lazy import and hover-prefetch glue, which is the floor
  * for a routed page rather than anything that ought to have been lazy.
+ *
+ * 765 KB, raised from 740 by the fifty-four-tool batch at 760.9. Twenty point
+ * nine kilobytes for fifty-four routes is about four tenths of a kilobyte a
+ * tool, cheaper than the sixty-seven hundredths the fifteen-tool batch cost.
+ * The reasoning is the same: the pages and their notes are lazy chunks (the
+ * notes ride in ToolShell), so the entry carries only each tool's route, lazy
+ * import, hover-prefetch row and registry entry. The four kilobytes above the
+ * measurement are for catching an accident, not for the next batch, which
+ * will measure its own cost and raise this again.
  */
-const BUDGET_BYTES = 740 * 1024;
+const BUDGET_BYTES = 765 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

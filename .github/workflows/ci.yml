@@ -819,6 +819,14 @@ jobs:
       - name: Afterburner measurements and block code
         run: npx tsx scripts-ci/check-afterburner.ts
 
+      # The logic behind the /tools pages. Each tool was checked by a second
+      # reader against the standard it implements, and those checks are the
+      # files in scripts-ci/toolkit-tests, one per tool: published vectors,
+      # worked examples, boundary values, malformed input and, for the
+      # parsers, structured fuzzing. Each file runs in its own process.
+      - name: Toolkit known-answer tests
+        run: npx tsx scripts-ci/run-toolkit-tests.ts
+
       # What free() gives back. The model reasons in regions, a top chunk and
       # a count of pinned pages, so the gate lays the heap out and walks it a
       # page at a time from the pages rather than from the survivors, and
