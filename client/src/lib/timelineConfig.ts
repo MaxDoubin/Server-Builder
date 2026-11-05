@@ -132,6 +132,21 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Guides freshmen through the course's hands-on labs and helps students prepare for the National Cyber League.",
       },
       {
+        title: "Interclub Council member, South CTA",
+        when: "2026 to present",
+        description: "Serves on the Interclub Council at South Career and Technical Academy.",
+      },
+      {
+        title: "Cybersecurity Committee chair, SkillsUSA",
+        when: "2026 to present",
+        description: "Chairs the cybersecurity committee for SkillsUSA.",
+      },
+      {
+        title: "Chief of Information Technology, SkillsUSA",
+        when: "2026 to present",
+        description: "Serves as Chief of Information Technology for SkillsUSA.",
+      },
+      {
         title: PRESS.headline,
         when: PRESS.displayDate,
         description: `Individually featured and interviewed in ${PRESS.outlet}'s coverage of CCSD magnet programs after South CTA's national NCL finish, reported by ${PRESS.author}.`,

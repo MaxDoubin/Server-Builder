@@ -231,6 +231,21 @@ export const siteConfig = {
       ],
     },
     {
+      title: "Interclub Council Member",
+      org: "South CTA",
+      details: ["Has served on the school's Interclub Council since 2026"],
+    },
+    {
+      title: "Cybersecurity Committee Chair",
+      org: "SkillsUSA",
+      details: ["Has chaired the cybersecurity committee since 2026"],
+    },
+    {
+      title: "Chief of Information Technology",
+      org: "SkillsUSA",
+      details: ["Has served as Chief of Information Technology since 2026"],
+    },
+    {
       title: "Commissioner",
       org: "City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
       details: [
