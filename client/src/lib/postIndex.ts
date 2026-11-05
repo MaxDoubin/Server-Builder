@@ -47,6 +47,7 @@ export const postIndex: PostMeta[] = [
     tags: ["hardware","homelab","troubleshooting","security"],
     excerpt: "Google ended Jamboard support in October 2024. A plain USB keyboard unlocked the locked-down Android 7 board with no flashing, root or adb. What worked, what did not, and what to be careful of.",
     coverImage: "/images/blog/rescue-a-google-jamboard-without-flashing.jpg",
+    coverCredit: {"author":"RoodyAlien","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Jamboard3.jpg"},
     wordCount: 1427,
   },
   {
@@ -3042,6 +3043,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","cisco","security","learning"],
     excerpt: "A wildcard mask is the subnet mask inverted: 0 bits must match, 1 bits are ignored. How to calculate one, and what a mistyped mask silently matches.",
     coverImage: "/images/blog/cisco-acl-wildcard-mask.jpg",
+    coverCredit: {"author":"The Serial Port","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_pix515e_right.jpeg"},
     wordCount: 3417,
   },
   {
@@ -3051,6 +3053,7 @@ export const postIndex: PostMeta[] = [
     tags: ["dell","servers","troubleshooting","hardware"],
     excerpt: "What Dell's MEM0701, MEM0702 and MEM0802 mean, why one correctable error rarely means a bad DIMM, and why a restart for Post Package Repair comes first.",
     coverImage: "/images/blog/dell-mem0701-correctable-memory-error.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
     wordCount: 3447,
   },
   {
@@ -3060,6 +3063,7 @@ export const postIndex: PostMeta[] = [
     tags: ["fortinet","firewall","security","networking"],
     excerpt: "Local-in policies run before trusted hosts and have no implicit deny. See the two-rule lockdown Fortinet gives for CVE-2022-40684 and CVE-2024-55591.",
     coverImage: "/images/blog/fortigate-local-in-policy-trusted-hosts.jpg",
+    coverCredit: {"author":"ProjectManhattan","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Network_cables_and_switch.jpg"},
     wordCount: 3474,
   },
   {
@@ -3069,6 +3073,7 @@ export const postIndex: PostMeta[] = [
     tags: ["email","security","dns","troubleshooting"],
     excerpt: "Gmail's 550 5.7.26 covers three failures: no SPF or DKIM pass, an SPF hard fail, or a DMARC rejection. Read the bounce text, then fix the right record.",
     coverImage: "/images/blog/gmail-550-5-7-26.jpg",
+    coverCredit: {"author":"Michael Romanov","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:UK_envelopes_with_cut-outs.jpg"},
     wordCount: 3406,
   },
   {
@@ -3078,6 +3083,7 @@ export const postIndex: PostMeta[] = [
     tags: ["servers","troubleshooting","hardware","homelab"],
     excerpt: "HPE's documented fix for the iLO 4 Embedded Flash/SD-CARD error: firmware minimums, five NAND format methods, the AC power pull and when it is the board.",
     coverImage: "/images/blog/ilo-4-embedded-flash-sd-card-failed.jpg",
+    coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg"},
     wordCount: 3403,
   },
   {
@@ -3087,6 +3093,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","firewall","troubleshooting","fortinet"],
     excerpt: "How to read IKEv2 NO_PROPOSAL_CHOSEN errors on FortiGate, strongSwan, pfSense and Cisco, and which transforms, DH groups and PFS settings must match.",
     coverImage: "/images/blog/ipsec-no-proposal-chosen.jpg",
+    coverCredit: {"author":"ShakataGaNai","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_ASA_5510.jpg"},
     wordCount: 3466,
   },
   {
@@ -3096,6 +3103,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","switching","homelab","security"],
     excerpt: "Build RouterOS 7 trunk and access ports with bridge VLAN filtering, keep management access with Safe Mode, and check which chips offload it in hardware.",
     coverImage: "/images/blog/mikrotik-bridge-vlan-filtering.jpg",
+    coverCredit: {"author":"Raimond Spekking","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:MikroTik_RouterBoard_RB260GS-7382.jpg"},
     wordCount: 3459,
   },
   {
@@ -3105,6 +3113,7 @@ export const postIndex: PostMeta[] = [
     tags: ["proxmox","virtualization","operations","homelab"],
     excerpt: "How to upgrade Proxmox VE 8 to 9 with pve8to9 and trixie .sources repos, one node at a time, plus the sysctl.conf, cgroup v1 and NIC changes that break hosts.",
     coverImage: "/images/blog/proxmox-ve-8-to-9-upgrade.jpg",
+    coverCredit: {"author":"Helpameout","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wikimedia_Servers-0001_42.jpg"},
     wordCount: 3516,
   },
   {
@@ -3114,6 +3123,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","security","troubleshooting","operations"],
     excerpt: "How to read an SELinux avc: denied record, tell a label from a port or boolean, fix it with semanage and restorecon, and when audit2allow is acceptable.",
     coverImage: "/images/blog/selinux-avc-denied.jpg",
+    coverCredit: {"author":"Lacz02","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Padlock_with_chain.jpg"},
     wordCount: 3483,
   },
   {
@@ -3123,6 +3133,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","hardware","homelab"],
     excerpt: "Which WD, Seagate and Toshiba models are SMR, why the Linux zoned flag cannot show it, and how DM-SMR stretched one ZFS resilver to nearly 230 hours.",
     coverImage: "/images/blog/smr-vs-cmr-hard-drives.jpg",
+    coverCredit: {"author":"Gunnar Wolf","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:3.5_inch_hard_disk_drive,_side_view.jpg"},
     wordCount: 3472,
   },
   {
@@ -3132,6 +3143,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","cisco","security","troubleshooting"],
     excerpt: "Which OpenSSH releases dropped group1, group14-sha1 and ssh-rsa, the exact -o options and Host block for one switch, and the IOS 15 and IOS XE fixes.",
     coverImage: "/images/blog/ssh-no-matching-key-exchange-method-cisco.jpg",
+    coverCredit: {"author":"Jemimus","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_switch_stack_-_IMG_0691.jpg"},
     wordCount: 3465,
   },
   {
@@ -3141,6 +3153,7 @@ export const postIndex: PostMeta[] = [
     tags: ["servers","hardware","homelab","troubleshooting"],
     excerpt: "Why a Supermicro BMC sends quiet fans to full speed and back every few seconds, and how to lower the IPMI fan thresholds with ipmitool for Noctua-class fans.",
     coverImage: "/images/blog/supermicro-fans-ramping-up-and-down.jpg",
+    coverCredit: {"author":"Andries L Steenkamp","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:When_your_computer_needs_a_turbo_fan..jpg"},
     wordCount: 3463,
   },
   {
@@ -3150,6 +3163,7 @@ export const postIndex: PostMeta[] = [
     tags: ["servers","security","homelab","troubleshooting"],
     excerpt: "The login is ADMIN, but boards since late 2019 ship a unique 10-letter sticker password. Where it is, how to reset it with ipmicfg, and why 47 bits is thin.",
     coverImage: "/images/blog/supermicro-ipmi-default-password.jpg",
+    coverCredit: {"author":"Phiarc","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Supermicro_X10SLM%2B-LN4F_server_motherboard_IO_panel_detail_view.jpg"},
     wordCount: 3446,
   },
   {
@@ -3159,6 +3173,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","wireless","homelab","troubleshooting"],
     excerpt: "How to adopt a UniFi device across VLANs: set-inform over SSH, default logins, DHCP option 43 hex, the unifi DNS name and the ports to open.",
     coverImage: "/images/blog/unifi-set-inform-adoption.jpg",
+    coverCredit: {"author":"TaurusEmerald","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Ubiquiti_UniFi_Express_7.jpg"},
     wordCount: 3448,
   },
   {
@@ -3168,6 +3183,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","troubleshooting","linux","homelab"],
     excerpt: "What WireGuard's \"did not complete after 5 seconds\" log means, how to tell whether packets reach the server, and which port, key, clock or NAT fault causes it.",
     coverImage: "/images/blog/wireguard-handshake-did-not-complete.jpg",
+    coverCredit: {"author":"RAIL P (RAIL.PHOTOGRAPHY)","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Raspberry_Pi_4_on_a_network_switch.jpg"},
     wordCount: 3459,
   },
 ];
@@ -3188,7 +3204,7 @@ export const POST_COUNT_SPELLED = "three hundred and twenty four";
 export const CITATION_COUNT = 2751;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 181;
+export const ATTRIBUTION_URL_COUNT = 196;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2913;
+export const CHECKED_URL_COUNT = 2926;
