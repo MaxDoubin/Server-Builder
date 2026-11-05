@@ -57,6 +57,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Google ended Jamboard support in October 2024. A plain USB keyboard unlocked the locked-down Android 7 board with no flashing, root or adb. What worked, what did not, and what to be careful of.",
     coverImage: "/images/blog/rescue-a-google-jamboard-without-flashing.jpg",
+    coverCredit: {
+      author: "RoodyAlien",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Jamboard3.jpg",
+    },
     content: `## The short answer
 
 A Google Jamboard can be turned into a usable Android screen without flashing anything. I did it on the 55 inch model, which BenQ builds and Google codenamed \`baracus\`. Plug a plain wired USB keyboard into one of the two side USB-A ports. The touch-only kiosk keeps Settings away from a finger, but a keyboard gets real focus in it. Turn on Unknown sources, put two launcher APKs on a USB stick, install them and set one as Home. That needed no root, no adb and no new operating system. On my board, on July 19, it took 78 minutes of dead ends to find the keyboard route and then 32 minutes to a working launcher. The board stays on stock Android 7.0 with a 2020 security patch, so it has to stay off the open internet.
@@ -50787,6 +50793,12 @@ exactly one field.
     excerpt:
       "A wildcard mask is the subnet mask inverted: 0 bits must match, 1 bits are ignored. How to calculate one, and what a mistyped mask silently matches.",
     coverImage: "/images/blog/cisco-acl-wildcard-mask.jpg",
+    coverCredit: {
+      author: "The Serial Port",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_pix515e_right.jpeg",
+    },
     content: `
 ## The short answer
 
@@ -51039,6 +51051,12 @@ Sequence numbers keep this editable. Cisco's [refining guide](https://www.cisco.
     excerpt:
       "What Dell's MEM0701, MEM0702 and MEM0802 mean, why one correctable error rarely means a bad DIMM, and why a restart for Post Package Repair comes first.",
     coverImage: "/images/blog/dell-mem0701-correctable-memory-error.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
+    },
     content: `
 ## The short answer
 
@@ -51217,6 +51235,12 @@ A memory tester helps less than it sounds. [MemTest86's ECC page](https://www.me
     excerpt:
       "Local-in policies run before trusted hosts and have no implicit deny. See the two-rule lockdown Fortinet gives for CVE-2022-40684 and CVE-2024-55591.",
     coverImage: "/images/blog/fortigate-local-in-policy-trusted-hosts.jpg",
+    coverCredit: {
+      author: "ProjectManhattan",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Network_cables_and_switch.jpg",
+    },
     content: `
 ## The short answer
 
@@ -51524,6 +51548,12 @@ The [firewall policy design article](/blog/firewall-policy-design) covers where 
     excerpt:
       "Gmail's 550 5.7.26 covers three failures: no SPF or DKIM pass, an SPF hard fail, or a DMARC rejection. Read the bounce text, then fix the right record.",
     coverImage: "/images/blog/gmail-550-5-7-26.jpg",
+    coverCredit: {
+      author: "Michael Romanov",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:UK_envelopes_with_cut-outs.jpg",
+    },
     content: `
 ## The short answer
 
@@ -51735,6 +51765,12 @@ If you only sent a message and do not control the domain, Google's [guidance](ht
     excerpt:
       "HPE's documented fix for the iLO 4 Embedded Flash/SD-CARD error: firmware minimums, five NAND format methods, the AC power pull and when it is the board.",
     coverImage: "/images/blog/ilo-4-embedded-flash-sd-card-failed.jpg",
+    coverCredit: {
+      author: "Btrs",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg",
+    },
     content: `
 ## The short answer
 
@@ -51937,6 +51973,12 @@ For a used purchase, the iLO login page is a free test. A Gen8 or Gen9 unit on 2
     excerpt:
       "How to read IKEv2 NO_PROPOSAL_CHOSEN errors on FortiGate, strongSwan, pfSense and Cisco, and which transforms, DH groups and PFS settings must match.",
     coverImage: "/images/blog/ipsec-no-proposal-chosen.jpg",
+    coverCredit: {
+      author: "ShakataGaNai",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_ASA_5510.jpg",
+    },
     content: `
 ## The short answer
 
@@ -52197,6 +52239,12 @@ The 7.4.2 reference shows \`ike-version\` defaulting to 1, so set it explicitly,
     excerpt:
       "Build RouterOS 7 trunk and access ports with bridge VLAN filtering, keep management access with Safe Mode, and check which chips offload it in hardware.",
     coverImage: "/images/blog/mikrotik-bridge-vlan-filtering.jpg",
+    coverCredit: {
+      author: "Raimond Spekking",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:MikroTik_RouterBoard_RB260GS-7382.jpg",
+    },
     content: `
 ## The short answer
 
@@ -52433,6 +52481,12 @@ L3 hardware offloading, which the [Prestera page](https://manual.mikrotik.com/do
     excerpt:
       "How to upgrade Proxmox VE 8 to 9 with pve8to9 and trixie .sources repos, one node at a time, plus the sysctl.conf, cgroup v1 and NIC changes that break hosts.",
     coverImage: "/images/blog/proxmox-ve-8-to-9-upgrade.jpg",
+    coverCredit: {
+      author: "Helpameout",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wikimedia_Servers-0001_42.jpg",
+    },
     content: `
 ## The short answer
 
@@ -52658,6 +52712,12 @@ The [administration guide](https://pve.proxmox.com/pve-docs/chapter-sysadmin.htm
     excerpt:
       "How to read an SELinux avc: denied record, tell a label from a port or boolean, fix it with semanage and restorecon, and when audit2allow is acceptable.",
     coverImage: "/images/blog/selinux-avc-denied.jpg",
+    coverCredit: {
+      author: "Lacz02",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Padlock_with_chain.jpg",
+    },
     content: `
 ## The short answer
 
@@ -52921,6 +52981,12 @@ The \`-a\` option reads the whole audit and message log; the manual's \`-l\` opt
     excerpt:
       "Which WD, Seagate and Toshiba models are SMR, why the Linux zoned flag cannot show it, and how DM-SMR stretched one ZFS resilver to nearly 230 hours.",
     coverImage: "/images/blog/smr-vs-cmr-hard-drives.jpg",
+    coverCredit: {
+      author: "Gunnar Wolf",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:3.5_inch_hard_disk_drive,_side_view.jpg",
+    },
     content: `
 ## The short answer
 
@@ -53143,6 +53209,12 @@ One [TrueNAS forum reply](https://forums.truenas.com/t/cant-trim-pool-of-smr-dri
     excerpt:
       "Which OpenSSH releases dropped group1, group14-sha1 and ssh-rsa, the exact -o options and Host block for one switch, and the IOS 15 and IOS XE fixes.",
     coverImage: "/images/blog/ssh-no-matching-key-exchange-method-cisco.jpg",
+    coverCredit: {
+      author: "Jemimus",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_switch_stack_-_IMG_0691.jpg",
+    },
     content: `
 ## The short answer
 
@@ -53393,6 +53465,12 @@ Keep the weakened options on one admin host, limited to a \`Host\` block for tha
     excerpt:
       "Why a Supermicro BMC sends quiet fans to full speed and back every few seconds, and how to lower the IPMI fan thresholds with ipmitool for Noctua-class fans.",
     coverImage: "/images/blog/supermicro-fans-ramping-up-and-down.jpg",
+    coverCredit: {
+      author: "Andries L Steenkamp",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:When_your_computer_needs_a_turbo_fan..jpg",
+    },
     content: `
 ## The short answer
 
@@ -53577,6 +53655,12 @@ A workable routine is to set the thresholds, run \`ipmitool mc reset cold\`, rea
     excerpt:
       "The login is ADMIN, but boards since late 2019 ship a unique 10-letter sticker password. Where it is, how to reset it with ipmicfg, and why 47 bits is thin.",
     coverImage: "/images/blog/supermicro-ipmi-default-password.jpg",
+    coverCredit: {
+      author: "Phiarc",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Supermicro_X10SLM%2B-LN4F_server_motherboard_IO_panel_detail_view.jpg",
+    },
     content: `
 ## The short answer
 
@@ -53794,6 +53878,12 @@ The remaining steps:
     excerpt:
       "How to adopt a UniFi device across VLANs: set-inform over SSH, default logins, DHCP option 43 hex, the unifi DNS name and the ports to open.",
     coverImage: "/images/blog/unifi-set-inform-adoption.jpg",
+    coverCredit: {
+      author: "TaurusEmerald",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Ubiquiti_UniFi_Express_7.jpg",
+    },
     content: `
 ## The short answer
 
@@ -53997,6 +54087,12 @@ Public keys go in the same area. Ubiquiti's [SSH keys article](https://help.ui.c
     excerpt:
       "What WireGuard's \"did not complete after 5 seconds\" log means, how to tell whether packets reach the server, and which port, key, clock or NAT fault causes it.",
     coverImage: "/images/blog/wireguard-handshake-did-not-complete.jpg",
+    coverCredit: {
+      author: "RAIL P (RAIL.PHOTOGRAPHY)",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Raspberry_Pi_4_on_a_network_switch.jpg",
+    },
     content: `
 ## The short answer
 
