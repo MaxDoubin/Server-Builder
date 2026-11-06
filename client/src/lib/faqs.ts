@@ -34,7 +34,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What is the National Cyber League, and how did Max Doubin place?",
-    a: "The National Cyber League is a cybersecurity competition for high school and college students in the United States, scored on the Cyber Skyline platform. Competitors work capture the flag style challenges across categories including open source intelligence, cryptography, log analysis, password and hash cracking, network forensics, and web exploitation. Max Doubin placed in the top 1 percent of competitors in the Fall 2025 Individual Game, and helped lead South Career and Technical Academy to a 7th place national finish among high schools with an all-freshman team. In the Fall 2026 season he placed first in the Gymnasium, NCL's preseason practice round, as the first student to reach 100 percent completion with 100 percent accuracy.",
+    a: "The National Cyber League is a cybersecurity competition for high school and college students in the United States, scored on the Cyber Skyline platform. Competitors work capture the flag style challenges across categories including open source intelligence, cryptography, log analysis, password and hash cracking, network forensics, and web exploitation. Max Doubin placed in the top 1 percent of competitors in the Fall 2025 Individual Game, and helped lead South Career and Technical Academy to a 7th place national finish among high schools with an all-freshman team. In the Fall 2026 season he placed first in the Gymnasium, NCL's preseason practice round, ranked 1 of 6,518 and the first student to reach 100 percent completion with 100 percent accuracy.",
   },
   {
     q: "What certifications does Max Doubin hold?",

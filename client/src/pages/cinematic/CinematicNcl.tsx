@@ -194,8 +194,8 @@ export function CinematicNcl() {
               <p>
                 I have competed in the National Cyber League and finished in the
                 top 1 percent of competitors in the Fall 2025 Individual Game. In
-                the Fall 2026 season I placed first in the Gymnasium, the preseason
-                practice round, as the first student to reach 100 percent completion
+                the Fall 2026 season I placed first in the Gymnasium (rank 1 of 6,518), the
+                preseason practice round, as the first student to reach 100 percent completion
                 with 100 percent accuracy. As president of the South CTA Cyber Club,
                 I also helped the school place 7th nationally among high schools in
                 the Fall 2025 Cyber Power Rankings, with an all-freshman team. That
