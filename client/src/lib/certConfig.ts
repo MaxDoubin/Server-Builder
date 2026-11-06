@@ -757,7 +757,7 @@ const GROUPS: CredentialGroup[] = [
     meta: "National Cyber League and CyberWeek@UNLV",
     items: [
       "Top 1% individually, NCL Fall 2025 Individual Game",
-      "1st place, NCL Fall 2026 Gymnasium (preseason)",
+      "1st place, NCL Fall 2026 Gymnasium (preseason), rank 1 of 6,518",
       "1st place, CCSD Capture the Flag at CyberWeek@UNLV, 2026",
     ],
   },

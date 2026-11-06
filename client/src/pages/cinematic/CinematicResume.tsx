@@ -267,8 +267,8 @@ export function CinematicResume() {
                 </h3>
                 <ul className="mt-2 space-y-1">
                   <Bullet>
-                    1st place in the Fall 2026 Gymnasium, the preseason practice round, as the first
-                    student to reach 100 percent completion with 100 percent accuracy
+                    1st place (rank 1 of 6,518) in the Fall 2026 Gymnasium, the preseason practice round,
+                    as the first student to reach 100 percent completion with 100 percent accuracy
                   </Bullet>
                   <Bullet>
                     Top 1 percent of competitors in the Fall 2025 Individual Game

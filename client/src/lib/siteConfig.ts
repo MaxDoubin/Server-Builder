@@ -43,7 +43,7 @@ export const siteConfig = {
       category: "Cybersecurity & Competition",
       items: [
         "1st place in the Clark County School District capture the flag tournament at CyberWeek@UNLV, 2026",
-        "1st place in the National Cyber League Fall 2026 Gymnasium (preseason), the first student to reach 100 percent completion with 100 percent accuracy",
+        "1st place in the National Cyber League Fall 2026 Gymnasium (preseason), rank 1 of 6,518, the first student to reach 100 percent completion with 100 percent accuracy",
         "Top 1 percent of competitors in the National Cyber League Fall 2025 Individual Game",
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "Oracle Cloud Infrastructure Architect Associate, Oracle Multicloud Foundations Associate and Oracle Data Center Operations Foundations Associate (2026)",
@@ -316,7 +316,7 @@ export const siteConfig = {
     {
       title: "1st Place, NCL Fall 2026 Gymnasium",
       description:
-        "Placed first in the National Cyber League's Fall 2026 Gymnasium, the preseason practice round, as the first student to reach 100 percent completion with 100 percent accuracy.",
+        "Placed first in the National Cyber League's Fall 2026 Gymnasium, the preseason practice round, ranked 1 of 6,518 and the first student to reach 100 percent completion with 100 percent accuracy.",
     },
     {
       title: "Keynote Panelist, A4LE Southwest Region Conference",

@@ -63,7 +63,7 @@ export function CinematicHome() {
       },
       award: [
         "1st place · CCSD capture the flag tournament at CyberWeek@UNLV, 2026",
-        "1st place · National Cyber League Fall 2026 Gymnasium",
+        "1st place · National Cyber League Fall 2026 Gymnasium (rank 1 of 6,518)",
         "Top 1% · National Cyber League Fall 2025 Individual Game",
         "South CTA ranked 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
         "#1 Percussionist · State of Nevada, 2024",

@@ -122,7 +122,7 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "1st place, NCL Fall 2026 Gymnasium",
         when: "Fall 2026",
         description:
-          "The first student to reach 100 percent completion with 100 percent accuracy in the National Cyber League's Fall 2026 Gymnasium, the preseason practice round.",
+          "Ranked 1 of 6,518 in the National Cyber League's Fall 2026 Gymnasium, the preseason practice round, and the first student to reach 100 percent completion with 100 percent accuracy.",
         href: "/ncl",
       },
       {
