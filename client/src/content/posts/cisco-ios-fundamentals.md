@@ -5,8 +5,9 @@ Cisco IOS has several privilege levels and configuration modes:
 
 ```
 Router>           # User EXEC mode (read-only)
-Router# enable    # Privileged EXEC mode (full show commands)
-Router# conf t    # Global configuration mode
+Router> enable    # Typed at the user EXEC prompt
+Router#           # Privileged EXEC mode (full show commands)
+Router# conf t    # Enters global configuration mode
 Router(config)#   # Now in global config
 
 Router(config)# interface GigabitEthernet0/0
@@ -17,7 +18,7 @@ Router(config-if)#   # Interface config submode
 
 The prompt character tells you where you are, and reading it correctly saves a lot of confusion. `>` is user EXEC, privilege level 1, where you can look at very little. `#` is privileged EXEC, privilege level 15, where you can see everything and reload the device. IOS actually supports privilege levels 0 through 15 and you can assign individual commands to intermediate levels, which is how you give a helpdesk read access to interface counters without handing over level 15.
 
-The passwords behind those modes are worth getting right on day one. `enable password` stores the string with Type 7 encryption, which is a Vigenere cipher that any online decoder reverses in a second; it exists for shoulder-surfing, not for security. `enable secret` stores a hash instead. `service password-encryption` only upgrades plaintext passwords to Type 7, so it does not help. Use `enable secret` and, on modern IOS, `enable algorithm-type scrypt secret <password>` for a Type 9 hash.
+The passwords behind those modes are worth getting right on day one. `enable password` stores the string in cleartext in the configuration by default. Turning on `service password-encryption` converts it, and the other plaintext passwords in the config, to Type 7, which is a Vigenere-style cipher that any online decoder reverses in a second; it exists for shoulder-surfing, not for security, so it does not really help. `enable secret` stores a hash instead. Use `enable secret` and, on modern IOS, `enable algorithm-type scrypt secret <password>` for a Type 9 hash.
 
 Two lines belong in every device you will ever type on:
 

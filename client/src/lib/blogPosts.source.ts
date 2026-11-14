@@ -40758,8 +40758,11 @@ The fix is Remote File Share, also an Enterprise feature, which tells the iDRAC 
 
 \`\`\`bash
 racadm -r 10.0.10.31 -u lab-admin -p '...' remoteimage -c \\
+  -u isoreader -p '...' \\
   -l //10.0.10.20/isos/ubuntu-24.04-live-server-amd64.iso
 \`\`\`
+
+The \`-u\` and \`-p\` after \`-c\` are the credentials for the share itself, separate from the iDRAC login given before the subcommand.
 
 Pair it with a one-shot boot override so you do not have to catch F11 on the console:
 
@@ -44815,7 +44818,7 @@ Restarting the daemon does not kill established sessions, because each session i
 
 Changing SSH to a non-standard port (e.g., 2222) reduces automated scanning noise significantly. It is security by obscurity and not a substitute for real controls, but it is a low-cost way to reduce log clutter.
 
-Two things bite people here. On distributions that start SSH through systemd socket activation, the \`Port\` directive in \`sshd_config\` is ignored entirely, because systemd owns the listening socket. You change it with a socket override instead:
+Two things bite people here. On distributions that start SSH through systemd socket activation, systemd owns the listening socket, so restarting \`ssh.service\` after editing the \`Port\` directive in \`sshd_config\` leaves it listening on 22. On Ubuntu, \`ssh.socket\` is generated from \`sshd_config\`, so \`Port\` is honored once you run \`systemctl daemon-reload && systemctl restart ssh.socket\`. Where the socket unit is not generated from \`sshd_config\`, you change the port with a socket override instead:
 
 \`\`\`bash
 systemctl edit ssh.socket
@@ -44869,7 +44872,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
 
 **MaxAuthTries counts every key your agent offers.** If your agent holds five identities and the right one is fourth in line, a server set to \`MaxAuthTries 3\` disconnects you before it is tried, and the error says too many authentication failures rather than anything useful. Fix it on the client with \`IdentitiesOnly yes\` and an explicit \`IdentityFile\` in \`~/.ssh/config\`, so only the relevant key is offered.
 
-**Port changed in sshd_config on a socket-activated system.** The daemon restarts cleanly, reports no error, and keeps listening on 22. Edit the socket unit, not the config file.
+**Port changed in sshd_config on a socket-activated system.** The daemon restarts cleanly, reports no error, and keeps listening on 22. On Ubuntu, run \`systemctl daemon-reload\` and restart \`ssh.socket\` so the socket is regenerated from the config; elsewhere, edit the socket unit.
 
 **Port changed without updating SELinux.** sshd refuses to start and the message points at the bind, not at policy. \`semanage port -a\` first.
 
@@ -45049,8 +45052,9 @@ Cisco IOS has several privilege levels and configuration modes:
 
 \`\`\`
 Router>           # User EXEC mode (read-only)
-Router# enable    # Privileged EXEC mode (full show commands)
-Router# conf t    # Global configuration mode
+Router> enable    # Typed at the user EXEC prompt
+Router#           # Privileged EXEC mode (full show commands)
+Router# conf t    # Enters global configuration mode
 Router(config)#   # Now in global config
 
 Router(config)# interface GigabitEthernet0/0
@@ -45061,7 +45065,7 @@ Router(config-if)#   # Interface config submode
 
 The prompt character tells you where you are, and reading it correctly saves a lot of confusion. \`>\` is user EXEC, privilege level 1, where you can look at very little. \`#\` is privileged EXEC, privilege level 15, where you can see everything and reload the device. IOS actually supports privilege levels 0 through 15 and you can assign individual commands to intermediate levels, which is how you give a helpdesk read access to interface counters without handing over level 15.
 
-The passwords behind those modes are worth getting right on day one. \`enable password\` stores the string with Type 7 encryption, which is a Vigenere cipher that any online decoder reverses in a second; it exists for shoulder-surfing, not for security. \`enable secret\` stores a hash instead. \`service password-encryption\` only upgrades plaintext passwords to Type 7, so it does not help. Use \`enable secret\` and, on modern IOS, \`enable algorithm-type scrypt secret <password>\` for a Type 9 hash.
+The passwords behind those modes are worth getting right on day one. \`enable password\` stores the string in cleartext in the configuration by default. Turning on \`service password-encryption\` converts it, and the other plaintext passwords in the config, to Type 7, which is a Vigenere-style cipher that any online decoder reverses in a second; it exists for shoulder-surfing, not for security, so it does not really help. \`enable secret\` stores a hash instead. Use \`enable secret\` and, on modern IOS, \`enable algorithm-type scrypt secret <password>\` for a Type 9 hash.
 
 Two lines belong in every device you will ever type on:
 
@@ -46749,7 +46753,7 @@ The units on \`-C\` are millions of bytes, not mebibytes, so \`-C 100\` rotates 
 
 A few flags I add by reflex. \`-n\` disables name resolution, which stops tcpdump generating its own DNS traffic into your capture. \`-s 0\` sets an unlimited snaplen, though modern tcpdump already defaults to 262144 bytes, which is effectively unlimited for Ethernet. \`-e\` prints the link-layer header, which you need when you are chasing VLAN tags or MAC addresses. Add \`-Z\` if you want it to drop privileges after opening the interface.
 
-Do not use \`-i any\` when Layer 2 matters. On Linux it captures with a synthetic cooked-mode header rather than the real Ethernet header, so MAC addresses and VLAN tags are not there to look at.
+Do not use \`-i any\` when Layer 2 matters. On Linux it captures with a synthetic cooked-mode header rather than the real Ethernet header, which keeps only the sender's link-layer address, so the destination MAC is not there to look at.
 
 ## A worked example
 
