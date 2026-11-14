@@ -98,7 +98,7 @@ Restarting the daemon does not kill established sessions, because each session i
 
 Changing SSH to a non-standard port (e.g., 2222) reduces automated scanning noise significantly. It is security by obscurity and not a substitute for real controls, but it is a low-cost way to reduce log clutter.
 
-Two things bite people here. On distributions that start SSH through systemd socket activation, systemd owns the listening socket, so restarting `ssh.service` after editing the `Port` directive in `sshd_config` leaves it listening on 22. On Ubuntu, `ssh.socket` is generated from `sshd_config`, so `Port` is honored once you run `systemctl daemon-reload && systemctl restart ssh.socket`. Where the socket unit is not generated from `sshd_config`, you change the port with a socket override instead:
+Two things bite people here. On distributions that start SSH through systemd socket activation, systemd owns the listening socket, so restarting `ssh.service` after editing the `Port` directive in `sshd_config` leaves it listening on 22. On Ubuntu 24.04 and later, the socket configuration is generated from `sshd_config`, so `Port` is honored once you run `systemctl daemon-reload && systemctl restart ssh.socket`. Ubuntu 22.10 through 23.10 also use socket activation but with a static `ssh.socket`, so there, and anywhere else the socket is not generated from `sshd_config`, you change the port with a socket override instead:
 
 ```bash
 systemctl edit ssh.socket
@@ -152,7 +152,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
 
 **MaxAuthTries counts every key your agent offers.** If your agent holds five identities and the right one is fourth in line, a server set to `MaxAuthTries 3` disconnects you before it is tried, and the error says too many authentication failures rather than anything useful. Fix it on the client with `IdentitiesOnly yes` and an explicit `IdentityFile` in `~/.ssh/config`, so only the relevant key is offered.
 
-**Port changed in sshd_config on a socket-activated system.** The daemon restarts cleanly, reports no error, and keeps listening on 22. On Ubuntu, run `systemctl daemon-reload` and restart `ssh.socket` so the socket is regenerated from the config; elsewhere, edit the socket unit.
+**Port changed in sshd_config on a socket-activated system.** The daemon restarts cleanly, reports no error, and keeps listening on 22. On Ubuntu 24.04 and later, run `systemctl daemon-reload` and restart `ssh.socket` so the socket is regenerated from the config; on Ubuntu 22.10 through 23.10 and other static-socket setups, edit the socket unit.
 
 **Port changed without updating SELinux.** sshd refuses to start and the message points at the bind, not at policy. `semanage port -a` first.
 
