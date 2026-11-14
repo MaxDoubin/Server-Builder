@@ -17,6 +17,7 @@ import {
   type Transition,
   type MotionValue,
 } from "framer-motion";
+import { useReducedMotion as usePrefersReducedMotion } from "@/lib/motion/useReducedMotion";
 import { createContext, forwardRef, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type MutableRefObject, type RefObject, type ReactNode } from "react";
 
 // ─────────────────────────────────────────────────────────
@@ -577,7 +578,19 @@ interface MagneticProps {
   radius?: number;
 }
 
-export function Magnetic({
+/*
+  Magnetic, TiltCard and ParallaxFloat drive transforms from motion values
+  (useSpring / useScroll), which `MotionConfig reducedMotion` does not
+  touch: it only governs `animate` / `while*` transitions. Each one
+  therefore renders a plain wrapper when the reader asks for less motion.
+*/
+export function Magnetic(props: MagneticProps) {
+  const reduced = usePrefersReducedMotion();
+  if (reduced) return <div className={props.className}>{props.children}</div>;
+  return <MagneticMotion {...props} />;
+}
+
+function MagneticMotion({
   children,
   className,
   strength = 0.3,
@@ -641,7 +654,13 @@ interface TiltCardProps {
   glare?: boolean;
 }
 
-export function TiltCard({
+export function TiltCard(props: TiltCardProps) {
+  const reduced = usePrefersReducedMotion();
+  if (reduced) return <div className={props.className}>{props.children}</div>;
+  return <TiltCardMotion {...props} />;
+}
+
+function TiltCardMotion({
   children,
   className,
   maxTilt = 12,
@@ -844,7 +863,26 @@ interface ParallaxFloatProps {
   direction?: "up" | "down" | "left" | "right";
 }
 
-export function ParallaxFloat({
+const POSITIONED = /(^|\s)(absolute|fixed|relative|sticky)(\s|$)/;
+
+export function ParallaxFloat(props: ParallaxFloatProps) {
+  const reduced = usePrefersReducedMotion();
+  if (reduced) {
+    // Same positioning the animated wrapper gives, so absolutely
+    // positioned children resolve against the same box either way.
+    return (
+      <div
+        className={props.className}
+        style={POSITIONED.test(props.className ?? "") ? undefined : { position: "relative" }}
+      >
+        {props.children}
+      </div>
+    );
+  }
+  return <ParallaxFloatMotion {...props} />;
+}
+
+function ParallaxFloatMotion({
   children,
   className,
   speed = 0.3,
@@ -869,9 +907,7 @@ export function ParallaxFloat({
    * Callers that already position this wrapper keep their own value, and
    * an inline `position` would beat their Tailwind class and move them.
    */
-  const isPositioned = /(^|\s)(absolute|fixed|relative|sticky)(\s|$)/.test(
-    className ?? "",
-  );
+  const isPositioned = POSITIONED.test(className ?? "");
 
   const styleObj = {
     ...(axis === "y" ? { y: springVal } : { x: springVal }),
