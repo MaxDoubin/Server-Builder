@@ -167,6 +167,7 @@ const NOT_JARGON: Record<string, string> = {
   AMD: "a company name, not a term",
   R730: "a specific server model rather than a term; the articles that use it say what it is",
   R640: "a specific server model rather than a term; the articles that use it say what it is",
+  R630: "a specific server model rather than a term; the articles that use it say what it is",
   H730: "a specific PERC model, covered by the PERC entry",
   HBA330: "a specific card model, covered by the HBA and PERC entries",
   S1: "part of the BOSS-S1 model name, covered by the BOSS entry",

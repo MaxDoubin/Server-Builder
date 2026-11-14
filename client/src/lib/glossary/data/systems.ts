@@ -465,4 +465,31 @@ export const SYSTEMS: Term[] = [
     confusion:
       "Asking for BGRA is a request, not a free default. A decoder that produces another format natively has to convert to hand it over, and on the Afterburner cards that conversion cut one 4K stream's decode rate by 42 percent and produced a throughput ceiling and a cliff that native output did not have.",
   },
+  {
+    term: "RHEL",
+    expansion: "Red Hat Enterprise Linux",
+    field: "systems",
+    definition:
+      "Red Hat's commercially supported Linux distribution, released in major versions that each receive about ten years of fixes. AlmaLinux and Rocky Linux rebuild it, so a statement about RHEL 9 usually holds for them as well, and it ships with SELinux enforcing by default.",
+    confusion:
+      "A RHEL version number does not tell you the upstream version of a package's behavior. Red Hat backports fixes into the version it shipped, and it sets its own defaults through system-wide crypto policies, so OpenSSH or systemd on RHEL can accept or refuse things the same upstream release would not.",
+  },
+  {
+    term: "EXEC",
+    field: "systems",
+    definition:
+      "The name systemd gives to the step in starting a service where the forked child calls execve to become the program, and to exit status 203, which it reports when that call fails. The journal writes it as 'Failed at step EXEC' with the kernel's error text after it.",
+    confusion:
+      "203/EXEC is not an exit code from your program. None of the program's code ran: the kernel refused to start the file, because the path is missing, it is not executable, a script has no interpreter line, or a policy such as SELinux denied it.",
+  },
+  {
+    term: "SFF",
+    expansion: "Small Form Factor",
+    field: "hardware",
+    definition:
+      "On a server, the 2.5 inch drive bay size, as opposed to LFF for 3.5 inch, so an 8 SFF chassis holds eight 2.5 inch drives. The same letters prefix connector standards such as SFF-8643 and SFF-8087, which come from the committee that specifies storage connectors.",
+    confusion:
+      "The two uses are unrelated in practice. An SFF-8643 cable says nothing about the size of the drives at the other end, and an SFF drive cage does not fit an LFF chassis, so a used server listing has to be read for which bay size it was built with.",
+    see: ["SAS", "HBA"],
+  },
 ];
