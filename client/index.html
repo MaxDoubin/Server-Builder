@@ -86,12 +86,17 @@
       site is for, hits exactly this path.
 
       media="print" means the browser fetches the sheet at low priority and
-      does not block on it; the onload flips it to apply. Every family in
-      tailwind.config.ts ends in system-ui or monospace, so text paints
-      immediately in a system font and swaps when the webfont lands, which is
-      also why the URL carries display=swap.
+      does not block on it; client/src/lib/applyDeferredFonts.ts flips it to
+      apply once it has loaded. Every family in tailwind.config.ts ends in
+      system-ui or monospace, so text paints immediately in a system font and
+      swaps when the webfont lands, which is also why the URL carries
+      display=swap.
+
+      The flip must not be an inline onload attribute. script-src in
+      client/public/_headers has no 'unsafe-inline', so the browser refuses
+      inline handlers and the sheet would stay at media="print" for good.
     -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" media="print" data-deferred-fonts>
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet"></noscript>
 
     <title>Max Doubin | Cybersecurity Specialist, Las Vegas</title>
