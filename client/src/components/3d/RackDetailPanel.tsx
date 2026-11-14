@@ -107,32 +107,36 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
       if (eqData) {
         const uHeight = eqData.equipment.uHeight;
         slots.push(
-          <div
-            key={u}
-            className="relative group cursor-pointer"
-            // A locked rack ignores the click, so it must not offer a
-            // tab stop that does nothing.
-            role={isUnlocked ? "button" : undefined}
-            tabIndex={isUnlocked ? 0 : undefined}
-            aria-label={
-              isUnlocked ? `${eqData.equipment.name}, unit ${u}` : undefined
-            }
-            onClick={() => handleSlotClick(u)}
-            onKeyDown={(e) => {
-              // Only keys pressed on the slot itself: Enter on the nested
-              // Remove button must not also select the slot.
-              if (e.target !== e.currentTarget) return;
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleSlotClick(u);
+          <div key={u} className="relative group">
+            {/*
+              The button is the equipment face, not this wrapper: the
+              wrapper also holds Remove, and a button may not contain
+              another control. The two are siblings, face first, so Tab
+              reaches the slot and then Remove.
+
+              A locked rack ignores the click, so it offers no tab stop.
+            */}
+            <div
+              className="cursor-pointer"
+              role={isUnlocked ? "button" : undefined}
+              tabIndex={isUnlocked ? 0 : undefined}
+              aria-label={
+                isUnlocked ? `${eqData.equipment.name}, unit ${u}` : undefined
               }
-            }}
-          >
-            <Equipment3D
-              equipment={eqData.equipment}
-              installed={eqData.installed}
-              uHeight={uHeight}
-            />
+              onClick={() => handleSlotClick(u)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleSlotClick(u);
+                }
+              }}
+            >
+              <Equipment3D
+                equipment={eqData.equipment}
+                installed={eqData.installed}
+                uHeight={uHeight}
+              />
+            </div>
             {isUnlocked && (
               <Button
                 size="icon"
