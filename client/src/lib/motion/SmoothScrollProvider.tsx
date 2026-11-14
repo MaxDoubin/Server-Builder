@@ -1,3 +1,4 @@
+import { scrollBehavior } from "./scrollBehavior";
 import {
   createContext,
   useCallback,
@@ -163,7 +164,7 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
       scrollTo: (target, opts) => {
         const lenis = lenisRef.current;
         if (!lenis) {
-          if (typeof target === "number") window.scrollTo({ top: target, behavior: "smooth" });
+          if (typeof target === "number") window.scrollTo({ top: target, behavior: scrollBehavior() });
           return;
         }
         lenis.scrollTo(target as unknown as number, opts);

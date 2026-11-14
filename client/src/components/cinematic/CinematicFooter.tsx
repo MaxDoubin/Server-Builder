@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { PRESS } from "@/lib/siteConfig";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 import {
   ScrollReveal,
   StaggerGroup,
@@ -28,6 +29,7 @@ export function CinematicFooter() {
   const year = new Date().getFullYear();
   const footerRef = useRef<HTMLElement>(null);
   const isInView = useClampedInView(footerRef, 0.15, true);
+  const reducedMotion = useReducedMotion();
 
   return (
     <footer
@@ -85,7 +87,7 @@ export function CinematicFooter() {
                 <motion.span
                   aria-hidden
                   className="inline-block h-px w-8 bg-[hsl(var(--brand-signal))]"
-                  animate={{ width: [32, 48, 32] }}
+                  animate={reducedMotion ? undefined : { width: [32, 48, 32] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
               </motion.a>
