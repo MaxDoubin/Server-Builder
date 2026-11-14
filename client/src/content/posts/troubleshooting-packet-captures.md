@@ -95,7 +95,7 @@ The units on `-C` are millions of bytes, not mebibytes, so `-C 100` rotates at 1
 
 A few flags I add by reflex. `-n` disables name resolution, which stops tcpdump generating its own DNS traffic into your capture. `-s 0` sets an unlimited snaplen, though modern tcpdump already defaults to 262144 bytes, which is effectively unlimited for Ethernet. `-e` prints the link-layer header, which you need when you are chasing VLAN tags or MAC addresses. Add `-Z` if you want it to drop privileges after opening the interface.
 
-Do not use `-i any` when Layer 2 matters. On Linux it captures with a synthetic cooked-mode header rather than the real Ethernet header, so MAC addresses and VLAN tags are not there to look at.
+Do not use `-i any` when Layer 2 matters. On Linux it captures with a synthetic cooked-mode header rather than the real Ethernet header, which keeps only the sender's link-layer address, so the destination MAC is not there to look at.
 
 ## A worked example
 
