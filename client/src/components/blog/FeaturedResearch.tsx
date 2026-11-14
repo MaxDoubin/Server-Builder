@@ -72,6 +72,7 @@ export function FeaturedResearch() {
                 width="1600"
                 height="900"
                 decoding="async"
+                fetchPriority="high"
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
               />
               {/*

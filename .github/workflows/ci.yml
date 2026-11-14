@@ -99,6 +99,10 @@ jobs:
       # Cheap, and it needs no build output, so run it before the slow step.
       - name: Image budget
         run: node scripts-ci/check-image-budget.mjs
+      # A card whose thumbnail is missing falls back to the 1600px hero, so
+      # the page looks right and nothing else notices.
+      - name: Blog thumbnails
+        run: node scripts-ci/check-blog-thumbs.mjs
       - name: Prefetch map
         run: node scripts-ci/check-prefetch-map.mjs
 
