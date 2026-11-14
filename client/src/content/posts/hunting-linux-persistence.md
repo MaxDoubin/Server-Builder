@@ -147,15 +147,28 @@ Verification finds yesterday's change. The Linux audit system logs tomorrow's. [
 ```bash
 # /etc/audit/rules.d/persistence.rules
 -a always,exit -F arch=b64 -F path=/etc/crontab -F perm=wa -k persist_cron
+-a always,exit -F arch=b32 -F path=/etc/crontab -F perm=wa -k persist_cron
 -a always,exit -F arch=b64 -F dir=/etc/cron.d/ -F perm=wa -k persist_cron
+-a always,exit -F arch=b32 -F dir=/etc/cron.d/ -F perm=wa -k persist_cron
 -a always,exit -F arch=b64 -F dir=/var/spool/cron/ -F perm=wa -k persist_cron
+-a always,exit -F arch=b32 -F dir=/var/spool/cron/ -F perm=wa -k persist_cron
 -a always,exit -F arch=b64 -F dir=/etc/systemd/system/ -F perm=wa -k persist_systemd
+-a always,exit -F arch=b32 -F dir=/etc/systemd/system/ -F perm=wa -k persist_systemd
 -a always,exit -F arch=b64 -F dir=/usr/local/lib/systemd/system/ -F perm=wa -k persist_systemd
+-a always,exit -F arch=b32 -F dir=/usr/local/lib/systemd/system/ -F perm=wa -k persist_systemd
 -a always,exit -F arch=b64 -F path=/etc/ld.so.preload -F perm=wa -k persist_preload
+-a always,exit -F arch=b32 -F path=/etc/ld.so.preload -F perm=wa -k persist_preload
 -a always,exit -F arch=b64 -F dir=/etc/ld.so.conf.d/ -F perm=wa -k persist_preload
+-a always,exit -F arch=b32 -F dir=/etc/ld.so.conf.d/ -F perm=wa -k persist_preload
 -a always,exit -F arch=b64 -F path=/etc/ssh/sshd_config -F perm=wa -k persist_ssh
+-a always,exit -F arch=b32 -F path=/etc/ssh/sshd_config -F perm=wa -k persist_ssh
 -a always,exit -F arch=b64 -F dir=/root/.ssh/ -F perm=wa -k persist_ssh
+-a always,exit -F arch=b32 -F dir=/root/.ssh/ -F perm=wa -k persist_ssh
 ```
+
+Each path appears twice because a rule with `arch=b64` matches only 64-bit system calls, and an x86_64 kernel also accepts the 32-bit ones. The same manual says that on a bi-arch system you will likely want to "write 2 rules, one with arch equal to b32 and one with b64 to make sure the kernel finds the events that you intend." Without the `b32` lines, a 32-bit program could write to these paths and match nothing. On a machine with no 32-bit system call interface, such as arm64 without compat support, drop the `b32` lines if they fail to load.
+
+The `/etc/ld.so.preload` rule works even though that file normally does not exist. The kernel resolves the parent directory and records the file's inode only if the file is already there ([kernel/audit_watch.c](https://github.com/torvalds/linux/blob/master/kernel/audit_watch.c), `audit_get_nd`), and a create or rename event in the parent fills the inode in later (`audit_watch_handle_event`). The parent directory does have to exist, which `/etc` always does.
 
 [augenrules(8)](https://man7.org/linux/man-pages/man8/augenrules.8.html) merges the files in `/etc/audit/rules.d` that end in `.rules`, and `augenrules --load` loads the result. Then verify, which is the step people skip:
 
@@ -166,7 +179,7 @@ sudo touch /etc/cron.d/audit-test && sudo rm /etc/cron.d/audit-test
 sudo ausearch -k persist_cron -i | tail
 ```
 
-`auditctl -l` should print all nine rules, and [ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html) should show the test file being created and removed. If either comes back empty, the rules are not live. Each rule names one literal path, so add one `dir=` line per account whose `.ssh` directory matters; `-F dir=/home/` would also log every ordinary write under it. Once the rules are right, auditctl's `-e 2` locks the configuration so that any attempt to change it "will be audited and denied" until a reboot. The manual says it is meant to be the last command in `audit.rules`, and it also means your own rule fixes need a reboot.
+`auditctl -l` should print all 18 rules, including the two for `/etc/ld.so.preload`, and [ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html) should show the test file being created and removed. If either comes back empty, the rules are not live. Each rule names one literal path, so add one `dir=` line per account whose `.ssh` directory matters; `-F dir=/home/` would also log every ordinary write under it. Once the rules are right, auditctl's `-e 2` locks the configuration so that any attempt to change it "will be audited and denied" until a reboot. The manual says it is meant to be the last command in `audit.rules`, and it also means your own rule fixes need a reboot.
 
 For a baseline of file state, AIDE's [manual](https://aide.github.io/doc/) says to build the database "immediately after the operating system and applications have been installed, before the machine is plugged into a network", to move it to read-only media along with the binary and configuration, and not to keep the config on the target machine, because an attacker "could read the config file and alter it". For queries across hosts, osquery exposes [`crontab`](https://github.com/osquery/osquery/blob/master/specs/posix/crontab.table), [`authorized_keys`](https://github.com/osquery/osquery/blob/master/specs/posix/authorized_keys.table) and [`systemd_units`](https://github.com/osquery/osquery/blob/master/specs/linux/systemd_units.table) tables, and Elastic notes that osquery "focuses on static on-disk presence" where telemetry shows activity over time.
 

@@ -58,7 +58,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
     coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
     coverCredit: {"author":"ImagePerson","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Padlock_7642.jpg"},
-    wordCount: 3973,
+    wordCount: 4226,
   },
   {
     slug: "sata-3-3v-pin-power-disable",
@@ -3271,10 +3271,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty one";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2922;
+export const CITATION_COUNT = 2923;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 203;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3103;
+export const CHECKED_URL_COUNT = 3104;
