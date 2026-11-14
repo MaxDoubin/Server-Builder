@@ -47,6 +47,7 @@ export const postIndex: PostMeta[] = [
     tags: ["dell","servers","hardware","homelab"],
     excerpt: "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
     coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
     wordCount: 4034,
   },
   {
@@ -56,6 +57,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","security","servers"],
     excerpt: "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
     coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
+    coverCredit: {"author":"ImagePerson","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Padlock_7642.jpg"},
     wordCount: 3973,
   },
   {
@@ -65,6 +67,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","hardware","homelab"],
     excerpt: "A new or shucked SATA drive that never spins up is often held in reset by 3.3 V on power pin 3 (Power Disable, PWDIS); here is how to confirm it, which drives have it, and which fixes hold.",
     coverImage: "/images/blog/sata-3-3v-pin-power-disable-photo.jpg",
+    coverCredit: {"author":"Bubba73","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:SATA_data_and_power_connectors.jpg"},
     wordCount: 3531,
   },
   {
@@ -74,6 +77,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","linux","servers","troubleshooting"],
     excerpt: "What the ZFS-8000-8A permanent errors message means, how to find the cause, and the restore, scrub and clear order that actually empties the list.",
     coverImage: "/images/blog/zfs-permanent-errors-detected-photo.jpg",
+    coverCredit: {"author":"Mk2010","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Hard_disk_drive_platter,_Western_Digital_Caviar_250Gb_WD2500AAKS.jpg"},
     wordCount: 4081,
   },
   {
@@ -3270,7 +3274,7 @@ export const POST_COUNT_SPELLED = "three hundred and thirty one";
 export const CITATION_COUNT = 2922;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 199;
+export const ATTRIBUTION_URL_COUNT = 203;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3099;
+export const CHECKED_URL_COUNT = 3103;

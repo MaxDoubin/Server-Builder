@@ -57,6 +57,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
     coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg",
+    },
     content: `## The short answer
 
 The Dell PowerEdge R630 is a 13th generation 1U server with iDRAC8 (Dell's remote management controller) that takes up to two [Xeon E5-2600 v3 or v4 processors](https://downloads.dell.com/topicspdf/poweredge-r630_owners-manual_en-us.pdf) with four memory channels each. The R640 is a 14th generation 1U server with iDRAC9 that takes 1st and 2nd Generation Xeon Scalable processors with [six channels each](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf). Both hold 24 memory modules. The R640 raises the largest CPU from 22 cores and 145 W to 28 cores and 205 W, DDR4 from 2400 to 2933 MT/s (a calculated peak of 76.8 against 140.8 GB/s per socket), NVMe bays from 4 to 10, and the newest operating systems Dell lists from Windows Server 2019 and ESXi 7.0 to Windows Server 2022 and ESXi 8.0. It also takes a BOSS boot card, which the R630 does not. The R630's iDRAC8 ended at [version 2.86.86.86](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8), while iDRAC9 software maintenance runs to [February 1, 2027](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9). Dell's published noise figures and benchmark idle power do not favor the R640, so its case rests on platform life, NVMe and memory bandwidth.
@@ -344,6 +350,12 @@ Choose by the job. The R630 fits a Proxmox or ESXi 7 host that needs three PCIe 
     excerpt:
       "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
     coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
+    coverCredit: {
+      author: "ImagePerson",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Padlock_7642.jpg",
+    },
     content: `## The short answer
 
 The symptom is usually indirect: a process that comes back after you kill it, a login you cannot explain, or a server you already cleaned once that got reinfected. The cause is persistence, a way for code to run again without the attacker doing anything. On Linux it sits in a short list of places that can be enumerated in minutes: cron and at jobs, systemd timers and units (including per-user units), \`authorized_keys\` files and the sshd hooks around them, shell profiles and \`rc.local\`, and \`/etc/ld.so.preload\`. MITRE ATT&CK v20 lists 14 Linux sub-techniques across the six technique families that cover these places, and its [Linux matrix](https://attack.mitre.org/matrices/enterprise/linux/) shows 17 persistence techniques in all. Each place takes one or two commands to list (below), and \`dpkg --verify\` or \`rpm -Va\` shows whether package-owned files changed, with the catch that dpkg's manual says its check "should not be considered as any kind of security verification." Read \`/etc/ld.so.preload\` and compare process lists with a static BusyBox build, because a preloaded library can hide files and processes from every dynamically linked tool. Then add audit rules so the next edit to these paths is logged.
@@ -599,6 +611,12 @@ Send audit and sshd logs off the host so a local cleanup cannot erase them: [cen
     excerpt:
       "A new or shucked SATA drive that never spins up is often held in reset by 3.3 V on power pin 3 (Power Disable, PWDIS); here is how to confirm it, which drives have it, and which fixes hold.",
     coverImage: "/images/blog/sata-3-3v-pin-power-disable-photo.jpg",
+    coverCredit: {
+      author: "Bubba73",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:SATA_data_and_power_connectors.jpg",
+    },
     content: `## The short answer
 
 A SATA hard drive that never spins up, never appears in the BIOS and logs no error is often healthy. It is being held in reset by 3.3 V on pin 3 of its power connector. The SATA specification calls that contact P3. Drives built with the optional Power Disable feature from SATA 3.3, abbreviated PWDIS, treat P3 as a control input and not as a power pin. [Western Digital's Ultrastar manuals](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc550-sata-oem-spec.pdf) say that driving P3 high, 2.1 to 3.6 V, disables power to the drive circuitry, and WD's [Power Disable tech brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf) says some legacy supplies tie pins 1, 2 and 3 together to 3.3 V. The drive is not damaged. The fix is to keep 3.3 V off pin 3 with a Molex-to-SATA adapter, Kapton tape, a power cable with no 3.3 V wire, or a backplane that leaves the pin unpowered. Only some drives have the feature: WD sells it under separate part numbers on the Ultrastar DC HC510 and HC520, marks it in the model number on the [HC555](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc555-sata.pdf), and owners report the same behavior on [shucked white-label WD80EMAZ drives](https://forums.unraid.net/topic/62334-wd-8tb-easy-store-shucked-red-drives-not-recognized/).
@@ -772,6 +790,12 @@ A drive without the feature takes no part. It ignores the request, and it cannot
     excerpt:
       "What the ZFS-8000-8A permanent errors message means, how to find the cause, and the restore, scrub and clear order that actually empties the list.",
     coverImage: "/images/blog/zfs-permanent-errors-detected-photo.jpg",
+    coverCredit: {
+      author: "Mk2010",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Hard_disk_drive_platter,_Western_Digital_Caviar_250Gb_WD2500AAKS.jpg",
+    },
     content: `## The short answer
 
 \`zpool status -v\` prints "errors: Permanent errors have been detected in the following files" under message ID [ZFS-8000-8A](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A/index.html) when a block failed its checksum and ZFS had no good copy left to repair it from. Programs that touch that block "will get an error (EIO)". Current OpenZFS tells the administrator to ["Restore the file in question if possible. Otherwise restore the entire pool from backup."](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zpool/zpool_main.c)
