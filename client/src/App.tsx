@@ -14,6 +14,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool-dispose";
 import { installLinkPrefetching } from "@/lib/prefetchOnHover";
 import { installPrintDisclosures } from "@/lib/printDisclosures";
+import { MotionConfig } from "framer-motion";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
@@ -957,6 +958,11 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
+          {/* Framer Motion drives transforms from JS, which the CSS
+              reduced-motion rule cannot reach. "user" drops transform and
+              layout animation for readers who ask for less motion and
+              keeps opacity, so nothing is left stuck invisible. */}
+          <MotionConfig reducedMotion="user">
           <ScrollProgressBar color="hsl(72 100% 50%)" />
           <CursorGlow color="hsl(72 100% 50% / 0.06)" size={400} />
           <Router>
@@ -965,6 +971,7 @@ export default function App() {
             </RouteChunkBoundary>
           </Router>
           <Toaster />
+          </MotionConfig>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

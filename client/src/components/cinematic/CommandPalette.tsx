@@ -522,10 +522,17 @@ export function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search pages, tools, racks, hardware and articles..."
+            role="combobox"
             aria-label="Search this site"
-            aria-controls="command-palette-results"
+            aria-expanded={results.length > 0}
+            aria-controls={results.length > 0 ? "command-palette-results" : undefined}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              results[cursor] ? `command-palette-option-${cursor}` : undefined
+            }
+            autoComplete="off"
             data-testid="input-command-palette"
-            className="w-full bg-transparent py-4 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:outline-none"
+            className="my-2 w-full rounded-sm bg-transparent px-1 py-2 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
           />
           <button
             type="button"
@@ -563,16 +570,27 @@ export function CommandPalette() {
             className="max-h-[52vh] overflow-y-auto py-2"
           >
             {results.map((e, i) => (
-              <li key={`${e.kind}:${e.href}:${e.title}`} role="option" aria-selected={i === cursor}>
-                <button
-                  type="button"
-                  onMouseEnter={() => setCursor(i)}
-                  onClick={() => go(e)}
-                  data-testid={`command-result-${i}`}
-                  className={`flex w-full items-baseline gap-3 px-4 py-2.5 text-left transition-colors ${
-                    i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
-                  }`}
-                >
+              /*
+                The row is the option and focus stays in the search box:
+                the box points at the highlighted row through
+                aria-activedescendant. A button inside role="option" is a
+                nested interactive control, which a listbox may not hold,
+                and it put fifty extra Tab stops between the box and Close.
+              */
+              <li
+                key={`${e.kind}:${e.href}:${e.title}`}
+                id={`command-palette-option-${i}`}
+                role="option"
+                aria-selected={i === cursor}
+                onMouseEnter={() => setCursor(i)}
+                // Keep focus in the search box when a row is pressed.
+                onMouseDown={(ev) => ev.preventDefault()}
+                onClick={() => go(e)}
+                data-testid={`command-result-${i}`}
+                className={`flex w-full cursor-pointer items-baseline gap-3 px-4 py-2.5 text-left transition-colors ${
+                  i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
+                }`}
+              >
                   <span className="w-[4.5rem] shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                     {e.kind}
                   </span>
@@ -586,7 +604,6 @@ export function CommandPalette() {
                       </span>
                     ) : null}
                   </span>
-                </button>
               </li>
             ))}
           </ul>

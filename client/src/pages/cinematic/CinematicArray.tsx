@@ -7,6 +7,7 @@
  * somebody ends up with a sixteen day rebuild window they never thought about.
  */
 
+import { scrollBehavior } from "@/lib/motion/scrollBehavior";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
@@ -209,7 +210,7 @@ export function CinematicArray() {
                         setDiskTb(config.array.diskTb);
                         setRebuildMbs(config.array.rebuildMbs);
                         setUreExponent(config.array.ureExponent);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
+                        window.scrollTo({ top: 0, behavior: scrollBehavior() });
                       }}
                       data-testid={`array-load-${config.id}`}
                       className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
