@@ -11,7 +11,8 @@
  */
 
 import { readFile, writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
+import { createHash } from "crypto";
 import path from "path";
 import { Marked } from "marked";
 import { scrollableTables } from "../client/src/lib/markdownTables";
@@ -326,6 +327,29 @@ function injectRootContent(html: string, content: string): string {
 
 // ─── page injection ───────────────────────────────────────────────────────────
 
+
+const cardFingerprints = new Map<string, string | null>();
+
+/**
+ * Append ?v=<first 8 hex of the file's sha256> to a same-site image URL.
+ * Returned untouched when the file is not in the build, when the URL is on
+ * another origin, or when it already has a query string.
+ */
+function fingerprinted(url: string): string {
+  if (!url.startsWith(`${SITE_URL}/`) || /[?#]/.test(url)) return url;
+  const file = path.join(DIST, decodeURIComponent(url.slice(SITE_URL.length + 1)));
+  let hash = cardFingerprints.get(file);
+  if (hash === undefined) {
+    try {
+      hash = createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 8);
+    } catch {
+      hash = null;
+    }
+    cardFingerprints.set(file, hash);
+  }
+  return hash ? `${url}?v=${hash}` : url;
+}
+
 interface PageMeta {
   title: string;
   description: string;
@@ -378,17 +402,29 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   );
 
   // Open Graph
+  /*
+    Social card URLs carry a fingerprint of the file they point at.
+
+    The cards live at /images/og/<slug>.jpg, a name that does not change when
+    the picture does, and /images/* is cached at the edge for a week. So a
+    regenerated card kept previewing as the old one for seven days. A query
+    string derived from the bytes makes a changed card a new URL, which the
+    edge and every scraper treat as a new object, while an unchanged card
+    keeps its URL and its cache entry.
+  */
+  const cardUrl = fingerprinted(ogImage);
+
   html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${literal(esc(title))}$2`);
   html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${literal(canonical)}$2`);
   html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${literal(ogType)}$2`);
-  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${literal(cardUrl)}$2`);
   html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${literal(esc(ogImageAlt))}$2`);
 
   // Twitter
   html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${literal(esc(title))}$2`);
   html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
-  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${literal(cardUrl)}$2`);
   html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${literal(esc(ogImageAlt))}$2`);
   html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${literal(canonical)}$2`);
 
@@ -10441,7 +10477,13 @@ ${JSON.stringify({
   // through buildPageHtml, and it is the page the entrance was designed for.
   await writeFile(
     path.join(DIST, "index.html"),
-    injectRootContent(base, homeContent).replace(/<html([^>]*)>/, '<html$1 data-boot="1">'),
+    injectRootContent(base, homeContent)
+      .replace(/<html([^>]*)>/, '<html$1 data-boot="1">')
+      // Same reason, same fix: the card URL in the template is a bare path.
+      .replace(
+        /(<meta (?:property="og:image"|name="twitter:image") content=")([^"]*)(")/g,
+        (_m, open: string, url: string, close: string) => `${open}${fingerprinted(url)}${close}`,
+      ),
     "utf-8",
   );
   console.log("index.html: home page body written");
