@@ -60,15 +60,18 @@ const INLINE = /<script(?![^>]*\ssrc=)([^>]*)>([\s\S]*?)<\/script>/g;
  * Inline event-handler attributes. Script, style and comment bodies go first
  * so prose and JSON-LD cannot match, then each tag has its quoted attribute
  * values blanked so a value that merely mentions "onload=" cannot either.
+ *
+ * Only the bodies go. The opening <script> and <style> tags stay in the
+ * scanned text, because <script src onload="..."> is refused like any other.
  */
-const NOT_MARKUP = /<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi;
+const NOT_MARKUP = /<!--[\s\S]*?-->|(<(script|style)\b(?:"[^"]*"|'[^']*'|[^>"'])*>)[\s\S]*?<\/\2>/gi;
 const TAG = /<[a-zA-Z](?:"[^"]*"|'[^']*'|[^>"'])*>/g;
 const QUOTED = /"[^"]*"|'[^']*'/g;
 const HANDLER = /[\s"'/](on[a-z]+)\s*=/gi;
 
 function inlineHandlers(html) {
   const out = [];
-  for (const tag of html.replace(NOT_MARKUP, "").match(TAG) ?? []) {
+  for (const tag of html.replace(NOT_MARKUP, (_, open) => open ?? "").match(TAG) ?? []) {
     for (const m of tag.replace(QUOTED, '""').matchAll(HANDLER)) {
       out.push({ attr: m[1].toLowerCase(), tag: tag.replace(/\s+/g, " ").slice(0, 120) });
     }
