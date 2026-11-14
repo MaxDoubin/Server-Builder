@@ -335,6 +335,16 @@ interface PageMeta {
   ogImageAlt?: string;
   schema?: string;
   rootContent?: string;
+  /**
+   * Publication dates for an og:type of article, as ISO 8601 dates. Emitted
+   * as article:published_time and article:modified_time.
+   */
+  articleTimes?: { published: string; modified: string };
+  /**
+   * False when ogImage is not a 1200x630 card, so the og:image:width and
+   * og:image:height the template hardcodes would be a lie about the file.
+   */
+  ogImageIsCard?: boolean;
   /** Keep a page out of the index. For interactive pages with little prose. */
   noindex?: boolean;
   /**
@@ -349,6 +359,31 @@ interface PageMeta {
   boot?: boolean;
 }
 
+/**
+ * Shorten a post excerpt to what a search result or a link preview shows.
+ *
+ * Excerpts are written to be read on the page, and 126 of 324 ran past 160
+ * characters, 53 of them past 300. A search engine cuts those wherever it
+ * likes, mid word. This cuts at the last sentence end that fits, or failing
+ * that the last word boundary, so the snippet ends where the writing does.
+ * The visible excerpt and the JSON-LD keep the full text.
+ */
+function metaDescription(text: string, max = 160): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const window = clean.slice(0, max + 1);
+  // A sentence end, provided it leaves enough to be worth reading.
+  const sentence = Math.max(
+    window.lastIndexOf(". "),
+    window.lastIndexOf("? "),
+    window.lastIndexOf("! "),
+  );
+  if (sentence >= 70) return clean.slice(0, sentence + 1);
+  const cut = clean.slice(0, max - 3);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.(\-]+$/, "")}...`;
+}
+
 function buildPageHtml(base: string, meta: PageMeta): string {
   let html = base;
   const {
@@ -360,6 +395,8 @@ function buildPageHtml(base: string, meta: PageMeta): string {
     ogImageAlt = "Max Doubin",
     schema,
     rootContent,
+    articleTimes,
+    ogImageIsCard = true,
     noindex = false,
     boot = true,
   } = meta;
@@ -397,6 +434,31 @@ function buildPageHtml(base: string, meta: PageMeta): string {
       /(<meta name="robots" content=")[^"]*(")/,
       "$1noindex, follow$2",
     );
+  }
+
+  /*
+    index.html is the home page's head, and the home page is og:type profile,
+    so it carries profile:first_name and profile:last_name. Those are only
+    defined for a profile object. Every article and website page inherited
+    them, which is invalid Open Graph on all of them. Dropped unless the page
+    really is a profile; an article gets its two dates in the same place.
+  */
+  if (ogType !== "profile") {
+    html = html.replace(/[ \t]*<meta property="profile:last_name" content="[^"]*">\n?/, "");
+    const times =
+      ogType === "article" && articleTimes
+        ? `    <meta property="article:published_time" content="${esc(articleTimes.published)}">\n` +
+          `    <meta property="article:modified_time" content="${esc(articleTimes.modified)}">\n`
+        : "";
+    html = html.replace(
+      /[ \t]*<meta property="profile:first_name" content="[^"]*">\n?/,
+      () => times,
+    );
+  }
+
+  // The template states 1200x630, which is only true of the generated cards.
+  if (!ogImageIsCard) {
+    html = html.replace(/[ \t]*<meta property="og:image:(?:width|height)" content="[^"]*">\n?/g, "");
   }
 
   if (schema) html = injectBeforeHead(html, schema);
@@ -661,6 +723,12 @@ async function prerenderPost(
   const cardPath = `/images/og/${post.slug}.jpg`;
   const hasCard = existsSync(path.join(DIST, cardPath.slice(1)));
   const ogImage = `${SITE_URL}${hasCard ? cardPath : post.coverImage}`;
+  if (!hasCard) {
+    console.warn(
+      `⚠  blog/${post.slug}: no social card at ${cardPath}, falling back to the cover ` +
+        `(og:image:width and og:image:height omitted). Run scripts-ci/make-og-images.py.`,
+    );
+  }
   /*
     Absolute for the structured data, which schema.org requires and which
     Google reads off whatever origin it crawls. The <img> further down uses
@@ -812,10 +880,12 @@ ${JSON.stringify({
 
   await writePage(`blog/${post.slug}`, base, {
     title: pageTitle(post.title),
-    description: post.excerpt,
+    description: metaDescription(post.excerpt),
     canonical: url,
     ogType: "article",
     ogImage,
+    ogImageIsCard: hasCard,
+    articleTimes: { published: post.date, modified: post.updated ?? post.date },
     ogImageAlt: post.title,
     schema,
     rootContent,
@@ -10458,118 +10528,128 @@ ${JSON.stringify({
  * Emit sitemap.xml covering every route and every published post.
  *
  * lastmod comes from each post's own date, so a crawler can tell what
- * actually changed instead of re-reading the whole archive.
+ * actually changed instead of re-reading the whole archive. Routes with no
+ * date of their own carry no lastmod at all.
  */
 async function writeSitemap(
   posts: Array<{ slug: string; date: string; updated?: string; tags: string[]; draft?: boolean }>,
 ) {
   const live = posts.filter((p) => !p.draft);
-  const newest = live.reduce((a, p) => (p.date > a ? p.date : a), "1970-01-01");
-  const today = newest;
+  // A rewrite counts: it is the newest thing the listing pages show.
+  const newest = live.reduce((a, p) => ((p.updated ?? p.date) > a ? (p.updated ?? p.date) : a), "1970-01-01");
 
-  const urls: Array<{ loc: string; lastmod: string; changefreq: string; priority: string }> = [
-    { loc: `${SITE_URL}/`, lastmod: today, changefreq: "weekly", priority: "1.0" },
-    { loc: `${SITE_URL}/blog`, lastmod: today, changefreq: "daily", priority: "0.9" },
-    { loc: `${SITE_URL}/projects`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/study`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/data`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/topics`, lastmod: today, changefreq: "weekly", priority: "0.8" },
-    { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
-    { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/tools`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/racks/wired`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/racks/build`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/triage`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/firewall`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/resolve`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/chain`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
-    { loc: `${SITE_URL}/glossary`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/permissions`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/patch`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/retry`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/vlan`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/clock`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/space`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/cache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/oom`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/units`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/nat`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/alerts`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/load`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/throttle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/ports`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/limits`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/free`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/ndots`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/leases`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/backlog`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/keepalive`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/startlimit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/neigh`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/inotify`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/atime`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/nagle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/argmax`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/eloop`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/pipebuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/locks`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/signals`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/exit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/umask`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/pss`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/sparse`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/append`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/mapped`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/fdset`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/odirect`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/reuseport`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/afterburner`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/malloctrim`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-  { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-  { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-  { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/practice`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/uses`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/timeline`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },
-      { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
-    { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
+  /*
+    lastmod is optional, and only stated where it is known. Every route used
+    to be stamped with the newest post's date, so publishing one article told
+    a crawler that several hundred tools, labs and study pages had changed
+    that day when none had. A lastmod that is wrong that often teaches the
+    crawler to ignore the field, including on the posts where it is true. It
+    now appears on posts, on topic hubs, and on the three listings that a new
+    post really does change.
+  */
+  const urls: Array<{ loc: string; lastmod?: string; changefreq: string; priority: string }> = [
+    { loc: `${SITE_URL}/`, changefreq: "weekly", priority: "1.0" },
+    { loc: `${SITE_URL}/blog`, lastmod: newest, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/projects`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/contact`, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/game`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/study`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/data`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/topics`, lastmod: newest, changefreq: "weekly", priority: "0.8" },
+    { loc: `${SITE_URL}/archive`, lastmod: newest, changefreq: "weekly", priority: "0.8" },
+    { loc: `${SITE_URL}/paths`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/tools`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/racks/wired`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/racks/build`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/teardown`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/ncl`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/scenarios`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/labs`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/challenges`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/triage`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/firewall`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/resolve`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/chain`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/allocate`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/array`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/today`, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/glossary`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/transfer`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/logs`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/mtu`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/permissions`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/patch`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/retry`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/vlan`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/clock`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/space`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/cache`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/oom`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/units`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/nat`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/alerts`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/load`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/throttle`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/ports`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/limits`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/free`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/ndots`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/leases`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/backlog`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/keepalive`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/startlimit`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/neigh`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/shm`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/maxstartups`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/retrans`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/inotify`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/atime`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/nagle`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/argmax`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/eloop`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pipebuf`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/locks`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/signals`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/exit`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/umask`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pss`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/sparse`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/append`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/mapped`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/fdset`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pagecache`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/odirect`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/reuseport`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/afterburner`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/malloctrim`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/overcommit`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/timewait`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/rcvbuf`, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/fds`, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/writeback`, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/conntrack`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/route`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/restore`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/handshake`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/capture`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/practice`, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/faq`, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/resume`, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/now`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/uses`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/timeline`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/coding-camps`, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/certifications`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/links`, changefreq: "monthly", priority: "0.5" },
+      { loc: `${SITE_URL}/ask`, changefreq: "monthly", priority: "0.4" },
+    { loc: `${SITE_URL}/study-timer`, changefreq: "monthly", priority: "0.4" },
   ];
 
-  urls.push({ loc: `${SITE_URL}/racks`, lastmod: today, changefreq: "monthly", priority: "0.8" });
+  urls.push({ loc: `${SITE_URL}/racks`, changefreq: "monthly", priority: "0.8" });
   for (const rack of RACKS) {
-    urls.push({ loc: `${SITE_URL}/racks/${rack.slug}`, lastmod: today, changefreq: "monthly", priority: "0.7" });
+    urls.push({ loc: `${SITE_URL}/racks/${rack.slug}`, changefreq: "monthly", priority: "0.7" });
   }
-  urls.push({ loc: `${SITE_URL}/gear`, lastmod: today, changefreq: "monthly", priority: "0.6" });
+  urls.push({ loc: `${SITE_URL}/gear`, changefreq: "monthly", priority: "0.6" });
 
 
   // Tools and the competition guides. /flashcards is deliberately absent:
@@ -10578,7 +10658,6 @@ async function writeSitemap(
   for (const tool of TOOLS) {
     urls.push({
       loc: `${SITE_URL}/tools/${tool.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10586,7 +10665,6 @@ async function writeSitemap(
   for (const exam of EXAMS) {
     urls.push({
       loc: `${SITE_URL}/study/${exam.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10595,7 +10673,6 @@ async function writeSitemap(
     // summarizes.
     urls.push({
       loc: `${SITE_URL}/study/${exam.slug}/sheet`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10603,7 +10680,6 @@ async function writeSitemap(
   for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10611,7 +10687,6 @@ async function writeSitemap(
   for (const capture of CAPTURES) {
     urls.push({
       loc: `${SITE_URL}/capture/${capture.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10619,7 +10694,6 @@ async function writeSitemap(
   for (const lab of LABS) {
     urls.push({
       loc: `${SITE_URL}/labs/${lab.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10627,7 +10701,6 @@ async function writeSitemap(
   for (const challenge of CHALLENGES) {
     urls.push({
       loc: `${SITE_URL}/challenges/${challenge.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10635,7 +10708,6 @@ async function writeSitemap(
   for (const exercise of FIREWALL) {
     urls.push({
       loc: `${SITE_URL}/firewall/${exercise.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10643,7 +10715,6 @@ async function writeSitemap(
   for (const plan of PLANS) {
     urls.push({
       loc: `${SITE_URL}/allocate/${plan.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10651,7 +10722,6 @@ async function writeSitemap(
   for (const scenario of SCENARIOS) {
     urls.push({
       loc: `${SITE_URL}/scenarios/${scenario.slug}`,
-      lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
     });
@@ -10662,7 +10732,7 @@ async function writeSitemap(
   for (const topic of TAG_PAGES) {
     const newestTagged = live
       .filter((p) => p.tags.includes(topic.tag))
-      .reduce((a, p) => (p.date > a ? p.date : a), "");
+      .reduce((a, p) => ((p.updated ?? p.date) > a ? (p.updated ?? p.date) : a), "");
     if (!newestTagged) continue;
     urls.push({
       loc: `${SITE_URL}/topics/${topic.tag}`,
@@ -10675,7 +10745,6 @@ async function writeSitemap(
     for (const domain of exam.domains) {
       urls.push({
         loc: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
-        lastmod: today,
         changefreq: "monthly",
         priority: "0.7",
       });
@@ -10702,7 +10771,7 @@ async function writeSitemap(
         (u) =>
           `  <url>\n` +
           `    <loc>${u.loc}</loc>\n` +
-          `    <lastmod>${u.lastmod}</lastmod>\n` +
+          (u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : "") +
           `    <changefreq>${u.changefreq}</changefreq>\n` +
           `    <priority>${u.priority}</priority>\n` +
           `  </url>`,
