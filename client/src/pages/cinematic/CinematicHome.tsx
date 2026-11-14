@@ -57,7 +57,7 @@ export function CinematicHome() {
         addressRegion: "NV",
         addressCountry: "US",
       },
-      alumniOf: {
+      affiliation: {
         "@type": "EducationalOrganization",
         name: "South Career and Technical Academy",
       },
@@ -146,11 +146,23 @@ export function CinematicHome() {
       memberOf: [
         {
           "@type": "Organization",
-          name: "City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
+          name: "Cyber Club, South Career and Technical Academy",
         },
         {
           "@type": "Organization",
-          name: "College Board Big Future Ambassadors",
+          name: "Music Club, South Career and Technical Academy",
+        },
+        {
+          "@type": "Organization",
+          name: "Interclub Council, South Career and Technical Academy",
+        },
+        {
+          "@type": "Organization",
+          name: "SkillsUSA",
+        },
+        {
+          "@type": "Organization",
+          name: "City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity",
         },
         {
           "@type": "Organization",
