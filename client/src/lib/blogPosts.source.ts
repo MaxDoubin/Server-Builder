@@ -1062,6 +1062,12 @@ A \`<metadata>\` entry that survives a clean scrub is not stale. The 8A page say
     excerpt:
       "status=203/EXEC means systemd forked the service process but execve failed before any of your program ran, and the error text in the journal tells you whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang.",
     coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
+    coverCredit: {
+      author: "Solijon Solayev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Arch_Linux_system_update_via_pacman_on_an_Acer_laptop.jpg",
+    },
     content: `## The short answer
 
 systemd is the service manager that starts and supervises services on most Linux distributions. When it reports \`status=203/EXEC\`, it forked a process for the service, but the \`execve(2)\` system call that should have replaced that process with the program failed. None of the program's own code ran. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says this is "Most likely" caused by "a missing or non-accessible executable file". The journal line \`Failed at step EXEC spawning <path>: <error>\` carries the kernel's error text, and that text settles which case it is:
@@ -1349,6 +1355,12 @@ The [it works in the shell](/blog/it-works-in-the-shell) article covers the matc
     excerpt:
       "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms and PubkeyAcceptedAlgorithms override, how ssh -G confirms it, and the errors that follow.",
     coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
+    coverCredit: {
+      author: "BrokenSphere",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Panduit_Pan-Net_Cable_Management_System_front.JPG",
+    },
     content: `## The short answer
 
 \`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa\` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with \`HostKeyAlgorithms +ssh-rsa\` and \`PubkeyAcceptedAlgorithms +ssh-rsa\` in a \`Host\` block of \`~/.ssh/config\`, and confirm it with \`ssh -G\`. Add \`KexAlgorithms\` or \`Ciphers\` lines only if a later \`Their offer:\` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
@@ -1556,6 +1568,12 @@ The same change reaches Python tooling. The [Paramiko changelog](https://www.par
     excerpt:
       "The Gen10 P408i-a has no HBA-mode switch: any drive outside a logical drive or spare is passed to the OS automatically, so you delete the logical drives with ssacli and check the result under the smartpqi driver.",
     coverImage: "/images/blog/hpe-smart-array-p408i-mixed-mode-photo.jpg",
+    coverCredit: {
+      author: "Btrs",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL580_G7_in_2023.jpg",
+    },
     content: `## The short answer
 
 The HPE Smart Array P408i-a SR Gen10 has no HBA-mode switch (HBA means host bus adapter, a card that hands disks to the operating system untouched), because HPE builds pass-through into every Gen10 E-class and P-class controller as "mixed mode." HPE's [SR Gen10 user guide](https://itpfdoc.hitachi.co.jp/manuals/ha8000v/hard/Gen10/SA/30-F5AC2861-011.pdf) says "Any drive that is not a member of a logical drive or assigned as a spare is presented to the operating system," and that this "occurs by default without any user intervention." The [May 2020 edition](https://itpfdoc.hitachi.co.jp/manuals/ha8000v/hard/Gen10/SA/879006-005_en.pdf) adds "and cannot be disabled." To pass disks through, delete every logical drive that claims them, from UEFI System Utilities, offline SSA or \`ssacli ctrl slot=0 ld all delete\`. The freed drives then list as \`unassigned\` in ssacli and appear in Linux as ordinary disks on the in-kernel \`smartpqi\` driver. The Gen8 P420i \`hbamode=on\` procedure does not apply. HPE describes the 2 GB flash-backed write cache in terms of logical drives, and the P-class controllers need an energy pack. OpenZFS and Proxmox documentation say to use a plain HBA, TrueNAS accepts a card's pass-through mode, and owner reports of ZFS pools on the P408i-a are positive but few.

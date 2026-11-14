@@ -83,6 +83,7 @@ export const postIndex: PostMeta[] = [
     tags: ["systemd","linux","servers","troubleshooting"],
     excerpt: "status=203/EXEC means systemd forked the service process but execve failed before any of your program ran, and the error text in the journal tells you whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang.",
     coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
+    coverCredit: {"author":"Solijon Solayev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Arch_Linux_system_update_via_pacman_on_an_Acer_laptop.jpg"},
     wordCount: 3898,
   },
   {
@@ -92,6 +93,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","troubleshooting"],
     excerpt: "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms and PubkeyAcceptedAlgorithms override, how ssh -G confirms it, and the errors that follow.",
     coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
+    coverCredit: {"author":"BrokenSphere","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Panduit_Pan-Net_Cable_Management_System_front.JPG"},
     wordCount: 3035,
   },
   {
@@ -101,6 +103,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","servers","hardware","homelab"],
     excerpt: "The Gen10 P408i-a has no HBA-mode switch: any drive outside a logical drive or spare is passed to the OS automatically, so you delete the logical drives with ssacli and check the result under the smartpqi driver.",
     coverImage: "/images/blog/hpe-smart-array-p408i-mixed-mode-photo.jpg",
+    coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL580_G7_in_2023.jpg"},
     wordCount: 3646,
   },
   {
@@ -3267,7 +3270,7 @@ export const POST_COUNT_SPELLED = "three hundred and thirty one";
 export const CITATION_COUNT = 2922;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 196;
+export const ATTRIBUTION_URL_COUNT = 199;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3097;
+export const CHECKED_URL_COUNT = 3099;
