@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 325 of them. Regenerate with script/generatePostIndex.ts.
+ * 331 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,60 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "dell-r630-vs-r640",
+    title: "Dell PowerEdge R630 vs R640: what changed, and which to buy used",
+    date: "2026-11-11",
+    tags: ["dell","servers","hardware","homelab"],
+    excerpt: "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
+    coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
+    wordCount: 4034,
+  },
+  {
+    slug: "hunting-linux-persistence",
+    title: "Hunting Linux Persistence: Cron, Systemd, authorized_keys and ld.so.preload",
+    date: "2026-11-10",
+    tags: ["linux","security","servers"],
+    excerpt: "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
+    coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
+    wordCount: 3973,
+  },
+  {
+    slug: "sata-3-3v-pin-power-disable",
+    title: "SATA Power Disable: Why a New Drive Won't Spin Up and How to Fix the 3.3 V Pin",
+    date: "2026-11-09",
+    tags: ["storage","hardware","homelab"],
+    excerpt: "A new or shucked SATA drive that never spins up is often held in reset by 3.3 V on power pin 3 (Power Disable, PWDIS); here is how to confirm it, which drives have it, and which fixes hold.",
+    coverImage: "/images/blog/sata-3-3v-pin-power-disable-photo.jpg",
+    wordCount: 3531,
+  },
+  {
+    slug: "zfs-permanent-errors-detected",
+    title: "ZFS \"Permanent errors have been detected\": What It Means and How to Clear It",
+    date: "2026-11-08",
+    tags: ["storage","linux","servers","troubleshooting"],
+    excerpt: "What the ZFS-8000-8A permanent errors message means, how to find the cause, and the restore, scrub and clear order that actually empties the list.",
+    coverImage: "/images/blog/zfs-permanent-errors-detected-photo.jpg",
+    wordCount: 4081,
+  },
+  {
+    slug: "systemd-status-203-exec",
+    title: "systemd status=203/EXEC: what it means and how to fix it",
+    date: "2026-11-07",
+    tags: ["systemd","linux","servers","troubleshooting"],
+    excerpt: "status=203/EXEC means systemd forked the service process but execve failed before any of your program ran, and the error text in the journal tells you whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang.",
+    coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
+    wordCount: 3898,
+  },
+  {
+    slug: "ssh-no-matching-host-key-type-ssh-rsa",
+    title: "SSH to an Old Device: No Matching Host Key Type Found, Their Offer: ssh-rsa",
+    date: "2026-11-06",
+    tags: ["networking","security","troubleshooting"],
+    excerpt: "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms and PubkeyAcceptedAlgorithms override, how ssh -G confirms it, and the errors that follow.",
+    coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
+    wordCount: 3035,
+  },
   {
     slug: "hpe-smart-array-p408i-mixed-mode",
     title: "HPE Smart Array P408i-a Mixed Mode: Pass-Through, ssacli, smartpqi and ZFS",
@@ -3198,10 +3252,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 325;
+export const POST_COUNT = 331;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and twenty five";
+export const POST_COUNT_SPELLED = "three hundred and thirty one";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3210,10 +3264,10 @@ export const POST_COUNT_SPELLED = "three hundred and twenty five";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2769;
+export const CITATION_COUNT = 2922;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 196;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2944;
+export const CHECKED_URL_COUNT = 3097;

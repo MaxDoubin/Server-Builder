@@ -50,6 +50,1505 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "dell-r630-vs-r640",
+    title: "Dell PowerEdge R630 vs R640: what changed, and which to buy used",
+    date: "2026-11-11",
+    tags: ["dell", "servers", "hardware", "homelab"],
+    excerpt:
+      "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
+    coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
+    content: `## The short answer
+
+The Dell PowerEdge R630 is a 13th generation 1U server with iDRAC8 (Dell's remote management controller) that takes up to two [Xeon E5-2600 v3 or v4 processors](https://downloads.dell.com/topicspdf/poweredge-r630_owners-manual_en-us.pdf) with four memory channels each. The R640 is a 14th generation 1U server with iDRAC9 that takes 1st and 2nd Generation Xeon Scalable processors with [six channels each](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf). Both hold 24 memory modules. The R640 raises the largest CPU from 22 cores and 145 W to 28 cores and 205 W, DDR4 from 2400 to 2933 MT/s (a calculated peak of 76.8 against 140.8 GB/s per socket), NVMe bays from 4 to 10, and the newest operating systems Dell lists from Windows Server 2019 and ESXi 7.0 to Windows Server 2022 and ESXi 8.0. It also takes a BOSS boot card, which the R630 does not. The R630's iDRAC8 ended at [version 2.86.86.86](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8), while iDRAC9 software maintenance runs to [February 1, 2027](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9). Dell's published noise figures and benchmark idle power do not favor the R640, so its case rests on platform life, NVMe and memory bandwidth.
+
+## What changed from the 13th generation R630 to the 14th generation R640?
+
+Dell's R640 technical guide includes a [side-by-side table](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf) against the R630. The table below merges it with the [R630 Owner's Manual](https://downloads.dell.com/topicspdf/poweredge-r630_owners-manual_en-us.pdf), the [R630 spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-spec-sheet.pdf) and the [R640 Installation and Service Manual](https://downloads.dell.com/topicspdf/poweredge-r640_owners-manual_en-us.pdf).
+
+| | R630 | R640 |
+|---|---|---|
+| Chipset | Intel C610 series | Intel C620 series |
+| Processors | Xeon E5-2600 v3 or v4 | 1st and 2nd Gen Xeon Scalable |
+| Memory | 24 DDR4 slots, 4 channels per CPU | 24 DDR4 slots, 6 channels per CPU |
+| Front bays | 8 or 10 x 2.5 in, or 24 x 1.8 in | 4 x 3.5 in, 8 or 10 x 2.5 in, plus 2 optional rear 2.5 in |
+| NVMe | Up to 4, through a PCIe bridge card | Up to 10, direct to the CPUs |
+| PCIe slots | Up to 3, x16/x8/x16 | Up to 3, x16/x16/x16 |
+| Management | iDRAC8 | iDRAC9 |
+| Boot media | SD cards (IDSDM), internal USB | microSD cards (IDSDM), internal USB, BOSS |
+| Power supplies | 495 to 1100 W | 495 to 1600 W |
+| Fans | Up to 7 | Up to 8 |
+| Maximum weight | 18.5 kg (10-bay) | 21.9 kg |
+| Depth | 75.51 cm (10-bay and 24-bay) | 80.85 cm |
+
+The R630 manual's weight table gives 16.9 kg for the 8-bay and 17.4 kg for the 24-bay. The R630 spec sheet lists a depth of 70.05 cm for the 8-bay chassis. The R640 guide gives 808.5 mm and defines it as bezel to rear power supply handle. The two documents do not say they measure depth the same way, so allow extra rack depth for the R640 and its cables.
+
+The R630 chassis is also fixed at purchase. Dell's [R630 Technical Guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-technical-guide-v1-6.pdf) says a chassis "cannot be reconfigured or upgraded after point of purchase," so an 8-bay R630 stays an 8-bay.
+
+## Which CPUs does each take, and how fast does the memory run?
+
+### Processors
+
+The R630 spec sheet lists up to [22 cores](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-spec-sheet.pdf) with the E5-2600 v4 family. The June 2015 R630 technical guide lists only v3 parts and says the server supports "up to 18 cores per processor," topping out at the 145 W E5-2699 v3. Dell's [iDRAC8 2.30.119.30 release notes](https://dl.dell.com/manuals/all-products/esuprt_software/esuprt_remote_ent_sys_mgmt/esuprt_rmte_ent_sys_rmte_access_cntrllr/idrac8-lifecycle-controller-v2.30.119.30_Release%20Notes_en-us.pdf) (April 2016) "Added support for the Intel E5-26xx v4 family of processors." An R630 that has sat on older firmware should get its BIOS and iDRAC updated before a v4 chip goes in.
+
+Heat limits the v4 choices. In its temperature specifications, the R630 manual names the 8-bay chassis with two PCIe slots as the configuration that supports a 145 W, 22-core processor. For a 10-bay chassis with PCIe SSDs it restricts ambient temperature to 30 C with a processor of up to 135 W, or 35 C with a processor of up to 120 W.
+
+The R640 guide lists a much larger set, from Bronze parts to the 28-core, 205 W Platinum 8280. The table compares the largest parts using Dell's lists and Intel's specification pages.
+
+| | R630 | R640 |
+|---|---|---|
+| Largest listed CPU | [E5-2699 v4](https://www.intel.com/content/www/us/en/products/sku/91317/intel-xeon-processor-e52699-v4-55m-cache-2-20-ghz/specifications.html): 22 cores, 145 W | [Platinum 8280](https://www.intel.com/content/www/us/en/products/sku/192478/intel-xeon-platinum-8280-processor-38-5m-cache-2-70-ghz/specifications.html): 28 cores, 205 W |
+| Cores with two sockets | 44 | 56 |
+| Socket | FCLGA2011 | FCLGA3647 |
+| PCIe 3.0 lanes per CPU | 40 | 48 |
+| Intel servicing updates ended | June 30, 2022 (E5-2699 v4) | December 31, 2023 ([Gold 6130](https://www.intel.com/content/www/us/en/products/sku/120492/intel-xeon-gold-6130-processor-22m-cache-2-10-ghz/specifications.html)); June 30, 2025 ([Gold 6230](https://www.intel.com/content/www/us/en/products/sku/192437/intel-xeon-gold-6230-processor-27-5m-cache-2-10-ghz/specifications.html), Platinum 8280) |
+
+The 2nd Generation parts need current firmware. Dell's [iDRAC9 3.34.34.34 release notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes2_en-us.pdf) (June 2019) say "This release adds support for Intel Cascade Lake processors and DDR4 2933 MT/s memory." Cascade Lake is Intel's code name for 2nd Generation Xeon Scalable. Check the installed versions before swapping CPUs:
+
+\`\`\`bash
+ssh root@IDRAC_IP racadm getversion
+\`\`\`
+
+Dell's [iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) shows this form of a single RACADM command over SSH, and the [iDRAC9 guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) describes the same use of SSH. The output lists the BIOS and iDRAC versions.
+
+### Memory
+
+Both servers have 24 slots, 12 per CPU, but the layout differs. The R630 spreads them over four channels of three slots, and the [R640 manual](https://downloads.dell.com/topicspdf/poweredge-r640_owners-manual_en-us.pdf) describes six channels per processor, which is two slots each. Both take registered DDR4 modules (RDIMMs) and load-reduced modules (LRDIMMs), and both manuals say "RDIMMs and LRDIMMs must not be mixed." The R640 adds NVDIMM-N and Intel Optane persistent memory. The [server memory architecture](/blog/server-memory-architecture) article covers population rules.
+
+Dell's tables set the running speed. The R630 manual gives these RDIMM speeds by modules per channel:
+
+| RDIMMs per channel | R630 speed, MT/s |
+|---|---|
+| 1 | 2400, 2133 or 1866 |
+| 2 | 2400, 2133 or 1866 |
+| 3 | 1866 |
+
+The R640 guide's [speed table](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf) is organized by CPU family and module instead:
+
+| CPU family | Module | R640 speed, MT/s |
+|---|---|---|
+| 1st Gen Xeon Scalable | 8, 16 or 32 GB RDIMM | 2666 |
+| 2nd Gen Xeon Scalable | 8 GB single-rank RDIMM | 2666 |
+| 2nd Gen Xeon Scalable | 16, 32 or 64 GB dual-rank RDIMM | 2933 |
+| Either | 64 or 128 GB LRDIMM | 2666 |
+
+The CPU sets the cap in each case. Intel lists DDR4-2400 for the E5-2699 v4 but only 2133 for the [E5-2640 v4](https://www.intel.com/content/www/us/en/products/sku/92984/intel-xeon-processor-e52640-v4-25m-cache-2-40-ghz/specifications.html). On the R640 side, Intel lists 2666 for the Gold 6130 and 2933 for the Gold 6230, while Dell's processor list shows the Silver 4210 and Gold 5120 at 2400. Peak bandwidth per socket is channels times transfer rate times 8 bytes. That is arithmetic, not a Dell figure, except where Intel's published number is shown.
+
+| Configuration | Calculation | Peak per socket |
+|---|---|---|
+| R630, E5-2699 v4, DDR4-2400 | 4 x 2,400 x 8 | 76,800 MB/s (Intel lists 76.8 GB/s) |
+| R630, E5-2640 v4, DDR4-2133 | 4 x 2,133.3 x 8 | 68,267 MB/s (Intel lists 68.3 GB/s) |
+| R630, three RDIMMs per channel | 4 x 1,866.7 x 8 | 59,733 MB/s |
+| R640, Gold 6130, DDR4-2666 | 6 x 2,666.7 x 8 | 128,000 MB/s |
+| R640, Gold 6230, DDR4-2933 | 6 x 2,933.3 x 8 | 140,800 MB/s |
+
+Dell's R640 guide credits the move to "50% increased memory bandwidth and capacity" from six channels against four. The higher speed adds to that, which makes the best case 1.83 times the R630's (140,800 divided by 76,800). These peaks are ceilings, not measurements. A dual-socket R640 needs 12 matching modules to fill every channel, since the R640 manual says to "Populate six identical memory modules per processor (one DIMM per channel) at a time to maximize performance." The R630 needs 8.
+
+Capacity also differs.
+
+| | R630 | R640 |
+|---|---|---|
+| RDIMM sizes | 4, 8, 16, 32 GB | 8, 16, 32, 64 GB |
+| Maximum RDIMM | 768 GB | 1.53 TB |
+| LRDIMM sizes | 64 GB | 64 and 128 GB |
+| Maximum LRDIMM | 1,536 GB | 3 TB |
+
+The R630 manual prints 786 GB for dual-processor RDIMM capacity, but 24 x 32 GB is 768 GB, so that looks like a typo. Intel lists 1 TB per socket for the Gold 6230 and Platinum 8280, so the R640's 3 TB total implies one of the high-memory L or M parts in Dell's list. That is an inference from those numbers, not a Dell statement.
+
+Dell publishes no statement on moving R630 memory to an R640. Both use 288-pin registered DDR4, and the R640 manual says modules with different speeds "will operate at the speed of the slowest installed" module. Check the running speed afterward from Linux:
+
+\`\`\`bash
+sudo dmidecode -t memory | grep -E "Locator:|Speed:"
+\`\`\`
+
+The [dmidecode manual](https://linux.die.net/man/8/dmidecode) lists \`memory\` among its \`--type\` keywords.
+
+## How many drives and NVMe bays can each chassis hold?
+
+| | R630 | R640 |
+|---|---|---|
+| 3.5 in | None | 4 bays |
+| 2.5 in SAS or SATA | 8 or 10 bays | 8 or 10 bays |
+| 2.5 in NVMe | Up to 4 (in the 10-bay) | Up to 8 of 10, or all 10 |
+| Other | 24 x 1.8 in SATA SSD | 2 optional rear 2.5 in |
+
+The R630's NVMe support uses Dell Express Flash drives. The R630 manual describes the mixed 10-bay as up to six 2.5-inch hot swappable drives plus up to four Express Flash PCIe SSDs, so adding NVMe costs regular bays. The R640 guide contrasts "Up to 10 CPU Direct Attach PCIe SSD" with the R630's "Up to 4x PCIe SSD from PCIe bridge card." The R640 guide's NVMe drive list includes Gen4 models, but the same guide describes the platform's slots and lanes as PCIe 3.0, so expect Gen3 speeds.
+
+Two cautions apply to the R640. The guide's comparison table lists the rear bays as "SAS/SATA/SSD/NVMe" while its backplane list gives a rear "(x2) SAS or SATA backplane," so confirm the part before buying one for NVMe. And a 10-bay R640 can be SAS/SATA with up to 8 NVMe, or all NVMe, so ask the seller which backplane is installed. The 1.8-inch R630 chassis uses SATA SSDs with a 0.96 TB maximum in the spec sheet.
+
+Storage controllers differ too. The R630 guide lists the PERC S130 (8-bay only), H330, H730 and H730P, and the spec sheet adds the external H830. The R640 guide adds the S140, the H740P and the HBA330, an internal non-RAID option. The R640 guide also warns that on-board SATA ports "are not accessible if mini PERC is installed." For ZFS, the [H730 HBA mode](/blog/perc-h730-hba-mode) article covers the R630 side.
+
+## What are the PCIe slot and riser layouts?
+
+The R630 has two riser arrangements, per its [owner's manual](https://downloads.dell.com/topicspdf/poweredge-r630_owners-manual_en-us.pdf). The three-slot layout has low-profile, half-length slots on riser 1 (slot 1 at x16 and slot 2 at x8, both on processor 2) and riser 3 (slot 3, x16, processor 1). The two-slot layout has one low-profile slot on riser 2 (x8 from processor 1 or x16 from processor 2) and a full-height, three-quarter-length x16 slot on riser 3. The manual says "Both the processors must be installed to use riser 1 slots," so a single-CPU R630 loses those two slots.
+
+The R640 guide lists four riser options, and every slot is x16.
+
+| Riser | Slots | CPU | Card size |
+|---|---|---|---|
+| 1A | Two x16 | 1 | Low profile |
+| 1B | One x16 | 1 | Low profile |
+| 2A | One x16 | 2 | Low profile |
+| 2B | One x16 | 2 | Full height, up to three-quarter length |
+
+Both servers add a dedicated storage-controller slot and a network daughter card slot. The R640 guide places both on processor 1, at x8 each. The embedded network options grow too: the R630 spec sheet lists 4 x 1 Gb, 2 x 1 Gb plus 2 x 10 Gb, or 4 x 10 Gb, and the R640 adds 2 x 25 GbE. For accelerators, the R640 guide lists up to three single-width NVIDIA T4 GPUs or one FPGA. The [PCIe lanes](/blog/pcie-lanes-explained) article explains why slots on the second CPU matter.
+
+## What does iDRAC8 versus iDRAC9 change for a homelab?
+
+| | iDRAC8 (R630) | iDRAC9 (R640) |
+|---|---|---|
+| Default license | Express | Express |
+| Virtual console | Needs Enterprise | Needs Enterprise |
+| HTML5 console | Added in 2.30.119.30 (April 2016) | Yes |
+| Last firmware | 2.86.86.86 (April 3, 2024) | 7.00.00.185 (August 2026) is the latest Dell lists |
+| Software maintenance | Ended February 2024 | Runs to February 1, 2027 |
+| Third-party PCIe card cooling | One raw IPMI command per server | Per-slot airflow setting, Datacenter license |
+| Raw IPMI fan commands | Reported available | Reported removed from 3.34.34.34 on |
+
+The [iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) and the [iDRAC9 guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) both say Express is "available by default on all 600 and higher series of rack or tower servers." Each guide's license table marks Virtual Console "No" for Express, and the iDRAC9 table puts PCIe airflow settings under Datacenter only. The [iDRAC9 Enterprise license](/blog/idrac-9-enterprise-license) article covers buying one. The iDRAC8 HTML5 console arrived in [2.30.119.30](https://dl.dell.com/manuals/all-products/esuprt_software/esuprt_remote_ent_sys_mgmt/esuprt_rmte_ent_sys_rmte_access_cntrllr/idrac8-lifecycle-controller-v2.30.119.30_Release%20Notes_en-us.pdf) along with Redfish 1.0, so an R630 on that firmware or later can avoid the Java console.
+
+The maintenance dates come from [KB 000178044](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8), which says iDRAC8 "reaches the End of Software Maintenance as of February 2024" and that the last release is 2.86.86.86, and from [KB 000178016](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9) for iDRAC9. Dell's [2.86.86.86 download page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=vwf72) is dated April 3, 2024 and lists fixes for a predictable IPMI session ID, the deprecated SHA1 algorithm in SSH, and CVE-2023-48795. After the maintenance date, KB 000178044 says "iDRAC Engineering is no longer obligated to maintain or repair the firmware," so keep an iDRAC8 on an isolated management network.
+
+For quiet running, the generations split. On 13th generation servers, Dell's [KB 000135682](https://www.dell.com/support/kbdoc/en-us/000135682) disables the fan increase that a third-party PCIe card triggers:
+
+\`\`\`bash
+ipmitool -I lanplus -H IDRAC_IP -U USERNAME -P PASSWORD raw 0x30 0xce 0x00 0x16 0x05 0x00 0x00 0x00 0x05 0x00 0x01 0x00 0x00
+\`\`\`
+
+The same article gives a command to read the current state:
+
+\`\`\`bash
+ipmitool -I lanplus -H IDRAC_IP -U USERNAME -P PASSWORD raw 0x30 0xce 0x01 0x16 0x05 0x00 0x00 0x00
+\`\`\`
+
+Dell notes that this only removes the increase tied to the card, so it may change nothing if the fans are already fast for another reason.
+
+Manual fan control is a community technique, not a Dell feature. The fan-controller project's [README](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker) lists raw fan commands as available on iDRAC 6, 7 and 8, available on iDRAC9 up to firmware 3.30.30.30, and removed by Dell from 3.34.34.34 on. That lines up badly with the CPU note above: 3.34.34.34 is the release whose notes add Cascade Lake support. Plan on a 2nd Generation R640 not having raw fan control. Downgrading is not a way around it either. Dell's [KB 000225924](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers) says iDRAC9 "cannot downgrade/rollback to iDRAC9 firmware 4.40.10.00 or older" once the June 2024 release (7.00.00.172 on 14th generation) is installed. The [fan speed offset](/blog/idrac-fan-speed-offset) article covers what iDRAC9 does allow.
+
+## How does each one boot: IDSDM, SD, USB or BOSS?
+
+IDSDM is Dell's Internal Dual SD Module, and BOSS is its Boot Optimized Storage Solution card.
+
+| Option | R630 | R640 |
+|---|---|---|
+| IDSDM | Two SD cards, mirrored | Two microSD cards, combined with vFlash |
+| Internal USB | Yes | Yes |
+| BOSS-S1 | Listed as "None" | Two M.2 SATA drives, RAID 1 or non-RAID |
+| SATADOM | Not listed by Dell | Not listed by Dell |
+
+The R630's [Internal Dual SD Module](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-technical-guide-v1-6.pdf) keeps its two cards in a mirrored configuration. The R640 moves to microSD and merges the module with the vFlash card. Its guide adds that "The IDSDM only option is available with vFlash hardware and requires an iDRAC Enterprise license to enable this feature."
+
+BOSS is the 14th generation answer. Dell's [BOSS-S1 guide](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf) lists the R640 among supported systems and names M.2 drives such as the Intel S3520 (120, 240 and 480 GB), Intel S4510 and Micron 5100 (both 240 and 480 GB). It adds, "Dell EMC recommends that you use the BOSS-S1 card only as an operating system boot device." The S1 is a PCIe card, so it uses one of the three slots. The [BOSS card](/blog/dell-boss-card) article covers its modes.
+
+SD boot has a software cost. Broadcom's [KB 317631](https://knowledge.broadcom.com/external/article/317631) says "Endurance ratings alone cannot guarantee the viability of SD cards/USB media as a boot option," sets an endurance requirement of 128 TBW over five years for a boot device, and says newer servers that carry SD or USB as a boot device "will not certify successfully." An R630 on ESXi 7.0 that boots from IDSDM falls under that guidance.
+
+Dell does not list a SATADOM option for either server in these guides. A third-party SATADOM is untested by Dell, and on the R640 the on-board SATA ports are not accessible once a mini PERC is installed.
+
+## Which is the better used buy for noise, power and support dates?
+
+### Noise
+
+Dell publishes sound data for each, in different papers and setups. The R630 numbers come from the [R630 technical guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-technical-guide-v1-6.pdf) at 23 C, plus or minus 2. The R640 numbers come from Dell's [14G acoustics paper](https://downloads.dell.com/manuals/common/dell_emc_poweredge_14g_acoustical_performance_and_dependencies_22nov2018.pdf) at 25 C. LpA is sound pressure at the listener, in A-weighted decibels.
+
+| Configuration, idle / operating LpA | R630 (23 C) | R640 (25 C) |
+|---|---|---|
+| Minimum | 25 / 29 dBA | 35 / 37 dBA |
+| Typical | 32 / 33 dBA | 36 / 39 dBA |
+| Feature-rich | 43 / 43 dBA | 39 / 46 dBA |
+
+The configurations are not matched. The R630's minimum build is one 85 W CPU, one memory module and one SATA SSD, while the R640's is one 85 W CPU, two modules and a 7,200 rpm SATA drive in the 3.5-inch chassis. The R630's typical build has two 105 W CPUs, eight modules and four 10,000 rpm SAS drives, and the R640's has two 105 W CPUs, twelve modules, eight 10,000 rpm SAS drives and a network card. Read the table as a rough guide, not a ranking.
+
+Temperature matters more than the model. Dell's R640 table lists idle at 28 C as 46 to 48 dBA, against 35 to 39 dBA at 25 C, and says "the idle fan speed of the system cannot be lowered without changing the configuration." Both servers get louder with NVMe: the R630 guide says a configuration with PCIe SSD "requires more airflow for cooling," and the R640 paper says NVMe drives need higher fan speeds.
+
+### Power
+
+Dell's own SPECpower_ssj2008 submissions give a hint at the top end only.
+
+| | [R630 run](https://spec.org/power_ssj2008/results/res2016q2/power_ssj2008-20160510-00731.html) | [R640 run](https://spec.org/power_ssj2008/results/res2017q3/power_ssj2008-20170829-00781.html) |
+|---|---|---|
+| CPUs | 2 x E5-2699 v4 (44 cores) | 2 x Platinum 8180 (56 cores) |
+| Memory | 8 x 16 GB, limited to 1866 | 12 x 16 GB, 2666 rated |
+| Active idle | 46.7 W | 55.0 W |
+| 100% load | 279 W | 469 W |
+| Score | 11,157 overall ssj_ops/watt | 11,542 overall ssj_ops/watt |
+
+Both runs used one 120 GB SATA SSD and had Turbo Boost disabled, and the R630 report also notes a 290 W user-defined power cap. These are tuned benchmark builds, not a home server at idle. Efficiency per watt is within 4 percent (11,542 against 11,157), and the R640 idled 8.3 W higher with more cores and more memory modules. The [rack budget tool](/tools/rack-budget) converts watts to heat and yearly cost.
+
+### Support dates
+
+| | R630 | R640 |
+|---|---|---|
+| Management firmware | iDRAC8, final at 2.86.86.86 | iDRAC9, maintenance to February 1, 2027 |
+| Newest Windows Server Dell lists | [2019 LTSC](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r630) | [2022 LTSC](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r640) |
+| Newest ESXi Dell lists | 7.0 | 8.0 |
+
+The newest R630 BIOS on Dell's download page is [2.19.0](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=km6p8), dated March 18, 2024. Dell's [vSphere 8.0 certified list](https://www.dell.com/support/kbdoc/en-us/000217592/dell-poweredge-servers-certified-for-vmware-vsphere-8-0) includes the R640 and has no R630 entry. The [R740 end-of-life](/blog/poweredge-r740-end-of-life) article tracks the 14th generation dates.
+
+Choose by the job. The R630 fits a Proxmox or ESXi 7 host that needs three PCIe slots and no NVMe, with the lower idle draw in these two runs, if the end of firmware updates is acceptable. The R640 fits ESXi 8, Windows Server 2022, an NVMe pool, 3.5-inch drives or six-channel memory. For more 13th generation bays, the [R730 vs R730xd](/blog/dell-r730-vs-r730xd) article covers the 2U siblings.
+
+## What breaks
+
+**A 2nd Generation CPU needs newer firmware in an R640.** Dell's 3.34.34.34 notes are where Cascade Lake and DDR4-2933 support appear. Fix: update iDRAC and BIOS before the CPU swap, and expect raw fan commands to stop working.
+
+**An R630 with one CPU has fewer slots.** The manual says both processors must be installed to use riser 1 slots. Fix: use the two-slot layout, or install the second CPU.
+
+**A hot CPU in a 10-bay R630 with NVMe.** Dell names the 8-bay, two-slot chassis for the 145 W, 22-core part. Fix: choose a part at or under 135 W for a 10-bay with PCIe SSDs, and keep ambient at 30 C or lower.
+
+**Memory runs below its rating.** The R630 drops to 1866 MT/s at three RDIMMs per channel, and Dell's R640 table shows 2666 for 1st Generation CPUs and for 8 GB single-rank modules. Fix: populate one identical module per channel, and read the speed with dmidecode.
+
+**A power supply from the other generation will not work.** The R640 manual says mixing PSUs from previous generations "is not supported, even if the PSUs have the same power rating," and results in "a PSU mismatch condition or failure to turn the system on." Fix: buy 14th generation supplies for the R640.
+
+**Virtual console is missing.** Express lacks it on both generations. Fix: check the license in the iDRAC web interface, and read the Enterprise license article before buying.
+
+**An iDRAC9 downgrade reports success and logs RAC0181.** Dell describes RAC0181 as an informational Lifecycle Log event that appears on reboot, with no action required. Fix: do not plan on downgrading iDRAC9 to 4.40.10.00 or older.
+
+**ESXi on an SD card wears out.** Broadcom no longer treats SD or USB media as a dependable boot option. Fix: use a BOSS-S1 on the R640, or an SSD in a front bay on either server.
+
+## Sources
+
+- [Dell: PowerEdge R630 Owner's Manual](https://downloads.dell.com/topicspdf/poweredge-r630_owners-manual_en-us.pdf)
+- [Dell: PowerEdge R640 Installation and Service Manual](https://downloads.dell.com/topicspdf/poweredge-r640_owners-manual_en-us.pdf)
+- [Dell: PowerEdge R640 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf)
+- [Dell: PowerEdge R630 Technical Guide, version 1.6](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-technical-guide-v1-6.pdf)
+- [Dell: PowerEdge R630 Spec Sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-spec-sheet.pdf)
+- [Dell: PowerEdge 14th Generation Acoustical Performance and Dependencies](https://downloads.dell.com/manuals/common/dell_emc_poweredge_14g_acoustical_performance_and_dependencies_22nov2018.pdf)
+- [Dell: iDRAC8 Version 2.75.75.75 User's Guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf)
+- [Dell: iDRAC9 User's Guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf)
+- [Dell: iDRAC8 2.30.119.30 Release Notes](https://dl.dell.com/manuals/all-products/esuprt_software/esuprt_remote_ent_sys_mgmt/esuprt_rmte_ent_sys_rmte_access_cntrllr/idrac8-lifecycle-controller-v2.30.119.30_Release%20Notes_en-us.pdf)
+- [Dell: iDRAC9 3.34.34.34 Release Notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes2_en-us.pdf)
+- [Dell KB 000178044: Support for iDRAC8](https://www.dell.com/support/kbdoc/en-us/000178044/support-for-integrated-dell-remote-access-controller-8-idrac8)
+- [Dell KB 000178016: Support for iDRAC9](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9)
+- [Dell KB 000135682: Disable the third-party PCIe card default cooling response on 13G servers](https://www.dell.com/support/kbdoc/en-us/000135682)
+- [Dell KB 000225924: RAC0181 iDRAC9 firmware downgrade failures](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers)
+- [Dell: iDRAC8 2.86.86.86 download page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=vwf72)
+- [Dell: BIOS 2.19.0 for R630, R730 and R730xd](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=km6p8)
+- [Dell: PowerEdge R630 supported operating systems](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r630)
+- [Dell: PowerEdge R640 supported operating systems](https://www.dell.com/support/home/en-us/drivers/supportedos/poweredge-r640)
+- [Dell KB 000217592: PowerEdge servers certified for VMware vSphere 8.0](https://www.dell.com/support/kbdoc/en-us/000217592/dell-poweredge-servers-certified-for-vmware-vsphere-8-0)
+- [Dell: Boot Optimized Server Storage-S1 User's Guide](https://dl.dell.com/topicspdf/boss-s-1_users-guide_en-us.pdf)
+- [Broadcom KB 317631: SD card/USB boot device revised guidance](https://knowledge.broadcom.com/external/article/317631)
+- [Intel: Xeon E5-2699 v4 specifications](https://www.intel.com/content/www/us/en/products/sku/91317/intel-xeon-processor-e52699-v4-55m-cache-2-20-ghz/specifications.html)
+- [Intel: Xeon E5-2640 v4 specifications](https://www.intel.com/content/www/us/en/products/sku/92984/intel-xeon-processor-e52640-v4-25m-cache-2-40-ghz/specifications.html)
+- [Intel: Xeon Gold 6130 specifications](https://www.intel.com/content/www/us/en/products/sku/120492/intel-xeon-gold-6130-processor-22m-cache-2-10-ghz/specifications.html)
+- [Intel: Xeon Gold 6230 specifications](https://www.intel.com/content/www/us/en/products/sku/192437/intel-xeon-gold-6230-processor-27-5m-cache-2-10-ghz/specifications.html)
+- [Intel: Xeon Platinum 8280 specifications](https://www.intel.com/content/www/us/en/products/sku/192478/intel-xeon-platinum-8280-processor-38-5m-cache-2-70-ghz/specifications.html)
+- [SPEC: SPECpower_ssj2008 result for Dell PowerEdge R630 (E5-2699 v4)](https://spec.org/power_ssj2008/results/res2016q2/power_ssj2008-20160510-00731.html)
+- [SPEC: SPECpower_ssj2008 result for Dell PowerEdge R640 (Platinum 8180)](https://spec.org/power_ssj2008/results/res2017q3/power_ssj2008-20170829-00781.html)
+- [GitHub: Dell iDRAC fan controller README](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker)
+- [dmidecode(8) manual page](https://linux.die.net/man/8/dmidecode)`,
+  },
+  {
+    slug: "hunting-linux-persistence",
+    title: "Hunting Linux Persistence: Cron, Systemd, authorized_keys and ld.so.preload",
+    date: "2026-11-10",
+    tags: ["linux", "security", "servers"],
+    excerpt:
+      "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
+    coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
+    content: `## The short answer
+
+The symptom is usually indirect: a process that comes back after you kill it, a login you cannot explain, or a server you already cleaned once that got reinfected. The cause is persistence, a way for code to run again without the attacker doing anything. On Linux it sits in a short list of places that can be enumerated in minutes: cron and at jobs, systemd timers and units (including per-user units), \`authorized_keys\` files and the sshd hooks around them, shell profiles and \`rc.local\`, and \`/etc/ld.so.preload\`. MITRE ATT&CK v20 lists 14 Linux sub-techniques across the six technique families that cover these places, and its [Linux matrix](https://attack.mitre.org/matrices/enterprise/linux/) shows 17 persistence techniques in all. Each place takes one or two commands to list (below), and \`dpkg --verify\` or \`rpm -Va\` shows whether package-owned files changed, with the catch that dpkg's manual says its check "should not be considered as any kind of security verification." Read \`/etc/ld.so.preload\` and compare process lists with a static BusyBox build, because a preloaded library can hide files and processes from every dynamically linked tool. Then add audit rules so the next edit to these paths is logged.
+
+Everything here is read-only until the audit rules at the end. Run it on machines you own or are responsible for.
+
+## Where can an attacker make code run again after a reboot?
+
+ATT&CK defines persistence as techniques that keep "access to systems across restarts, changed credentials, and other interruptions" ([TA0003](https://attack.mitre.org/tactics/TA0003/)). On Linux the places in this article reduce to six technique families. The counts below come from the [Linux matrix](https://attack.mitre.org/matrices/enterprise/linux/) as of ATT&CK v20, which the [version history](https://attack.mitre.org/resources/versions/) dates to October 13, 2026.
+
+| Technique | Linux sub-techniques | Where to look |
+|---|---|---|
+| T1546 Event Triggered Execution | 5: Unix Shell Configuration Modification, Trap, Installer Packages, Udev Rules, Python Startup Hooks | \`/etc/profile\`, \`/etc/profile.d\`, \`~/.bash_profile\`, \`~/.bashrc\`, \`~/.bash_logout\` ([T1546.004](https://attack.mitre.org/techniques/T1546/004/)) |
+| T1053 Scheduled Task/Job | 3: At, Cron, Systemd Timers | Next section |
+| T1098 Account Manipulation | 2: SSH Authorized Keys, Additional Local or Domain Groups | \`authorized_keys\` section |
+| T1574 Hijack Execution Flow | 2: Dynamic Linker Hijacking, Path Interception by PATH Environment Variable | \`/etc/ld.so.preload\`; v20 lists the technique under [Stealth and Execution](https://attack.mitre.org/techniques/T1574/), not Persistence |
+| T1543 Create or Modify System Process | 1: Systemd Service | Unit directories |
+| T1037 Boot or Logon Initialization Scripts | 1: RC Scripts | \`rc.local\`, whose contents run as root on reboot ([T1037.004](https://attack.mitre.org/techniques/T1037/004/)) |
+
+The counts sum to 14. The table is a map, not a ranking, because intrusions stack entries: MITRE credits Rocke with both a [cron job](https://attack.mitre.org/techniques/T1053/003/) and an [\`/etc/ld.so.preload\` edit](https://attack.mitre.org/techniques/T1574/006/), and Skidmap with both crontab persistence and a key in [\`authorized_keys\`](https://attack.mitre.org/techniques/T1098/004/). Elastic's detection engineers make the cost explicit: when an attack is found and the entry point patched, "any leftover persistence mechanism can allow the attackers to regain access" ([Elastic](https://www.elastic.co/security-labs/primer-on-persistence-mechanisms)). So the goal is to list every place, not to stop at the first hit.
+
+For each place, ask two questions. Does a package own the file? Did it change recently? Neither answer is proof on its own, and the last section covers how both can mislead.
+
+## How do you list every cron job, at job and systemd timer on the host?
+
+Cron has several homes. Debian's [cron(8)](https://manpages.debian.org/bookworm/cron/cron.8.en.html) puts per-user crontabs in \`/var/spool/cron/crontabs\`, while the cronie [crontab(5)](https://man7.org/linux/man-pages/man5/crontab.5.html) used on Red Hat style systems names \`/var/spool/cron/\`. System jobs live in \`/etc/crontab\` and \`/etc/cron.d/\`, and Debian adds scripts in \`/etc/cron.hourly\`, \`/etc/cron.daily\`, \`/etc/cron.weekly\` and \`/etc/cron.monthly\`, which \`run-parts\` runs. Debian says spool files "should not be accessed directly", so read them with \`crontab -l -u\`.
+
+\`\`\`bash
+sudo ls -la /etc/crontab /etc/cron.d /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly
+sudo cat /etc/crontab /etc/cron.d/* 2>/dev/null
+sudo sh -c 'for u in $(cut -d: -f1 /etc/passwd); do crontab -l -u "$u" 2>/dev/null | sed "s|^|$u: |"; done'
+sudo grep -rnE '^\\s*(@reboot|-)' /etc/crontab /etc/cron.d /var/spool/cron 2>/dev/null
+sudo atq
+sudo ls -la /var/spool/cron/atjobs 2>/dev/null
+systemctl list-timers --all
+\`\`\`
+
+Two cron details deserve a grep. \`@reboot\` means "Run once after reboot" per crontab(5), and MITRE records the GoldMax Linux variant [persisting with a crontab \`@reboot\` line](https://attack.mitre.org/techniques/T1053/003/). In cronie, a root crontab entry may also start with \`-\`, which "will prevent cron from writing a syslog message about the command being executed", so that job runs without cron's usual log line. MITRE's examples show the payload shape: Rocke's job "downloaded and executed files from the C2", and Kinsing used crontab "to download and run shell scripts every minute".
+
+For at jobs, Debian's [at(1)](https://manpages.debian.org/bookworm/at/at.1.en.html) says \`atq\` lists the user's pending jobs, or everyone's for the superuser, \`at -c JOB\` prints a job, and the spool is \`/var/spool/cron/atjobs\`. Elastic notes that At is not present on most Linux distributions by default, so an installed \`atd\` on a server that never needed it is worth a question. MITRE's [at page](https://attack.mitre.org/techniques/T1053/002/) lists the technique for Linux, Windows and macOS.
+
+Systemd timers need a matching service. MITRE's [timer page](https://attack.mitre.org/techniques/T1053/006/) says "Each .timer file must have a corresponding .service file with the same name", and that privileged timers sit in \`/etc/systemd/system/\` and \`/usr/lib/systemd/system\` while user-level ones sit in \`~/.config/systemd/user/\`. [systemctl(1)](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html) documents \`list-timers\` and its NEXT, LAST, UNIT and ACTIVATES columns, and its own sample output shows what normal looks like: \`apt-daily.timer\`, \`systemd-tmpfiles-clean.timer\` and \`snapd.refresh.timer\`. For any timer you cannot place, run \`systemctl cat NAME.timer NAME.service\`. A timer using \`OnBootSec=\` fires relative to boot, per [systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html).
+
+A [cron expression explainer](/tools/cron-explainer) decodes a schedule field faster than reading crontab(5), and [why jobs behave differently under cron](/blog/it-works-in-the-shell) covers the minimal environment cron provides.
+
+## How do you spot a malicious systemd unit, including user units?
+
+Start with where units load from. [systemd.unit(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) lists \`/etc/systemd/system\` for units created by the administrator, \`/run/systemd/system\` for runtime units, \`/usr/local/lib/systemd/system\` for units the administrator installed and \`/usr/lib/systemd/system\` for units from the package manager. For user managers it lists \`~/.config/systemd/user\`, \`/etc/systemd/user\` and \`~/.local/share/systemd/user\`, among others. Precedence matters: [systemd-delta(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-delta.html) says files in \`/etc/\` "have highest priority", so a same-named unit there replaces the distribution's, and \`.d/\` drop-in files can change a vendor unit without editing it.
+
+\`\`\`bash
+systemd-delta systemd/system
+systemd-delta systemd/user
+systemctl list-unit-files | grep -w enabled
+for f in /etc/systemd/system/*.service /etc/systemd/system/*.timer; do
+  [ -f "$f" ] && ! dpkg -S "$f" >/dev/null 2>&1 && echo "no owner: $f"
+done
+sudo grep -rnE '^Exec[A-Za-z]*=.*(/tmp/|/dev/shm/|/var/tmp/)' /etc/systemd /usr/local/lib/systemd /run/systemd 2>/dev/null
+\`\`\`
+
+On RPM systems use \`rpm -qf "$f"\` in place of \`dpkg -S\`. The \`-S\` lookup has a stated gap: [dpkg-query](https://man7.org/linux/man-pages/man1/dpkg-query.1.html) "will not list extra files created by maintainer scripts", so a missing owner is a lead, not a verdict. Units you wrote yourself will also show up as unowned, which is the point: you should be able to name every one.
+
+Read every \`Exec\` line in a suspect unit. MITRE's [systemd service page](https://attack.mitre.org/techniques/T1543/002/) lists \`ExecStart\`, \`ExecStartPre\`, \`ExecStartPost\`, \`ExecReload\` and \`ExecStop\`, notes that the \`User\` directive sets which account the service runs as, and adds that adversaries "may also place symbolic links in these directories, enabling systemd to find these payloads regardless of where they reside on the filesystem." Its detection notes flag execution from \`/tmp\`, \`/dev/shm\` or unmounted volumes, which is what the last grep above targets. Knowing what a [well-formed unit](/blog/systemd-units-that-behave) looks like makes odd ones easier to spot.
+
+Generators are the quiet variant. [systemd.generator(7)](https://www.freedesktop.org/software/systemd/man/latest/systemd.generator.html) describes small executables in \`/usr/lib/systemd/system-generators/\`, \`/etc/systemd/system-generators/\`, \`/run/systemd/system-generators/\` and \`/usr/local/lib/systemd/system-generators/\`, which systemd runs "very early at bootup and at configuration reload time" and which write unit files that join the load path. A generator is an executable, not a unit file, so a search of unit directories misses it. Any file in the \`/etc\`, \`/run\` or \`/usr/local\` generator directories needs an owner.
+
+User units are the other blind spot. Normally they start with that user's manager at login, but with \`loginctl enable-linger\` "a user manager is spawned for the user at boot and kept around after logouts" ([loginctl(1)](https://www.freedesktop.org/software/systemd/man/latest/loginctl.html)). Without lingering, the user manager is generally ["started on first login only"](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html). The systemd source stores linger state as files in [\`/var/lib/systemd/linger/\`](https://github.com/systemd/systemd/blob/main/src/login/logind-user.c), so an account listed there that nobody enabled on purpose is a finding.
+
+\`\`\`bash
+sudo find /etc/systemd/user /home /root -path '*/systemd/user/*' \\( -type f -o -type l \\) -ls 2>/dev/null
+ls -la /var/lib/systemd/linger 2>/dev/null
+\`\`\`
+
+## How do you audit authorized_keys files and sshd options?
+
+MITRE's [T1098.004](https://attack.mitre.org/techniques/T1098/004/) says adversaries "may modify SSH authorized_keys files directly with scripts or shell commands", and in cloud environments can push keys through the provider's API, for example Google Cloud's \`add-metadata\` command. So a key can appear without anyone logging in to the server. The same page records that TeamTNT has "added RSA keys in authorized_keys".
+
+Do not start with \`find\`. Start with the effective sshd configuration, because the keys sshd honors come from options, and a \`Match\` block can change them per user. The [sshd_config(5)](https://man.openbsd.org/sshd_config) defaults and hooks that matter:
+
+| Option | Default or behavior |
+|---|---|
+| \`AuthorizedKeysFile\` | \`.ssh/authorized_keys .ssh/authorized_keys2\`, so a second file is read |
+| \`AuthorizedKeysCommand\` | A program that prints keys. It is tried after the files and "will not be executed if a matching key is found there" |
+| \`TrustedUserCAKeys\` | Certificates signed by a listed authority are accepted, with no \`authorized_keys\` line needed |
+| \`AuthorizedPrincipalsFile\` / \`Command\` | Names accepted for those signed certificates |
+| \`PermitUserEnvironment\` | \`no\` by default; enabling it "may enable users to bypass access restrictions in some configurations using mechanisms such as LD_PRELOAD" |
+| \`PermitUserRC\` | \`yes\` by default, so \`~/.ssh/rc\` runs at login |
+
+\`\`\`bash
+sudo sshd -T | grep -E '^(authorizedkeysfile|authorizedkeyscommand|authorizedkeyscommanduser|authorizedprincipalsfile|authorizedprincipalscommand|trustedusercakeys|permituserenvironment|permituserrc|permitrootlogin|strictmodes) '
+sudo sshd -T -C user=alice,host=lab1,addr=192.0.2.10 | grep -i authorizedkeysfile
+sudo find / -xdev \\( -name 'authorized_keys' -o -name 'authorized_keys2' -o -path '*/.ssh/rc' -o -name sshrc \\) -type f -ls 2>/dev/null
+sudo find /home /root -name 'authorized_keys*' -type f -exec sh -c 'for f; do echo "== $f"; ssh-keygen -lf "$f"; done' _ {} +
+\`\`\`
+
+[sshd(8)](https://man.openbsd.org/sshd) documents \`-T\` as extended test mode that prints the effective configuration, with \`-C\` supplying the connection parameters that \`Match\` rules need. Replace \`alice\`, \`lab1\` and the address with a real account and client. The [OpenSSH 7.2 release notes](https://www.openssh.com/releasenotes.html) (February 2016) added fingerprinting of every key in a file with \`ssh-keygen -lf\`. The [SSH hardening post](/blog/ssh-hardening-linux-servers) makes the same point about checking the running configuration instead of the file.
+
+Look at option prefixes too. Per sshd(8), a line may begin with options such as \`command=\`, \`environment=\`, \`from=\` and \`expiry-time=\`, and \`command="..."\` "is executed whenever this key is used for authentication". \`grep -vE '^(#|$|(sk-)?(ssh|ecdsa)-)' ~/.ssh/authorized_keys\` prints only lines that begin with options. sshd also runs \`~/.ssh/rc\`, or \`/etc/ssh/sshrc\`, at login, and \`no-user-rc\` disables the per-user file for a key.
+
+Finally, tie keys to logins. sshd logs a successful login at its default log level, and the [OpenSSH source](https://github.com/openssh/openssh-portable/blob/master/auth.c) builds the line as \`Accepted publickey for USER from ADDRESS port N ssh2:\` followed by key type and fingerprint. Match those against the \`ssh-keygen -lf\` list:
+
+\`\`\`bash
+sudo journalctl --no-pager | grep 'Accepted publickey'
+\`\`\`
+
+A fingerprint that appears in logs but in no file means the key was removed after use, or was accepted through a signed certificate or \`AuthorizedKeysCommand\`. The [key-based authentication post](/blog/ssh-key-based-authentication) covers the options and the legacy \`authorized_keys2\` file from the owner's side.
+
+## What does /etc/ld.so.preload do, and why do rootkits use it?
+
+It loads libraries into every dynamically linked program. [ld.so(8)](https://man7.org/linux/man-pages/man8/ld.so.8.html) defines \`LD_PRELOAD\` as "additional, user-specified, ELF shared objects to be loaded before all others" that "can be used to selectively override functions in other shared objects." (ELF is the file format of Linux programs and libraries.) Preloads are handled in order: the \`LD_PRELOAD\` variable, then the linker's \`--preload\` option, then \`/etc/ld.so.preload\`. The last has "a system-wide effect, causing the specified libraries to be preloaded for all programs that are executed on the system", which the manual calls "usually undesirable" and "typically employed only as an emergency remedy." On most servers the file does not exist at all. A non-empty one needs an explanation.
+
+That reach is why rootkits want it. A library loaded first can replace libc functions, so one that overrides directory reads can drop entries before \`ls\`, \`ps\` or \`top\` see them. Unit 42's [Hildegard analysis](https://unit42.paloaltonetworks.com/hildegard-malware-teamtnt/) (February 3, 2021) describes malware that modified \`/etc/ld.so.preload\` and overwrote \`readdir()\` and \`readdir64()\` to filter \`/proc\` entries with keywords such as tmate, xmrig and ziggy, so that \`ps\`, \`top\` and many container monitoring tools "will be blinded from these malicious processes". [Sandfly](https://sandflysecurity.com/blog/linux-medusa-rootkit-detection-and-de-cloaking) describes the Medusa rootkit, written up in July 2025, as the same style, hiding a directory from \`ls\`, and says such rootkits slow the machine because "every command is potentially being intercepted". Elastic's rootkit research says the file ["forces the dynamic linker to inject the listed shared object into every dynamically linked binary"](https://www.elastic.co/security-labs/linux-rootkits-2-caught-in-the-act) and shows a shared object moved from a hidden directory under \`/tmp\` to \`/usr/local/lib/libz.so.1\`, a name that looks like a real library.
+
+Two sibling mechanisms need the same check. Elastic also lists \`/etc/ld.so.conf\` and \`/etc/ld.so.conf.d/\` followed by \`ldconfig\`, which changes how libraries resolve. The ld.so(8) search order consults the \`/etc/ld.so.cache\` that \`ldconfig\` builds before the default \`/lib\` and \`/usr/lib\`. Per sshd_config above, \`PermitUserEnvironment\` and \`environment=\` are a route to \`LD_PRELOAD\` for logins, and MITRE's [T1574.006](https://attack.mitre.org/techniques/T1574/006/) covers the environment variable as the other half of the technique.
+
+Check from outside the preload. Sandfly's advice is a static BusyBox build, since statically built binaries "do not rely on dynamic libraries" and "are not fooled by rootkits that have modified them." Sandfly also warns that installing it on the suspect host "will alter the state of the box", so bring it from another host or disk. Confirm it is really static first: \`file "$(command -v busybox)"\` should say \`statically linked\`.
+
+\`\`\`bash
+cat /etc/ld.so.preload
+busybox cat /etc/ld.so.preload
+ls -l /etc/ld.so.conf /etc/ld.so.conf.d/
+sudo grep -rIl 'LD_PRELOAD' /etc /usr/lib/systemd /home /root 2>/dev/null
+diff <(ls /proc | grep -E '^[0-9]+$' | sort) <(busybox ls /proc | grep -E '^[0-9]+$' | sort)
+\`\`\`
+
+\`No such file or directory\` from both \`cat\` commands is the healthy answer. If only the BusyBox one prints content, the file is being hidden from normal tools. The \`diff\` will always show a few lines, because each side of the comparison lists its own short-lived process IDs. Run it two or three times: a process ID that shows up only on the BusyBox side every time is the finding, and so is any file that \`busybox ls\` shows in a library directory and \`ls\` does not. For each path in the preload file, find the owning package with \`dpkg -S\` or \`rpm -qf\`; an unowned \`.so\` is the finding.
+
+## How do you check package files for tampering with dpkg --verify or rpm -Va?
+
+Both compare installed files with what the package database recorded, which finds swapped binaries such as \`ssh\`, \`ls\` or a login module. They have different depth. [dpkg(1)](https://man7.org/linux/man-pages/man1/dpkg.1.html) says the "only functional check" \`--verify\` performs today is an md5sum comparison, done only if the database holds a sum for the file, and that it "should not be considered as any kind of security verification." Its output has one line per failed path in the form \`?M5?????? [c] pathname\`, where \`?\` means a check could not be done, \`.\` means it passed, a \`5\` means the checksum did not match and \`c\` marks a conffile. So \`??5?????? c /etc/ssh/sshd_config\` is a changed configuration file. [debsums(1)](https://manpages.debian.org/bookworm/debsums/debsums.1.en.html) reads \`/var/lib/dpkg/info/*.md5sums\`, \`debsums -l\` lists packages with no checksum list, and \`-c\` prints changed files.
+
+[rpm(8)](https://rpm-software-management.github.io/rpm/man/rpm.8.html) checks more: "size, digest, permissions, type, owner and group of each file." It prints nine result characters, where \`.\` means pass and a letter means failure: \`S\` size, \`M\` mode, \`5\` digest, \`D\` device, \`L\` link, \`U\` user, \`G\` group, \`T\` mtime and \`P\` capabilities. A \`c\` marks a config file, so \`S.5....T.  c /etc/ssh/sshd_config\` is a modified config file, usually benign.
+
+\`\`\`bash
+sudo dpkg --verify 2>/dev/null | grep -v ' c /'
+debsums -l
+sudo rpm -Va 2>/dev/null | grep -v ' c /'
+sudo dpkg --verify openssh-server openssh-client libc6 libpam-modules coreutils procps
+sudo rpm -V openssh-server openssh-clients glibc pam coreutils procps-ng
+\`\`\`
+
+No output from a verify command means every check passed. Expect some noise on real systems, and debsums itself warns that files "which have been replaced by another package may be erroneously reported as changed". Spend time on \`/usr/bin\`, \`/usr/sbin\`, \`/lib\` and the PAM (Pluggable Authentication Modules) directory, and on anything with a mismatched size or digest. Do not filter config files out forever: the first and third commands hide them to cut noise, but \`sshd_config\` and files under \`/etc/pam.d\` are exactly where a quiet change lives, so read that list once too. Files no package ships are the other half, and the \`dpkg -S\` loop above covers them.
+
+## How do you catch the next change as it happens?
+
+Verification finds yesterday's change. The Linux audit system logs tomorrow's. [auditctl(8)](https://man7.org/linux/man-pages/man8/auditctl.8.html) says the \`-w\` watch form "is for backwards compatibility and is deprecated due to poor system performance", and gives the replacement: \`-a always,exit -F arch=b64 -F path=/etc/shadow -F perm=wa\`, with \`dir=\` for a recursive directory watch. The community [Neo23x0 rule set](https://github.com/Neo23x0/auditd/blob/master/audit.rules) still uses \`-w\` lines for cron, \`/etc/ld.so.preload\` (key \`systemwide_preloads\`), systemd directories, SSH and shell profiles, which is a good checklist of paths.
+
+\`\`\`bash
+# /etc/audit/rules.d/persistence.rules
+-a always,exit -F arch=b64 -F path=/etc/crontab -F perm=wa -k persist_cron
+-a always,exit -F arch=b64 -F dir=/etc/cron.d/ -F perm=wa -k persist_cron
+-a always,exit -F arch=b64 -F dir=/var/spool/cron/ -F perm=wa -k persist_cron
+-a always,exit -F arch=b64 -F dir=/etc/systemd/system/ -F perm=wa -k persist_systemd
+-a always,exit -F arch=b64 -F dir=/usr/local/lib/systemd/system/ -F perm=wa -k persist_systemd
+-a always,exit -F arch=b64 -F path=/etc/ld.so.preload -F perm=wa -k persist_preload
+-a always,exit -F arch=b64 -F dir=/etc/ld.so.conf.d/ -F perm=wa -k persist_preload
+-a always,exit -F arch=b64 -F path=/etc/ssh/sshd_config -F perm=wa -k persist_ssh
+-a always,exit -F arch=b64 -F dir=/root/.ssh/ -F perm=wa -k persist_ssh
+\`\`\`
+
+[augenrules(8)](https://man7.org/linux/man-pages/man8/augenrules.8.html) merges the files in \`/etc/audit/rules.d\` that end in \`.rules\`, and \`augenrules --load\` loads the result. Then verify, which is the step people skip:
+
+\`\`\`bash
+sudo augenrules --load
+sudo auditctl -l | grep persist_
+sudo touch /etc/cron.d/audit-test && sudo rm /etc/cron.d/audit-test
+sudo ausearch -k persist_cron -i | tail
+\`\`\`
+
+\`auditctl -l\` should print all nine rules, and [ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html) should show the test file being created and removed. If either comes back empty, the rules are not live. Each rule names one literal path, so add one \`dir=\` line per account whose \`.ssh\` directory matters; \`-F dir=/home/\` would also log every ordinary write under it. Once the rules are right, auditctl's \`-e 2\` locks the configuration so that any attempt to change it "will be audited and denied" until a reboot. The manual says it is meant to be the last command in \`audit.rules\`, and it also means your own rule fixes need a reboot.
+
+For a baseline of file state, AIDE's [manual](https://aide.github.io/doc/) says to build the database "immediately after the operating system and applications have been installed, before the machine is plugged into a network", to move it to read-only media along with the binary and configuration, and not to keep the config on the target machine, because an attacker "could read the config file and alter it". For queries across hosts, osquery exposes [\`crontab\`](https://github.com/osquery/osquery/blob/master/specs/posix/crontab.table), [\`authorized_keys\`](https://github.com/osquery/osquery/blob/master/specs/posix/authorized_keys.table) and [\`systemd_units\`](https://github.com/osquery/osquery/blob/master/specs/linux/systemd_units.table) tables, and Elastic notes that osquery "focuses on static on-disk presence" where telemetry shows activity over time.
+
+\`\`\`sql
+SELECT path, event, minute, hour, command FROM crontab;
+SELECT u.username, k.key_file, k.algorithm, k.options, k.comment FROM users u JOIN authorized_keys k USING (uid);
+SELECT id, fragment_path, unit_file_state FROM systemd_units WHERE fragment_path LIKE '/etc/%' OR fragment_path LIKE '/run/%' OR fragment_path LIKE '/home/%';
+\`\`\`
+
+Send audit and sshd logs off the host so a local cleanup cannot erase them: [centralized syslog](/blog/syslog-centralized-logging) is the plumbing, and a [SOC home lab](/blog/soc-home-lab-build) is a place to practice the alerts. Elastic's advice is to monitor some mechanisms "close to real time and hunt others regularly".
+
+## What breaks, and what do these checks miss?
+
+**The tools can lie.** Everything above runs on the host being judged. Elastic's rootkit research reports that "static detection alone is fundamentally insufficient for reliable rootkit detection", and a rootkit in the kernel can hide from a static BusyBox too, because BusyBox still asks that kernel for the file list. One weak signal is \`cat /proc/sys/kernel/tainted\`: per the [kernel documentation](https://docs.kernel.org/admin-guide/tainted-kernels.html), loading an out-of-tree module sets bit 12 (value 4096) and an unsigned module sets bit 13 (value 8192). A nonzero value is only a lead, since a proprietary graphics driver sets bit 0, and a zero from a compromised kernel proves nothing. MITRE's [rootkit page](https://attack.mitre.org/techniques/T1014/) says rootkits may reside "at the user or kernel level". For serious doubt, inspect the disk from known-good boot media.
+
+**Package checks verify packages only.** \`dpkg --verify\` and debsums cover files with recorded sums, and debsums calls itself "of limited use as a security tool", pointing to AIDE, integrit, samhain or tripwire run from safe media. Files no package ships, which is most persistence, need the ownership checks.
+
+**Timestamps and logs are editable.** A "changed recently" filter fails against \`touch -r\`, which MITRE's [timestomp page](https://attack.mitre.org/techniques/T1070/006/) describes for Linux. The audit system is a target too: [T1685.004](https://attack.mitre.org/techniques/T1685/004/) covers killing \`auditd\` and editing \`/etc/audit/audit.rules\`, which is the case for \`-e 2\` and off-host logs.
+
+**The process list comparison is noisy.** Short-lived processes appear on one side of the \`diff\` and not the other. Only a difference that repeats counts.
+
+**Legitimate changes look identical.** Cloud metadata can write keys, configuration management rewrites \`authorized_keys\`, and distributions ship timers and cron files. Keep a baseline of what each server should have, in the way [threat modeling](/blog/threat-modeling-homelab) treats expected flows.
+
+**The list is not complete.** The Linux matrix also carries login modules ([T1556.003](https://attack.mitre.org/techniques/T1556/003/)), kernel modules, XDG autostart entries, new local accounts, web shells and valid credentials, none of which this checklist walks. The persistence definition includes surviving "changed credentials", so a stolen password defeats a clean host.
+
+**Removal is not recovery.** Deleting an entry leaves the way in unexplained. If a host fails these checks, preserve evidence before installing tools on it (Sandfly's warning above), rotate every key and password that host held, and rerun the whole list afterward instead of only the check that fired. A host with a preload or kernel finding is a rebuild, not a cleanup. Then write it up as an incident, as in [postmortems for a team of one](/blog/postmortems-team-of-one).
+
+## Sources
+
+- [attack.mitre.org: Persistence (TA0003)](https://attack.mitre.org/tactics/TA0003/)
+- [attack.mitre.org: Linux Matrix](https://attack.mitre.org/matrices/enterprise/linux/)
+- [attack.mitre.org: Version history](https://attack.mitre.org/resources/versions/)
+- [attack.mitre.org: Scheduled Task/Job: Cron (T1053.003)](https://attack.mitre.org/techniques/T1053/003/)
+- [attack.mitre.org: Scheduled Task/Job: At (T1053.002)](https://attack.mitre.org/techniques/T1053/002/)
+- [attack.mitre.org: Scheduled Task/Job: Systemd Timers (T1053.006)](https://attack.mitre.org/techniques/T1053/006/)
+- [attack.mitre.org: Create or Modify System Process: Systemd Service (T1543.002)](https://attack.mitre.org/techniques/T1543/002/)
+- [attack.mitre.org: Account Manipulation: SSH Authorized Keys (T1098.004)](https://attack.mitre.org/techniques/T1098/004/)
+- [attack.mitre.org: Hijack Execution Flow (T1574)](https://attack.mitre.org/techniques/T1574/)
+- [attack.mitre.org: Hijack Execution Flow: Dynamic Linker Hijacking (T1574.006)](https://attack.mitre.org/techniques/T1574/006/)
+- [attack.mitre.org: Event Triggered Execution: Unix Shell Configuration Modification (T1546.004)](https://attack.mitre.org/techniques/T1546/004/)
+- [attack.mitre.org: Boot or Logon Initialization Scripts: RC Scripts (T1037.004)](https://attack.mitre.org/techniques/T1037/004/)
+- [attack.mitre.org: Modify Authentication Process: Pluggable Authentication Modules (T1556.003)](https://attack.mitre.org/techniques/T1556/003/)
+- [attack.mitre.org: Rootkit (T1014)](https://attack.mitre.org/techniques/T1014/)
+- [attack.mitre.org: Disable or Modify Tools: Disable or Modify Linux Audit System Log (T1685.004)](https://attack.mitre.org/techniques/T1685/004/)
+- [attack.mitre.org: Indicator Removal: Timestomp (T1070.006)](https://attack.mitre.org/techniques/T1070/006/)
+- [man7.org: ld.so(8)](https://man7.org/linux/man-pages/man8/ld.so.8.html)
+- [man7.org: crontab(5)](https://man7.org/linux/man-pages/man5/crontab.5.html)
+- [Debian manpages: cron(8)](https://manpages.debian.org/bookworm/cron/cron.8.en.html)
+- [Debian manpages: at(1)](https://manpages.debian.org/bookworm/at/at.1.en.html)
+- [freedesktop.org: systemd.unit(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html)
+- [freedesktop.org: systemd.generator(7)](https://www.freedesktop.org/software/systemd/man/latest/systemd.generator.html)
+- [freedesktop.org: systemd-delta(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-delta.html)
+- [freedesktop.org: systemctl(1)](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
+- [freedesktop.org: systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
+- [freedesktop.org: loginctl(1)](https://www.freedesktop.org/software/systemd/man/latest/loginctl.html)
+- [GitHub: systemd, src/login/logind-user.c](https://github.com/systemd/systemd/blob/main/src/login/logind-user.c)
+- [OpenBSD: sshd_config(5)](https://man.openbsd.org/sshd_config)
+- [OpenBSD: sshd(8)](https://man.openbsd.org/sshd)
+- [OpenSSH: Release notes](https://www.openssh.com/releasenotes.html)
+- [GitHub: openssh-portable, auth.c](https://github.com/openssh/openssh-portable/blob/master/auth.c)
+- [man7.org: dpkg(1)](https://man7.org/linux/man-pages/man1/dpkg.1.html)
+- [man7.org: dpkg-query(1)](https://man7.org/linux/man-pages/man1/dpkg-query.1.html)
+- [Debian manpages: debsums(1)](https://manpages.debian.org/bookworm/debsums/debsums.1.en.html)
+- [rpm.org: rpm(8)](https://rpm-software-management.github.io/rpm/man/rpm.8.html)
+- [AIDE: The AIDE manual](https://aide.github.io/doc/)
+- [man7.org: auditctl(8)](https://man7.org/linux/man-pages/man8/auditctl.8.html)
+- [man7.org: augenrules(8)](https://man7.org/linux/man-pages/man8/augenrules.8.html)
+- [man7.org: ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html)
+- [GitHub: Neo23x0/auditd, audit.rules](https://github.com/Neo23x0/auditd/blob/master/audit.rules)
+- [GitHub: osquery, crontab table spec](https://github.com/osquery/osquery/blob/master/specs/posix/crontab.table)
+- [GitHub: osquery, authorized_keys table spec](https://github.com/osquery/osquery/blob/master/specs/posix/authorized_keys.table)
+- [GitHub: osquery, systemd_units table spec](https://github.com/osquery/osquery/blob/master/specs/linux/systemd_units.table)
+- [Elastic Security Labs: Linux Detection Engineering, a primer on persistence mechanisms](https://www.elastic.co/security-labs/primer-on-persistence-mechanisms)
+- [Elastic Security Labs: Hooked on Linux, Rootkit Detection Engineering](https://www.elastic.co/security-labs/linux-rootkits-2-caught-in-the-act)
+- [Palo Alto Networks Unit 42: Hildegard, New TeamTNT Cryptojacking Malware Targeting Kubernetes](https://unit42.paloaltonetworks.com/hildegard-malware-teamtnt/)
+- [Sandfly Security: Linux Medusa Rootkit Detection and De-Cloaking](https://sandflysecurity.com/blog/linux-medusa-rootkit-detection-and-de-cloaking)
+- [Linux kernel documentation: Tainted kernels](https://docs.kernel.org/admin-guide/tainted-kernels.html)`,
+  },
+  {
+    slug: "sata-3-3v-pin-power-disable",
+    title: "SATA Power Disable: Why a New Drive Won't Spin Up and How to Fix the 3.3 V Pin",
+    date: "2026-11-09",
+    tags: ["storage", "hardware", "homelab"],
+    excerpt:
+      "A new or shucked SATA drive that never spins up is often held in reset by 3.3 V on power pin 3 (Power Disable, PWDIS); here is how to confirm it, which drives have it, and which fixes hold.",
+    coverImage: "/images/blog/sata-3-3v-pin-power-disable-photo.jpg",
+    content: `## The short answer
+
+A SATA hard drive that never spins up, never appears in the BIOS and logs no error is often healthy. It is being held in reset by 3.3 V on pin 3 of its power connector. The SATA specification calls that contact P3. Drives built with the optional Power Disable feature from SATA 3.3, abbreviated PWDIS, treat P3 as a control input and not as a power pin. [Western Digital's Ultrastar manuals](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc550-sata-oem-spec.pdf) say that driving P3 high, 2.1 to 3.6 V, disables power to the drive circuitry, and WD's [Power Disable tech brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf) says some legacy supplies tie pins 1, 2 and 3 together to 3.3 V. The drive is not damaged. The fix is to keep 3.3 V off pin 3 with a Molex-to-SATA adapter, Kapton tape, a power cable with no 3.3 V wire, or a backplane that leaves the pin unpowered. Only some drives have the feature: WD sells it under separate part numbers on the Ultrastar DC HC510 and HC520, marks it in the model number on the [HC555](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc555-sata.pdf), and owners report the same behavior on [shucked white-label WD80EMAZ drives](https://forums.unraid.net/topic/62334-wd-8tb-easy-store-shucked-red-drives-not-recognized/).
+
+## Why does a new drive not spin up on some power supplies and backplanes?
+
+The drive reads 3.3 V on pin 3 as an instruction to stay off. WD's [tech brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf) says that a new SATA drive with the feature in a legacy chassis or enclosure "may not spin up," that the drive "is not defective," and that 3.3 V on pin 3 "forces the HDD to get stuck in a hard reset condition." Its FAQ gives the symptom in one line: "The HDD will not spin up / power up." There is no error to read because the drive's controller never gets power.
+
+Owner reports fit. In a [December 2017 Unraid thread](https://forums.unraid.net/topic/62334-wd-8tb-easy-store-shucked-red-drives-not-recognized/), two shucked WD80EMAZ 8 TB drives were not recognized on the motherboard ports, a Marvell 9215 card or an ASM1062 card, and a Molex-to-SATA power adapter fixed it. The signal arrives on the power connector, so the data port never mattered. In a [November 2021 thread](https://forums.unraid.net/topic/116299-plz-help-two-wd-drives-wont-spin-up-in-icy-dock-drive-cage), two shucked WD drives spun up behind a USB controller but not in ICY DOCK 5-in-3 cages, and the poster later wrote, "I just applied the 3.3V fix and they both now spin up." A drive that runs over USB and stays silent on internal SATA power is the usual signature.
+
+| | Power source puts 3.3 V on pin 3 (legacy) | Power source leaves pin 3 low or open |
+|---|---|---|
+| Drive without Power Disable | Spins up | Spins up and ignores any reset request |
+| Drive with Power Disable | Held in hard reset, no spin-up | Spins up; a host that drives the pin can power-cycle it |
+
+The same brief covers every cell. You "can safely plug an HDD either with or without the feature into a new or legacy system," and if the legacy system powers P3, "the only side effect is that the HDD will not spin up." A drive without the feature in a new chassis "will just ignore the Hard Reset request and remain powered up." WD is direct about why it wrote the brief: "We don't want customers returning drives that they believe are defective when the problem is with the legacy chassis."
+
+## What does SATA pin P3 do, and what changed in the specification?
+
+P3 was a 3.3 V power contact, then a low-power control signal, then optionally a power-off switch. A SATA power plug has 15 contacts. In the pin table of [SATA-IO's TPR056 proposal](https://sata-io.org/sites/default/files/TPR056r13_SATA32_EnableNewPowerDisableFeatureOnStandardSATA.pdf), P4 to P6, P10 and P12 are ground, P7 to P9 are 5 V, P13 to P15 are 12 V, and P11 carries the activity and staggered spin-up signal. P1 is listed first after the gap between the signal and power segments, so P1 to P3 are the three power contacts nearest the data connector.
+
+| Specification | P1 and P2 | P3 | Source |
+|---|---|---|---|
+| SATA 3.1 and earlier | 3.3 V | 3.3 V, bused with P1 and P2 on the drive | TPR056 footnote; [WD HC555 manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc555-sata.pdf) |
+| SATA 3.2 | Retired | DEVSLP (Device Sleep) signal | TPR056 |
+| SATA 3.3 | Retired; tying them together is recommended for legacy use | PWDIS or DEVSLP, never both | TPR056 |
+
+The 3.3 V contacts were nearly unused before the change. A 2011 SATA-IO proposal, [TP037](https://sata-io.org/sites/default/files/TP_037_SATA_TechProp_C110v1_1.pdf), said industry use of those pins for their intended purpose "is limited to a small number of receptacles and Gen I devices." Toshiba's [MG08-D manual](https://toshiba.semicon-storage.com/content/dam/toshiba-ss-v2/master/en/storage/product/data-center-enterprise/eHDD-MG08-D_Product-Manual_r0.pdf) states the drive side plainly: "This drive uses 5 V and 12 V power. 3.3 V power is not used."
+
+Power Disable came from SAS. The TPR056 introduction says Seagate introduced it in T10, the SCSI standards committee, so an initiator or expander can disable power to a device, and that SATA needed it too because many high-capacity SATA drives sit in SAS backplanes. WD's brief says SAS-3 redefined pin 3 from "3.3V Power" to "POWER DISABLE" after the SCSI Trade Association "determined that there were no conflicting legacy concerns," and gives the SATA 3.3 publication date as 2/2/2016. SATA had the legacy problem SAS lacked: "Some legacy SATA power supplies tied P1 (Pin 1), P2 (Pin 2) and P3 (Pin 3) together to 3.3V."
+
+The final SATA 3.3 text is not freely available. The numbers below come from the TPR056 draft, revision 13, which WD's [HC310 manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc300-series/product-manual-ultrastar-dc-hc310-sata-oem-spec.pdf) lists as a reference. WD's manuals quote the same 2.1 to 3.6 V range.
+
+| P3 level at the drive connector | Volts | What the drive does |
+|---|---|---|
+| Negated, power enabled | -0.5 to 0.7 | Powers up; after a release from the asserted state it performs a power-on reset |
+| Asserted, power disabled | 2.1 to 3.6 | Removes power from its circuitry |
+| A 3.3 V supply rail at 5 percent tolerance | about 3.14 to 3.47 | Sits inside the asserted window |
+| Not connected | n/a | Must be allowed to power up |
+
+The first, second and fourth rows are from TPR056's signal table, which also requires a host that uses the feature to drive the pin actively in both directions. The third row is the standard 5 percent tolerance on the ATX 3.3 V rail, described in [Intel's ATX Version 3 design guide](https://cdrdv2-public.intel.com/336521/336521_Rev2p1a.pdf). The whole range of an in-tolerance supply falls inside the asserted window, so no healthy 3.3 V rail releases the drive. If a multimeter shows about 3.3 V between the third contact and a ground contact on a cable plug, a Power Disable drive on that plug will stay off. DevSleep uses the same pin and the same asserted level, which is why the draft makes the two features mutually exclusive.
+
+## Which drives have Power Disable, and how do you tell?
+
+Only drives built for it. WD's brief says the feature needs "a unique circuit board (PCBA)" and answers the question of enabling it later with "No. This feature is hard wired." It names the Ultrastar DC HC510 as WD's first SATA drive with the option and the He8 and 7K6000 as its first SAS drives.
+
+| Drive | Power Disable | How to tell | Source |
+|---|---|---|---|
+| WD Ultrastar DC HC510 (8, 10 TB), HC520 (12 TB) SATA | Optional, separate part numbers | 10 TB 512e ISE: 0F27604 without, 0F27452 with. 12 TB 512e ISE: 0F30144 without, 0F29590 with | [WD brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf) |
+| WD Ultrastar DC HC530 SATA | Not offered | Listed only in the "without" table | WD brief |
+| WD Ultrastar DC HC310 SATA | Not offered | Every listed model marked "Not supported" | [HC310 manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc300-series/product-manual-ultrastar-dc-hc310-sata-oem-spec.pdf) |
+| WD Ultrastar DC HC550 SATA (14 to 18 TB) | No | Model has L in the next-to-last position: WUH721818ALE6L4 | [HC550 manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc550-sata-oem-spec.pdf) |
+| WD Ultrastar DC HC555 SATA | Both versions | WUH722020CLE600, 601, 604 yes; CLE6L0, 6L1, 6L4 no | [HC555 manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc555-sata.pdf) |
+| Seagate Exos X18 SATA | No: P3 listed as 3.3 V power | Pin table in the manual | [X18 manual](https://www.seagate.com/content/dam/seagate/migrated-assets/www-content/product-content/enterprise-hdd-fam/exos-x18-channel/_shared/en-us/docs/100865854d.pdf) |
+| Seagate Exos SATA, 24 to 32 TB | P3 listed as PWRDIS (option) | Manual names no separate part numbers; its sample identify log shows the supported bit as 0 | [Exos SATA manual](https://www.seagate.com/content/dam/seagate/assets/support/internal-hard-drives/enterprise-hard-drives/exos-m/_shared/files/Seagate_Exos_SATA_Product_Manual_32-30-28-24TB_210048100E.pdf) |
+
+Five checks narrow it down.
+
+1. **Part number, for the HC510 and HC520.** WD's brief lists the same model number for both versions, such as HUH721010ALE600, so only the part number on the label separates them.
+2. **Model letter, for newer WD drives.** The HC550 and HC555 manuals decode the next-to-last character: "0 = Power Disable Pin 3 support" and "L = Legacy Pin 3 config." An L there is the safe choice for an unknown chassis.
+3. **The manual's connector table.** A manual that covers the optional version lists P3 as PWDIS and carries WD's warning: "Drives with this optional feature WILL NOT POWER UP in systems designed to SATA Spec Revision 3.1 or earlier."
+4. **Not the SATA version label, and not the identify data alone.** WD's HC310 manual calls the drive "SATA 3.2 compliant with optional SATA 3.3 Power Disable Feature support" while marking every model "Not supported." The TPR056 draft assigns IDENTIFY DEVICE word 78 bit 12 to "Power Disable feature supported," yet the HC550 manual's sample identify table shows that bit set while its model table says no for Power Disable. Treat the bit as a hint, not proof.
+5. **Behavior, for white-label drives.** Owners name the WD80EMAZ in [several](https://forums.unraid.net/topic/65241-8tb-easystore-wd-white-label-issue/) [threads](https://forums.unraid.net/topic/116299-plz-help-two-wd-drives-wont-spin-up-in-icy-dock-drive-cage), and one reports [a white-label 14 TB drive](https://forums.unraid.net/topic/73717-solutions-shucked-wd-8tb-easystore-33v-pin-issue). The ICY DOCK poster had one WD80EZAZ that failed and another that worked. None of these threads cites a WD document for those models, so the practical test is whether the drive runs on a Molex adapter and not on a SATA power plug.
+
+## Which power supplies, cables and backplanes still put 3.3 V on pin 3?
+
+Many do. Sliger's [FAQ](https://sliger.com/faq/Why%20is%20my%20drive%20not%20powering%20up%20and%20What%20is%20a%20power%20disable%20enabled%20HDD) says "most consumer power supplies (and nearly all manufactured before 2016) have 5 wires on the SATA power plug" and "If your power cables have only four wires you should not have an issue with the PWDIS pin receiving voltage." Count the wires going into the plug. Five means 3.3 V is present, and it is usually the orange one.
+
+Adapters are the second source. A community developer's [Unraid guide for drives that will not start](https://forums.unraid.net/topic/84038-so-your-new-sas-or-sata-drive-wont-start-spin-up/) says "some cheap SAS-SATA adapters short pins 1-2-3 together." A [StarTech community reply](https://community.startech.com/t/sff8087-to-4x-sff8482-and-3-3v-issue/629) about an SFF-8087 to SFF-8482 breakout says the cable "will simply passthrough the power pins from a SATA power cable," so the supply decides. This matters for SAS drives too. WD's brief says SAS drives are not affected in legacy SAS chassis, which leave the pin unconnected, but a SAS drive fed from a five-wire SATA plug through an adapter is a different case. Toshiba's MG08-D connector table says "Do not supply 3.3 V power if POWER DISABLE feature is used," and a [homelab blogger](https://datahamster.com/2026/06/09/sas-to-sata-gotchas-including-the-3-3v-issue-and-the-best-fix-for-it/) sent back two 6 TB SAS drives as dead on arrival before finding the 3.3 V cause.
+
+Cages and backplanes vary. A [45Drives reply on the 45HomeLab forum](https://forum.45homelab.com/t/hdd-power-disable-feature-pin-3/404) from November 2023 says "The backplanes do not supply Pin3 (P3) with 3.3V power," so both kinds of drive work and the feature "will be ignored by the system." Sliger says its pass-through connectors are passive and pass every pin, so a supply with 3.3 V leaves the drive stuck in "Disabled Mode." A reply in the Unraid guide's thread says "some backplanes have internal circuitry creating 3.3v." Owners reported silent drives in [Norco SS-500 cages](https://forums.unraid.net/topic/65241-8tb-easystore-wd-white-label-issue/), a [Norco 4220](https://forums.unraid.net/topic/79698-solved-my-10tb-wd-white-label-hard-drives-not-recognized/) and the ICY DOCK cages above, and a [December 2017 TrueNAS forum post](https://www.truenas.com/community/threads/pwdis-feature-in-new-sata-drives-to-watch-for.60174) already warned about "a backplane that drives the pin to 3.3 volts."
+
+A power-supply swap can also create the problem in a machine that used to work. A reply in the [shucked 8 TB thread](https://forums.unraid.net/topic/73717-solutions-shucked-wd-8tb-easystore-33v-pin-issue) put it this way: "any new supply will have the 3.3 volt feed on SATA connectors."
+
+## Which fixes work?
+
+Any fix that keeps 3.3 V off pin 3 works, and each one gives up the remote reset feature.
+
+| Fix | Trade-off | Source |
+|---|---|---|
+| Order the part number without Power Disable | Safest for an unknown chassis; no reset feature | [WD brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf) |
+| Molex-to-SATA power adapter | Carries only 5 V and 12 V; does not help a drive that plugs straight into a backplane | WD brief; [Tom's Hardware](https://www.tomshardware.com/news/hdd-sata-power-disable-feature,36146.html) |
+| Kapton tape over the 3.3 V contacts | Inexpensive and reversible; can scrape off or shift | [Unraid thread](https://forums.unraid.net/topic/73717-solutions-shucked-wd-8tb-easystore-33v-pin-issue) |
+| Cut the 3.3 V wire on a power extension cable | Permanent; affects every drive on that cable | [Data Hamster](https://datahamster.com/2026/06/09/sas-to-sata-gotchas-including-the-3-3v-issue-and-the-best-fix-for-it/) |
+| Four-wire SATA power cable | No 3.3 V wire to begin with | [Sliger FAQ](https://sliger.com/faq/Why%20is%20my%20drive%20not%20powering%20up%20and%20What%20is%20a%20power%20disable%20enabled%20HDD) |
+| Backplane that leaves pin 3 unpowered | No per-drive work | [45HomeLab thread](https://forum.45homelab.com/t/hdd-power-disable-feature-pin-3/404) |
+
+WD says that with a Molex-to-SATA connector "you can usually eliminate the problem," because it "effectively removes power from P3 (Pin 3) and allows the drive to spin up normally." Tom's Hardware, in an article by Aris Mpitziopoulos, points out the cost: the drive starts normally but no longer has Power Disable support. If you cut a wire instead, the Data Hamster post says the 3.3 V line is the one closest to the L-shaped side of the SATA power connector, usually orange but gray on some cables, and that the cut end on the supply side stays live and should be cut flush or insulated.
+
+To tape a drive:
+
+1. Power down and unplug the power cable.
+2. Find P1 to P3, the three contacts of the power segment nearest the data connector. P3 is the third one counting away from the gap.
+3. Cover them with one narrow piece of Kapton (polyimide) tape. In a [Level1Techs thread](https://forum.level1techs.com/t/brand-new-10tb-hdd-appears-to-not-receive-power-solved/147244) one answer said to tape "the left 3 power pins" and another said tape over "pin 3 (or pins 1-3)" should work. The signal is on pin 3 alone, but Toshiba's table says not to feed 3.3 V to the drive at all when Power Disable is in use, so covering all three is the cautious choice.
+4. Press the tape flat so it stays put when the plug slides on. Do not cover the fourth contact, which is ground.
+5. Reconnect and confirm detection.
+
+List the devices the system can see:
+
+\`\`\`bash
+sudo smartctl --scan
+\`\`\`
+
+Then read the identity of the new drive, replacing \`sdX\` with the name from the scan:
+
+\`\`\`bash
+sudo smartctl -i /dev/sdX
+\`\`\`
+
+Per the [smartctl manual](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html), \`--scan\` prints each device name, device type and protocol, and \`-i\` prints the model number, serial number and firmware version. A drive that was held in reset shows up in neither until P3 is released. Once it appears, read its attributes as in [reading SMART data](/blog/smart-data-drive-failure).
+
+Tape is the least durable choice. The author of the Unraid tape thread used Duck brand tape, wrote that "it worked flawlessly for me" with "zero issues with temperature," and recommends 1 mil, 1/8 inch Kapton as the proper material. A later poster in the same thread used clear office tape on a white-label 14 TB drive and suspected the thin tape had scraped off. In the Unraid guide's thread, a reply to someone who had used nail polish called polyimide tape the proper solution, because the contacts are subject to vibration and the connector is under spring tension.
+
+## Can a server backplane use Power Disable to reset a hung drive?
+
+Yes, in principle, and that is why the feature exists. The TPR056 introduction says a hung drive can be powered off "without having to support independent supply voltage switching to every receptacle connector or require physical removal and insertion." WD's brief says "a smart chassis can provide a management tool to do this function automatically," and that a SATA drive with the feature "will work properly when used on a SAS backplane that supports this feature." In the draft's protocol the host drives pin 3 to at least 2.1 V to cut power, then back to 0.7 V or less, and the drive performs the actions of a power-on reset.
+
+Support looks thin in the sources cited here. A TrueNAS forum regular wrote in August 2019: "I have not seen hardware support for it yet." The 45Drives answer above describes a backplane where the feature is ignored. An SSD maker's [explainer](https://www.ssstc.com/technology/industrial-features-stability/stability-pwdis/) says a host system, server backplane or management controller can use the signal, and advises that when a drive does not start, "the power supply, chassis, and backplane should be checked for compatibility with SATA PWDIS." None of the documents cited in this article names a specific backplane or expander model that drives pin 3, so confirm in the enclosure's own manual before counting on remote resets.
+
+A drive without the feature takes no part. It ignores the request, and it cannot be converted later. Choose the part number for the chassis you own, and see the [expander article](/blog/do-you-need-a-sas-expander-homelab) for SATA drives behind a SAS backplane.
+
+## What breaks
+
+**The drive runs in a USB dock and is silent in the machine.** This is the signature of P3 held high. Fix: power the drive from a Molex adapter as a test. If it spins, apply a permanent fix. If it does not, treat it as an ordinary dead-on-arrival return, because WD says the adapter "usually" solves the problem, not always.
+
+**A taped drive works, then vanishes later.** Thin tape can scrape off or shift when a plug is reseated. Fix: use Kapton, check the contacts again after any cable work, or remove 3.3 V at the cable so the fix does not live on the drive.
+
+**A Molex adapter cannot be used behind a backplane.** The poster with the Norco 4220 could not put an adapter between the drive and the backplane, and Kapton over pin 3 worked. In the Norco SS-500 thread, a poster had two systems with four cages each. One system would not recognize any WD80EMAZ until "the 3.3V tape trick worked." Fix: tape the drive, or find out whether the cage passes 3.3 V through to its bays.
+
+**SAS drives are silent behind an SFF-8482 adapter.** The adapter passes the SATA plug's 3.3 V wire to the same pin on the SAS drive. Fix: feed the adapter from a plug with no 3.3 V wire, or cut that wire on an extension cable.
+
+**A drive ordered without the feature does not reset in a Power Disable backplane.** It ignores the request by design. Fix: order the part number with the feature.
+
+**The drive is detected but reports no capacity or a strange size.** That is not this problem, because the drive is running. One common cause on used enterprise drives is a 520-byte sector format, covered in the [DS4246 guide](/blog/netapp-ds4246-truenas). A used-drive [receiving checklist](/blog/buying-used-enterprise-gear) should include the Molex test for drives that never appear at all.
+
+**Drives spin up together and trip a supply or UPS.** That is inrush current, not Power Disable. Staggered spin-up is a separate, older mechanism on P11. As a TrueNAS forum reply in the PWDIS thread put it, "Staggered spin-up's always been supported." See [UPS sizing](/blog/ups-sizing-homelab) for the power budget side.
+
+## Sources
+
+- [Western Digital: Power Disable Feature tech brief](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/tech-brief/tech-brief-western-digital-power-disable-pin.pdf)
+- [SATA-IO: TPR056r13, Enable new Power Disable feature on standard SATA connector P3 (draft)](https://sata-io.org/sites/default/files/TPR056r13_SATA32_EnableNewPowerDisableFeatureOnStandardSATA.pdf)
+- [SATA-IO: TP037, Standard SATA Connector 3.3V Power Pin Assignments (October 12, 2011)](https://sata-io.org/sites/default/files/TP_037_SATA_TechProp_C110v1_1.pdf)
+- [Western Digital: Ultrastar DC HC550 SATA hard disk drive specifications, Rev. 1.7](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc550-sata-oem-spec.pdf)
+- [Western Digital: Ultrastar DC HC555 SATA hard disk drive specifications, Rev. 2.6](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc500-series/product-manual-ultrastar-dc-hc555-sata.pdf)
+- [Western Digital: Ultrastar DC HC310 SATA product manual](https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/product/data-center-drives/ultrastar-dc-hc300-series/product-manual-ultrastar-dc-hc310-sata-oem-spec.pdf)
+- [Toshiba: Enterprise Capacity HDD MG08-D Series Product Manual](https://toshiba.semicon-storage.com/content/dam/toshiba-ss-v2/master/en/storage/product/data-center-enterprise/eHDD-MG08-D_Product-Manual_r0.pdf)
+- [Seagate: Exos X18 SATA Product Manual, Rev. D](https://www.seagate.com/content/dam/seagate/migrated-assets/www-content/product-content/enterprise-hdd-fam/exos-x18-channel/_shared/en-us/docs/100865854d.pdf)
+- [Seagate: Exos SATA Product Manual, 24 to 32 TB](https://www.seagate.com/content/dam/seagate/assets/support/internal-hard-drives/enterprise-hard-drives/exos-m/_shared/files/Seagate_Exos_SATA_Product_Manual_32-30-28-24TB_210048100E.pdf)
+- [Intel: ATX Version 3 Multi Rail Desktop Platform Power Supply Design Guide](https://cdrdv2-public.intel.com/336521/336521_Rev2p1a.pdf)
+- [Tom's Hardware: The Pesky PWDIS Feature In Newer SATA Specs](https://www.tomshardware.com/news/hdd-sata-power-disable-feature,36146.html)
+- [Sliger: Why is my drive not powering up, and what is a power disable enabled HDD](https://sliger.com/faq/Why%20is%20my%20drive%20not%20powering%20up%20and%20What%20is%20a%20power%20disable%20enabled%20HDD)
+- [StarTech.com Community: SFF8087 to 4x SFF8482 and 3.3v issue](https://community.startech.com/t/sff8087-to-4x-sff8482-and-3-3v-issue/629)
+- [45HomeLab Forum: HDD Power Disable Feature (Pin 3)](https://forum.45homelab.com/t/hdd-power-disable-feature-pin-3/404)
+- [SSSTC: SSD Power Disable Explained, PWDIS and PWRDIS](https://www.ssstc.com/technology/industrial-features-stability/stability-pwdis/)
+- [Unraid forum: Wd 8tb (easy store shucked) Red drives not recognized](https://forums.unraid.net/topic/62334-wd-8tb-easy-store-shucked-red-drives-not-recognized/)
+- [Unraid forum: 8TB EasyStore WD White Label Issue](https://forums.unraid.net/topic/65241-8tb-easystore-wd-white-label-issue/)
+- [Unraid forum: Solutions, Shucked WD 8TB Easystore 3.3v PIN Issue](https://forums.unraid.net/topic/73717-solutions-shucked-wd-8tb-easystore-33v-pin-issue)
+- [Unraid forum: My 10TB WD White Label Hard Drives not Recognized](https://forums.unraid.net/topic/79698-solved-my-10tb-wd-white-label-hard-drives-not-recognized/)
+- [Unraid forum: So your new SAS (or SATA) drive won't start (spin up)?](https://forums.unraid.net/topic/84038-so-your-new-sas-or-sata-drive-wont-start-spin-up/)
+- [Unraid forum: Plz help, two WD drives won't spin up in ICY DOCK drive cage](https://forums.unraid.net/topic/116299-plz-help-two-wd-drives-wont-spin-up-in-icy-dock-drive-cage)
+- [Level1Techs forum: Brand-new 10TB HDD appears to not receive power](https://forum.level1techs.com/t/brand-new-10tb-hdd-appears-to-not-receive-power-solved/147244)
+- [TrueNAS forum: PWDIS feature in new SATA drives to watch for](https://www.truenas.com/community/threads/pwdis-feature-in-new-sata-drives-to-watch-for.60174)
+- [Data Hamster: SAS to SATA gotchas, including the 3.3v issue and the best fix for it](https://datahamster.com/2026/06/09/sas-to-sata-gotchas-including-the-3-3v-issue-and-the-best-fix-for-it/)
+- [smartmontools: smartctl(8) manual page](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html)`,
+  },
+  {
+    slug: "zfs-permanent-errors-detected",
+    title: "ZFS \"Permanent errors have been detected\": What It Means and How to Clear It",
+    date: "2026-11-08",
+    tags: ["storage", "linux", "servers", "troubleshooting"],
+    excerpt:
+      "What the ZFS-8000-8A permanent errors message means, how to find the cause, and the restore, scrub and clear order that actually empties the list.",
+    coverImage: "/images/blog/zfs-permanent-errors-detected-photo.jpg",
+    content: `## The short answer
+
+\`zpool status -v\` prints "errors: Permanent errors have been detected in the following files" under message ID [ZFS-8000-8A](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A/index.html) when a block failed its checksum and ZFS had no good copy left to repair it from. Programs that touch that block "will get an error (EIO)". Current OpenZFS tells the administrator to ["Restore the file in question if possible. Otherwise restore the entire pool from backup."](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zpool/zpool_main.c)
+
+The order that works: save the listing, find the cause (cable, controller, drive or memory), restore or delete each listed file, deal with any snapshot that still shares the bad block, run \`zpool scrub\` to the end, confirm "No known data errors", then run \`zpool clear\`. \`zpool clear\` resets the device counters. It is the scrub that refreshes the list. Since OpenZFS 2.2.0, [\`zpool scrub -e\`](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.2.0/man/man8/zpool-scrub.8) re-checks only the files already listed. An entry such as \`<0x36>:<0x1c4>\` means ZFS could not turn two object numbers into a path, and \`<metadata>:<0x2a>\` means pool-wide metadata, which no file restore fixes.
+
+Everything below is checked against the OpenZFS documentation, man pages and source. It is a reference, not a war story.
+
+## What does "Permanent errors have been detected" mean?
+
+ZFS stores each block's checksum in the block that points to it. On a read it compares the two, and on a mismatch it tries whatever redundancy it has: the other side of a mirror, RAID-Z parity, or an extra copy. "Permanent" means none of that produced a block that matched. OpenZFS files this as [ZFS-8000-8A](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A/index.html), type Error, severity Critical, described as "A file or directory could not be read due to corrupt data." There is no automated response. The page says "the data cannot be repaired" and that "data may be permanently lost."
+
+This is what a current build prints. The status and action text come from [\`zpool_main.c\`](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zpool/zpool_main.c), and the pool layout copies the example on the message page: a two-disk stripe where one disk and the pool line both show 2 in the CKSUM (checksum error) column. The pool, disk and file names are placeholders.
+
+\`\`\`text
+  pool: tank
+ state: ONLINE
+status: One or more devices has experienced an error resulting in data
+	corruption.  Applications may be affected.
+action: Restore the file in question if possible.  Otherwise restore the
+	entire pool from backup.
+   see: https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	tank        ONLINE       0     0     2
+	  sda       ONLINE       0     0     2
+	  sdb       ONLINE       0     0     0
+
+errors: Permanent errors have been detected in the following files:
+
+        /tank/media/2019/trip.mkv
+\`\`\`
+
+The message page still shows an older example whose action line reads "Destroy the pool and restore from backup." The newer text is narrower, and it is the right reading: one damaged file is not a reason to destroy a pool. Without \`-v\`, the page's example shows only a count, \`errors: 1 data errors, use '-v' for a list\`.
+
+The same message covers different situations. Oracle's ZFS guide says data corruption "can occur if a pool isn't redundant, if corruption occurred while a pool was degraded, or an unlikely series of events conspired to corrupt multiple copies of a piece of data." Its mirror example: [one half of a mirror "can experience thousands of device errors without ever causing data corruption"](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-zfs-data.html), but an error "on the other side of the mirror in the exact same location" does. The degraded case is the one [RAID rebuild risk math](/blog/raid-rebuild-risk-math) works through: a disk is missing, and a bad sector on a surviving disk has nothing left to heal it.
+
+A pool built on a hardware RAID volume belongs on the list too. OpenZFS says [hardware RAID "will limit opportunities for ZFS to perform self healing on checksum failures"](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html), because the controller hides the redundancy "unless a duplicate copy is stored by ZFS." [HBA mode on a PERC](/blog/perc-h730-hba-mode) gives ZFS the individual disks.
+
+Where the counters land is its own clue. The OpenZFS troubleshooting page says a block ZFS "could not reconstruct" cannot be pinned on one disk, so the [checksum error is reported against every disk holding that block](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html): "A row of disks all showing CKSUM errors is therefore usually one unrecoverable block, not simultaneous failure of the whole row."
+
+### Why does ZFS usually name a file and not metadata?
+
+Because user data gets the fewest copies. These are the defaults, on top of whatever the mirror or RAID-Z layout already provides.
+
+| Block type | Copies written | Where it comes from |
+|---|---|---|
+| User data | 1 | [\`copies\` defaults to 1](https://raw.githubusercontent.com/openzfs/zfs/master/module/zcommon/zfs_prop.c) |
+| Dataset metadata | 2 | [\`redundant_metadata\` defaults to \`all\`](https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html), where "ZFS stores an extra copy of all metadata" |
+| Pool-wide metadata | 3 | A [2010 University of Wisconsin study of ZFS](https://www.usenix.org/legacy/event/fast10/tech/full_papers/zhang.pdf) describes one block address for user data, two for file system metadata and three for pool-wide metadata |
+
+The man page says these copies "are in addition to any redundancy provided by the pool, for example, mirroring or RAID-Z." Its own example is a mirrored pool with \`copies=2\` and \`redundant_metadata=most\`, which stores 6 copies of most metadata and 4 copies of data.
+
+So one bad block usually costs one file, and a metadata entry is the unusual case. Lowering \`redundant_metadata\` trades that away. Per the man page, with \`most\`, "about 1000 blocks" of user data can be lost to a single corrupt block. With \`some\` it is "multiple user files or directories," and with \`none\`, "an entire dataset."
+
+## Which ZFS-8000 message ID is the pool showing?
+
+\`zpool status\` shows one ID per pool: the first condition that matches in [\`libzfs_status.c\`](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_status.c). A pool with data errors can therefore also hold a failed disk that the banner never mentions.
+
+| ID | Title | Severity | What ZFS does | What the page asks |
+|---|---|---|---|---|
+| [8A](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A/index.html) | Corrupted data | Critical | Nothing | Restore the file, or the pool |
+| [9P](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-9P/index.html) | Failing device in replicated configuration | Minor | "ZFS has attempted to repair the affected data" | Decide whether to replace the device; if not, \`zpool clear\` |
+| [2Q](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-2Q/index.html) | Missing device in replicated configuration | Major | Activates a hot spare if available | Attach the device and \`zpool online\` |
+| [4J](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-4J/index.html) | Corrupted device label in a replicated configuration | Major | Activates a hot spare if available | \`zpool replace\` |
+| [72](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-72/index.html) | Corrupted pool metadata | Critical | Nothing | If offered, \`zpool clear -F\` with some data loss; otherwise destroy and restore |
+| [3C](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-3C/index.html) | Missing device in non-replicated configuration | Critical | Nothing | Attach the device and \`zpool online\` |
+| [5E](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-5E/index.html) | Corrupted device label in non-replicated configuration | Critical | Nothing | Destroy and re-create the pool from backup |
+| [HC](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-HC/index.html), [JQ](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-JQ/index.html) | ZFS pool I/O failures | Major | Nothing. \`failmode=wait\` blocks all I/O, \`continue\` blocks writes | Reconnect the devices, then \`zpool clear\` |
+
+Among these, the check order in the source is: a suspended pool (HC, JQ), then bad devices in a pool with no replicas (3C, 5E), then corrupted pool metadata (72), then persistent data errors (8A). Only after those come missing devices in a replicated pool (2Q, 4J) and devices with error counts (9P). A mirror with one dead disk and one damaged file therefore reports 8A, and the dead disk shows only in the config table. Read the whole tree, not just the ID.
+
+9P is the mild sibling. A redundant pool met a bad read and repaired it, and the status ends with \`errors: No known data errors\`. The page lists causes that need no replacement: a network device that lost connectivity, a bit flip ("an expected event over long periods of time"), or an administrator who wrote over part of a disk. 8A is what happens when the pool runs out of good copies.
+
+## Why does the list show hex numbers instead of a file name?
+
+The listing is built from two numbers, a dataset object and an object inside it, and ZFS prints whatever it managed to resolve. The code in [\`libzfs_pool.c\`](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_pool.c) produces these forms.
+
+| Printed | What resolved | What it means |
+|---|---|---|
+| \`/tank/media/2019/trip.mkv\` | Dataset, mount point and path | A file in a mounted dataset |
+| \`tank/media:/2019/trip.mkv\` | Dataset and path, not mounted | The same, with no mount point to put in front |
+| \`tank/media@auto-2026-10-01:/2019/trip.mkv\` | A snapshot name and a path | A snapshot still references the bad block |
+| \`tank/media:<0x1c4>\` | Dataset only | The object has no path: deleted, or not a file |
+| \`<0x36>:<0x1c4>\` | Neither | ZFS could not find a dataset for that number, for example because it was destroyed |
+| \`<metadata>:<0x2a>\` | Dataset object 0 | An object in the pool-wide metadata set |
+
+Oracle's guide describes the [same idea](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-file-or-directory.html): when the path cannot be translated, "the dataset name followed by the object's number is displayed," and a \`<metadata>\` tag marks the pool-wide set. The OpenZFS troubleshooting page says a hex number means "the file has already been deleted, or the dataset is not mounted." One more case from the source: the path lookup refuses anything that is not a file system, so damage inside a zvol (a ZFS block device, such as a VM disk) can only print as \`dataset:<0x...>\`.
+
+### How do you decode a hex entry?
+
+Convert both numbers to decimal, find the dataset, then ask for the object. The [base converter](/tools/base-converter) does the first step. \`zdb\` is the read-only ZFS debugger.
+
+\`\`\`bash
+printf '%d\\n' 0x36 0x1c4           # 54 and 452
+zdb -d tank | grep 'ID 54,'        # which dataset has object number 54
+zdb -ddddd tank/media 452          # the object, with a path line if one exists
+\`\`\`
+
+The ID in [\`zdb -d\`](https://openzfs.github.io/openzfs-docs/man/master/8/zdb.8.html) output is the dataset object number, and the man page's example shows the pool-wide set as \`Dataset mos [META], ID 0\`. If no dataset has that ID, it is gone. The [zdb source](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zdb/zdb.c) prints the path line only with five or more \`d\` flags, and for an object it cannot resolve it prints "on delete queue" or "path not found, possibly leaked". \`zdb\` reads the disks directly, so on a busy imported pool its output can be slightly stale or fail. Run it again if that happens.
+
+Encryption hides names too. The [scrub man page](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html) says that if keys are not loaded and an unrepairable error is found, "the file name cannot be included" in the report. The [\`head_errlog\` feature notes](https://openzfs.github.io/openzfs-docs/man/master/7/zpool-features.7.html) add that snapshots and clones of such file systems cannot be checked for errors. Load the key and scrub again.
+
+## How do you clear the error?
+
+Do the steps in this order. The order is what makes the list shrink.
+
+1. **Save the evidence.** The listing changes as errors are fixed, so keep a copy.
+
+   \`\`\`bash
+   zpool status -v tank > ~/tank-errors-$(date +%F).txt
+   zpool events -v tank > ~/tank-events-$(date +%F).txt
+   \`\`\`
+
+2. **Find the cause before writing anything new.** OpenZFS says to ["fix the cause first, then clear, then watch whether the counters come back"](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html). The next section covers how. If a disk is failing, replace it and let the resilver (the rebuild onto the new disk) finish first. The [scrub man page](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html) says ZFS allows only one scrub or resilver at a time.
+
+3. **Restore or delete each listed file.** Oracle's guide says that if the damage is within a file data block, ["the file can be safely removed, thereby clearing the error from the system"](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-file-or-directory.html).
+
+   **Warning: \`rm\` is permanent.** The damaged file may still be mostly readable, and it may be the only copy. Read the backup copy all the way through first (for example with \`sha256sum\`), and only then delete.
+
+   \`\`\`bash
+   sha256sum /mnt/backup/media/2019/trip.mkv      # prove the backup reads end to end
+   rm /tank/media/2019/trip.mkv
+   cp -a /mnt/backup/media/2019/trip.mkv /tank/media/2019/trip.mkv
+   \`\`\`
+
+   Do not rely on rsync to fix the file in place. rsync's default ["quick check"](https://download.samba.org/pub/rsync/rsync.1) compares size and modification time, so it can decide there is nothing to transfer. If the damage is in a directory or a file's metadata, the same Oracle guide says "the only choice is to move the file elsewhere," so the original can be restored in its place.
+
+4. **Deal with snapshots.** Snapshots ["initially consume no additional space"](https://openzfs.github.io/openzfs-docs/man/master/7/zfsconcepts.7.html) because they share blocks with the live dataset. Deleting the live file does not free a block a snapshot still holds, which is why \`@snapshot\` entries show up in the list.
+
+   **Warning: \`zfs destroy\` on a snapshot cannot be undone,** and it removes every older version of every file in that snapshot, not just the damaged one. Do a dry run first, and check that nothing else needs that snapshot (a replication job, for example).
+
+   \`\`\`bash
+   zfs list -t snapshot -r -o name,used tank/media
+   zfs destroy -nv tank/media@auto-2026-10-01     # -n: dry run, nothing is deleted
+   \`\`\`
+
+   The man page calls \`-n\` a [dry run where "No data will be deleted"](https://openzfs.github.io/openzfs-docs/man/master/8/zfs-destroy.8.html). Run the command again without \`-n\` only when the output is what you expect. A snapshot is a restore source only if it holds a different version of the block. One that shares the bad block is equally damaged, and copying the file out of \`.zfs/snapshot\` fails the same way. If you would rather keep the snapshot, you can: the entry simply stays in the list until the snapshot ages out.
+
+5. **Scrub to completion.**
+
+   \`\`\`bash
+   zpool scrub -w tank       # -w waits until the scrub finishes
+   zpool status -v tank
+   \`\`\`
+
+   From OpenZFS 2.2.0, [\`zpool scrub -e\`](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html) scrubs only "files with known data errors," which is normally much quicker than a full pass. The pool "must have been scrubbed at least once with the \`head_errlog\` feature enabled," and an error scrub cannot run alongside another scrub or a resilver.
+
+6. **Confirm, then clear.** The goal is \`errors: No known data errors\`. Then reset the counters and keep watching.
+
+   \`\`\`bash
+   zpool clear tank
+   zpool status tank
+   \`\`\`
+
+   Oracle's guide notes this can take more than one round: "If the first scrub and clear iteration does not resolve the corrupted files, run them again."
+
+Each command touches a different thing, which is where most of the confusion comes from.
+
+| Command | Effect on the permanent error list |
+|---|---|
+| \`zpool clear tank\` | Not what it is for. The man page says it ["Clears device errors in a pool"](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-clear.8.html), meaning the counters |
+| \`zpool scrub tank\` | When it finishes, the list becomes what the scrub found |
+| \`zpool scrub -e tank\` | The same, over the listed files only |
+| Delete the file | With \`head_errlog\` enabled, the [status man page](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-status.8.html) says removed files "will not be reported in subsequent runs"; otherwise the entry waits for a scrub |
+| \`zfs destroy tank/media@snap\` | Lets go of a block that only the snapshot still held |
+
+The \`zpool clear\` row matches the code. In the [ioctl source](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/zfs_ioctl.c), the only error log call is the one that reads the log for \`zpool status\`. The rotation is requested in [\`dsl_scan.c\`](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/dsl_scan.c) when a scrub or an error scrub ends, and [\`spa_errlog.c\`](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/spa_errlog.c) then replaces the old list with the errors the scrub recorded.
+
+## Was it the drive, the cable, the controller or memory?
+
+Start with the pattern, because the counters already carry most of the answer. The troubleshooting page defines READ and WRITE as "I/O errors reported by the device itself" and CKSUM as data that "failed its checksum." It says a non-zero CKSUM on a disk that reports no I/O errors ["more often indicates cabling, an HBA, or memory than the disk"](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html). (An HBA, or host bus adapter, is the card the disks plug into.) The [Scrub and Resilver page](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Scrub%20and%20Resilver.html) gives the same advice.
+
+The table below is a starting order for suspects. The first and third rows come straight from those pages. The rest is ordinary fault isolation: whatever the affected disks have in common is the first thing to check.
+
+| Pattern | First suspect | Next check |
+|---|---|---|
+| READ or WRITE errors on one disk | The drive or its link | Kernel log, then \`smartctl -x\` |
+| Checksum errors on one disk only, back after \`zpool clear\` | That disk's cable, slot, or the disk | Link error counters, then swap the cable or slot |
+| Checksum errors on every disk in a group at once | Often one unrecoverable block, not many bad disks | Timestamps in \`zpool events -v\` |
+| Checksum errors only on disks behind one controller | The controller, its cable or power | Move one thing at a time |
+| Checksum errors scattered everywhere, crashes, memory error counts rising | Memory | Error counters, then a memory test |
+| One checksum error, clean drive data, nothing else | A one-off | Clear and watch |
+
+Commands for each row:
+
+\`\`\`bash
+zpool status -es tank                    # unhealthy devices only, with slow-I/O counts
+zpool events -v tank | less              # one entry per error, with the block and device
+dmesg -T | grep -i -E 'zfs|ata[0-9]|mpt3sas|i/o error'
+smartctl -x /dev/sda                     # all drive health data, including error logs
+smartctl -l sataphy /dev/sda             # SATA link event counters
+smartctl -l sasphy /dev/sdb              # SAS link error log
+grep . /sys/devices/system/edac/mc/mc*/dimm*/dimm_[cu]e_count
+\`\`\`
+
+The \`zpool status -es\` and \`dmesg -T | grep -i zfs\` lines come from the [OpenZFS troubleshooting page](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html); the extra \`grep\` patterns are additions that assume SATA disks or an LSI-style SAS card. The [smartctl manual](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html) decodes drive error log entries: \`UNC\` is an uncorrectable error in data, and \`ICRC\` is an interface CRC error, meaning the data was damaged on the link. A drive that logs \`ICRC\` is often pointing at its cable or connector. [SMART data](/blog/smart-data-drive-failure) explains the rest.
+
+Each checksum event in \`zpool events -v\` records where the damage was. The [events man page](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-events.8.html) lists \`vdev_path\` (which device), \`zio_objset\`, \`zio_object\`, \`zio_level\`, \`zio_blkid\` and \`zio_offset\`, and \`bad_range_sets\` and \`bad_range_clears\` count how many bits were wrongly set or cleared. A few flipped bits and a whole block of garbage look different there. The man page does not say what each pattern implies, so treat it as a clue only.
+
+The last command reads EDAC, the Linux kernel's memory error reporting, and it only shows anything on a machine with ECC (error-correcting) memory. The kernel's [RAS documentation](https://docs.kernel.org/admin-guide/RAS/main.html) says \`dimm_ce_count\` "is very important to examine" because corrected errors "provide early indications that a DIMM is beginning to fail." Without ECC there is no such counter, and the OpenZFS hardware page is blunt: ["No technique used in ZFS (or any other filesystem) is capable of protecting against bit flips."](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) Bad memory can also do quiet damage that never reaches this list. If data is corrupted in RAM before ZFS computes the checksum, the checksum matches the bad data and every later read passes. So a clean \`zpool status\` does not prove the memory is good. Run several passes of a stand-alone tester such as [Memtest86+](https://www.memtest.org/). [ECC memory](/blog/ecc-ram-explained) covers how corrected errors are counted.
+
+## Why did the error stay after a scrub?
+
+**The scrub did not finish.** The man page says \`zpool status -v\` lists files with errors ["since the last complete pool scrub"](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-status.8.html). Check the \`scan:\` line, and let a paused or interrupted scrub run to the end before judging the list.
+
+**The block is still referenced.** A live file that was never rewritten, a snapshot or a clone still holds it. The \`@snapshot\` entries in the listing name them.
+
+**The data really is damaged.** A scrub that reads the block again and still fails keeps the entry, correctly. That file needs a restore.
+
+**Only \`zpool clear\` was run.** It resets counters. OpenZFS says: ["Entries persist until a scrub confirms they are gone, so run a scrub after restoring."](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html)
+
+**The key is not loaded.** On an encrypted dataset the scrub cannot attach a name or check snapshots, as described above.
+
+**The cause is still there.** A marginal cable produces new errors during the scrub and refills the list. Fix the path, then scrub again.
+
+**The pool predates 2.2.0 features.** \`head_errlog\` is in the [2.2.0 feature list](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.2.0/man/man7/zpool-features.7) and absent from the [2.1.15 list](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.1.15/man/man7/zpool-features.7), and the 2.1.15 scrub man page has no \`-e\`. Without the feature, only a full scrub refreshes the list. Check with \`zpool get feature@head_errlog tank\`.
+
+A \`<metadata>\` entry that survives a clean scrub is not stale. The 8A page says corruption in pool-wide metadata can leave "entire datasets" unavailable, and that "the only option is to destroy the pool and re-create the datasets from backup." A backup that has never been read back is a guess, which is the argument of [restore drills that matter](/blog/restore-drills-that-matter), and [the 3-2-1 rule](/blog/backup-strategy-321-rule) covers where the second copy should sit.
+
+## What breaks
+
+**\`cp\` or rsync fails with "Input/output error" on a listed file.** ZFS returns EIO for a block it cannot verify, as the 8A page says. Fix: restore that file from backup, following step 3.
+
+**rsync from the backup reports nothing to transfer.** The quick check sees matching size and time. Fix: delete the damaged file, then copy, as in step 3.
+
+**A replication job fails on a snapshot.** \`zfs send\` has to read every block, so it hits the same error, and the [send code](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_sendrecv.c) prints \`warning: cannot send\` with the dataset name. Fix: restore the file, then send a snapshot taken after the repair. Destroy the snapshots that hold the bad block only after confirming the other side has good data.
+
+**Upgrading the pool to get \`scrub -e\` locks out older systems.** The feature page marks \`head_errlog\` as not read-only compatible, and once enabled it stays active for good. A host running 2.1 cannot import the pool afterwards. Fix: run \`zpool upgrade\` only when no machine that needs this pool is still on an older release.
+
+**The listing misses some paths.** Oracle's guide says that when corrupted blocks have multiple references, such as snapshots, \`zpool status -v\` ["cannot display all corrupted data paths"](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-file-or-directory.html). Fix: after the scrub, compare the dataset against the backup, not only the files that were listed.
+
+**Counters return after \`zpool clear\`.** The cause is still present. Fix: change one thing at a time (cable, then slot, then drive) and clear after each, so you can tell which change mattered. If a disk keeps failing, the 9P page says to replace it with \`zpool replace\`.
+
+**The pool reports ZFS-8000-72, or will not open.** This is damaged pool metadata, not file damage. The page says that if a recovery action is offered, it can be tried with \`zpool clear -F\`.
+
+**Warning: \`zpool clear -F\` throws data away.** It rolls the pool back to an earlier state and discards the most recent writes "irreversibly." The page's example loses about 59 seconds of writes. Copy the full \`zpool status\` output first, and run a scrub afterwards, as the page recommends. If no recovery is offered, the page says "all data within the pool is lost" and the pool has to be destroyed and restored from backup.
+
+## Sources
+
+- [OpenZFS: Message ID ZFS-8000-8A, Corrupted data](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-8A/index.html)
+- [OpenZFS: Message ID ZFS-8000-9P, Failing device in replicated configuration](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-9P/index.html)
+- [OpenZFS: Message ID ZFS-8000-2Q, Missing device in replicated configuration](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-2Q/index.html)
+- [OpenZFS: Message ID ZFS-8000-4J, Corrupted device label in a replicated configuration](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-4J/index.html)
+- [OpenZFS: Message ID ZFS-8000-72, Corrupted pool metadata](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-72/index.html)
+- [OpenZFS: Message ID ZFS-8000-3C, Missing device in non-replicated configuration](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-3C/index.html)
+- [OpenZFS: Message ID ZFS-8000-5E, Corrupted device label in non-replicated configuration](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-5E/index.html)
+- [OpenZFS: Message ID ZFS-8000-HC, ZFS pool I/O failures](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-HC/index.html)
+- [OpenZFS: Message ID ZFS-8000-JQ, ZFS pool I/O failures](https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-JQ/index.html)
+- [OpenZFS: zpool-status(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-status.8.html)
+- [OpenZFS: zpool-clear(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-clear.8.html)
+- [OpenZFS: zpool-scrub(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html)
+- [OpenZFS: zpool-scrub(8) at release 2.2.0](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.2.0/man/man8/zpool-scrub.8)
+- [OpenZFS: zpool-events(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-events.8.html)
+- [OpenZFS: zfsprops(7)](https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html)
+- [OpenZFS: zfsconcepts(7)](https://openzfs.github.io/openzfs-docs/man/master/7/zfsconcepts.7.html)
+- [OpenZFS: zfs-destroy(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zfs-destroy.8.html)
+- [OpenZFS: zdb(8)](https://openzfs.github.io/openzfs-docs/man/master/8/zdb.8.html)
+- [OpenZFS: zpool-features(7)](https://openzfs.github.io/openzfs-docs/man/master/7/zpool-features.7.html)
+- [OpenZFS: zpool-features(7) at release 2.2.0](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.2.0/man/man7/zpool-features.7)
+- [OpenZFS: zpool-features(7) at release 2.1.15](https://raw.githubusercontent.com/openzfs/zfs/zfs-2.1.15/man/man7/zpool-features.7)
+- [OpenZFS documentation: Troubleshooting](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Troubleshooting.html)
+- [OpenZFS documentation: Scrub and Resilver](https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Operations/Scrub%20and%20Resilver.html)
+- [OpenZFS documentation: Hardware](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [OpenZFS source: cmd/zpool/zpool_main.c](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zpool/zpool_main.c)
+- [OpenZFS source: lib/libzfs/libzfs_status.c](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_status.c)
+- [OpenZFS source: lib/libzfs/libzfs_pool.c](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_pool.c)
+- [OpenZFS source: lib/libzfs/libzfs_sendrecv.c](https://raw.githubusercontent.com/openzfs/zfs/master/lib/libzfs/libzfs_sendrecv.c)
+- [OpenZFS source: module/zfs/spa_errlog.c](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/spa_errlog.c)
+- [OpenZFS source: module/zfs/dsl_scan.c](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/dsl_scan.c)
+- [OpenZFS source: module/zfs/zfs_ioctl.c](https://raw.githubusercontent.com/openzfs/zfs/master/module/zfs/zfs_ioctl.c)
+- [OpenZFS source: module/zcommon/zfs_prop.c](https://raw.githubusercontent.com/openzfs/zfs/master/module/zcommon/zfs_prop.c)
+- [OpenZFS source: cmd/zdb/zdb.c](https://raw.githubusercontent.com/openzfs/zfs/master/cmd/zdb/zdb.c)
+- [Oracle: Repairing a Corrupted File or Directory (Solaris 11.4)](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-file-or-directory.html)
+- [Oracle: Repairing Corrupted ZFS Data (Solaris 11.4)](https://docs.oracle.com/en/operating-systems/solaris/oracle-solaris/11.4/manage-zfs/repairing-corrupted-zfs-data.html)
+- [University of Wisconsin-Madison: End-to-end Data Integrity for File Systems, A ZFS Case Study (FAST 2010)](https://www.usenix.org/legacy/event/fast10/tech/full_papers/zhang.pdf)
+- [Linux kernel documentation: Reliability, Availability and Serviceability (RAS)](https://docs.kernel.org/admin-guide/RAS/main.html)
+- [smartmontools: smartctl(8) manual page](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html)
+- [Memtest86+: Project home page](https://www.memtest.org/)
+- [Samba: rsync(1) manual page](https://download.samba.org/pub/rsync/rsync.1)`,
+  },
+  {
+    slug: "systemd-status-203-exec",
+    title: "systemd status=203/EXEC: what it means and how to fix it",
+    date: "2026-11-07",
+    tags: ["systemd", "linux", "servers", "troubleshooting"],
+    excerpt:
+      "status=203/EXEC means systemd forked the service process but execve failed before any of your program ran, and the error text in the journal tells you whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang.",
+    coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
+    content: `## The short answer
+
+systemd is the service manager that starts and supervises services on most Linux distributions. When it reports \`status=203/EXEC\`, it forked a process for the service, but the \`execve(2)\` system call that should have replaced that process with the program failed. None of the program's own code ran. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says this is "Most likely" caused by "a missing or non-accessible executable file". The journal line \`Failed at step EXEC spawning <path>: <error>\` carries the kernel's error text, and that text settles which case it is:
+
+- "No such file or directory" (ENOENT): the file, or the interpreter named on its \`#!\` line, does not exist where the unit looks.
+- "Permission denied" (EACCES): no execute bit, a directory the unit's user cannot search, a \`noexec\` mount, an SELinux denial or a sandbox setting.
+- "Exec format error" (ENOEXEC): a script with no \`#!\` line, or a binary for another CPU.
+
+Read the line with \`journalctl -u NAME -b\`, test the path with \`namei -l\`, and decode the number with \`systemd-analyze exit-status 203\`. The same manual table lists 43 systemd-specific codes from 200 to 245. Each one names a setup step that failed before the program started, such as 226/NAMESPACE for a missing \`ReadWritePaths=\` target and 217/USER for a missing \`User=\` account.
+
+## What does status=203/EXEC mean?
+
+The number comes from the child process the manager creates for every command line. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says that when the manager cannot apply a unit's execution settings, "the already created service process will exit with a non-zero exit code" before the configured command runs. That is after \`fork(2)\` and before the program. The 203 row, \`EXIT_EXEC\`, reads: "The actual process execution failed (specifically, the execve(2) system call). Most likely this is caused by a missing or non-accessible executable file."
+
+The word after the slash is the entry's name in systemd's own table, where [the source](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c) has \`[EXIT_EXEC] = { "EXEC", EXIT_STATUS_SYSTEMD }\`. The same name appears in the journal, because [the executor](https://raw.githubusercontent.com/systemd/systemd/main/src/core/executor.c) logs \`Failed at step %s spawning %s: %m\` with that name and the command path. "Step EXEC" and "203/EXEC" are one fact reported twice.
+
+Status 203 also says something about the steps before it. In [the current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c), a comment shortly before the executable lookup begins: "Now that the mount namespace has been set up and privileges adjusted, let's look for the thing we shall execute". The lookup therefore happens inside the unit's own view of the filesystem, with the unit's sandbox in place. A file that a root shell can see may be hidden or unusable there.
+
+Three rules from [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html) explain many 203 reports:
+
+- The first word must be "either an absolute path to an executable or a simple file name without any slashes". A simple name is resolved with "a fixed search path determined at compilation time" that includes \`/usr/local/bin/\` and \`/usr/bin/\`. The \`$PATH\` of a login shell is not used.
+- It is not a shell line. Redirection, pipes, background jobs "and other elements of shell syntax are not supported". The manual's own workaround is \`ExecStart=sh -c 'dmesg | tac'\`.
+- The program to execute "may not be a variable". [The source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/load-fragment.c) rejects a bad first word while loading the unit, with the message "Neither a valid executable name nor an absolute path". That is a load error, not a 203.
+
+With \`Type=simple\`, the manager "will consider the unit started immediately after the main service process has been forked off", so the page warns that \`systemctl start\` reports success even when the binary cannot be invoked. With \`Type=exec\`, \`systemctl start\` "will report failure when the service's binary cannot be invoked successfully". The manual itself says that "Typically, Type=exec is the better choice". The [units that behave](/blog/systemd-units-that-behave) article has more on writing unit files.
+
+## Why does a script that runs fine by hand fail with 203/EXEC?
+
+A shell and the service manager both end in \`execve(2)\`, and they differ in everything before it. The text after \`spawning <path>:\` is the C library's message for the error number (errno) that the kernel returned. [errno(3)](https://man7.org/linux/man-pages/man3/errno.3.html) lists them: ENOENT "No such file or directory", EACCES "Permission denied", ENOEXEC "Exec format error" and ETXTBSY "Text file busy".
+
+| Text after the path | execve(2) says | Usual causes |
+|---|---|---|
+| No such file or directory | "path or a script or ELF interpreter does not exist" | Wrong path; bare name outside systemd's search path; \`#!\` names a missing interpreter; binary built for a loader the host lacks; path hidden by \`ProtectHome=\` |
+| Permission denied | Search denied on a path component, file not regular, execute denied, or "The filesystem is mounted noexec" | No execute bit; closed parent directory; \`noexec\` mount; SELinux; \`NoExecPaths=\` |
+| Exec format error | "not in a recognized format, is for the wrong architecture" | Script without a \`#!\` line; wrong CPU architecture |
+| Text file busy | "open for writing by one or more processes" | A deploy still writing the file when the unit starts |
+
+The middle column comes from the ERRORS section of [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html). The right column is my summary of the cases below.
+
+### A script with no #! line
+
+When \`execve()\` fails with ENOEXEC, the [POSIX shell rules](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html) have the shell fall back to running the file as a shell script itself. Typing \`./job.sh\` at a prompt therefore works without a \`#!\` line. systemd does no such retry. A poster on the Arch Linux forum in 2012 reported a script that [failed under systemd with \`status=203/EXEC\` and "Exec format error"](https://bbs.archlinux.org/viewtopic.php?id=149425), then wrote that the \`#!/bin/sh\` line had been left out and marked the thread solved. Red Hat's knowledge base shows the same "Exec format error" for [\`/etc/rc.d/rc.local\` on RHEL 7.2](https://access.redhat.com/solutions/7036450) and a 203/EXEC for [rc-local.service on RHEL 9](https://access.redhat.com/solutions/7027153). Both resolutions are behind a subscriber login, so I can only point at the symptom. Units that replace old init scripts, covered in [init scripts to systemd units](/blog/init-scripts-to-systemd-units), are a natural place for this to show up.
+
+### A carriage return in the shebang
+
+[execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html) says an interpreter script starts with a line of the form \`#!interpreter [optional-arg]\`, that the interpreter "must be a valid pathname for an executable file", and that on Linux "the entire string following the interpreter name is passed as a single argument". A script saved with Windows line endings ends that line in a carriage return, written \`\\r\`.
+
+With \`#!/bin/bash\` and nothing after it, the carriage return becomes part of the interpreter path. No file is named \`/bin/bash\\r\`, so the kernel returns ENOENT. The message says "No such file or directory" about a script that plainly exists, which is what makes this one confusing.
+
+With \`#!/usr/bin/env python3\` the carriage return lands in env's argument instead. A [Virginia Tech course Q&A](https://courses.cs.vt.edu/cs3214/fall2023/questions/shebang) shows the result: \`/usr/bin/env: 'python3\\r': No such file or directory\`. That time env did start, and [env(1)](https://man7.org/linux/man-pages/man1/env.1.html) exits with 127 when the command cannot be found. So the unit reports 127, not 203.
+
+### A different user, a different filesystem view
+
+The unit runs as its \`User=\`, not as the person typing. [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html) returns EACCES when "Search permission is denied on a component of the path prefix", so every directory on the path needs search permission for that user. Which permission bits apply is the owner, group, other rule described in [permissions do not add up](/blog/permissions-do-not-add-up). [namei(1)](https://man7.org/linux/man-pages/man1/namei.1.html) with \`-l\` prints the mode and owner of each component, and the [chmod calculator](/tools/chmod-calculator) decodes the bits. The first directory that user cannot search is the answer.
+
+Sandbox settings change the view itself. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html) says that with \`ProtectHome=\` enabled, \`/home/\`, \`/root\` and \`/run/user\` "are made inaccessible and empty for processes invoked by this unit". It also says "Content in paths listed in \`NoExecPaths=\` are not executable even if the usual file access controls would permit this". A binary under \`/home\` plus \`ProtectHome=yes\` is a 203.
+
+### A noexec mount
+
+[mount(8)](https://man7.org/linux/man-pages/man8/mount.8.html) describes \`noexec\` as not permitting direct execution of any binaries on the mounted filesystem. [findmnt(8)](https://man7.org/linux/man-pages/man8/findmnt.8.html) with \`-T path\` finds the mount holding a path, and its OPTIONS column shows the flag. The key word is "direct". An interpreter can still read a script from such a mount, so \`sh /tmp/job.sh\` works where \`/tmp/job.sh\` fails. [Broadcom's knowledge base article](https://knowledge.broadcom.com/external/article/441634/agent-fails-to-start-with-permission-den.html) on a 203/EXEC lists a \`noexec\` mount as the thing to check when SELinux is not the cause.
+
+### An SELinux label
+
+SELinux is a kernel access control layer, on by default on Fedora and RHEL, that attaches a label to every file and process and checks them against a policy. Under it a service runs in a confined domain, not in the unconfined one a login shell normally gets. So a file can be executable by mode bits and still be refused.
+
+A poster on Fedora Discussion in December 2020 reported \`status=203/EXEC\` with an audit denial \`{ execute }\` from \`scontext=system_u:system_r:init_t:s0\` against a file labeled [\`screen_exec_t\`](https://discussion.fedoraproject.org/t/selinux-policy-prevents-systemd-from-executing-screen-review-my-solution-please/77785). The Broadcom article describes a RHEL 9 agent whose file mode was \`-rwxr-xr-x\` and still failed with "Permission denied" and 203/EXEC, and it names SELinux as the cause. A [2026 blog post by Thomas Powell](https://thomaspowell.com/2026/04/03/the-selinux-203-exec-systemd/) reports a binary that systemd could execute from \`/opt/myapp/bin\` (labeled \`bin_t\`) and could not from \`/srv/myapp/releases/...\` (labeled \`default_t\`).
+
+The commands below come from those two sources. The first is Broadcom's search for recent denials. The other two are the blog post's label fix:
+
+\`\`\`bash
+ausearch -m avc -ts recent
+\`\`\`
+
+\`\`\`bash
+semanage fcontext -a -t bin_t "/srv/myapp/.*/bin(/.*)?"
+\`\`\`
+
+\`\`\`bash
+restorecon -Rv /srv/myapp
+\`\`\`
+
+Broadcom's article also suggests a temporary \`setenforce 0\` to see whether the service then starts, followed by \`setenforce 1\`. That turns enforcement off for the whole machine, so treat it as a short test and not a fix.
+
+## How do you find the real reason in the journal?
+
+Start with the unit's own lines for this boot. The [journalctl(1)](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html) options \`-u\` and \`-b\` select the unit and the boot. The lines have this shape, shown here with a placeholder path:
+
+\`\`\`text
+myapp.service: Failed to locate executable /opt/myapp/bin/myapp: Permission denied
+myapp.service: Failed at step EXEC spawning /opt/myapp/bin/myapp: Permission denied
+myapp.service: Main process exited, code=exited, status=203/EXEC
+\`\`\`
+
+The first line is worded "Failed to locate executable" on the RHEL 9 system in [Broadcom's article](https://knowledge.broadcom.com/external/article/441634/agent-fails-to-start-with-permission-den.html). [The current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c) writes "Unable to locate executable '%s': %m", so newer releases word it that way. The third line says "Main process exited" for the main \`ExecStart=\` command, as in the Fedora thread and [Red Hat's rc-local page](https://access.redhat.com/solutions/7027153). Broadcom's article shows "Control process exited" instead. The Red Hat page also shows the \`Process:\` line of \`systemctl status\` naming the failed directive: \`ExecStart=/etc/rc.local (code=exited, status=203/EXEC)\`.
+
+Four commands cover it. The unit's lines for this boot:
+
+\`\`\`bash
+journalctl -u myapp.service -b --no-pager
+\`\`\`
+
+Every spawn failure this boot, for all units:
+
+\`\`\`bash
+journalctl -b MESSAGE_ID=641257651c1b4ec9a8624d7a40a9e1e7
+\`\`\`
+
+The last exit status as a bare number, for scripts:
+
+\`\`\`bash
+systemctl show myapp.service -p ExecMainStatus
+\`\`\`
+
+The name and class behind a number:
+
+\`\`\`bash
+systemd-analyze exit-status 203
+\`\`\`
+
+Some notes on those:
+
+- **The message ID** is \`SD_MESSAGE_SPAWN_FAILED\` in [sd-messages.h](https://raw.githubusercontent.com/systemd/systemd/main/src/systemd/sd-messages.h), and the executor attaches it to the failure line. journalctl matches \`FIELD=VALUE\` pairs, per its manual.
+- **Adding \`-x\`** brings explanatory catalog text. [The catalog entry](https://raw.githubusercontent.com/systemd/systemd/main/catalog/systemd.catalog.in) is titled "Process @EXECUTABLE@ could not be executed" and says "The error number returned by this process is @ERRNO@." The journalctl manual asks people not to use \`-x\` when attaching output to bug reports.
+- **ExecMainStatus** is one of the service properties listed in [org.freedesktop.systemd1(5)](https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.systemd1.html).
+- **\`systemd-analyze exit-status\`** prints each status with its name and class. The example in [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html) includes the row \`SUCCESS 0 libc\`. Class \`systemd\` marks the 200s.
+
+Before any of that, \`systemd-analyze verify myapp.service\` reports "commands listed in \`ExecStart=\` and similar which are not found in the system or not executable". [Its source](https://raw.githubusercontent.com/systemd/systemd/main/src/analyze/analyze-verify-util.c) skips commands prefixed with \`-\`, and it checks from the caller's side. It cannot see a sandbox, another user or an SELinux label.
+
+## What do the other exit codes from 200 to 245 mean?
+
+The "systemd-specific exit codes" table in [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) lists 43 codes from 200 (\`EXIT_CHDIR\`) to 245 (\`EXIT_BPF\`). It says "The LSB specification suggests that error codes 200 and above are reserved for implementations." LSB is the Linux Standard Base, an older cross-distribution standard. Numbers 223 and 234 are missing from the table. [The header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) marks them reserved: "used to be tcpwrap, don't reuse!" and "used to be used by kdbus, don't reuse". The page also lists C library codes 0 and 1, LSB codes 2 to 7 and BSD codes 64 to 78. A status outside 200 to 245 usually came from the program itself.
+
+The grouping below is my reading aid, not systemd's own classification. The counts 10, 11, 7, 6, 5, 3 and 1 add up to the 43 rows of the table.
+
+| Family | Codes | Count |
+|---|---|---|
+| Sandboxing, namespaces and labels | 210 CHROOT, 225 NETWORK, 226 NAMESPACE, 227 NO_NEW_PRIVILEGES, 228 SECCOMP, 229 SELINUX_CONTEXT, 231 APPARMOR_PROFILE, 232 ADDRESS_FAMILIES, 236 SMACK_PROCESS_LABEL, 245 BPF | 10 |
+| Scheduling, limits and process properties | 201 NICE, 204 MEMORY, 205 LIMITS, 206 OOM_ADJUST, 207 SIGNAL_MASK, 211 IOPRIO, 212 TIMERSLACK, 214 SETSCHEDULER, 215 CPUAFFINITY, 230 PERSONALITY, 242 NUMA_POLICY | 11 |
+| Descriptors, cgroup, keyring and other | 202 FDS, 219 CGROUP, 220 SETSID, 221 CONFIRM, 235 CHOWN, 237 KEYRING, 243 CREDENTIALS | 7 |
+| Directories | 200 CHDIR, 233 RUNTIME_DIRECTORY, 238 STATE_DIRECTORY, 239 CACHE_DIRECTORY, 240 LOGS_DIRECTORY, 241 CONFIGURATION_DIRECTORY | 6 |
+| User, group and privileges | 213 SECUREBITS, 216 GROUP, 217 USER, 218 CAPABILITIES, 224 PAM | 5 |
+| Standard streams | 208 STDIN, 209 STDOUT, 222 STDERR | 3 |
+| Exec itself | 203 EXEC | 1 |
+
+The next table pairs the codes that configuration mistakes tend to produce with the setting involved and a message that [the current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c) logs:
+
+| Code | Trigger | Logged message |
+|---|---|---|
+| 200/CHDIR | \`WorkingDirectory=\` missing; with a \`-\` prefix a missing directory "is not considered fatal" | "Changing to the requested working directory failed: %m" |
+| 208, 209, 222 | \`StandardInput=\`, \`StandardOutput=\` or \`StandardError=\` target cannot be set up | "Failed to set up standard output: %m" and its input and error twins |
+| 216/GROUP, 217/USER | \`Group=\` or \`User=\` unknown: "If the user does not exist by then program invocation will fail" | "Failed to determine credentials for user '%s': %s" |
+| 226/NAMESPACE | A path in \`ReadWritePaths=\` and related settings missing | "Failed to set up mount namespacing" followed by the path and the error |
+| 228/SECCOMP | \`SystemCallFilter=\` could not be installed | "Failed to apply system call filters: %m" |
+| 233, 238 to 241 | A runtime, state, cache, logs or configuration directory could not be set up | "Failed to set up special execution directory in %s: %m" |
+| 243/CREDENTIALS | \`LoadCredential=\` and related settings | "Failed to set up credentials: %m" |
+
+The quotes in the Trigger column are from [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html).
+
+The manual and the code disagree on one number, as I read them on the main branch. The page gives \`EXIT_BPF\` as 245. The enum in [the header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) starts at \`EXIT_CHDIR = 200\` and counts up in sequence through the two reserved slots, which puts \`EXIT_CREDENTIALS\` at 243, \`EXIT_BPF\` at 244 and \`EXIT_KSM\` at 245, followed by \`EXIT_MEMORY_THP\`. The man page has no row for the last two. \`systemd-analyze exit-status\` prints the table from the installed systemd, so trust it when the last digit matters. The status line also uses short names: [the source table](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c) names 231 \`APPARMOR\`, not \`APPARMOR_PROFILE\`.
+
+## Why did hardening a unit start producing 226/NAMESPACE or 217/USER?
+
+Sandboxing directives change the child process before the program runs, so the unit fails with a code in the 200s while the program is untouched. The [service hardening](/blog/systemd-service-hardening) article covers what to set, and \`systemd-analyze security\` estimates an exposure level from 0.0 to 10.0 per unit, according to [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html). This section covers reading the failures.
+
+| Directive added | Code | Why, per systemd.exec(5) |
+|---|---|---|
+| \`ReadWritePaths=\`, \`ReadOnlyPaths=\`, \`InaccessiblePaths=\` naming a missing path | 226/NAMESPACE | Paths "may be prefixed with -, in which case they will be ignored when they do not exist" |
+| \`ProtectHome=yes\`, program under \`/home\` | 203/EXEC | \`/home/\`, \`/root\` and \`/run/user\` "are made inaccessible and empty" |
+| \`NoExecPaths=/\` without \`ExecPaths=\` for the program | 203/EXEC | "Nest \`ExecPaths=\` inside of \`NoExecPaths=\` in order to provide executable content within non-executable directories" |
+| \`User=\` for an account missing from the user database | 217/USER | Accounts must exist "no later than the moment the service is started" |
+| \`SystemCallFilter=\` blocking a call the program makes | Not 228 | "The default action when a system call is denied is to terminate the processes with a SIGSYS signal" |
+
+All rows quote the [exec settings manual](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html). The last row matters because the two failures look different. Status 228 means the filter could not be installed. A denied call at runtime kills the program with \`SIGSYS\`, which systemd reports as a signal, not as a code in the 200s.
+
+For 226, the journal names the culprit. The message is built from the failing path, so a missing directory appears in the form \`Failed to set up mount namespacing: /var/lib/myapp: No such file or directory\`. Create the directory, prefix the path with \`-\` if it is optional, or use \`StateDirectory=\`. [The same manual](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html) says that setting creates the directory under \`/var/lib/\` and excludes it from the effect of \`ProtectSystem=\`.
+
+A method that keeps this manageable is one directive per restart. Add it, run \`systemctl daemon-reload\` and \`systemctl restart\`, read the status, and keep the change only if the service still starts. If it fails, the code names the family, and the "See ... above" text in the manual's row names the setting to look at.
+
+## How do you test a unit change before restarting the service?
+
+[systemd-run(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html) can run a command with a unit's properties without editing anything. Its \`--property\` option (\`-p\`) "takes an assignment in the same format as" the \`set-property\` command of systemctl, \`--uid\` sets the user, and \`--wait\` reports the exit code and status of the main process. The manual warns that services it creates default to the simple type, which counts start-up as successful "before the execve() is invoked", and suggests \`--property=Type=exec\`.
+
+First the static check:
+
+\`\`\`bash
+systemd-analyze verify /etc/systemd/system/myapp.service
+\`\`\`
+
+Then a throwaway run with the settings under test:
+
+\`\`\`bash
+systemd-run --pty --wait --collect --uid=myapp \\
+  -p Type=exec -p ProtectHome=yes -p ProtectSystem=strict \\
+  /opt/myapp/bin/myapp --version
+\`\`\`
+
+\`--collect\` unloads the transient unit even if it failed, so nothing is left behind for the next try. \`--shell\` (\`-S\`) is "A shortcut for \`--pty --same-dir --wait --collect --service-type=exec $SHELL\`", an interactive shell running in service context. With the same \`-p\` options it gives a prompt inside the sandbox, where \`ls -l\` and \`id\` show what the unit sees.
+
+After editing the real unit, [systemctl(1)](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html) has three useful commands. \`systemctl cat\` prints the files on disk, which the manual warns "might not match the system manager's understanding of these units" until a reload. \`systemctl daemon-reload\` loads the change. \`systemctl reset-failed\` clears the failed state and, per the same page, resets "the start rate limit counter", so the next start is a clean attempt. The \`NeedDaemonReload\` property in [org.freedesktop.systemd1(5)](https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.systemd1.html) says whether the unit file changed since it was loaded:
+
+\`\`\`bash
+systemctl show -p NeedDaemonReload myapp.service
+\`\`\`
+
+For the filesystem checks, this sequence follows the error table. Permissions of every path component:
+
+\`\`\`bash
+namei -l /opt/myapp/bin/myapp
+\`\`\`
+
+The mount and its options:
+
+\`\`\`bash
+findmnt -T /opt/myapp/bin/myapp
+\`\`\`
+
+The raw bytes of the first line:
+
+\`\`\`bash
+head -1 /opt/myapp/bin/myapp | od -c | head -2
+\`\`\`
+
+Whether the unit's user can execute it:
+
+\`\`\`bash
+sudo -u myapp test -x /opt/myapp/bin/myapp && echo executable
+\`\`\`
+
+The \`od -c\` output shows \`\\r\` before \`\\n\` if the shebang has Windows line endings. The last command has to run as the unit's user, because root passes checks that the service will fail. None of these four see the unit's sandbox or an SELinux label, so a clean result here points you back at those.
+
+## What else can hide or fake a 203/EXEC?
+
+**The \`-\` prefix hides it.** For a command prefixed with \`-\`, a failure "is recorded, but has no further effect and is considered equivalent to success", per [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html). When the executable cannot be located, [the source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c) comments that a missing executable "is very much expected in this case" and returns a value that [the executor](https://raw.githubusercontent.com/systemd/systemd/main/src/core/executor.c) treats as an "expected/ignored failure, do not log at error level". Only a notice-level "Unable to locate executable" line remains. An \`ExecStartPre=-/usr/local/bin/check\` with a typo in the path quietly never runs.
+
+**\`Type=simple\` hides it from \`systemctl start\`.** The start returns success, and the failure shows up in \`systemctl status\` afterwards. A deploy script that only checks the exit status of \`systemctl start\` sees nothing wrong.
+
+**Retries hide the first failure.** With \`Restart=on-failure\`, the service "will be restarted when the process exits with a non-zero exit code", per [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html). A missing binary fails the same way every time, and the retries run into the start limit described in [the service that crashed faster is the one that stopped](/blog/the-service-that-crashed-faster-is-the-one-that-stopped). Read the first spawn failure in the journal, not the last status.
+
+**A program can exit 203 itself.** The numbers are a convention for what systemd's child process returns before the program starts. Nothing stops a program from returning 203 on its own, and \`systemctl status\` prints the same \`203/EXEC\` either way. The \`Failed at step EXEC spawning\` line is what tells them apart. More on reading exit statuses from the shell side is in [one byte and two kinds of news](/blog/one-byte-and-two-kinds-of-news).
+
+**An unreloaded edit.** The manager runs the unit it loaded, not the file on disk. A fixed file and a still-failing unit can mean \`daemon-reload\` was skipped. \`NeedDaemonReload\` exists to answer that question.
+
+**A deploy that races the start.** ETXTBSY, "Text file busy", is returned when the executable "was open for writing by one or more processes", per [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html). Write the new binary under a temporary name in the same directory and rename it over the old one, so the path never names a half-written file.
+
+The [it works in the shell](/blog/it-works-in-the-shell) article covers the matching problem for cron, where a command behaves differently outside an interactive shell.
+
+## Sources
+
+- [freedesktop.org: systemd.exec(5), Process Exit Codes](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes)
+- [freedesktop.org: systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [freedesktop.org: systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+- [freedesktop.org: systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [freedesktop.org: systemd-run(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html)
+- [freedesktop.org: journalctl(1)](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html)
+- [freedesktop.org: systemctl(1)](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
+- [freedesktop.org: org.freedesktop.systemd1(5)](https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.systemd1.html)
+- [man7.org: execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html)
+- [man7.org: errno(3)](https://man7.org/linux/man-pages/man3/errno.3.html)
+- [man7.org: mount(8)](https://man7.org/linux/man-pages/man8/mount.8.html)
+- [man7.org: findmnt(8)](https://man7.org/linux/man-pages/man8/findmnt.8.html)
+- [man7.org: namei(1)](https://man7.org/linux/man-pages/man1/namei.1.html)
+- [man7.org: env(1)](https://man7.org/linux/man-pages/man1/env.1.html)
+- [The Open Group: POSIX Shell Command Language](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html)
+- [systemd source: src/core/executor.c](https://raw.githubusercontent.com/systemd/systemd/main/src/core/executor.c)
+- [systemd source: src/core/exec-invoke.c](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c)
+- [systemd source: src/core/load-fragment.c](https://raw.githubusercontent.com/systemd/systemd/main/src/core/load-fragment.c)
+- [systemd source: src/shared/exit-status.c](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c)
+- [systemd source: src/shared/exit-status.h](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h)
+- [systemd source: src/systemd/sd-messages.h](https://raw.githubusercontent.com/systemd/systemd/main/src/systemd/sd-messages.h)
+- [systemd source: catalog/systemd.catalog.in](https://raw.githubusercontent.com/systemd/systemd/main/catalog/systemd.catalog.in)
+- [systemd source: src/analyze/analyze-verify-util.c](https://raw.githubusercontent.com/systemd/systemd/main/src/analyze/analyze-verify-util.c)
+- [Red Hat: Solution 7027153, rc-local.service status=203/EXEC](https://access.redhat.com/solutions/7027153)
+- [Red Hat: Solution 7036450, rc.local failing with Exec format error](https://access.redhat.com/solutions/7036450)
+- [Broadcom: Agent fails to start with Permission denied status=203/EXEC on RHEL 9](https://knowledge.broadcom.com/external/article/441634/agent-fails-to-start-with-permission-den.html)
+- [Fedora Discussion: SELinux policy prevents systemd from executing screen](https://discussion.fedoraproject.org/t/selinux-policy-prevents-systemd-from-executing-screen-review-my-solution-please/77785)
+- [Arch Linux Forums: Startup script not getting executed in systemd](https://bbs.archlinux.org/viewtopic.php?id=149425)
+- [Virginia Tech CS3214: shebang and Windows line endings](https://courses.cs.vt.edu/cs3214/fall2023/questions/shebang)
+- [Thomas Powell: The SELinux label that decides whether your binary runs or dies in systemd](https://thomaspowell.com/2026/04/03/the-selinux-203-exec-systemd/)`,
+  },
+  {
+    slug: "ssh-no-matching-host-key-type-ssh-rsa",
+    title: "SSH to an Old Device: No Matching Host Key Type Found, Their Offer: ssh-rsa",
+    date: "2026-11-06",
+    tags: ["networking", "security", "troubleshooting"],
+    excerpt:
+      "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms and PubkeyAcceptedAlgorithms override, how ssh -G confirms it, and the errors that follow.",
+    coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
+    content: `## The short answer
+
+\`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa\` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with \`HostKeyAlgorithms +ssh-rsa\` and \`PubkeyAcceptedAlgorithms +ssh-rsa\` in a \`Host\` block of \`~/.ssh/config\`, and confirm it with \`ssh -G\`. Add \`KexAlgorithms\` or \`Ciphers\` lines only if a later \`Their offer:\` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
+
+## What does "no matching host key type found. Their offer: ssh-rsa" mean?
+
+At the start of every SSH connection, both sides send lists of the algorithms they support, one list per job: key exchange, host key, cipher and message authentication code (MAC). OpenSSH ends the handshake when the two lists for one job share nothing, and it prints the other side's list. The sentence is built in [packet.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/packet.c) of the 9.9p1 source as \`Unable to negotiate with %s: %s. Their offer: %s\`, and the reasons come from [ssherr.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/ssherr.c): "no matching host key type found," "no matching key exchange method found," "no matching cipher found" and "no matching MAC found." Both ssh and sshd are built from that file, so a server logs the same sentence when an old client is the side that offers too little.
+
+\`\`\`text
+$ ssh admin@192.0.2.10
+Unable to negotiate with 192.0.2.10 port 22: no matching host key type found. Their offer: ssh-rsa
+\`\`\`
+
+The name \`ssh-rsa\` covers two things: a key format and a signature algorithm. [RFC 8332](https://www.rfc-editor.org/rfc/rfc8332) says SSH originally defined "ssh-rsa" for authentication "using RSA with SHA-1," and it adds two new algorithms, rsa-sha2-256 and rsa-sha2-512, that "reuse the "ssh-rsa" public key format." Existing RSA keys work with the new algorithms "without requiring re-encoding or affecting already trusted key fingerprints," so an entry in \`known_hosts\` stays valid. The [8.5 notes](https://www.openssh.org/txt/release-8.5) say the same thing from the OpenSSH side: an ssh-rsa key can sign with rsa-sha2-256, rsa-sha2-512 or ssh-rsa, and "Only the last of these is being turned off by default." OpenSSH has supported the SHA-2 pair since [7.2](https://www.openssh.org/txt/release-7.2) (February 29, 2016). A device that offers only \`ssh-rsa\` runs SSH software that never adopted RFC 8332.
+
+The reason for the change is the cost of breaking SHA-1. The 8.8 notes say it is possible to create chosen-prefix SHA-1 collisions for "<USD$50K," and the researchers behind [SHA-1 is a Shambles](https://sha-mbles.github.io/) estimate that their attack costs "about 45k USD." The [8.2 notes](https://www.openssh.org/txt/release-8.2) explain where the exposure is worst: certificates are at special risk because an attacker has "effectively unlimited time in which to craft a collision," while an attack on a live login has to fit inside "the relatively brief LoginGraceTime window." RFC 8332 says implementations SHOULD "start to disable "ssh-rsa" in their default configurations." OpenSSH announced the change in 8.2 (February 14, 2020) and shipped it in 8.8.
+
+Which clients hit the error depends on the OpenSSH version they ship.
+
+| Distribution | OpenSSH client | ssh-rsa host key signature on by default |
+|---|---|---|
+| Debian 11 | 8.4p1 | Yes |
+| Ubuntu 22.04 | 8.9p1 | No |
+| Debian 12 | 9.2p1 | No |
+| Debian 13 | 10.0p1 | No |
+
+Versions come from the [Debian](https://packages.debian.org/search?keywords=openssh-client&searchon=names&suite=all&section=all) and [Ubuntu](https://packages.ubuntu.com/jammy/openssh-client) package archives. The [SSH hardening guide](/blog/ssh-hardening-linux-servers) covers the server side of the same negotiation.
+
+## Which OpenSSH release turned off which legacy algorithm?
+
+Each row below is a default that changed, taken from that release's notes. A device that fails on several rows at once runs software older than the oldest change involved.
+
+| Release | Date | What changed |
+|---|---|---|
+| [7.0](https://www.openssh.org/txt/release-7.0) | 2015-08-11 | diffie-hellman-group1-sha1 and ssh-dss off at run time; SSH protocol 1 off at compile time |
+| [7.2](https://www.openssh.org/txt/release-7.2) | 2016-02-29 | RSA signatures with SHA-256 and SHA-512 added; blowfish-cbc, cast128-cbc, arcfour, MD5-based and truncated HMACs off by default in ssh |
+| [7.4](https://www.openssh.org/txt/release-7.4) | 2016-12-19 | 3des-cbc out of the client's default proposal |
+| [7.6](https://www.openssh.org/txt/release-7.6) | 2017-10-03 | hmac-ripemd160, arcfour, blowfish and CAST removed; RSA keys under 1024 bits refused; CBC ciphers not offered by the client by default |
+| [8.2](https://www.openssh.org/txt/release-8.2) | 2020-02-14 | diffie-hellman-group14-sha1 out of the default key exchange proposal for client and server; ssh-rsa deprecation announced |
+| [8.5](https://www.openssh.org/txt/release-8.5) | 2021-03-03 | UpdateHostKeys on by default; PubkeyAcceptedKeyTypes renamed PubkeyAcceptedAlgorithms |
+| [8.8](https://www.openssh.org/txt/release-8.8) | 2021-09-26 | RSA signatures with SHA-1 off by default |
+| [9.7](https://www.openssh.org/txt/release-9.7) and [9.8](https://www.openssh.org/txt/release-9.8) | 2024-03-11 and 2024-07-01 | DSA made optional at compile time, then disabled at compile time by default |
+| [10.0](https://www.openssh.org/txt/release-10.0) | 2025-04-09 | DSA removed; sshd stops offering finite field Diffie-Hellman key exchange by default, and the client is unchanged |
+
+The 7.4 notes explain the 3DES change: "64-bit block ciphers are not safe in 2016," and they admit the change "may cause problems connecting to older devices." The 9.7 notes give the case against DSA, the algorithm behind \`ssh-dss\` keys: it is limited to a "160 bit private key" and SHA-1, which they estimate at "only 80 bits symmetric equivalent."
+
+Disabled and removed are different. A disabled algorithm comes back with one config line. A removed one does not: the 7.6 notes removed hmac-ripemd160 and the arcfour, blowfish and CAST ciphers, and 10.0 removed DSA, so \`HostKeyAlgorithms +ssh-dss\` does nothing on a current client.
+
+## How do you reach one old device without weakening every connection?
+
+First see what the device offers. A \`-vv\` run prints both sides' lists, using the labels in [kex.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/kex.c), plus the software version the device announces.
+
+\`\`\`bash
+ssh -vv admin@192.0.2.10 2>&1 | grep -E 'KEXINIT proposal|KEX algorithms|host key algorithms|ciphers ctos|MACs ctos|remote software version'
+\`\`\`
+
+The lines after \`peer server KEXINIT proposal\` are the device's lists. The lines after \`local client KEXINIT proposal\` are your own. The [ssh2-enum-algos](https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html) script reports the same lists from a scan, as \`nmap --script ssh2-enum-algos target\`, and the [nmap command builder](/tools/nmap-command-builder) assembles the rest of the command line. \`ssh -Q kex\`, \`ssh -Q cipher\`, \`ssh -Q mac\` and \`ssh -Q key\` list what your own client supports, per the [legacy options page](https://www.openssh.org/legacy.html).
+
+For a single connection, pass the options on the command line.
+
+\`\`\`bash
+ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa admin@192.0.2.10
+\`\`\`
+
+To make it permanent for that device only, use the stanza from the 8.8 notes, with a host alias.
+
+\`\`\`text
+Host old-switch
+    HostName 192.0.2.10
+    User admin
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
+\`\`\`
+
+The [ssh_config(5)](https://man.openbsd.org/ssh_config) page defines the \`+\` prefix: the algorithms "will be appended to the default set instead of replacing them," so the strong algorithms stay first. A bare \`HostKeyAlgorithms ssh-rsa\` replaces the defaults, which is the weakening this approach avoids. The same page says "the first obtained value for each directive is used," so "more host-specific declarations should be given near the beginning of the file, and general defaults at the end." Put the stanza above any \`Host *\` block, then check the result.
+
+\`\`\`bash
+ssh -G old-switch | grep -i -E '^(hostkeyalgorithms|pubkeyacceptedalgorithms)'
+\`\`\`
+
+\`ssh -G\` prints the configuration ssh would use for that host without connecting. Both lines should end with \`ssh-rsa\`. A config file shared with clients older than 8.5 should spell the second option \`PubkeyAcceptedKeyTypes\`, which the 8.5 notes kept as an alias.
+
+Other tools follow the same stanza. The [scp(1)](https://man.openbsd.org/scp) page says \`-o\` passes options to ssh "in the format used in ssh_config(5)," and sftp and git over SSH run ssh, so they read \`~/.ssh/config\` too.
+
+Fedora and Red Hat systems add a layer. Fedora's [design note](https://www.fedoraproject.org/wiki/Changes/OpenSSH_Crypto_Policy) says the OpenSSH client follows a system-wide crypto policy and that "You can always overwrite the system-wide policy using user-specific configuration files in ~/.ssh/config or on the command line." Red Hat's [RHEL 9 documentation](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/using-the-system-wide-cryptographic-policies_security-hardening) describes a \`DEFAULT:SHA1\` policy, set with \`update-crypto-policies --set DEFAULT:SHA1\`, that allows SHA-1 signatures again. That command is system-wide and reaches far beyond one switch, so try the per-host override first and check it with \`ssh -G\`.
+
+## What other errors appear once the host key is accepted?
+
+Negotiation fails one list at a time, so \`ssh-rsa\` is often only the first of several errors. Each \`Their offer:\` line shows what the device can do, and each fix should add only an algorithm from that line. Prefer the strongest one that appears there.
+
+| Error | Per-host option | Dropped from the client default in |
+|---|---|---|
+| no matching key exchange method found | \`KexAlgorithms +diffie-hellman-group14-sha1\` | 8.2 |
+| no matching key exchange method found | \`KexAlgorithms +diffie-hellman-group1-sha1\` | 7.0 |
+| no matching cipher found | \`Ciphers +aes128-cbc\` or \`Ciphers +3des-cbc\` | 7.6 for CBC, 7.4 for 3des-cbc |
+| no matching MAC found | \`MACs +\` the name in the offer, such as \`hmac-md5\` | 7.2 |
+
+The ssh_config(5) page lists \`3des-cbc\` and \`aes128-cbc\` as supported ciphers but leaves them out of the default list, which is why the \`+\` form works for them.
+
+[RFC 9142](https://www.rfc-editor.org/rfc/rfc9142) ranks the two key exchanges. It says the group1 group "with approximately 80 bits of security is too weak to be retained." It allows diffie-hellman-group14-sha1 as a "MAY" for legacy devices but says it "should be put at the end of the list." An offer that lists both group14 and group1 needs only group14. The [Cisco key exchange article](/blog/ssh-no-matching-key-exchange-method-cisco) goes through this error step by step.
+
+### Why does "no mutual signature algorithm" appear with an RSA key?
+
+After the host key passes, the client must sign with its own key. For an RSA key, [sshconnect2.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/sshconnect2.c) picks the first RSA entry in \`PubkeyAcceptedAlgorithms\` that also appears in the server's \`server-sig-algs\` list, an extension where a server names the signature algorithms it accepts. An old device sends no such list, so the only candidate is plain \`ssh-rsa\`. RFC 8332 anticipated this: against a server without the extension, clients "MAY default to an "ssh-rsa" signature." Since 8.8 the client's own list lacks \`ssh-rsa\`, so no candidate is left. The source also special-cases OpenSSH 7.4 servers, which it treats as supporting both SHA-2 algorithms even without the list.
+
+With \`-v\`, the probe step logs \`send_pubkey_test: no mutual signature algorithm\`. If the client gets as far as signing, it logs \`sign_and_send_pubkey: no mutual signature supported\`. Either way the login ends with \`Permission denied (publickey)\` if no other method works. Adding \`PubkeyAcceptedAlgorithms +ssh-rsa\` to the same \`Host\` block fixes it. An Ed25519 key avoids RSA altogether if the device accepts one. OpenSSH has supported Ed25519 since 6.5, per the 8.2 notes, and the [key-based authentication guide](/blog/ssh-key-based-authentication) covers generating one.
+
+### What if the old side is the client?
+
+The mirror case is a Linux server running 8.8 or later that rejects an old client's RSA key. [auth2-pubkey.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/auth2-pubkey.c) logs \`userauth_pubkey: signature algorithm ssh-rsa not in PubkeyAcceptedAlgorithms\`. [sshd_config(5)](https://man.openbsd.org/sshd_config) allows \`PubkeyAcceptedAlgorithms\` after a \`Match\` line, so one source address can be exempted.
+
+\`\`\`text
+Match Address 192.0.2.50
+    PubkeyAcceptedAlgorithms +ssh-rsa
+\`\`\`
+
+The same page does not list \`KexAlgorithms\`, \`HostKeyAlgorithms\`, \`Ciphers\` or \`MACs\` among the keywords allowed after \`Match\`. Those are settled before the server knows who is connecting. A device that needs them, such as a switch that pushes backups over SCP and can only do \`diffie-hellman-group14-sha1\`, calls for a second sshd on another port, started with \`sshd -f\` as described in [sshd(8)](https://man.openbsd.org/sshd), and a firewall rule that admits only that device.
+
+\`\`\`text
+# /etc/ssh/sshd_config_legacy
+Port 2222
+HostKeyAlgorithms +ssh-rsa
+KexAlgorithms +diffie-hellman-group14-sha1
+\`\`\`
+
+## How do you fix it on the device instead?
+
+The durable fix is device software that offers rsa-sha2 or a better host key type. The 8.5 notes give a test for clients that still accept ssh-rsa: connect with \`ssh -oHostKeyAlgorithms=-ssh-rsa user@host\`, and if host key verification fails and no other supported type is available, "the server software on that host should be upgraded." On 8.8 and later the plain error at the top of this article is already that test result. Regenerating the RSA key does not help, because the trouble is the hash and not the key.
+
+### Cisco IOS and IOS XE
+
+On older Cisco software, \`ssh-rsa\` is usually the second error after a key exchange failure. The [Cisco key exchange article](/blog/ssh-no-matching-key-exchange-method-cisco) covers the device side: what a classic IOS 15 switch can be made to offer, the IOS XE commands that set the algorithm lists, and what \`show ip ssh\` prints. The [IOS fundamentals](/blog/cisco-ios-fundamentals) article covers the basics of the command line.
+
+### Dell iDRAC
+
+Dell's [KB 000293934](https://www.dell.com/support/kbdoc/en-us/000293934/supported-ssh-cryptography-schemes-for-idrac9-firmware-7-xx-xx-xx) lists the host key algorithms for iDRAC9 firmware 7.xx as rsa-sha2-512, rsa-sha2-256, ecdsa-sha2-nistp256 and ssh-ed25519, with no plain ssh-rsa. An iDRAC9 that offers only \`ssh-rsa\` is on older firmware, and a firmware update is the fix. Check your own unit with the \`-vv\` command above, because only the offer settles it. The flip side is in the same KB: iDRAC "7.10.50.00 and higher does not support Diffie-Hellman KEX algorithms." Its key exchange list is down to curve25519 and the ecdh-sha2 methods, so a very old SSH client can no longer reach a current iDRAC. The [iDRAC tips](/blog/dell-idrac-tips-tricks) article covers racadm over SSH.
+
+### Dropbear in routers and appliances
+
+Many routers and storage appliances embed Dropbear, a small SSH server, and its [changelog](https://github.com/mkj/dropbear/blob/master/CHANGES) dates the same transition. Release 2020.79 (June 15, 2020) added rsa-sha2 signatures, with "No changes are needed to hostkeys/authorized_keys entries." Release 2022.82 (April 1, 2022) disabled group1 key exchange by default and notes that the server side had been off by default since 2018. Release 2022.83 (November 14, 2022) disabled DSS by default. Release 2025.87 (March 5, 2025) disabled SHA-1 algorithms by default. Firmware built on a Dropbear older than 2020.79 can only sign RSA host keys with ssh-rsa, so the override stays until the vendor ships an update. The \`remote software version\` line in the \`-vv\` output names the release.
+
+### Paramiko and scripts
+
+The same change reaches Python tooling. The [Paramiko changelog](https://www.paramiko.org/changelog.html) says 2.9.0 (December 23, 2021) added RFC 8332 support and that "action is required if your target systems do not support either RSA2 or the server-sig-algs protocol extension." The action is the \`disabled_algorithms\` option, set to turn off the two rsa-sha2 names for that device. Release 5.0.0 (May 9, 2026) "Removed support for verifying/signing with RSA keys using SHA-1 hashing," along with the SHA-1 key exchanges. A script on Paramiko 5 cannot reach an ssh-rsa-only device at all, so pin an earlier release for that job until the device is updated, or run the job through the OpenSSH client with the stanza above. The [network automation in Python](/blog/python-network-automation) article covers the tooling.
+
+## What breaks?
+
+**The override is ignored.** The stanza sits below a \`Host *\` block, so the first value wins. Move it above, and check with \`ssh -G\`. On Fedora and Red Hat systems, also check the crypto policy.
+
+**The error changes after the first fix.** That is expected, because each list negotiates separately. Add only what the new \`Their offer:\` line names.
+
+**The host key passes and the login fails with \`Permission denied (publickey)\`.** The client has no permitted signature for its RSA key. Add \`PubkeyAcceptedAlgorithms +ssh-rsa\` to the stanza, or use an Ed25519 key.
+
+**The client refuses even with the override.** The device offers something OpenSSH removed and did not just disable, such as DSA or the arcfour, blowfish and CAST ciphers. Update the device. If that is impossible, an old OpenSSH client kept in an isolated virtual machine is a sounder stopgap than weakening the main one.
+
+**Every connection to the device prints a new warning.** The [10.1 notes](https://www.openssh.org/txt/release-10.1) add "a warning when the connection negotiates a non-post quantum key agreement algorithm," controlled by a new \`WarnWeakCrypto\` option, "defaulting to on." An old device cannot do post-quantum key exchange, so the warning is accurate. The ssh_config(5) source for the current development version says \`WarnWeakCrypto no-pq-kex\` turns off just this warning and \`no\` turns off all of them. Setting it in that device's stanza hides a true statement, so leave it on everywhere else.
+
+**scp fails after a client update.** The [9.0 notes](https://www.openssh.org/txt/release-9.0) switched scp to the SFTP protocol by default, and the scp(1) page says \`-O\` forces the legacy protocol, which "may be necessary for servers that do not implement SFTP."
+
+**Old certificates are rejected.** The 8.2 notes removed ssh-rsa from the algorithms accepted for certificate signatures (\`CASignatureAlgorithms\`) and made ssh-keygen sign new certificates with rsa-sha2-512 by default. Certificates signed with an RSA certificate authority key and SHA-1 need re-signing, as the [SSH certificate authority](/blog/ssh-certificate-authority) article describes.
+
+**The connection drops before any algorithm list appears.** That is not a negotiation failure. The [daemon that refuses connections](/blog/the-connection-refused-by-a-daemon-doing-nothing) article covers the \`MaxStartups\` limit, which sshd_config(5) sets to \`10:30:100\` by default.
+
+## Sources
+
+- [OpenSSH: Release notes for 7.0](https://www.openssh.org/txt/release-7.0)
+- [OpenSSH: Release notes for 7.2](https://www.openssh.org/txt/release-7.2)
+- [OpenSSH: Release notes for 7.4](https://www.openssh.org/txt/release-7.4)
+- [OpenSSH: Release notes for 7.6](https://www.openssh.org/txt/release-7.6)
+- [OpenSSH: Release notes for 8.2](https://www.openssh.org/txt/release-8.2)
+- [OpenSSH: Release notes for 8.5](https://www.openssh.org/txt/release-8.5)
+- [OpenSSH: Release notes for 8.8](https://www.openssh.org/txt/release-8.8)
+- [OpenSSH: Release notes for 9.0](https://www.openssh.org/txt/release-9.0)
+- [OpenSSH: Release notes for 9.7](https://www.openssh.org/txt/release-9.7)
+- [OpenSSH: Release notes for 9.8](https://www.openssh.org/txt/release-9.8)
+- [OpenSSH: Release notes for 10.0](https://www.openssh.org/txt/release-10.0)
+- [OpenSSH: Release notes for 10.1](https://www.openssh.org/txt/release-10.1)
+- [OpenSSH: Legacy options](https://www.openssh.org/legacy.html)
+- [OpenBSD: ssh_config(5)](https://man.openbsd.org/ssh_config)
+- [OpenBSD: sshd_config(5)](https://man.openbsd.org/sshd_config)
+- [OpenBSD: sshd(8)](https://man.openbsd.org/sshd)
+- [OpenBSD: scp(1)](https://man.openbsd.org/scp)
+- [OpenSSH source: packet.c, 9.9p1](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/packet.c)
+- [OpenSSH source: ssherr.c, 9.9p1](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/ssherr.c)
+- [OpenSSH source: kex.c, 9.9p1](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/kex.c)
+- [OpenSSH source: sshconnect2.c, 9.9p1](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/sshconnect2.c)
+- [OpenSSH source: auth2-pubkey.c, 9.9p1](https://github.com/openssh/openssh-portable/blob/V_9_9_P1/auth2-pubkey.c)
+- [IETF: RFC 8332, Use of RSA Keys with SHA-256 and SHA-512 in the Secure Shell (SSH) Protocol](https://www.rfc-editor.org/rfc/rfc8332)
+- [IETF: RFC 9142, Key Exchange (KEX) Method Updates and Recommendations for Secure Shell (SSH)](https://www.rfc-editor.org/rfc/rfc9142)
+- [Leurent and Peyrin: SHA-1 is a Shambles](https://sha-mbles.github.io/)
+- [Debian: Package search for openssh-client](https://packages.debian.org/search?keywords=openssh-client&searchon=names&suite=all&section=all)
+- [Ubuntu: Package openssh-client in jammy](https://packages.ubuntu.com/jammy/openssh-client)
+- [Nmap: ssh2-enum-algos NSE script](https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html)
+- [Fedora Project: OpenSSH Crypto Policy change](https://www.fedoraproject.org/wiki/Changes/OpenSSH_Crypto_Policy)
+- [Red Hat: Security hardening, using the system-wide cryptographic policies (RHEL 9)](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/using-the-system-wide-cryptographic-policies_security-hardening)
+- [Dell: KB 000293934, Supported SSH cryptography schemes for iDRAC9 firmware 7.xx.xx.xx](https://www.dell.com/support/kbdoc/en-us/000293934/supported-ssh-cryptography-schemes-for-idrac9-firmware-7-xx-xx-xx)
+- [Dropbear SSH: CHANGES](https://github.com/mkj/dropbear/blob/master/CHANGES)
+- [Paramiko: Changelog](https://www.paramiko.org/changelog.html)`,
+  },
+  {
     slug: "hpe-smart-array-p408i-mixed-mode",
     title: "HPE Smart Array P408i-a Mixed Mode: Pass-Through, ssacli, smartpqi and ZFS",
     date: "2026-11-05",
