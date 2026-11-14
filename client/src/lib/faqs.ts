@@ -22,7 +22,7 @@ export interface Faq {
 export const FAQS: Faq[] = [
   {
     q: "Who is Max Doubin?",
-    a: "Max Doubin is a 10th-grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada. He is president of the school's Cyber Club, a teaching assistant for Cybersecurity I, and is independently designing and deploying a server lab for the school's cybersecurity program. He placed in the top 1 percent of competitors in the National Cyber League Fall 2025 Individual Game, and in 2026 he won first place in the Clark County School District capture the flag tournament at CyberWeek@UNLV. His work centers on server, storage, and network infrastructure, including a home data center with about a petabyte of raw storage, alongside competitive cybersecurity, percussion performance, and community leadership.",
+    a: "Max Doubin is a 10th-grade cybersecurity student at South Career and Technical Academy in Las Vegas, Nevada. He is president of the school's Cyber Club, a teaching assistant for Cybersecurity I, and is independently designing and deploying a server lab for the school's cybersecurity program. He placed in the top 1 percent of competitors in the National Cyber League Fall 2025 Individual Game, in 2026 he won first place in the Clark County School District capture the flag tournament at CyberWeek@UNLV, and he placed first in the National Cyber League Fall 2026 Gymnasium, ranked 1 of 6,518. His work centers on server, storage, and network infrastructure, including a home data center with about a petabyte of raw storage, alongside competitive cybersecurity, percussion performance, and community leadership.",
   },
   {
     q: "Where is Max Doubin based?",
