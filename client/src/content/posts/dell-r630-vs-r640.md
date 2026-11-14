@@ -142,7 +142,7 @@ Both servers add a dedicated storage-controller slot and a network daughter card
 | HTML5 console | Added in 2.30.119.30 (April 2016) | Yes |
 | Last firmware | 2.86.86.86 (April 3, 2024) | 7.00.00.185 (August 2026) is the latest Dell lists |
 | Software maintenance | Ended February 2024 | Runs to February 1, 2027 |
-| Third-party PCIe card cooling | One raw IPMI command per server | Per-slot airflow setting, Datacenter license |
+| Third-party PCIe card cooling | One raw [IPMI](/blog/ipmi-remote-management) command per server | Per-slot airflow setting, Datacenter license |
 | Raw IPMI fan commands | Reported available | Reported removed from 3.34.34.34 on |
 
 The [iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) and the [iDRAC9 guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) both say Express is "available by default on all 600 and higher series of rack or tower servers." Each guide's license table marks Virtual Console "No" for Express, and the iDRAC9 table puts PCIe airflow settings under Datacenter only. The [iDRAC9 Enterprise license](/blog/idrac-9-enterprise-license) article covers buying one. The iDRAC8 HTML5 console arrived in [2.30.119.30](https://dl.dell.com/manuals/all-products/esuprt_software/esuprt_remote_ent_sys_mgmt/esuprt_rmte_ent_sys_rmte_access_cntrllr/idrac8-lifecycle-controller-v2.30.119.30_Release%20Notes_en-us.pdf) along with Redfish 1.0, so an R630 on that firmware or later can avoid the Java console.
@@ -173,7 +173,7 @@ IDSDM is Dell's Internal Dual SD Module, and BOSS is its Boot Optimized Storage 
 |---|---|---|
 | IDSDM | Two SD cards, mirrored | Two microSD cards, combined with vFlash |
 | Internal USB | Yes | Yes |
-| BOSS-S1 | Listed as "None" | Two M.2 SATA drives, RAID 1 or non-RAID |
+| BOSS-S1 | Listed as "None" | Two M.2 SATA drives, [RAID](/blog/raid-levels-comparison) 1 or non-RAID |
 | SATADOM | Not listed by Dell | Not listed by Dell |
 
 The R630's [Internal Dual SD Module](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/dell-poweredge-r630-technical-guide-v1-6.pdf) keeps its two cards in a mirrored configuration. The R640 moves to microSD and merges the module with the vFlash card. Its guide adds that "The IDSDM only option is available with vFlash hardware and requires an iDRAC Enterprise license to enable this feature."
