@@ -20,6 +20,12 @@
  * treats them as data blocks and never prepares them as scripts, so script-src
  * does not gate them, and there are 730 of them.
  *
+ * Inline event handlers (onload="...", onclick="...") are the same problem in
+ * a different place. Without 'unsafe-inline' or 'unsafe-hashes' the browser
+ * refuses every one of them, and again the page mostly works: the Google Fonts
+ * sheet sat at media="print" on every page because the onload that was meant
+ * to flip it to "all" never ran. So any on*= attribute in built HTML fails.
+ *
  * Usage: node scripts-ci/check-csp-hash.mjs   (after npm run build)
  */
 import { createHash } from "node:crypto";
@@ -50,9 +56,39 @@ if (pages.length === 0) fail("no HTML in dist/public. The build did not run.");
 /** Inline <script> with no src, excluding data blocks. */
 const INLINE = /<script(?![^>]*\ssrc=)([^>]*)>([\s\S]*?)<\/script>/g;
 
+/**
+ * Inline event-handler attributes. Script, style and comment bodies go first
+ * so prose and JSON-LD cannot match, then each tag has its quoted attribute
+ * values blanked so a value that merely mentions "onload=" cannot either.
+ *
+ * Only the bodies go. The opening <script> and <style> tags stay in the
+ * scanned text, because <script src onload="..."> is refused like any other.
+ */
+const NOT_MARKUP = /<!--[\s\S]*?-->|(<(script|style)\b(?:"[^"]*"|'[^']*'|[^>"'])*>)[\s\S]*?<\/\2>/gi;
+const TAG = /<[a-zA-Z](?:"[^"]*"|'[^']*'|[^>"'])*>/g;
+const QUOTED = /"[^"]*"|'[^']*'/g;
+const HANDLER = /[\s"'/](on[a-z]+)\s*=/gi;
+
+function inlineHandlers(html) {
+  const out = [];
+  for (const tag of html.replace(NOT_MARKUP, (_, open) => open ?? "").match(TAG) ?? []) {
+    for (const m of tag.replace(QUOTED, '""').matchAll(HANDLER)) {
+      out.push({ attr: m[1].toLowerCase(), tag: tag.replace(/\s+/g, " ").slice(0, 120) });
+    }
+  }
+  return out;
+}
+
 const found = new Map(); // hash -> { count, sample, body }
+const handlers = new Map(); // "attr tag" -> { count, sample, attr, tag }
 for (const file of pages) {
   const html = readFileSync(file, "utf8");
+  for (const h of inlineHandlers(html)) {
+    const key = `${h.attr} ${h.tag}`;
+    const seen = handlers.get(key) ?? { count: 0, sample: path.relative(DIST, file), ...h };
+    seen.count += 1;
+    handlers.set(key, seen);
+  }
   for (const m of html.matchAll(INLINE)) {
     const attrs = m[1];
     if (/type\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs)) continue;
@@ -107,8 +143,23 @@ if (stale.length > 0) {
   process.exit(1);
 }
 
+if (handlers.size > 0) {
+  console.error(
+    `FAIL  ${handlers.size} inline event handler(s) in the build, which the CSP refuses to run:\n`,
+  );
+  for (const info of handlers.values()) {
+    console.error(`  ${info.attr}= on ${info.count} page(s), e.g. ${info.sample}`);
+    console.error(`    ${info.tag}`);
+  }
+  console.error(
+    `\n  script-src has no 'unsafe-inline' and no 'unsafe-hashes', so the browser\n` +
+      `  drops these silently. Attach the listener from a bundled module instead.`,
+  );
+  process.exit(1);
+}
+
 const total = [...found.values()].reduce((a, v) => a + v.count, 0);
 console.log(
   `check-csp-hash: ${found.size} executable inline script(s) across ${pages.length} pages ` +
-    `(${total} instances), every one allowed by a hash in _headers, and no 'unsafe-inline'.`,
+    `(${total} instances), every one allowed by a hash in _headers, no 'unsafe-inline', and no inline event handlers.`,
 );
