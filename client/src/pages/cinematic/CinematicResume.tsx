@@ -231,6 +231,7 @@ export function CinematicResume() {
                 <Bullet>
                   New Relic: Verified APM Practitioner credential, all six exams passed, 2026
                 </Bullet>
+                <Bullet>Netskope Academy: SASE Accreditation certificate, 2026</Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
                   Administration and Performance Management (AAPM) courses, 2026
