@@ -188,7 +188,7 @@ export const siteConfig = {
         "arcX Foundation Level Threat Intelligence Analyst certificate (2026)",
         "New Relic Verified APM Practitioner, all six exams passed (2026)",
         "Netskope Academy SASE Accreditation certificate (2026)",
-        "Barracuda CGF02 CloudGen Firewall Large-Scale Management certificate (2026)",
+        "Barracuda Campus CGF02 CloudGen Firewall Large-Scale Management certification (2026, valid until November 2028)",
         "Nutanix University ECA 6.10 and AAPM courses (2026)",
         "Anthropic Claude Academy, 23 badges (2026)",
         "CompTIA Security+ (in progress)",

@@ -786,12 +786,13 @@ const GROUPS: CredentialGroup[] = [
     },
   },
   {
-    // Barracuda's CGF02 certificate, CloudGen Firewall Large-Scale Management.
-    // Only the certificate's title came with it, so the entry has no badge, no
-    // score and no date beyond the year.
+    // Barracuda Campus's CGF02 certification, CloudGen Firewall Large-Scale
+    // Management. The Certificate of Achievement is valid from November 14,
+    // 2026 until November 14, 2028. It came as a certificate PDF with no badge
+    // image, so the entry is a text line.
     id: "barracuda",
-    heading: "Barracuda",
-    meta: "Certificate earned in 2026",
+    heading: "Barracuda Campus",
+    meta: "Certification earned in 2026, valid until November 14, 2028",
     items: ["CGF02: CloudGen Firewall, Large-Scale Management"],
   },
   {

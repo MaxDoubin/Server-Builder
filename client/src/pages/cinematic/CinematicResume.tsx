@@ -233,7 +233,8 @@ export function CinematicResume() {
                 </Bullet>
                 <Bullet>Netskope Academy: SASE Accreditation certificate, 2026</Bullet>
                 <Bullet>
-                  Barracuda: CGF02 CloudGen Firewall Large-Scale Management certificate, 2026
+                  Barracuda Campus: CGF02 CloudGen Firewall Large-Scale Management certification,
+                  2026 (valid until November 2028)
                 </Bullet>
                 <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
