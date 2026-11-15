@@ -752,6 +752,23 @@ const GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // New Relic Verified APM Practitioner: awarded for passing all six exams
+    // in the APM Practitioner track (APM Foundations, Managing Agent Data,
+    // Visualizing Insights, Full-Stack Observability Practices, AI Monitoring
+    // for APM and eBPF APM Basics). Issued November 15, 2026; it does not
+    // expire.
+    id: "new-relic",
+    heading: "New Relic",
+    meta: "Credential earned in 2026",
+    items: ["New Relic Verified APM Practitioner"],
+    badges: {
+      "New Relic Verified APM Practitioner": {
+        src: "/images/certs/new-relic-apm-practitioner.webp",
+        alt: "New Relic Verified APM Practitioner badge, Observability Associate",
+      },
+    },
+  },
+  {
     id: "competition",
     heading: "Competition",
     meta: "National Cyber League and CyberWeek@UNLV",
