@@ -786,6 +786,15 @@ const GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // Barracuda's CGF02 certificate, CloudGen Firewall Large-Scale Management.
+    // Only the certificate's title came with it, so the entry has no badge, no
+    // score and no date beyond the year.
+    id: "barracuda",
+    heading: "Barracuda",
+    meta: "Certificate earned in 2026",
+    items: ["CGF02: CloudGen Firewall, Large-Scale Management"],
+  },
+  {
     id: "competition",
     heading: "Competition",
     meta: "National Cyber League and CyberWeek@UNLV",
