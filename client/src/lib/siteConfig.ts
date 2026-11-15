@@ -186,6 +186,7 @@ export const siteConfig = {
         "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (2026)",
         "CISA ICS Cybersecurity (300) and ICS Cybersecurity Evaluation (401) courses, about 22 contact hours (2026)",
         "arcX Foundation Level Threat Intelligence Analyst certificate (2026)",
+        "New Relic Verified APM Practitioner, all six exams passed (2026)",
         "Nutanix University ECA 6.10 and AAPM courses (2026)",
         "Anthropic Claude Academy, 23 badges (2026)",
         "CompTIA Security+ (in progress)",
