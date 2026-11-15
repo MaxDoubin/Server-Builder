@@ -769,6 +769,16 @@ const GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // Netskope Academy's SASE Accreditation: the Certificate of Completion for
+    // the accreditation, signed by the Director of Netskope Academy and awarded
+    // November 15, 2026 through Netskope's Technology Experience Center. No
+    // badge image came with it, so it shows as a text entry.
+    id: "netskope",
+    heading: "Netskope Academy",
+    meta: "Certificate earned in 2026",
+    items: ["SASE Accreditation"],
+  },
+  {
     id: "competition",
     heading: "Competition",
     meta: "National Cyber League and CyberWeek@UNLV",
