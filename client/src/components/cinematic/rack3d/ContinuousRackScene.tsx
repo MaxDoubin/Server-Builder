@@ -8,6 +8,7 @@ import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
+import { POWER_FAILOVER_ENABLED, PowerFailover } from "./parts/PowerFailover";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -611,6 +612,10 @@ function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRe
         start={HALL_START}
         end={HALL_END}
       />
+      {/* Power failover loop. Switch: POWER_FAILOVER_ENABLED in parts/PowerFailover.tsx. */}
+      {POWER_FAILOVER_ENABLED && (
+        <PowerFailover placements={racks} progressRef={progressRef} start={HALL_START} tier={tier} />
+      )}
     </group>
   );
 }
