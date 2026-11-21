@@ -58,7 +58,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A remote-access VPN grants a path into a network, while zero trust network access grants access to one application at a time, which moves the trust decision from the door to each resource.",
     coverImage: "/images/blog/zero-trust-network-access-vs-vpn-photo.jpg",
     coverCredit: {"author":"Nuclear Regulatory Commission","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Nuclear_Plant_Security-_Access_Control_Gates_(9680484758).jpg"},
-    wordCount: 2717,
+    wordCount: 2776,
   },
   {
     slug: "barracuda-firewall-control-center-explained",
