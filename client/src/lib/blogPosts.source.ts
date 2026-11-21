@@ -46891,7 +46891,7 @@ Read that \`network\` statement carefully, because it does not do what it looks 
 
 BGP's state machine has six states, and the useful thing is that each one points at a different layer. **Idle** means BGP is not even trying, usually because there is no route to the peer. **Connect** and **Active** are both TCP problems: Active in particular sounds positive and is not, it means the router keeps trying to open a TCP session and keeps failing, which is almost always a firewall blocking 179 or a wrong peer address. **OpenSent** and **OpenConfirm** mean TCP worked and the peers are arguing about parameters, so check for an AS number mismatch or an authentication mismatch. **Established** is the only good state.
 
-Once established, the session is kept alive by KEEPALIVE messages. RFC 4271 suggests a 90 second hold time with keepalives every 30, but Cisco IOS and FRR default to 180 seconds and 60, and peers negotiate down to the lower of their two values. So on those platforms the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
+Once established, the session is kept alive by KEEPALIVE messages. RFC 4271 suggests a 90 second hold time with keepalives every 30, but [Cisco IOS](/blog/cisco-ios-fundamentals) and FRR default to 180 seconds and 60, and peers negotiate down to the lower of their two values. So on those platforms the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
 
 ## What Actually Goes Wrong
 
