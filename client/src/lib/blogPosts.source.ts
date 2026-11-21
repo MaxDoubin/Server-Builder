@@ -58,6 +58,1109 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "sase-explained",
+    title: "SASE explained: an architecture, not a product",
+    date: "2026-11-21",
+    tags: ["networking", "security", "cybersecurity", "firewall", "learning"],
+    excerpt:
+      "Secure access service edge (SASE) is an architecture, not a product: it delivers WAN networking and security together from a cloud provider's points of presence, a term Gartner coined in 2019.",
+    coverImage: "/images/blog/sase-explained-photo.jpg",
+    coverCredit: {
+      author: "Robert.Harker",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cabinet_Asile.jpg",
+    },
+    content: `## An architecture with a product-shaped name
+
+Secure access service edge, written SASE, is a way of arranging a wide area network (WAN) and its security controls so that both are delivered together from a cloud provider's points of presence instead of from boxes in one central data center. It is an architecture. It is not a protocol, it is not a standard wire format, and it is not a single product, even though the term appears on a great many product pages.
+
+That distinction matters for anyone studying for a security or networking certification, because vendor marketing often attaches the same four letters to a specific product. This explainer covers where the term came from, the older design it was proposed to replace, the parts it is made of, and the problems it leaves untouched. The claims below are tied to the sources listed at the end, mostly National Institute of Standards and Technology (NIST) publications. Where a point is reasoning from the design and not a cited finding, the text says so.
+
+## Who coined it and when
+
+The term comes from the analyst firm Gartner. NIST Special Publication (SP) 800-215, the Guide to a Secure Enterprise Network Landscape, published in November 2022, states that Gartner coined the term in 2019 to denote "an architecture that converges networking and security functions and delivers them at a global scale as a cloud service".
+
+The Gartner report itself is titled "The Future of Network Security Is in the Cloud". It is dated 30 August 2019 and credited to the analysts Lawrence Orans, Joe Skorupa and Neil MacDonald. The report sits behind Gartner's paywall, so the date and author list here come from a vendor's published citation of it, not from the report text.
+
+Two points follow from the NIST wording. First, NIST calls it an architecture, which is the word to remember. Second, NIST is blunt about how much of it is new: the networking and security services delivered by SASE "are not new but simply delivered together as a single package rather than through point security solutions". A point solution is a separate appliance or service that does one job, such as a web filter or a firewall. The idea in SASE is the convergence and the delivery model, not any individual function.
+
+## The problem it was proposed to solve
+
+### Hub-and-spoke and backhauling
+
+The traditional enterprise WAN is a hub-and-spoke design. The data center is the hub. Branch offices are the spokes, connected to the hub by private circuits. Remote users connect with a virtual private network (VPN), an encrypted tunnel that ends on a device called a VPN concentrator at the edge of the corporate network. The firewall and the other inspection devices live at the hub, so traffic has to pass through the hub to be inspected. Sending branch or remote traffic to a central site only so that it can be inspected there is called backhauling.
+
+That design made sense when the applications were in the data center too. The user's traffic was going there anyway, and the security stack was on the path.
+
+### What breaks when the applications move
+
+NIST SP 800-215 describes what happens once applications move to cloud services. VPN connections from remote users terminate at the corporate network edge, so traffic that is headed for a cloud service still lands at the corporate internet edge first, gets validated, and is routed back out to the internet. NIST's name for this is "hair-pinning", and the listed consequences are extra distance, more network latency, and the potential for traffic bottlenecks.
+
+The same document lists two more limits of VPN-based access that are worth knowing. A VPN deployed as a hardware appliance caps the number of users who can connect through that gateway. And VPNs often need an agent on the device, which is awkward when many of the users are contractors and partners.
+
+The private circuits have a similar problem. Multiprotocol Label Switching (MPLS) is the technology that has carried many enterprise WANs. NIST notes that an MPLS network reaches the internet only through designated and limited access points, which it compares to hair-pinning, and that this adds latency for time-sensitive applications.
+
+Put together: the users are no longer in the office, the applications are no longer in the data center, and the inspection point is still in the data center. SASE is the proposal to move the inspection point to where the traffic already goes.
+
+## What SASE is made of
+
+A common way to draw SASE is as two halves: a networking half and a security half. The networking half is the software-defined wide area network (SD-WAN). The security half is usually called the security service edge (SSE), sometimes written secure service edge, and it groups four functions. Each one existed as a separate product category before the umbrella term did.
+
+### The networking side: SD-WAN
+
+In NIST's description, SD-WAN removes the tight coupling between the control plane and the data plane and allows policies for access control, routing and application traffic prioritization to be specified centrally. The control plane is the part of a network that decides where traffic should go. The data plane is the part that actually forwards the packets.
+
+In practice an SD-WAN treats several underlying links as a pool. NIST lists MPLS, broadband internet, and 4G and 5G cellular links as examples of the transports it can use. The SD-WAN then monitors traffic and picks the best available path based on the type of traffic, the load on the network, and the business priority of the application. That last part requires the SD-WAN to recognize which application a flow belongs to.
+
+SD-WAN on its own is a networking tool, and it can exist without any cloud security service. There is a separate post on [configuring SD-WAN on a FortiGate](/blog/fortigate-sdwan-configuration) that shows the link measurement and path selection side in detail.
+
+### The security side: secure service edge
+
+The term security service edge also comes from Gartner. Palo Alto Networks' reference page on the subject says Gartner introduced it in its 2021 Roadmap for SASE Convergence report, and describes SSE as providing the security service elements of a full SASE, without the SD-WAN. That page lists the four functions below. Other lists differ a little in what they include, so treat the set of four as the common teaching version and not as a fixed specification.
+
+**Secure web gateway (SWG).** NIST describes a secure web gateway as fundamentally a web filter that protects outbound user traffic through inspection of Hypertext Transfer Protocol (HTTP) and HTTP Secure (HTTPS) traffic. It governs access to the open web and to cloud applications for users in any location, and protects endpoints from web-based threats such as links to malicious or infected sites.
+
+**Cloud access security broker (CASB).** NIST places the cloud access security broker on the network between cloud service customers and cloud service providers. The first generation was about discovery: showing which cloud resources users were actually reaching, to reduce shadow IT, meaning cloud applications used without approval from the information technology (IT) department. The current generation enforces security and governance policies on cloud applications. NIST lists data loss prevention (DLP), which is control over sensitive data moving in and out, along with detection of threats such as account hijacking and detection of misconfigured cloud services.
+
+**Zero trust network access (ZTNA).** Zero trust is defined in NIST SP 800-207, published in August 2020, as a set of paradigms that "move defenses from static, network-based perimeters to focus on users, assets, and resources", with no implicit trust granted because of physical or network location. One of its tenets is that access to individual resources is granted on a per-session basis. ZTNA is the remote access function built on that idea. Instead of placing a remote user on the internal network the way a classic VPN does, the service checks the user and device and then connects them to one specific application. Microsoft's documentation for its own offering describes this as per-app access based on policy, without requiring a VPN.
+
+**Firewall as a service (FWaaS).** A next-generation firewall (NGFW) is a firewall that inspects traffic at the application layer as well as at the network and transport layers. NIST lists three ways to deploy one: as an appliance in the data center, as software in a virtual machine in a cloud, or as a cloud service, which is FWaaS. The policy logic is the same kind of logic covered in the post on [firewall policy design](/blog/firewall-policy-design). What changes is where the rule set runs.
+
+### How the pieces are delivered
+
+NIST SP 800-215 describes the structure that ties these together. The provider operates points of presence, abbreviated PoPs, spread over a wide area. The places where the enterprise connects to those PoPs are called enterprise edges, and there are two kinds: clients, meaning users on laptops, desktops and mobile devices in branches or at home, and IT resources, meaning applications in data centers, branch offices or the cloud. A security agent on the user's device makes networking decisions and directs traffic from different applications.
+
+NIST also lists what it found in most commercial offerings at the time of writing: firewall services, secure web gateway services, anti-malware services, intrusion prevention system (IPS) services, CASB services and DLP services. Notice that this list and the four-part list above do not match exactly. That is typical of the topic. The four-part list is a study aid, not a specification.
+
+## Hub-and-spoke versus SASE
+
+| Question | Hub-and-spoke with backhaul | SASE |
+| --- | --- | --- |
+| Where is traffic inspected? | At the central data center | At a provider PoP |
+| How does a remote user connect? | VPN tunnel to a concentrator at the corporate edge | Device agent to a provider PoP |
+| Path to a cloud application | User to data center, then back out to the internet | User to PoP to application |
+| What access does a remote user get? | Often a place on the internal network | Access to specific applications, checked per session |
+| Who runs the security stack? | The organization, on its own appliances | The provider, as a service |
+
+The right-hand column describes the design goal. How close a real deployment comes to it depends on the provider and the configuration.
+
+## Is there a standard?
+
+SASE started as an analyst's term, not as a specification. There is at least one industry standards effort. MEF, an industry standards forum that has since been renamed Mplify Alliance, published MEF 117, SASE Service Attributes and Service Framework, in October 2022. The document says it expands on the Gartner concept by defining a standard SASE service that combines security functions and network connectivity. It defines the service as an overlay that secures and forwards the subscriber's Internet Protocol (IP) packets by recognizing the session, authenticating and authorizing the parties, applying security functions, and deciding forwarding behavior through policy.
+
+MEF 117 standardizes how a service is described between a provider and a subscriber: its scope is the behavior of the service that is visible to the subscriber, whatever the implementation behind it. The publisher's page now marks the 2022 document as superseded by a revision, Mplify 117.1. It is an industry forum standard, not a NIST publication, and nothing in it changes the basic point that SASE names an architecture.
+
+## What SASE does not solve
+
+Reading the component definitions closely shows where the edges are.
+
+**It does not protect inbound applications.** NIST is explicit that secure web gateways are not a replacement for web application firewalls, which protect websites from inbound attacks. An SWG protects users going out. A public web application still needs its own protection.
+
+**It does not segment the inside of a data center.** NIST treats microsegmentation, the practice of dividing an internal network into small isolated segments to restrict lateral movement, as its own technique with its own section. Traffic between two servers in the same data center never visits a provider PoP. The post on [secure network design principles](/blog/secure-network-design-principles) covers that side.
+
+**It is not zero trust in a box.** NIST SP 800-207 says zero trust "is not a single architecture but a set of guiding principles" and that the transition cannot be accomplished with a wholesale replacement of technology. ZTNA is one component that applies those principles to remote access. Buying a service that contains it does not make an organization's whole environment zero trust.
+
+**It depends on identity it does not own.** This point is also reasoning from the design. Every access decision in the model starts from knowing who the user is and what device they are on. If the identity system behind it is weak, the access decisions built on it are weak too.
+
+**It moves trust, and does not remove it.** Inspecting HTTPS traffic means decrypting it. Microsoft's documentation for its own service shows how this works in one real product: the service decrypts HTTPS requests at its edge, evaluates the security controls, then re-encrypts and forwards the request. That is two separate Transport Layer Security (TLS) connections, one from the client to the service and one from the service to the destination, and every client device has to trust the organization's certificate authority for the first one to succeed. The same page notes that many mobile applications use certificate pinning, which makes inspection fail for those applications unless they are bypassed. So the inspection point sees content in the clear, and some traffic ends up exempt from inspection. The post on [modern TLS](/blog/tls-modern-encryption) explains the handshake being intercepted.
+
+**It adds a dependency.** In this design, user traffic reaches applications through the provider's PoPs. This is a line of reasoning from the architecture and not a quoted finding: when the inspection point is a service run by someone else, that service's reachability becomes part of the organization's own availability.
+
+## Common misconceptions
+
+**"SASE is a product."** It is an architecture. A vendor can sell a product or bundle that implements some or all of it, and those implementations differ.
+
+**"SASE and SSE are the same thing."** SSE is the security half. SASE is SSE plus the SD-WAN networking half. An organization can adopt the security services and keep its existing WAN.
+
+**"SASE is new technology."** NIST's summary is that the services are not new and are simply delivered together. Web filtering, firewalls, CASB and SD-WAN all existed before 2019.
+
+**"SASE means no hardware."** Branch offices still need a device to connect their local network to the service, and user devices run an agent. What leaves the building is the central security stack, not all equipment.
+
+**"SASE is the same as zero trust."** Zero trust is a set of principles. SASE is a delivery architecture that includes one zero trust function among several others.
+
+## What to remember
+
+- SASE is an architecture that converges WAN and security functions and delivers them as a cloud service. Gartner coined the term in 2019.
+- It was proposed because backhauling cloud-bound traffic through a data center adds distance and latency, a pattern NIST calls hair-pinning.
+- Networking half: SD-WAN. Security half: SSE, usually listed as SWG, CASB, ZTNA and FWaaS.
+- The functions are older than the name.
+- It does not replace web application firewalls, internal segmentation, or a sound identity system, and it is not a synonym for zero trust.
+
+## Sources
+
+- [NIST SP 800-215: Guide to a Secure Enterprise Network Landscape (November 2022)](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-215.pdf)
+- [NIST SP 800-207: Zero Trust Architecture (August 2020)](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-207.pdf)
+- [MEF 117: SASE Service Attributes and Service Framework (October 2022)](https://www.mplify.net/wp-content/uploads/MEF-117.pdf)
+- [Zscaler blog citing the Gartner report "The Future of Network Security Is in the Cloud" (September 2019)](https://www.zscaler.com/blogs/company-news/new-report-gartner-research-future-network-security-cloud)
+- [Mplify (formerly MEF) resource page for MEF 117, with the superseded notice](https://www.mplify.net/resources/mef-117-sase-service-attributes-and-service-framework/)
+- [Palo Alto Networks Cyberpedia: What is security service edge?](https://www.paloaltonetworks.com/cyberpedia/what-is-security-service-edge-sse)
+- [Microsoft Learn: What is Global Secure Access?](https://learn.microsoft.com/en-us/entra/global-secure-access/overview-what-is-global-secure-access)
+- [Microsoft Learn: What is Transport Layer Security inspection?](https://learn.microsoft.com/en-us/entra/global-secure-access/concept-transport-layer-security)`,
+  },
+  {
+    slug: "zero-trust-network-access-vs-vpn",
+    title: "Zero trust network access versus a VPN",
+    date: "2026-11-21",
+    tags: ["networking", "security", "cybersecurity", "learning"],
+    excerpt:
+      "A remote-access VPN grants a path into a network, while zero trust network access grants access to one application at a time, which moves the trust decision from the door to each resource.",
+    coverImage: "/images/blog/zero-trust-network-access-vs-vpn-photo.jpg",
+    coverCredit: {
+      author: "Nuclear Regulatory Commission",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Nuclear_Plant_Security-_Access_Control_Gates_(9680484758).jpg",
+    },
+    content: `## Two answers to one question
+
+A remote employee, contractor, or administrator needs to reach an internal application. The traditional answer is a virtual private network (VPN): connect the device to the internal network, then let it reach whatever that network allows. The newer answer is zero trust network access (ZTNA): never place the device on the network, and instead grant access to one application at a time after checking who is asking and what device they are using.
+
+Both solve the same problem, but they put the trust decision in different places. A VPN makes its biggest decision once, at the door. ZTNA makes a decision at each application and can revisit it as conditions change.
+
+The ideas behind ZTNA come from NIST (the National Institute of Standards and Technology) Special Publication (SP) 800-207, *Zero Trust Architecture*, published in August 2020 by Scott Rose, Oliver Borchert, Stu Mitchell, and Sean Connelly. This article uses it as its anchor.
+
+One caution comes first. "ZTNA" is an industry product label. The term does not appear in SP 800-207, which describes zero trust as "not a single architecture but a set of guiding principles." A product can implement some of those principles. Buying one does not make an organization zero trust.
+
+## How a remote-access VPN works
+
+A remote-access VPN has a gateway at the edge of the network, reachable from the internet, and client software on the user's device. The client authenticates to the gateway with a password, a certificate, or both, ideally with multifactor authentication (MFA). On success, the two sides build an encrypted tunnel, and the device receives an address that belongs to the protected network.
+
+For Internet Protocol Security (IPsec) VPNs, that last step is written into the standard. RFC 7296 (RFC stands for Request for Comments), which defines version 2 of the Internet Key Exchange protocol (IKEv2), describes an endpoint that "may need an IP address in the network protected by the security gateway." NIST SP 800-77 Revision 1, *Guide to IPsec VPNs*, covers deploying these tunnels. For the two most common tunnel technologies compared, see [WireGuard versus IPsec tunnels](/blog/wireguard-vs-ipsec-tunnels).
+
+From then on, packets from the device are routed into the internal network as if it were plugged into a wall jack at the office. That is what "network-level access" means: the tunnel grants a path to a network, not to a particular application. Nothing in the tunnel decides which hosts or ports the user may reach. That decision belongs to firewall rules that an administrator has to write and keep current.
+
+SP 800-207 describes the model this produces. In traditional perimeter defense, "authenticated subjects are given authorized access to a broad collection of resources once on the internal network."
+
+### Split tunnel and full tunnel
+
+A VPN client needs a rule for which traffic enters the tunnel. NIST's glossary, citing SP 800-113, defines split tunneling for Secure Sockets Layer (SSL) VPNs as a method that routes organization-specific traffic through the tunnel while the rest goes through the remote user's default gateway. A full tunnel sends everything through the VPN gateway, including ordinary web browsing.
+
+- **Full tunnel.** The organization's filtering and logging see all of the device's traffic. The cost is that all of it crosses the gateway, which adds load and latency.
+- **Split tunnel.** Only internal traffic uses the gateway, so it carries less. The device is connected to the internal network and to the open internet at the same time, so anything that compromises it from the internet side sits next to the internal side. NIST's SP 800-53 Revision 5 glossary entry for split tunneling describes this simultaneous-connection situation.
+
+### The flat-network risk
+
+A flat network has no meaningful internal boundaries: any host can reach any other host on any port. If the VPN address pool lands on a flat network, a connected client can reach nearly everything the network contains. A stolen VPN credential, or a compromised laptop that is connected, inherits that reach.
+
+SP 800-207 names the consequence: "unauthorized lateral movement within the environment has been one of the biggest challenges for federal agencies." Lateral movement means an attacker with one foothold moving from machine to machine.
+
+This is a property of how VPNs are usually deployed, not a law of nature. A VPN can be paired with separate address pools per user group and firewall rules between those pools and the internal segments, as described in [secure network design principles](/blog/secure-network-design-principles). The difference with ZTNA is partly about defaults: a VPN tends to give network reach that an administrator then narrows, while the zero trust model grants access resource by resource.
+
+The gateway itself is also a target. A September 2021 information sheet from the Cybersecurity and Infrastructure Security Agency (CISA) and the National Security Agency (NSA) on selecting and hardening remote-access VPNs describes these servers as entry points that malicious cyber actors can exploit.
+
+## How ZTNA differs
+
+ZTNA products vary, but most share four traits. Each maps to an idea in SP 800-207, covered in the next section.
+
+### Per-application access
+
+The unit of access is an application or service, not a network. SP 800-207 states this as a tenet: "authentication and authorization to one resource will not automatically grant access to a different resource." It adds that least privilege is applied "to restrict both visibility and accessibility."
+
+### Identity and device posture, checked per request
+
+A ZTNA policy combines who the user is with the state of the device. Device posture means facts about the machine, such as operating system version, disk encryption, or whether the organization manages it. SP 800-207 lists "software versions installed, network location, time/date of request, previously observed behavior, and installed credentials" as examples of the requesting asset's state.
+
+How often the check runs depends on the product. NIST's definition speaks of "per-request access decisions," while its third tenet says access is granted "on a per-session basis," with trust evaluated before access. Cloudflare's Access documentation, for example, says identity-based rules are checked at login, while non-identity rules, including device posture, are "evaluated with each new HTTP request," where HTTP is the Hypertext Transfer Protocol that carries web traffic. For software-as-a-service (SaaS) applications, the same documentation says Access can enforce policy only at initial sign-on and when the SaaS session is reissued. "Continuous" therefore means different things for different application types.
+
+### Brokered connections
+
+In a ZTNA design a broker sits between the user and the application and creates the connection only after a decision. SP 800-207 splits this into three logical parts:
+
+- The **policy engine (PE)** decides to grant, deny, or revoke access, using policy plus inputs such as device health and threat intelligence.
+- The **policy administrator (PA)** carries out the decision by setting up or tearing down the communication path.
+- The **policy enforcement point (PEP)** enables, monitors, and ends the connection.
+
+The PE and PA together form the policy decision point (PDP). These parts talk over a control plane, while application data flows over a separate data plane. In the agent and gateway model, an agent on the user's device and a gateway in front of the resource form the PEP. In the resource portal model there is no agent: one gateway portal fronts the application, which NIST describes as more flexible for personally owned devices.
+
+### No inbound exposure of the application
+
+The application's host does not need to accept connections from the internet. Instead, a small connector next to the application dials out to the broker and holds that connection open, and user traffic is relayed over it. Cloudflare's tunnel documentation describes this pattern: its connector "initiates an outbound connection through your firewall," the setup works "without a publicly routable IP address," and, in its words, the tunnel "does not use an inbound listener on your origin." The application itself still listens, typically on a local or private address that the connector reaches, as Cloudflare's origin settings describe for a "local service." What goes away is a publicly reachable listener: a firewall can block all inbound traffic to that host, and no inbound port needs to be open to the internet.
+
+Exposure is moved, not erased. Users must be able to reach the broker, so it is usually internet-facing. SP 800-207 notes that the portal model "allows attackers to discover and attempt to access the portal or attempt a denial-of-service (DoS) attack against the portal." The application's own listener is no longer the front door, and the broker takes that role.
+
+### Side by side
+
+| | Remote-access VPN | ZTNA |
+| --- | --- | --- |
+| What is granted | A path into a network | Access to a named application |
+| Main decision point | When the tunnel is built, then network rules | At each application, repeated as policy and product allow |
+| Application listener | Reachable from the VPN address pool | Can avoid any publicly reachable listener or open inbound port; a connector dials out and reaches the application locally |
+| Internet-facing piece | The VPN gateway | The broker, hosted by a vendor or by the organization |
+| Typical weakness | Flat network, broad reach from one stolen credential | Broker dependency, policy upkeep, lock-in, protocol coverage |
+
+## The NIST ideas it builds on
+
+SP 800-207 defines zero trust as "a collection of concepts and ideas designed to minimize uncertainty in enforcing accurate, least privilege per-request access decisions in information systems and services in the face of a network viewed as compromised." Zero trust architecture (ZTA) is an enterprise's plan that applies those concepts.
+
+The document lists seven tenets, which it calls ideal goals that may not all be fully met:
+
+1. All data sources and computing services are resources.
+2. All communication is secured regardless of network location, which alone does not imply trust.
+3. Access to each resource is granted per session, with least privilege.
+4. Access follows dynamic policy covering client identity, application, and the requesting device.
+5. The enterprise monitors the posture of all assets, and none is inherently trusted.
+6. Authentication and authorization are dynamic and strictly enforced before access is allowed.
+7. The enterprise collects data about assets and traffic and uses it to improve policy.
+
+Two further ideas matter for the VPN comparison. The first is the implicit trust zone: the area where everything is trusted to at least the level of the last checkpoint. NIST uses an airport as the picture. Passengers pass one security checkpoint, then move freely through the terminal. The remedy is to shrink that zone and move enforcement points closer to each resource. A VPN with a flat network behind it is an airport with a very large terminal. The document's network assumptions say it directly: "The entire enterprise private network is not considered an implicit trust zone."
+
+The second is that remote access should not have to travel through the enterprise at all. SP 800-207 says a remote subject "should not be required to use a link back to the enterprise network (i.e., virtual private network [VPN]) to access services" hosted by a public cloud provider, such as email. A full-tunnel VPN that sends cloud traffic to the office and back out again is the pattern being described.
+
+Google published an earlier public account of this thinking in the 2014 *;login:* article "BeyondCorp: A New Approach to Enterprise Security" by Rory Ward and Betsy Beyer. Its abstract says that when a firewall perimeter is breached, "an attacker has relatively easy access to a company's privileged intranet," and that Google was "removing the requirement for a privileged intranet."
+
+## Where a VPN is still the right tool
+
+Zero trust products do not retire virtual private networks (VPNs). Several jobs still fit a VPN better:
+
+- **Joining whole networks.** A tunnel between two sites' gateways makes the networks reach each other.
+- **Traffic a broker may not handle.** Product coverage varies by vendor, so applications that use unusual protocols, server-initiated connections, or peer-to-peer traffic need to be checked against what a given ZTNA product supports. A plain tunnel carries whatever Internet Protocol (IP) traffic the firewall rules permit.
+- **Small environments.** A home lab or small office with one tunnel and a handful of firewall rules has few moving parts. A broker, a policy engine, and device management are real operating costs.
+- **A standards-based path.** The CISA and NSA sheet says it helps organizations select "standards-based (rather than proprietary)" VPN solutions.
+- **Mixed estates.** NIST states that most enterprises "will continue to operate in a hybrid zero-trust/perimeter-based mode for an indefinite period," with migration taking place "one business process at a time." A VPN often stays in service for workflows not yet migrated.
+
+The line between the two is also blurring. Tailscale's documentation says that when a tailnet is first created, its default policy file "enables communication between all devices within the tailnet," and that an administrator can then modify the policy to fit their needs. A mesh VPN with tight rules can approximate per-application access, and a ZTNA product with a permissive policy can approximate a flat network. The deployed policy matters more than the product category.
+
+## The real limits of zero trust products
+
+SP 800-207 has a full section on threats to a zero trust design. Most of them apply to products sold under the ZTNA label.
+
+- **The decision point is a high-value target.** NIST calls the PE and PA "the key components of the entire enterprise." A compromised PA could grant access that would otherwise be refused, and an administrator mistake in the policy can disrupt operations.
+- **Availability depends on the broker.** If an attacker, or a hosting provider's error, takes the PEP or PA out of reach, users lose access. NIST notes this is "also possible in legacy remote-access VPNs and is not unique to ZTA," but routing every session through a broker concentrates the dependency. Replicating enforcement across locations reduces the risk and does not remove it.
+- **Valid credentials still work.** An attacker with valid credentials, or a malicious insider, "may still be able to access resources for which the account has been granted access." Per-application access limits the blast radius but does not stop a legitimate session from being abused.
+- **Visibility has gaps.** Much traffic is encrypted and opaque to inspection tools, so defenders often work from metadata.
+- **Lock-in is a stated risk.** NIST warns that the lack of common, open formats can leave an organization "locked into a subset of providers," with policy rules that are expensive to translate between products.
+- **Agents and portals have blind spots.** The agent model needs a robust device-management program. The portal model avoids an agent, but NIST says it can scan a device only when it connects and "may not be able to continuously monitor" it afterward.
+- **Marketing outruns the standard.** In an appendix, NIST reported that its 2020 survey found the ecosystem "not mature enough for widespread adoption" and "no single solution that provides all the necessary components." That is a 2020 snapshot, and the market has had years to change, but it is a good reason to ask any vendor which tenets the product covers and which it leaves to the customer.
+
+None of these limits argue against the principles. They argue for treating a ZTNA purchase as one part of a longer program, with a VPN and ZTNA running side by side during the transition, as NIST expects.
+
+## Study notes
+
+- A VPN grants access to a network. ZTNA grants access to an application.
+- The PE decides, the PA sets up or tears down the path, and the PEP enforces. Control plane and data plane are separate.
+- Network location alone does not imply trust, and the implicit trust zone should be as small as possible.
+- SP 800-207 describes several deployment models: agent and gateway, enclave, resource portal, and application sandboxing.
+- The on-premises counterpart is port-level device authentication, covered in [802.1X network access control](/blog/network-access-control-8021x).
+
+## Sources
+
+- NIST SP 800-207, *Zero Trust Architecture*, August 2020: https://doi.org/10.6028/NIST.SP.800-207 (PDF: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-207.pdf)
+- NIST Computer Security Resource Center glossary, "split tunneling" (citing SP 800-113 and SP 800-53 Revision 5): https://csrc.nist.gov/glossary/term/split_tunneling
+- NIST SP 800-77 Revision 1, *Guide to IPsec VPNs*: https://csrc.nist.gov/pubs/sp/800/77/r1/final
+- RFC 7296, Internet Key Exchange Protocol Version 2 (IKEv2), section 2.19: https://www.rfc-editor.org/rfc/rfc7296
+- CISA, "CISA and NSA Release Guidance on Selecting and Hardening VPNs," September 28, 2021: https://www.cisa.gov/news-events/alerts/2021/09/28/cisa-and-nsa-release-guidance-selecting-and-hardening-vpns
+- Ward and Beyer, "BeyondCorp: A New Approach to Enterprise Security," *;login:* 39(6), 2014: https://research.google/pubs/beyondcorp-a-new-approach-to-enterprise-security/
+- Cloudflare documentation, Cloudflare Tunnel: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+- Cloudflare documentation, Access policies: https://developers.cloudflare.com/cloudflare-one/access-controls/policies/
+- Tailscale documentation, access control lists: https://tailscale.com/kb/1018/acls`,
+  },
+  {
+    slug: "barracuda-firewall-control-center-explained",
+    title: "Barracuda Firewall Control Center: Managing Many Firewalls",
+    date: "2026-11-21",
+    tags: ["firewall", "security", "networking", "operations", "monitoring"],
+    excerpt:
+      "The Barracuda Firewall Control Center manages many CloudGen Firewalls from one place, grouping them into ranges and clusters and sharing configuration through repositories and templates.",
+    coverImage: "/images/blog/barracuda-firewall-control-center-explained-photo.jpg",
+    coverCredit: {
+      author: "Alan Levine from United States",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NOC-IUPUI.jpg",
+    },
+    content: `## Why One Console for Many Firewalls
+
+A single firewall is manageable by hand. Many firewalls are not: each box becomes its own small island of configuration, and the islands slowly stop matching. That slow divergence is usually called configuration drift, and it is covered in more general terms in [the post on idempotence and config drift](/blog/idempotence-and-config-drift).
+
+A central management plane is the usual answer. Instead of treating each firewall as the place where its configuration lives, the configuration lives on a management system, and the firewalls receive it.
+
+This article walks through how one vendor organizes that idea: the Barracuda Firewall Control Center, which manages Barracuda CloudGen Firewalls. Everything below comes from Barracuda's public documentation on campus.barracuda.com (mostly the CloudGen Firewall 10.5 documentation space) and Barracuda's product page. Where the documentation is silent or unclear, the article says so instead of guessing.
+
+## The General Idea, Before Any Vendor
+
+### What a management plane does
+
+Most central firewall managers, whatever the brand, do some version of the same five jobs:
+
+1. **Hold the intended configuration.** The management system is the source of truth. The firewall's running configuration is supposed to be a copy.
+2. **Share common pieces.** Objects such as server addresses, service definitions, or a standard administrator policy are defined once and reused, so one edit updates every box that uses them.
+3. **Distribute changes.** When an administrator commits a change, the system sends it to the affected firewalls and tracks whether each one actually received it.
+4. **Record history.** Every change is versioned so that someone can see what changed, when, and roll back.
+5. **Collect telemetry.** Logs, statistics, and health status flow back to one place so the fleet can be watched from a single screen.
+
+### What it costs
+
+Centralization moves risk around rather than removing it.
+
+- **A single point of compromise.** An account that can push configuration to every firewall is, by definition, an account that can open every firewall. The management system deserves stronger protection than any individual box: restricted network access to its management interface, strong authentication, and narrowly scoped administrator roles.
+- **A single point of mistakes.** A typo that once broke one site can now break all of them in one activation. Central management makes it easy to be fast, so it needs a habit of being careful: review before commit, staged rollouts, and a tested rollback path.
+- **Change-control discipline.** History is only useful if people write meaningful change notes and if emergency fixes made directly on a box get folded back into the central configuration. Otherwise the management plane and reality quietly disagree, which is drift again, just with a nicer dashboard.
+- **Availability.** Depending on the product, firewalls may keep enforcing their last pushed policy while the manager is down, but nobody can make coordinated changes until it returns.
+
+None of this is specific to Barracuda. For the policy side of the problem (what rules should say, not where they are stored), see [the post on firewall policy design](/blog/firewall-policy-design).
+
+## The Control Center and Its Managed Firewalls
+
+Barracuda's documentation describes the Firewall Control Center as "a central administration unit designed to manage a large number of CloudGen Firewalls." According to the Firewall Control Center overview page, it:
+
+- centrally manages and monitors firewalls and Firewall Secure Connectors (another type of Barracuda managed device),
+- can manage multiple firmware releases and multiple platforms (hardware, virtual, and public cloud) at the same time,
+- distributes configuration, file updates, and licenses to the managed units,
+- reaches remote units through remote management tunnels, and
+- continuously checks the health and status of the managed devices.
+
+The same page notes two details worth knowing. First, "the box layer of the Control Center is identical to the CloudGen Firewall," which suggests the Control Center is built on the same platform as the firewalls it manages. Second, NextGen Firewall X-Series appliances cannot be managed by the Control Center. The X-Series is a separate product line whose name still uses "NextGen," so the name alone is a hint that it sits outside this management model.
+
+On editions, the "How to Manage Ranges and Clusters" page lists virtual Control Centers for hypervisors (VC400 Standard, VC610 Enterprise, VC820 Global) and for public clouds (VCC400 Standard, VCC610 Enterprise).
+
+Administration happens through a client application called Barracuda Firewall Admin, where the Control Center's configuration shows up as a tree under tabs such as CONFIGURATION, CONTROL, and STATISTICS.
+
+## The Hierarchy: Ranges, Clusters, and Boxes
+
+### The configuration tree
+
+The Central Management page describes the configuration tree as "a hierarchically organized set of nodes," where each node either names one aspect of configuration or groups other nodes beneath it. At the top sits a node called Multi-Range, and everything the Control Center manages hangs below it.
+
+The tree has three levels for managed devices:
+
+- **Ranges** sit at the top. The documentation says ranges "simplify the central administration of globally distributed firewalls," and the edition list describes a range as a tenant.
+- **Clusters** sit inside ranges and "represent groups of firewalls." The edition list calls a cluster a configuration group. One range can hold any number of clusters, subject to edition limits.
+- **Boxes** are the individual CloudGen Firewalls inside a cluster.
+
+A detail that confuses newcomers: in this documentation, a "cluster" is a configuration group of firewalls, not the same thing as a high availability (HA) pair of firewalls that fail over to each other. Barracuda's documentation also uses "high availability cluster" for that second meaning, so the context matters when reading.
+
+### What each level is for
+
+The ranges and clusters page gives a typical layout: ranges for large regions such as North America, and clusters for each country inside a region. Settings that several firewalls share can be set at the range or cluster level instead of being repeated per box. According to the Central Management page, both ranges and clusters can carry their own:
+
+- network and firewall objects,
+- a VPN (virtual private network) tunnel editor,
+- statistics settings,
+- access control objects,
+- QoS (quality of service) shaping trees, and
+- an activation template.
+
+Each range and cluster can also override global settings in its own scope. The documented options include **Disable Update** (stop pushing configuration updates to boxes in that range or cluster), **Collect Statistics**, and toggles that introduce range or cluster specific event settings, firewall objects, and traffic shaping settings.
+
+Edition limits apply to this hierarchy. Per the documentation, the VC400 Standard Edition allows one range and three clusters, the VC610 Enterprise Edition two ranges and unlimited clusters, and the VC820 Global Edition five ranges and unlimited clusters, with unlimited managed firewalls in each case and additional ranges available through licenses on the hypervisor editions.
+
+The documentation is blunt about deletion: removing a range "is final and will also remove all clusters and managed firewalls in the range," so it tells administrators to create a backup first. One right-click near the top of the tree can affect a whole region.
+
+## Sharing Configuration: Repositories and Templates
+
+### Repositories and links
+
+The Repositories page explains the main tool for avoiding copy-paste configuration: "Control Center repositories contain configurations that can be applied to multiple managed firewalls." Configuration that is used on more than one firewall is entered once in a repository and then linked to the matching configuration node on each managed firewall. In the documentation's words, "When you change a setting in a repository object, all linked configuration entries are automatically updated."
+
+Three repository types exist: a General Repository, a Range Repository, and a Cluster Repository. The documented workflow uses a lock, edit, activate pattern that runs through the whole product:
+
+1. Lock the configuration node on a firewall.
+2. Choose **Copy to Repository** to turn an existing configuration into a shared object, or **Link from Repository** to attach a node to an existing shared object.
+3. Activate the change.
+
+A linked node is marked in the tree with an arrow icon that shows the path to the repository object. If a repository object was created for an older firmware version than the firewall it serves, a **Migrate Node** function updates it.
+
+### Overrides: the controlled exception
+
+A shared configuration might be right for every branch except the one with a different uplink. Repositories handle that with **Override Link Data**: once enabled on a linked node, individual fields can be overridden for that firewall, and the arrow icon gains a plus sign to show that the node contains overrides. The documentation lists field-level options such as Override Entry and Strict Override, depending on the field type.
+
+The documentation also states a limitation: in the authentication service configuration, link overrides only fully work for certain independent schemes, and several other schemes "do not fully support this function."
+
+Overrides are the honest version of drift. Unlike drift, an override is visible in the tree, attached to a specific box, and stored centrally, so an auditor can find every exception instead of discovering them one outage at a time.
+
+### Configuration Templates
+
+Repositories link whole configuration nodes. For very large fleets, Barracuda added a second mechanism. The Configuration Templates page says the tool is available for the Control Center and CloudGen firewalls starting with release 8.2, and describes the motivation directly: "Large setups often have the same configuration redundantly, the managed boxes only differ in a small set of parameters."
+
+Templates are built from configuration units, each a functional block that describes one feature in an abstract way so that templates can be independent of model and firmware release. A template wires parameters, calculated variables, and default values into those units, and then many instances (firewalls or Firewall Secure Connectors) are created from it. Templates can be edited in a graphical editor in Firewall Admin, and the documentation lists TDL (Template Definition Language) and JSON (JavaScript Object Notation) as equivalent text formats, with a separate page on managing templates through the REST (representational state transfer) interface.
+
+A companion page on large template-managed fleets suggests grouping appliances that share configuration options, building one template per group, and, for an existing fleet, deriving a template from a representative box.
+
+## Pushing Changes and Tracking Them
+
+### Configuration updates
+
+The Central Management page states that "the configuration for all managed firewalls is stored on the Control Center," and that when an administrator activates a change, it is automatically pushed out to the managed firewalls. The CC Configuration Updates page (CC is the documentation's abbreviation for Control Center) shows the status of each push, color coded: green for success, red for an error with a reason column, blue for in progress, and yellow for updates belonging to boxes that were deleted.
+
+Several of the documented controls bear directly on drift:
+
+- **Update Now** sends only the changed part of the configuration. **Complete Update** sends the full configuration.
+- **Block Update** stops updates to a specific firewall until unblocked.
+- **Force Delete** removes a pending update. The documentation warns to use it with care because it creates "a difference between the configuration defined on the Control Center and the configuration that is actually in use on a firewall unit." It is a documented way to create drift on purpose.
+
+When a push fails, for example because a firewall was offline, the Control Center retries with growing waiting periods. The page gives two descriptions of the cap: one section says the waiting period "may increase to up to 30 minutes," and a later section says that from the 20th attempt onward, attempts are made only once an hour.
+
+The same page notes, while discussing a box's administrative settings, that when such an object is linked to a repository, changes must be made in the repository object. Rules like that keep the shared configuration authoritative.
+
+### Revision Control System
+
+Barracuda's change history feature is called the Revision Control System (RCS). Its documentation says RCS "provides information on all configuration changes to your system" and is available at both the box level and the Control Center level. Once activated, it stores a copy of every configuration set, can generate change reports, and can restore an earlier version.
+
+Several documented details matter in practice:
+
+- RCS is **disabled by default** and has to be enabled and configured.
+- A **Force RCS Change Message** option requires a comment for every check-in. That supports the change-control discipline described earlier.
+- A **Report Processing Script** can run each time a configuration setting changes, for example to send the report off the box with scp (secure copy) or email.
+- Older versions of a node can be viewed and compared, and, apart from some nodes and services the page excludes, a node can be reverted with Retrieve versions, then Accept Version, then Send Changes and Activate.
+- Running RCS at the Control Center level "can take a lot of memory and storage" when many appliances are managed and can slow the Control Center down.
+- Some commits can be empty, for example when an unordered list is reordered or when someone activates without changing anything.
+
+## Central Logging, Statistics, and Health
+
+### Syslog
+
+The Control Center Syslog Service page says the CC Syslog service collects log messages from managed firewalls and streams them to an external log host or to its HA partner. It describes reception on two ports: 5143 for SSL (Secure Sockets Layer) encrypted connections from boxes that do not use management tunnels, and 5144 for boxes that use a remote management tunnel. The page states plainly that connections on 5144 are "unencrypted and unauthenticated," which is why the default firewall rules restrict who can reach that port. Delivery to an external log host can be active SSL querying, passive SSL receiving (the method the documentation names for an HA Control Center pair, because the log host does not need to know which partner is active), or plain passive syslog. For the general mechanics of central log collection, see [the post on centralized syslog](/blog/syslog-centralized-logging).
+
+### Statistics and status
+
+The Control Center Statistics page describes two services, the CC Statistics Collector and the CC Statistics Viewer, which collect raw statistics from managed firewalls and process them. Statistics settings can be global, per range, or per cluster. The Central Management page adds that the Control Center continuously monitors all managed units and summarizes their state on a Status Map in Firewall Admin.
+
+### Administrators and scope
+
+Since the Control Center is a single point of compromise, its permission model matters. The Control Center Admins page says every Control Center starts with a root account with unlimited rights, which can create administrative profiles. A profile defines the scope an administrator can reach (for example a range or a cluster) and the administrative roles assigned to it. Roles define which services an administrator can use and which operations they can perform. Accounts can authenticate locally or through external authentication schemes. A configuration level controls read and write access to areas of the tree, and a new profile can receive at best the creating admin's level plus one, so an administrator cannot hand out a better configuration level than their own.
+
+## How Large Deployments Avoid Per-Box Drift
+
+Taken together, the documented features fight drift in layers:
+
+1. **One source of truth.** Configuration for every managed firewall is stored on the Control Center and pushed out on activation.
+2. **Inheritance by hierarchy.** Shared settings live at the range or cluster level instead of being copied into each box.
+3. **Shared objects.** Repositories hold configuration once and link it to many boxes, with visible, per-box overrides for the real exceptions.
+4. **Templates at scale.** Configuration Templates generate many instances from one blueprint with a small set of parameters per device.
+5. **Visible delivery.** The Configuration Updates page shows which boxes are current and which are not.
+6. **History.** RCS records changes and can require a comment for each one.
+
+The documented escape hatches (blocking updates, disabling updates for a range or cluster, force deleting a pending update) are reasonable in an emergency, and each one, left in place, reintroduces drift. Central management narrows the paths by which boxes diverge; it does not remove them.
+
+## What the Documentation Does Not Settle
+
+- **Naming.** The current product page and docs use "Barracuda CloudGen Firewall" and "Barracuda Firewall Control Center." Older material online may use other names. The documentation space for version 10 is labeled with the key CGFv91, while 10.5 uses CGFv105, so URLs do not always match version numbers.
+- **Repositories versus templates.** The documentation explains both but does not give a rule for choosing between them.
+- **Retry timing.** The Configuration Updates page gives two different figures for the maximum retry interval.
+- **Hardware models and pricing.** Not covered here; check a current datasheet.
+
+## Sources
+
+- Barracuda, "Firewall Control Center" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379093941
+- Barracuda, "Central Management" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379093955
+- Barracuda, "How to Manage Ranges and Clusters" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379093959
+- Barracuda, "Repositories" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094483
+- Barracuda, "Configuration Templates" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094425
+- Barracuda, "Considerations for Managing Large Numbers of Configuration Template-Managed Appliances Based on the Configuration of a Single Standard Box Node": https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094443
+- Barracuda, "CC Configuration Updates" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094377
+- Barracuda, "How to Configure Revision Control System Monitoring (RCS)" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094627
+- Barracuda, "Control Center Syslog Service" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094525
+- Barracuda, "Control Center Statistics" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094515
+- Barracuda, "Control Center Admins" (CloudGen Firewall 10.5): https://documentation.campus.barracuda.com/wiki/spaces/CGFv105/pages/379094489
+- Barracuda, CloudGen Firewall product page: https://www.barracuda.com/products/network-protection/cloudgen-firewall`,
+  },
+  {
+    slug: "what-an-apm-agent-actually-measures",
+    title: "What an APM Agent Actually Measures",
+    date: "2026-11-21",
+    tags: ["monitoring", "performance", "engineering"],
+    excerpt:
+      "An APM agent times the work inside an application, such as web transactions, database calls and external calls, so its numbers are only as complete as what the agent can see.",
+    coverImage: "/images/blog/what-an-apm-agent-actually-measures-photo.jpg",
+    coverCredit: {
+      author: "Ansgar Koreng",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Stopwatch,_1810201155,_ako.jpg",
+    },
+    content: `## What an APM agent is
+
+Application performance monitoring (APM) measures how a running application behaves from the inside: how long each request takes, how often requests fail, and where the time goes. The measuring is done by an agent, a library added to the application that times the code handling each request and reports summaries to a backend. New Relic's documentation describes adding a small library that instruments the application's code automatically. OpenTelemetry, the vendor-neutral open standard for telemetry (data about a running system), describes zero-code instrumentation the same way: it adds OpenTelemetry capabilities to an application, typically as an agent.
+
+An agent sees what the application sees. That sounds obvious, and it is the key to reading every number it produces. The agent knows when a request reached the application, how long each call to a database or another service took, and whether the code raised an error. It does not know what happened before the request arrived or after the response left.
+
+## What gets instrumented
+
+An agent cannot time arbitrary code. OpenTelemetry's documentation says zero-code instrumentation covers requests and responses, database calls, and message queue calls, and that the application's own code is not typically instrumented. Covering that code takes code-based instrumentation, added by hand. The default measurements fall into three groups.
+
+### Web transactions
+
+New Relic defines a transaction as one logical unit of work. For APM, the most common kind is the web transaction, which covers the activity from when the application receives a web request until the response is sent. Work that does not start with a web request, such as a queue consumer, a scheduled job, or a script, is a non-web or background transaction.
+
+OpenTelemetry models the same idea as a span, a unit of work or operation. A trace is a group of spans, linked by a shared trace identifier and parent identifiers, that describes one request. Spans carry a kind, such as Server or Client, which hints at how a backend should assemble the trace. A span for handling an incoming request is typically Server kind.
+
+Grouping matters. Averaging every request together would mix a fast health check with a slow report, so agents group requests by name. New Relic's documentation says varying parts of a name are consolidated into general categories, with \`/user/*/control_panel\` as its example. OpenTelemetry's HTTP (Hypertext Transfer Protocol) conventions make the same point for the \`http.route\` attribute: it must be low-cardinality, meaning few distinct values, keeping static path segments and replacing dynamic ones with placeholders.
+
+### Database calls
+
+Each query the application sends is timed as a sub-operation inside the transaction. New Relic calls the parts of a transaction segments and lists database calls among its examples. In OpenTelemetry, a query is typically a child span of kind Client. In a hypothetical 400 millisecond (ms) request, the breakdown might show 310 ms waiting on the database and the rest in application code.
+
+### External calls
+
+Calls from the application to other services are timed the same way, as segments or Client spans. OpenTelemetry calls the mechanism that links services context propagation, and describes it as the concept that enables distributed tracing: spans created in different services can be correlated and assembled into one trace. Without propagation, each service sees only its own slice.
+
+## The core signals
+
+From those measurements the agent derives a small set of signals.
+
+- **Response time**: how long transactions take, from receipt of the request to the end of the response.
+- **Throughput**: how many transactions complete per unit of time, often shown as requests per minute (RPM).
+- **Error rate**: the fraction of transactions that end in an error, such as an unhandled exception or a server-side error status.
+- **Apdex**: a single score from 0 to 1 that folds response time and errors into one number, covered next.
+
+In OpenTelemetry, response time is a histogram metric named \`http.server.request.duration\`, measured in seconds, with the request method, status code, route, and an error type as attributes. A histogram counts how many measurements fell into each range of values, which keeps a latency distribution without storing every request.
+
+## Apdex, computed exactly
+
+Apdex stands for Application Performance Index. It is defined by the Apdex Technical Specification, version 1.1, published by the Apdex Alliance on January 22, 2007. The score depends on one number chosen by the operator, the threshold T, in seconds.
+
+The specification defines three performance zones with two thresholds, T and F, where F is four times T:
+
+- Satisfied: zero to T.
+- Tolerating: greater than T up to F.
+- Frustrated: greater than F.
+
+The formula is:
+
+\`\`\`
+Apdex_T = (satisfied count + tolerating count / 2) / total samples
+\`\`\`
+
+Frustrated samples add nothing to the numerator, but they stay in the denominator. The specification's own example: if 80% of users are satisfied, 10% are tolerating, and 10% are frustrated, the index is 0.85. That is 0.80 plus half of 0.10, with the last 10% contributing zero.
+
+As an arithmetic illustration with invented round numbers, take a T of 0.5 seconds and 1,000 requests. If 600 finish within 0.5 seconds, 300 take between 0.5 and 2 seconds, and 100 take longer than 2 seconds, the score is (600 + 150) / 1,000 = 0.75.
+
+Several rules in the specification are easy to miss:
+
+- **T must be shown with the score.** A score is only meaningful with its threshold, so the specification writes it as \`0.85 [5.5]\`, or with T as a subscript.
+- **Errors count as frustrated.** Server aborts, such as a TCP connection closing in the middle of a task, count as frustrated regardless of the measured time. So do application errors the tool can detect, such as a 404 (not found) reply. New Relic's documentation applies this to server-side errors and warns that a high error rate can sit beside a satisfying average response time and a poor Apdex score.
+- **Small groups are flagged.** The normal minimum is 100 samples in a report group, and a result from 1 to 99 samples must carry an asterisk. New Relic's documentation similarly says that below 100 requests per minute there is not enough data for a stable score.
+- **The default T is a vendor choice.** The specification recommends 4 seconds. New Relic's documentation gives 0.5 seconds as its default for an application server, and says a threshold set for a key transaction overrides the application's value.
+
+## Transaction traces and why they are sampled
+
+A transaction trace is a detailed snapshot of a single transaction: the function calls, database calls, and external calls inside it, with the time each took. Aggregated signals show that a route got slower. A trace shows one example of why.
+
+Keeping a trace of every request is the expensive end of the range. OpenTelemetry's documentation calls sampling one of the most effective ways to reduce the cost of observability while keeping visibility, and lists the price: compute for the sampler, engineering effort, and the chance of missing critical information with a poor strategy.
+
+New Relic's documentation describes its default as a one-minute harvest cycle, the period in which the agent gathers data before sending it. Any transaction slower than a threshold, either four times the Apdex T or a fixed number of seconds, goes into a pool. At the end of the minute, the agent traces the slowest transaction in the pool. Some agents vary this, and the Java agent also collects occasional non-slow transactions. If no transaction crosses the threshold, no trace appears.
+
+OpenTelemetry describes two broad strategies:
+
+- **Head sampling** decides as early as possible, before the trace is complete. It is simple and efficient, but it cannot look at the whole trace, so it cannot ensure that every trace containing an error is kept.
+- **Tail sampling** decides after considering all or most of the spans, so it can keep traces by error, latency, or attribute. The documentation says it is harder to implement and operate, and often vendor-specific.
+
+The consequence is that traces are a deliberately biased sample. Selecting the slowest transaction each minute produces useful examples and a poor picture of typical behavior. Counts, averages, and percentiles belong to the aggregated metrics, which cover every request. Traces explain outliers.
+
+## Custom attributes and tagging
+
+Out of the box, an agent knows the route, the duration, and the status. It does not know which customer, which feature flag, or which release produced a request. Attributes fill that gap.
+
+OpenTelemetry defines attributes as key-value pairs that annotate a span, with string, boolean, or numeric values, or arrays of those. Its documentation recommends adding attributes when a span is created, because a sampler can only use attributes that exist at decision time. It also defines semantic conventions, shared attribute names such as \`http.route\`, so that different tools agree on what a field means.
+
+New Relic's agents expose the same idea through per-language calls that attach a key and a value to the current transaction, such as \`add_custom_attribute\` in the Python agent and \`AddCustomAttribute\` in the .NET agent.
+
+Two cautions apply to any tagging scheme:
+
+- **Cardinality.** Every distinct value of an attribute used for grouping creates another series to store. A plan tier has a handful of values. A user identifier has millions. OpenTelemetry's HTTP metric conventions warn that an attribute based on HTTP headers can let an attacker trigger cardinality limits.
+- **Sensitive data.** An attribute is exported with the telemetry, so anything the code puts there, such as an email address or a token, leaves the application. What may be attached is a decision for code review.
+
+## Service levels and SLOs
+
+Service levels turn measurements into promises. Google's Site Reliability Engineering book defines the terms:
+
+- A **service level indicator (SLI)** is a carefully defined quantitative measure of some aspect of the service, such as request latency or availability.
+- A **service level objective (SLO)** is a target value or range of values for a service level measured by an SLI.
+- A **service level agreement (SLA)** is a contract with users that includes consequences for meeting or missing the objectives. If there is no explicit consequence, the book says you are almost certainly looking at an SLO.
+
+New Relic's service level documentation expresses an SLI as the percentage of good responses out of valid requests, and an SLO as that ratio held to a target over a time window, with 99.9% over the last 28 days as its example. For an APM service, its latency example counts web transactions as valid events and those under a chosen duration as good. Its error example counts all transactions as valid and transaction errors, excluding errors marked as expected, as bad.
+
+An SLO differs from Apdex in an important way. Apdex blends a time threshold, a half-credit zone, and errors into a single index. An SLO states one threshold and one target, such as 99% of requests under 300 ms, so the sentence says exactly what is promised.
+
+## Where the numbers mislead
+
+### Averages hide the tail
+
+The Site Reliability Engineering book explains the problem directly: most requests can be fast while a long tail is much slower, and a simple average can obscure the tail and changes in it. Its example is a service where a typical request takes about 50 ms while 5% of requests are 20 times slower. It advises treating latency as a distribution instead of a single mean.
+
+The tail matters because users meet it. Suppose a page makes 10 independent calls and each has a 1% chance of being slow. The chance that at least one is slow is 1 minus 0.99 to the tenth power, about 9.6%. A rare slow call becomes a noticeable fraction of slow pages.
+
+### Percentiles help, with caveats
+
+A percentile states the value below which a given share of requests fall. The 95th percentile (p95) is the time that 95% of requests beat. Percentiles describe the tail that an average hides, and the book gives SLO examples such as 99.9% of calls completing in under 100 ms.
+
+Percentiles have pitfalls too. A p95 computed separately on each server generally cannot be averaged into a fleet-wide p95. Histogram bucket counts can be merged across servers, and a percentile estimated from the merged buckets. OpenTelemetry notes that aggregation can be exact or estimated, so a percentile read from buckets is only as precise as the boundaries. The recommended boundaries for \`http.server.request.duration\` run from 0.005 to 10 seconds, so a p99 near 3 seconds is only known to lie between 2.5 and 5 seconds.
+
+### Sampling bias
+
+A set of slow traces is not a sample of traffic. Head sampling at a low rate may drop the one rare error that mattered, and OpenTelemetry's documentation says head sampling cannot ensure that every trace with an error is sampled.
+
+### Apdex has limits
+
+The threshold is a human judgment, and the same traffic can score very differently at two values of T. The score also treats a response just beyond F and one far beyond F identically. Mixing routes with different expectations, such as a search box and a report export, produces a number that describes neither. The specification frames Apdex around the time a human waits on a task, so it is a poor fit for work where nobody is waiting.
+
+### The agent starts timing late
+
+The specification asks that measurements approximate what a user could time with a stopwatch. An in-process agent starts its clock when the application receives the request. Time in a browser, on the network, or waiting in a queue before the application picked the request up is outside what the agent can time, so a dashboard can look healthy while users wait longer than the agent's number.
+
+### Overhead is real
+
+Timing every call costs some central processing unit (CPU) time and memory, and every report costs network traffic. New Relic's APM introduction page states that its agents track performance with minimal overhead, giving a figure of under 3% performance impact. That is a vendor statement, and the real cost depends on the application, the language, and the settings, so it is worth measuring on the actual workload.
+
+## How APM differs from logs, metrics, and infrastructure monitoring
+
+The signals answer different questions:
+
+| Signal | What it records | Good for | Weak at |
+| --- | --- | --- | --- |
+| APM | Timed work inside the application, per transaction | Which route or call is slow or failing | Anything the agent cannot see |
+| Metrics | Aggregated numbers over time | Trends, alerts, capacity | Explaining one request |
+| Logs | Timestamped records of discrete events | Detail about one event | Aggregates and timing across calls |
+| Infrastructure monitoring | Resource use of hosts, containers, and networks | Saturation of the machines | Which code or route is responsible |
+
+OpenTelemetry describes a metric as a measurement of a service captured at runtime, and says metrics suit aggregate analysis while tracing follows individual request lifecycles. APM is best understood as traces and metrics produced automatically at the application layer. New Relic describes its infrastructure agent as collecting performance and health data about system resources and processes, and its documentation shows log messages related to errors and traces in the same views, which is how the signals connect in practice.
+
+For the log side, see [Log analysis methodology](/blog/log-analysis-methodology). For a metrics system, see [Prometheus server monitoring](/blog/prometheus-server-monitoring). For a view from below the application, which uses eBPF (a kernel feature for running small verified programs), see [eBPF observability basics](/blog/ebpf-observability-basics).
+
+## Sources
+
+- Apdex Technical Specification, version 1.1: https://www.apdex.org/wp-content/uploads/2020/09/ApdexTechnicalSpecificationV11_000.pdf
+- New Relic, Apdex: measure user satisfaction: https://docs.newrelic.com/docs/apm/new-relic-apm/apdex/apdex-measure-user-satisfaction/
+- New Relic, Transaction traces: https://docs.newrelic.com/docs/apm/transactions/transaction-traces/transaction-traces/
+- New Relic, Transactions in APM: https://docs.newrelic.com/docs/apm/transactions/intro-transactions/transactions-new-relic-apm/
+- New Relic, APM introduction: https://docs.newrelic.com/docs/apm/new-relic-apm/getting-started/introduction-apm/
+- New Relic, Create and edit SLIs and SLOs: https://docs.newrelic.com/docs/service-level-management/create-slm/
+- New Relic, Python agent add_custom_attribute: https://docs.newrelic.com/docs/apm/agents/python-agent/python-agent-api/addcustomattribute-python-agent-api/
+- New Relic, .NET custom attributes: https://docs.newrelic.com/docs/apm/agents/net-agent/attributes/custom-attributes-net/
+- New Relic, Infrastructure monitoring: https://docs.newrelic.com/docs/infrastructure/infrastructure-monitoring/get-started/get-started-infrastructure-monitoring/
+- OpenTelemetry, Traces: https://opentelemetry.io/docs/concepts/signals/traces/
+- OpenTelemetry, Sampling: https://opentelemetry.io/docs/concepts/sampling/
+- OpenTelemetry, Metrics: https://opentelemetry.io/docs/concepts/signals/metrics/
+- OpenTelemetry, Zero-code instrumentation: https://opentelemetry.io/docs/concepts/instrumentation/zero-code/
+- OpenTelemetry, HTTP metrics semantic conventions: https://opentelemetry.io/docs/specs/semconv/http/http-metrics/
+- Google, Site Reliability Engineering, Service Level Objectives: https://sre.google/sre-book/service-level-objectives/`,
+  },
+  {
+    slug: "distributed-tracing-explained",
+    title: "Distributed tracing, explained",
+    date: "2026-11-21",
+    tags: ["monitoring", "operations", "networking", "troubleshooting"],
+    excerpt:
+      "Distributed tracing follows one request across many services using spans and a trace identifier carried in the W3C traceparent header, and it breaks wherever that context is dropped.",
+    coverImage: "/images/blog/distributed-tracing-explained-photo.jpg",
+    coverCredit: {
+      author: "Grešla",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Aerial_view_of_NS_Landers_Yard,_Chicago.jpg",
+    },
+    content: `## One request, many services, no single log
+
+A request to a modern web application rarely stays in one program. A click might pass through a load balancer, a gateway, an authentication service, a database, and a background worker that sends an email later. Each component writes its own logs and metrics. When the request is slow or fails, the question is simple to ask and hard to answer: which hop was responsible?
+
+Metrics can say that latency went up, and logs can say what one process saw, but neither ties together the separate pieces of work that belonged to one user request. Distributed tracing records the path of a single request through every service it touches, with timing for each step.
+
+This article covers traces and spans, context propagation, the World Wide Web Consortium (W3C) header standard, OpenTelemetry's span model, sampling, the common ways traces break, a curl based propagation check, and what traces cannot answer.
+
+## Traces and spans
+
+### The span
+
+A span is one unit of work: an incoming HTTP (Hypertext Transfer Protocol) request handled by a server, an outgoing call to another service, a database query, or a function worth timing. Every span has a name, a start time, an end time, and two identifiers. The span identifier is unique to that span. The trace identifier is shared by every span that belongs to the same request.
+
+Each span (except the first) also records the identifier of its parent span. That single field turns independent records into a tree.
+
+### The trace
+
+A trace is the full set of spans that share one trace identifier. The span with no parent is the root span; in the OpenTelemetry documentation's words, it marks the beginning and end of the entire operation. A tracing backend rebuilds the tree and usually draws it as a waterfall: one bar per span, indented under its parent, on a shared timeline.
+
+The spans in a trace can come from different processes, services, and machines. So something has to carry the trace identifier and the parent's span identifier from one machine to the next.
+
+## Context propagation
+
+OpenTelemetry describes context as an object that contains the information the sending and receiving services need, and propagation as "the mechanism that moves context between services and processes." In practice, propagation has two halves:
+
+- **Inject.** On an outgoing call, instrumentation writes the trace identifier and the calling span's identifier into the request, usually as HTTP headers.
+- **Extract.** The receiving service reads those headers, rebuilds the context, and creates its server span as a child of the caller's span.
+
+Repeat that at every hop and the whole request carries one trace identifier from the edge to the deepest dependency. Instrumentation libraries normally do both halves automatically for common HTTP clients, HTTP servers, and remote procedure call (RPC) frameworks.
+
+Services written in different languages and instrumented by different vendors must agree on header names and format. That agreement is the W3C Trace Context standard, and OpenTelemetry's default propagator uses its headers.
+
+## The W3C Trace Context standard
+
+Trace Context is a W3C Recommendation. The current Recommendation is dated 23 November 2021 and updates the February 2020 Recommendation with editorial changes only. It defines two HTTP headers: \`traceparent\` and \`tracestate\`. The specification says vendors must accept these header names in any case and should send them in lowercase.
+
+### The traceparent header
+
+\`traceparent\` carries the four fields every participant needs, separated by hyphens. This is the example from the specification:
+
+\`\`\`
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+\`\`\`
+
+Field by field:
+
+| Field | Length | Example | Meaning |
+|---|---|---|---|
+| version | 2 hexadecimal (hex) characters | \`00\` | Format version. \`00\` is the current version; \`ff\` is invalid. |
+| trace-id | 32 hex characters (16 bytes) | \`4bf92f3577b34da6a3ce929d0e0e4736\` | Identifies the whole trace. All zeros is invalid. |
+| parent-id | 16 hex characters (8 bytes) | \`00f067aa0ba902b7\` | The span identifier of the caller's span, which becomes the parent of the receiver's span. All zeros is invalid. |
+| trace-flags | 2 hex characters | \`01\` | Bit field. The rightmost bit is the sampled flag. |
+
+Hex digits must be lowercase. Adding up the fields, a well-formed version \`00\` header value is exactly 55 characters long: 2 + 32 + 16 + 2 hex characters plus 3 hyphens.
+
+The name "parent-id" is from the receiver's point of view: to the sender, it is the identifier of the span that made the call. A service that forwards the request onward replaces the parent-id with its own span identifier, so the value changes at every hop while the trace-id stays the same.
+
+The trace-flags field in the 2021 Recommendation defines only one flag. When the sampled flag (\`01\`) is set, the specification says it "denotes that the caller may have recorded trace data." The other bits are reserved, and vendors must set them to zero. A newer draft, Trace Context Level 2 (a Candidate Recommendation Draft dated March 2024, not yet a Recommendation), adds a \`random-trace-id\` flag (bit value \`02\`).
+
+If the trace-id or parent-id is invalid, the receiver must ignore the \`traceparent\` and, per the processing model, start a new trace. A receiver that sees a higher version than it understands should still try to parse the known fields using the version \`00\` layout.
+
+### The tracestate header
+
+\`traceparent\` is small and vendor neutral. \`tracestate\` carries vendor specific trace identification data, so a request that crosses systems watched by different tracing products keeps each product's information.
+
+It is a comma separated list of \`key=value\` pairs. This example, from the specification, has entries from two systems:
+
+\`\`\`
+tracestate: rojo=00f067aa0ba902b7,congo=t61rcWkgMzE
+\`\`\`
+
+Rules from the specification:
+
+- There can be at most 32 list members.
+- Each key appears only once, because an entry represents that vendor's last position in the trace.
+- When a vendor updates its entry, the entry moves to the left of the list, so the most recently updated vendor is first.
+- Values are limited to 256 printable ASCII (American Standard Code for Information Interchange) characters and cannot contain commas or equals signs.
+
+## How OpenTelemetry represents spans
+
+OpenTelemetry is an open source project that provides the application programming interfaces (APIs), software development kits (SDKs), and data formats that many tracing setups use. In its trace API, a valid trace identifier is a 16 byte array and a valid span identifier an 8 byte array, each with at least one nonzero byte. Those sizes match the 32 and 16 hex characters in \`traceparent\`.
+
+### Span context
+
+Every span has an immutable span context made of four parts:
+
+- the trace identifier
+- the span identifier
+- the trace flags (including the sampled flag)
+- the trace state (the vendor key/value pairs from \`tracestate\`)
+
+That is the same information the two headers carry. A span context that was extracted from an incoming request is marked as remote, which is how the SDK knows its parent lives in another process.
+
+### What else a span holds
+
+On top of the span context, the OpenTelemetry documentation lists:
+
+- **Name** of the operation.
+- **Parent span identifier**, empty for root spans.
+- **Start and end timestamps.**
+- **Attributes**: key/value metadata, such as an HTTP route or a database system name.
+- **Span events**: timestamped annotations marking a single moment within the span, such as an exception being thrown.
+- **Span links**: references to other spans that are causally related but are not the parent.
+- **Status**: \`Unset\` (the default, no error recorded), \`Error\`, or \`Ok\` (a developer explicitly marked the operation as successful).
+- **Span kind**: \`Server\` for a synchronous incoming call, \`Client\` for a synchronous outgoing call, \`Internal\` for work that does not cross a process boundary (the default), \`Producer\` for creating a job that may be processed later, and \`Consumer\` for processing such a job, possibly long after the producer span ended.
+
+## Sampling: deciding which traces to keep
+
+The OpenTelemetry sampling guide suggests considering sampling at around 1,000 or more traces per second, and says systems producing only tens of small traces per second or fewer may not need it. The two main approaches differ in when the decision is made.
+
+### Head-based sampling
+
+Head sampling makes the decision as early as possible, typically when the root span is created. A common form keeps a fixed fraction of traces chosen from the trace identifier, so every service that sees the same trace identifier can reach the same answer.
+
+The decision travels with the request in the sampled flag. In OpenTelemetry SDKs, the default sampler is \`ParentBased(root=AlwaysOn)\`: a span with no parent is always sampled, and a span with a remote parent follows that parent's sampled flag, recording if it was set and dropping if it was not.
+
+The OpenTelemetry documentation calls head sampling easy to understand, easy to configure, and efficient. But because the decision happens before the request has done anything, it cannot be based on what happens later. The documentation notes that head sampling alone cannot ensure that all traces containing an error are kept. If the rate is 1 percent, roughly 99 percent of failing requests are dropped.
+
+### Tail-based sampling
+
+Tail sampling waits until all or most of a trace's spans have arrived and then decides. Because it can see the whole trace, it can keep every trace that contains an error, keep traces whose total latency is above a threshold, sample based on span attributes, or apply different rates to high volume and low volume services.
+
+The OpenTelemetry documentation describes tail samplers as stateful systems that must accept and store a large amount of data. In the OpenTelemetry Collector's tail sampling processor, traces are held in memory for a decision wait period (30 seconds by default) before the policy runs, and the documentation states that all spans for a given trace must be received by the same collector instance. Running several instances therefore needs a load balancing layer in front.
+
+### What each can and cannot catch
+
+- Head sampling is cheap but blind to outcomes: rare errors and slow requests are sampled at the same rate as everything else.
+- Tail sampling can catch rare errors and slow outliers, but only for spans that actually reach the sampler. If a service never exported its spans, or a span arrives after the decision wait period, the decision is made without it.
+- Combining them (a head rate to cut volume, then tail rules) works, but no tail rule can recover what the head sampler already dropped.
+
+## What makes traces break
+
+When a trace looks cut in half, or shows up as two unrelated traces, the cause is usually one of these.
+
+### A service or proxy that drops the header
+
+If any component between two instrumented services does not forward \`traceparent\`, the downstream service sees no incoming context. Following the rules above, it starts a fresh trace with a new trace identifier. The result is two traces where there should be one.
+
+The specification expects pass-through components such as proxies to forward the headers unmodified, and requires tracing tools to propagate both headers. When that fails, common culprits are uninstrumented services that build new outgoing requests without copying headers, gateways that forward only an allowlist of headers, and HTTP clients that bypass the instrumented library. The OpenTelemetry context propagation page also warns that incoming context from untrusted sources can be forged, so some edge components intentionally strip or restart traces at the boundary. That is a design choice with the same symptom.
+
+### Async hops inside a process
+
+Inside a single process, the instrumentation has to know which span is "current" when the next operation starts. Code that hands work to a thread pool, a callback, or a scheduled task can lose that current context if the language or framework does not carry it along. The new work then becomes its own root span, with no network hop involved.
+
+### Message queues
+
+With a message queue, the producer moves on and the consumer may pick the message up much later. There is no HTTP request to carry a header, so context has to travel inside the message.
+
+The OpenTelemetry messaging conventions say a producer should attach a "creation context" to each message, ideally in a way intermediaries cannot change, and that when a message passes through intermediaries, all components must propagate context down the chain. They also note that a span can only have one parent, so when a consumer receives a batch of messages from many producers, span links are the only way to connect it to all of them. A consumer that ignores the message's context, or a broker or bridge that strips message headers, splits the trace at the queue.
+
+### Clock skew
+
+Each span's timestamps come from the clock of the machine that recorded it. The OpenTelemetry API specification says start and end times must be recorded at the time the corresponding API is called, so they reflect whatever that host's clock reads. If two machines disagree about the time, a child span can appear to start before its parent, or a gap can appear that never happened. The tree stays correct, but the waterfall misleads. Keeping clocks synchronized with Network Time Protocol (NTP) is the fix; the post on [why the clock is the last thing anybody checks](/blog/the-clock-is-the-last-thing-anybody-checks) covers how far skew reaches beyond tracing.
+
+## Checking propagation with curl
+
+The idea: send a request with a \`traceparent\` header whose trace-id is known in advance, then search the tracing backend for that exact trace-id.
+
+First, build a well-formed header. \`openssl rand -hex\` produces lowercase hex, which is what the specification requires:
+
+\`\`\`bash
+TRACE_ID=$(openssl rand -hex 16)   # 32 hex characters
+PARENT_ID=$(openssl rand -hex 8)   # 16 hex characters
+TP="00-\${TRACE_ID}-\${PARENT_ID}-01"
+echo "$TP"
+echo -n "$TP" | wc -c              # should print 55
+\`\`\`
+
+Then send it to the entry point of the system:
+
+\`\`\`bash
+curl -sv -H "traceparent: $TP" https://app.example.internal/api/orders
+\`\`\`
+
+The trailing \`01\` sets the sampled flag. With the default \`ParentBased\` sampler described above, a service that receives this header will treat the caller as a sampled parent and record its spans. With \`00\`, the same default would drop them.
+
+Then look up \`$TRACE_ID\` in the tracing backend:
+
+- **The trace exists, and the entry service's server span has \`$PARENT_ID\` as its parent.** The edge extracted the header correctly.
+- **Every service in the request path appears under that one trace-id.** Propagation works end to end.
+- **The trace stops partway.** The last service that appears is the one that did not inject the header on its outgoing call, or the next hop dropped it. Look for a separate, newer trace with a different trace-id that starts at the following service.
+- **No trace with that trace-id exists at all.** Either the entry point is not instrumented, something in front of it removed the header, the service is not exporting spans, or a sampler ignored the flag.
+
+Repeating the test against each internal service, and through each proxy in front of one (for example an [Nginx reverse proxy](/blog/nginx-reverse-proxy-setup)), finds the exact hop that loses the header.
+
+## What traces do not tell you
+
+- **Only what was instrumented.** Time spent in an uninstrumented library, a garbage collection pause, or a kernel wait shows up only as an unexplained gap inside a span.
+- **Only what was sampled.** With head sampling at a low rate, the trace for the one request a user complained about is very likely not stored.
+- **Not aggregate health.** One trace is one request. Error rates and long term trends are the job of metrics, covered in the post on [Prometheus monitoring](/blog/prometheus-server-monitoring).
+- **Not why.** A span can show that a database call took two seconds. It does not say whether the cause was a missing index or lock contention.
+- **Not exact timing across machines.** A span's duration comes from one clock, but comparing spans on different hosts depends on how well their clocks agree.
+- **Not a security log.** Trace context arrives in ordinary request headers that any client can set, as the curl test shows. The OpenTelemetry documentation also advises against putting credentials or personal data in baggage (extra key/value pairs propagated alongside trace context), because it can be logged or sent to untrusted downstream services.
+
+Tracing works best alongside metrics and logs. Its contribution is the shape of a single request: which services it touched, in what order, and where the time went. That shape depends on one 55 character header surviving every hop.
+
+## Sources
+
+- https://www.w3.org/TR/trace-context/
+- https://www.w3.org/TR/trace-context-2/
+- https://opentelemetry.io/docs/concepts/signals/traces/
+- https://opentelemetry.io/docs/concepts/context-propagation/
+- https://opentelemetry.io/docs/concepts/sampling/
+- https://opentelemetry.io/docs/specs/otel/trace/api/
+- https://opentelemetry.io/docs/specs/otel/trace/sdk/
+- https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/
+- https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md`,
+  },
+  {
+    slug: "ebpf-what-it-can-see-and-what-it-cannot",
+    title: "eBPF for Observability: What It Can and Cannot See",
+    date: "2026-11-21",
+    tags: ["linux", "monitoring", "security"],
+    excerpt:
+      "eBPF lets a small verified program watch system calls, network activity and function timing on a Linux host without changing the application, but it cannot read encrypted payloads or business context.",
+    coverImage: "/images/blog/ebpf-what-it-can-see-and-what-it-cannot-photo.jpg",
+    coverCredit: {
+      author: "Ivan Radic",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Close-up_picture_of_a_beautiful_honeybee_(50039958923).jpg",
+    },
+    content: `## A program that watches from outside
+
+Most observability starts inside the application. A developer adds a log line, a counter, or a tracing library, and the service starts reporting on itself. That works for code a team owns. It does not work for a third-party binary or a service that was never instrumented.
+
+Extended Berkeley Packet Filter (eBPF) approaches the problem from the other side. Instead of asking the application to describe itself, a small program is loaded into the Linux kernel and attached to a point that applications have to pass through: a system call, a network function, a scheduler event. The application is not modified and not restarted.
+
+The ebpf.io project describes eBPF as a technology that can run sandboxed programs in a privileged context such as the operating system kernel, extending the kernel without changing kernel source code or loading kernel modules. The name is historical. BPF originally stood for Berkeley Packet Filter, and ebpf.io notes that the acronym no longer describes what the technology does, so eBPF is now treated as a standalone term.
+
+This article is a companion to [the earlier introduction to eBPF tracing](/blog/ebpf-observability-basics), which covers bpftrace one-liners. This one stays with concepts: what the pieces are, what outside-in observation can see, and where it runs out.
+
+## The four pieces: program, verifier, JIT, maps
+
+### Programs and the bpf() system call
+
+An eBPF program is a short piece of bytecode, typically produced by compiling source code with the clang/LLVM compiler. User space hands it to the kernel through the \`bpf()\` system call, which according to the bpf(2) manual page was added in Linux 3.18 and performs operations on eBPF maps and programs. Once loaded, the program is attached to a hook. Every time the hook fires, the kernel runs the program.
+
+An eBPF program cannot call arbitrary kernel functions. It calls helper functions, a set of kernel-provided routines for tasks such as reading the current time, accessing a map, or fetching the current process identifier and command name.
+
+### The verifier
+
+Running outside code inside the kernel is normally a good way to crash a machine. The verifier is the reason eBPF is allowed to do it. The bpf(2) manual page puts it in one sentence: "An in-kernel verifier statically determines that the eBPF program terminates and is safe to execute."
+
+The kernel's verifier documentation describes two steps: a structural check of the program's control flow, then a simulation that starts from the first instruction and descends all possible paths, tracking the state of registers and the stack.
+
+ebpf.io lists the practical rules. The program must always run to completion, so a loop is accepted only if the verifier can confirm it will exit. The program must not use uninitialized variables or access memory out of bounds. It must fit within size limits and have finite complexity.
+
+One limit matters for the security discussion later. ebpf.io states that the verifier is a safety tool and not a security tool that inspects what a program does. It does not judge whether a program's purpose is benign.
+
+### Just-in-time compilation
+
+After verification, a just-in-time (JIT) compiler translates the generic bytecode into native machine instructions. ebpf.io says this lets eBPF programs run as efficiently as natively compiled kernel code or code loaded as a kernel module.
+
+The bpf(2) manual page documents the control, \`/proc/sys/net/core/bpf_jit_enable\`. It says the JIT was disabled by default before Linux 4.15, and that since 4.15 a kernel can be built with \`CONFIG_BPF_JIT_ALWAYS_ON\`, which keeps it permanently on.
+
+### Maps
+
+Maps are how data gets out of the kernel. The bpf(2) manual page describes maps as a generic data structure whose keys and values are binary blobs with sizes fixed when the map is created. eBPF programs and user space programs can both access a map, and several programs can share one.
+
+ebpf.io lists hash tables, arrays, ring buffers, stack trace maps, and longest prefix match tables among the map types. In an observability agent, the in-kernel program counts or records events into a map, and a user space process reads the map and exports the result.
+
+## Where programs attach
+
+The attachment point decides what a program can see.
+
+### Kprobes and kretprobes
+
+A kernel probe, or kprobe, is a dynamic hook. The kernel's kprobes documentation says a kprobe can be inserted on virtually any instruction in the kernel, and a return probe (kretprobe) fires when a specified function returns. Together they give entry and exit for kernel functions.
+
+The same document lists exceptions: some parts of the kernel cannot be probed, and a probe on a function the compiler inlined may not fire for every copy. The larger practical issue is portability: a kprobe names an internal kernel function, and the libbpf documentation lists lack of portability across kernel versions and configurations as a known limitation of eBPF programs.
+
+### Tracepoints
+
+A tracepoint is a static hook that kernel developers placed in the code on purpose. The kernel's tracepoint documentation describes it as a hook that calls a function (a probe) provided at runtime, and notes that a tracepoint that is off has no effect apart from a tiny time penalty and a small space cost. System call entry and exit are exposed this way, under names such as \`sys_enter_openat\` and \`sys_exit_read\`, which is how a tool can record file opens on a host without knowing anything about the processes making them.
+
+### Uprobes
+
+A user probe, or uprobe, is the user space counterpart of a kprobe. The kernel's uprobe tracer documentation specifies a probe as a path to an executable or library plus an offset inside it, with a return variant for function exit. A uprobe lets an eBPF program fire when a specific function in a specific binary or shared library is called.
+
+### XDP and tc
+
+Two attachment points sit on the network path. eXpress Data Path (XDP) runs, in the words of the Cilium BPF reference, at the earliest possible point in software, when the network driver has just received the packet and before the kernel has allocated its usual packet buffer structure. An XDP program returns a verdict such as \`XDP_DROP\`, \`XDP_PASS\`, \`XDP_TX\`, or \`XDP_REDIRECT\`. XDP attaches on ingress only.
+
+The traffic control (tc) hook runs later, after that structure exists, and is available on both ingress and egress. On ingress it sits before the netfilter hooks described in [the netfilter hook order post](/blog/netfilter-hook-order). The Cilium reference presents the two as complementary: XDP is faster and sees a rawer packet, while tc sees both directions and works on any network device without driver changes.
+
+The kernel's libbpf documentation lists further attachment types, including Linux Security Module (LSM) hooks, which return in the security section.
+
+## What this makes visible without changing code
+
+Put the pieces together and one privileged agent on a host can observe the processes on that host. The OpenTelemetry project calls this zero-code instrumentation. Its eBPF instrumentation documentation says the tool uses eBPF to inspect application executables and the operating system networking layer, and that all data capture occurs without any modifications to application code or configuration.
+
+- **System calls.** File opens, reads, and writes cross the system call boundary, and tracepoints exist for entry and exit.
+- **Network activity.** Kprobes on the kernel's networking functions, plus XDP and tc programs, see connections and packets.
+- **Function entry and exit.** Kprobes cover kernel functions. Uprobes cover functions in user space binaries and libraries. Recording a timestamp at entry and subtracting it at exit gives a duration.
+- **Who did it.** Helpers return the current process identifier and command name, and ebpf.io lists process and cgroup context among the helper categories, so an event can be tied to a process or a control group.
+
+None of this requires the observed service to cooperate.
+
+## What it cannot see
+
+Outside-in observation has a hard boundary. It sees what crosses an interface it can hook, in the form the data has at that interface.
+
+### Encrypted payloads
+
+Transport Layer Security (TLS) encryption normally happens inside the application process, in a library. By the time data reaches a \`write\` system call or a network hook, it is ciphertext. A kernel-side program can still see that a connection exists, where it goes, and how many bytes moved. It cannot read the request inside. The background on the protocol is in [the post on modern TLS](/blog/tls-modern-encryption).
+
+The workaround is a uprobe on the TLS library itself. The \`sslsniff\` tool in the BPF Compiler Collection (BCC) project is a well-known example. Its documentation says it traces the write/send and read/recv functions of OpenSSL, GnuTLS, and NSS, three TLS libraries, and that data passed to these functions is printed as plain text. The probe sits where the application hands plaintext to the library before encryption, or receives it back after decryption.
+
+Two consequences follow. First, the trick depends on the application using a library the tool knows how to probe. A program that carries its own TLS implementation is not covered by probes placed on a different library. Second, anyone with enough privilege to attach uprobes on a host can read the plaintext of TLS sessions that pass through those libraries on that host. Encryption in transit protects data on the network, not from the kernel of the machine doing the encrypting.
+
+### Business context and custom attributes
+
+An eBPF program sees bytes, function arguments, and kernel data structures. It does not know what they mean to the business. It can report that a request took 400 milliseconds. It cannot report that the request belonged to a particular customer tier or was part of a checkout flow, unless that information happens to be readable at something it can hook.
+
+Custom attributes are the clearest case. When a developer attaches an order number to a span (one timed unit of work in a trace), that is knowledge only the application has. The same applies to events that never cross a hookable boundary, such as a decision made in memory.
+
+The OpenTelemetry documentation is direct about this. It says its eBPF instrumentation does not replace language-level instrumentation in every case, and recommends language agents or manual instrumentation for custom spans, application-specific attributes, business events, and in-process telemetry. The two approaches answer different questions: eBPF gives broad coverage of system-level behavior, and application instrumentation supplies meaning.
+
+## Kernel version and portability
+
+eBPF did not arrive in one release. The dates in the manual pages show the spread: the \`bpf()\` call in Linux 3.18, limited unprivileged use in 4.4, the always-on JIT option in 4.15, and dedicated capabilities in 5.8. What a tool can do depends on the kernel it runs on. As one real example, the OpenTelemetry eBPF instrumentation requires Linux kernel 5.8 or later, with an exception for some enterprise kernels that carry backports.
+
+Portability is the second problem. The libbpf documentation explains that eBPF programs read kernel data structures, and the layout of those structures changes between kernel versions. The older answer, used by BCC, was to compile on the target machine, which the libbpf documentation says brings runtime overhead and a large binary because the compiler is embedded with the application.
+
+The current answer is Compile Once, Run Everywhere (CO-RE). It relies on BPF Type Format (BTF), which the kernel documentation describes as the metadata format that encodes debug information for eBPF programs and maps. A kernel built with BTF exposes a description of its own types at \`/sys/kernel/btf/vmlinux\`, and libbpf uses it to adjust field offsets when a program is loaded. A read-only check:
+
+\`\`\`bash
+uname -r
+ls -l /sys/kernel/btf/vmlinux
+\`\`\`
+
+If that file is missing, tools that depend on CO-RE do not have the kernel type information they expect.
+
+## Overhead
+
+eBPF has a reputation for being cheap, and ebpf.io describes it as low overhead. Low is not zero, and the cost scales with how often the hook fires.
+
+The kernel's kprobes documentation gives reference figures: on a typical processor from 2005, a kprobe hit takes about 0.5 to 1.0 microseconds, a return probe hit typically takes 50 to 75 percent longer, and an optimized kprobe typically takes 0.07 to 0.1 microseconds. Those numbers are old and hardware specific, but the reasoning holds. A fraction of a microsecond on a function called a hundred times a second is negligible. The same cost on a function called a million times a second adds up to a measurable share of a processor core.
+
+The useful habit is to think of cost as per-event cost multiplied by event rate.
+
+## The security angle
+
+### Who is allowed to load programs
+
+Loading eBPF programs is a privileged operation, and the model has changed over time. The bpf(2) manual page says that before Linux 4.4, every \`bpf()\` command required the \`CAP_SYS_ADMIN\` capability. Since 4.4, an unprivileged user may create limited programs of the socket filter type and associated maps, with a restricted set of helpers.
+
+Linux 5.8 split the privilege. The capabilities(7) manual page says \`CAP_BPF\` was added "to separate out BPF functionality from the overloaded CAP_SYS_ADMIN capability", and \`CAP_PERFMON\` was added in the same release for performance monitoring. The comments in the kernel's capability header describe how they combine: loading tracing programs requires \`CAP_PERFMON\` and \`CAP_BPF\`, and loading networking programs requires \`CAP_NET_ADMIN\` and \`CAP_BPF\`. \`CAP_SYS_ADMIN\` is still required for some operations, including the \`bpf_probe_write_user\` helper and listing every program loaded on the system.
+
+So a tracing agent can run with \`CAP_BPF\` plus \`CAP_PERFMON\` instead of full root. That is still a great deal of access. The same header notes that \`CAP_PERFMON\` lets a program read arbitrary kernel memory through the probe read helper.
+
+### The unprivileged eBPF switch
+
+The kernel documents a sysctl (a kernel setting adjustable at runtime), \`kernel.unprivileged_bpf_disabled\`, that controls whether a process without \`CAP_SYS_ADMIN\` or \`CAP_BPF\` may call \`bpf()\` at all.
+
+| Value | Meaning in the kernel documentation |
+| --- | --- |
+| 0 | Unprivileged calls to \`bpf()\` are enabled |
+| 1 | Unprivileged calls are disabled, and this cannot be cleared on the running kernel |
+| 2 | Unprivileged calls are disabled, but an administrator can change the setting later |
+
+The documentation adds that if the kernel was built with \`BPF_UNPRIV_DEFAULT_OFF\`, the entry defaults to 2 instead of 0. Reading the current value changes nothing:
+
+\`\`\`bash
+sysctl kernel.unprivileged_bpf_disabled
+\`\`\`
+
+### The same tool for both sides
+
+The properties that make eBPF good for observability make it useful to an attacker who already has root. A uprobe on a TLS library exposes plaintext. The bpf-helpers(7) manual page documents \`bpf_probe_write_user\`, which writes into the memory of a user space process, with a warning that it is meant for experiments and risks crashing the system and running programs. The verifier does not stop this, because it checks safety and not intent.
+
+That helper leaves a trace. The manual page says that when a program using it is attached, a warning including the process identifier and process name is printed to the kernel logs. Elastic publishes a detection rule built on exactly that log message, and its description says unauthorized use of the helper can be indicative of an eBPF rootkit (malware that hides its own presence on a system) or other malicious activity, while noting that legitimate tools can trigger it too.
+
+Defenders use the same hooks for more than detection. ebpf.io lists security observability and runtime security enforcement among the main uses of eBPF. The kernel documentation describes LSM eBPF programs as a way for privileged users to instrument the kernel's security hooks at runtime and implement system-wide Mandatory Access Control (MAC) and audit policies.
+
+The defensive takeaways are short. Treat \`CAP_BPF\`, \`CAP_PERFMON\`, and \`CAP_SYS_ADMIN\` as high-value privileges and know which workloads hold them. Keep unprivileged eBPF off unless there is a specific reason. And know what is loaded. The \`bpftool\` documentation says this command lists all programs currently loaded on the system:
+
+\`\`\`bash
+sudo bpftool prog show
+\`\`\`
+
+## Summary
+
+eBPF gives visibility into system calls, network activity, and function timing with no change to the observed processes. The boundary is meaning. Encrypted payloads are opaque unless a uprobe is placed on the TLS library, and business context, custom attributes, and in-process decisions are invisible because they never cross a hook. The approach also needs a recent enough kernel, BTF for portable tools, and capabilities powerful enough to deserve the same care as root.
+
+## Sources
+
+- https://ebpf.io/what-is-ebpf/
+- https://man7.org/linux/man-pages/man2/bpf.2.html
+- https://man7.org/linux/man-pages/man7/capabilities.7.html
+- https://man7.org/linux/man-pages/man7/bpf-helpers.7.html
+- https://docs.kernel.org/admin-guide/sysctl/kernel.html
+- https://docs.kernel.org/bpf/verifier.html
+- https://docs.kernel.org/trace/kprobes.html
+- https://docs.kernel.org/trace/tracepoints.html
+- https://docs.kernel.org/trace/events.html
+- https://docs.kernel.org/trace/uprobetracer.html
+- https://docs.kernel.org/bpf/libbpf/program_types.html
+- https://docs.kernel.org/bpf/libbpf/libbpf_overview.html
+- https://docs.kernel.org/bpf/btf.html
+- https://docs.kernel.org/bpf/prog_lsm.html
+- https://github.com/torvalds/linux/blob/master/include/uapi/linux/capability.h
+- https://github.com/torvalds/linux/blob/master/tools/bpf/bpftool/Documentation/bpftool-prog.rst
+- https://docs.cilium.io/en/stable/reference-guides/bpf/progtypes/
+- https://github.com/iovisor/bcc/blob/master/tools/sslsniff_example.txt
+- https://opentelemetry.io/docs/zero-code/obi/
+- https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/linux/persistence_bpf_probe_write_user`,
+  },
+  {
     slug: "dell-r630-vs-r640",
     title: "Dell PowerEdge R630 vs R640: what changed, and which to buy used",
     date: "2026-11-11",

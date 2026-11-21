@@ -209,6 +209,7 @@ const NOT_JARGON: Record<string, string> = {
   MUST: "a requirement keyword in capitals, quoted from standards (RFC 2119) rather than used as jargon",
   SHOULD: "a requirement keyword in capitals, quoted from standards (RFC 2119) rather than used as jargon",
   IETF: "a standards body, like IEEE",
+  CISA: "a US government agency name (the Cybersecurity and Infrastructure Security Agency), like NIST and IETF, not a term; the articles that cite it say what it published",
   IPMICFG: "the name of Supermicro's command-line utility, cited as a tool and explained where it is first used",
   AC: "ambiguous between alternating current and product names; each article says which",
   X11: "a Supermicro motherboard generation name, like R730 for Dell; the articles that use it say what it is",
