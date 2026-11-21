@@ -147,9 +147,8 @@ export const ACCOMPLISHMENTS_TITLE = "Accomplishments | Max Doubin";
 /** Page description with its figures computed, shared by the page and the prerenderer. */
 export function accomplishmentsDescription(): string {
   return (
-    `Everything Max Doubin has accomplished: ${EARNED_CERTS.length} exam certifications, ` +
-    `${TRAINING_COUNT} training credentials and badges, ${COMPETITION.length} competition and cybersecurity results, ` +
-    `${LEADERSHIP.length} leadership roles, music honors, press and ${PROJECTS.length} projects.`
+    `Max Doubin's full record: ${EARNED_CERTS.length} exam certifications, ${TRAINING_COUNT} training credentials, ` +
+    `${COMPETITION.length} cybersecurity results, ${LEADERSHIP.length} leadership roles and ${PROJECTS.length} projects.`
   );
 }
 
