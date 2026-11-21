@@ -12,6 +12,7 @@ import {
 } from "@/lib/blogPosts";
 import { CodeCopyButtons } from "@/components/blog/CodeCopyButtons";
 import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
+import { PostFigures } from "@/components/blog/PostFigures";
 import { PostPreviewLink } from "@/components/blog/PostPreviewLink";
 import { PostToc, useActiveHeading, usePostHeadings } from "@/components/blog/PostToc";
 import { SuggestEdit } from "@/components/blog/SuggestEdit";
@@ -587,6 +588,7 @@ export function CinematicBlogPost() {
               )}
 
               <CodeCopyButtons contentRef={contentRef} contentKey={htmlContent} />
+              <PostFigures slug={post.slug} contentRef={contentRef} contentKey={htmlContent} />
 
               <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
                 <div className="flex flex-wrap items-center justify-between gap-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
