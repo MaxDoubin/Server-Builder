@@ -61,7 +61,7 @@ export const blogPosts: BlogPost[] = [
       author: "Dell Inc.",
       license: "CC BY-SA 2.0",
       licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
     },
     content: `## The short answer
 

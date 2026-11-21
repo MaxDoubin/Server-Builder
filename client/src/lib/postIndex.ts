@@ -47,7 +47,7 @@ export const postIndex: PostMeta[] = [
     tags: ["dell","servers","hardware","homelab"],
     excerpt: "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
     coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
-    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
     wordCount: 4034,
   },
   {
