@@ -480,7 +480,7 @@ export const SYSTEMS: Term[] = [
     definition:
       "The name systemd gives to the step in starting a service where the forked child calls execve to become the program, and to exit status 203, which it reports when that call fails. The journal writes it as 'Failed at step EXEC' with the kernel's error text after it.",
     confusion:
-      "203/EXEC is not an exit code from your program. None of the program's code ran: the kernel refused to start the file, because the path is missing, it is not executable, a script has no interpreter line, or a policy such as SELinux denied it.",
+      "203/EXEC usually means none of the program's code ran: the kernel refused to start the file, because the path is missing, it is not executable, a script has no interpreter line, or a policy such as SELinux denied it. systemd names the number alone, so a program that exits 203 itself shows the same status. The 'Failed at step EXEC spawning' journal line is what confirms the exec failure.",
   },
   {
     term: "SFF",
