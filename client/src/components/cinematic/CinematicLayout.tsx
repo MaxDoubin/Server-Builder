@@ -1,10 +1,73 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { SmoothScrollProvider } from "@/lib/motion/SmoothScrollProvider";
+import { lazyWithRetry } from "@/lib/chunkRecovery";
 import { Preloader } from "./Preloader";
 import { CinematicNav } from "./CinematicNav";
 import { CinematicFooter } from "./CinematicFooter";
-import { CommandPalette } from "./CommandPalette";
+
+/*
+  The command palette is loaded on demand.
+
+  It is a closed dialog on every page load, and it was about 32 KB of the
+  entry chunk, the static closure every first visit downloads before the app
+  can run. Only the shortcut listener and the open flag stay here (see
+  useCommandPalette below); the component itself is fetched the first time
+  someone asks for it.
+*/
+const CommandPalette = lazyWithRetry(() =>
+  import("./CommandPalette").then((module) => ({ default: module.CommandPalette })),
+);
+
+/*
+  Cmd+K, Ctrl+K, or / when the reader is not already typing somewhere, plus
+  the navigation's Search button, which dispatches command-palette:open.
+
+  This lives in the layout rather than in the palette so that it is listening
+  before the palette's chunk has loaded. The first press sets open and
+  mounted together; the palette mounts already open when its chunk arrives,
+  so that press is acted on rather than dropped.
+*/
+function useCommandPalette() {
+  const [open, setOpen] = useState(false);
+  /* Stays true once set: closing hides the palette, it does not unmount it. */
+  const [mounted, setMounted] = useState(false);
+  /* Where focus was, so closing puts it back rather than on the body. */
+  const returnTo = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const show = (next: boolean | ((v: boolean) => boolean)) => {
+      returnTo.current = document.activeElement as HTMLElement | null;
+      setMounted(true);
+      setOpen(next);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const typing =
+        !!el &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "SELECT" ||
+          el.isContentEditable);
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        show((v) => !v);
+      } else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        show(true);
+      }
+    };
+    const onOpen = () => show(true);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("command-palette:open", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("command-palette:open", onOpen);
+    };
+  }, []);
+
+  return { open, setOpen, mounted, returnTo };
+}
 
 interface Props {
   children: ReactNode;
@@ -90,6 +153,8 @@ export function CinematicLayout({
     }
   };
 
+  const palette = useCommandPalette();
+
   useEffect(() => {
     document.documentElement.classList.add("cinematic-active");
     return () => document.documentElement.classList.remove("cinematic-active");
@@ -143,7 +208,15 @@ export function CinematicLayout({
           hide the nav too, and because it is a dialog over the whole page
           rather than a piece of the header.
         */}
-        <CommandPalette />
+        {palette.mounted && (
+          <Suspense fallback={null}>
+            <CommandPalette
+              open={palette.open}
+              onOpenChange={palette.setOpen}
+              returnTo={palette.returnTo}
+            />
+          </Suspense>
+        )}
         <main id="main-content" className="relative">
           {children}
         </main>
