@@ -11,7 +11,7 @@
  * entirely.
  */
 
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "@/components/racks/StudioEnvironment";
@@ -40,6 +40,38 @@ function Rig() {
   );
 }
 
+/**
+ * Whether there is anyone to render for.
+ *
+ * The canvas used to redraw sixty times a second for as long as the page
+ * was open, including while the reader was three screens down in the
+ * provenance notes with the model nowhere in sight. Nothing in the scene
+ * runs off a clock, so a stopped loop loses nothing: it picks up on the
+ * next frame after the canvas scrolls back in or the tab comes forward.
+ */
+function useOnScreen(ref: React.RefObject<HTMLElement>): boolean {
+  const [inView, setInView] = useState(true);
+  const [tabVisible, setTabVisible] = useState(
+    () => typeof document === "undefined" || document.visibilityState !== "hidden",
+  );
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref]);
+
+  useEffect(() => {
+    const onChange = () => setTabVisible(document.visibilityState !== "hidden");
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, []);
+
+  return inView && tabVisible;
+}
+
 export function TeardownViewer({
   progressRef,
   selected,
@@ -50,36 +82,41 @@ export function TeardownViewer({
   onSelect: (label: string | null) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const onScreen = useOnScreen(frameRef);
 
   return (
-    <Canvas
-      dpr={[1, 1.75]}
-      camera={{ fov: 30, position: [0.98, 0.58, 1.32], near: 0.01, far: 40 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      onPointerMissed={() => onSelect(null)}
-    >
-      <color attach="background" args={["#0b0d10"]} />
-      <hemisphereLight args={["#dfe7f5", "#14181d", 0.55]} />
-      <directionalLight position={[1.6, 2.2, 1.8]} intensity={2.1} color="#ffffff" />
-      <directionalLight position={[-1.8, 1.2, -1.4]} intensity={0.85} color="#c9d8f0" />
-      <directionalLight position={[0, -1.4, 0.6]} intensity={0.35} color="#7f8ea8" />
-      <Suspense fallback={null}>
-        {/* The site's own procedural studio. drei's Environment fetches an
-            HDR from a third party CDN, which is a request this page does
-            not need and a dependency it should not have. */}
-        <StudioEnvironment />
-        {/*
-          Dell model space puts the chassis floor near y=0 and the front at
-          +Z, with the machine running -27 to 862mm deep, so it is shifted
-          back onto the origin here rather than in the file. Leaving the
-          file untouched means it still matches what Dell serve, byte for
-          byte, and can be diffed against it.
-        */}
-        <group ref={groupRef} position={[0, -0.045, -0.417]}>
-          <TeardownModel progressRef={progressRef} selected={selected} onSelect={onSelect} />
-        </group>
-      </Suspense>
-      <Rig />
-    </Canvas>
+    <div ref={frameRef} className="h-full w-full">
+      <Canvas
+        frameloop={onScreen ? "always" : "never"}
+        dpr={[1, 1.75]}
+        camera={{ fov: 30, position: [0.98, 0.58, 1.32], near: 0.01, far: 40 }}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+        onPointerMissed={() => onSelect(null)}
+      >
+        <color attach="background" args={["#0b0d10"]} />
+        <hemisphereLight args={["#dfe7f5", "#14181d", 0.55]} />
+        <directionalLight position={[1.6, 2.2, 1.8]} intensity={2.1} color="#ffffff" />
+        <directionalLight position={[-1.8, 1.2, -1.4]} intensity={0.85} color="#c9d8f0" />
+        <directionalLight position={[0, -1.4, 0.6]} intensity={0.35} color="#7f8ea8" />
+        <Suspense fallback={null}>
+          {/* The site's own procedural studio. drei's Environment fetches an
+              HDR from a third party CDN, which is a request this page does
+              not need and a dependency it should not have. */}
+          <StudioEnvironment />
+          {/*
+            Dell model space puts the chassis floor near y=0 and the front at
+            +Z, with the machine running -27 to 862mm deep, so it is shifted
+            back onto the origin here rather than in the file. Leaving the
+            file untouched means it still matches what Dell serve, byte for
+            byte, and can be diffed against it.
+          */}
+          <group ref={groupRef} position={[0, -0.045, -0.417]}>
+            <TeardownModel progressRef={progressRef} selected={selected} onSelect={onSelect} />
+          </group>
+        </Suspense>
+        <Rig />
+      </Canvas>
+    </div>
   );
 }

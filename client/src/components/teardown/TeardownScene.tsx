@@ -18,12 +18,15 @@
  * thing snaps back together by setting progress to zero.
  */
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { configureGltf } from "../racks/gltfLoaders";
+import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "./teardownParts";
+import { EXPLODED_VIEW_ENABLED, isCalledOut, measureCallouts } from "./explodedView";
+import { ExplodedCallouts } from "./ExplodedCallouts";
 
 export const MODEL_URL = "/models/vendor/dell/poweredge-r760.glb";
 
@@ -47,9 +50,25 @@ interface Tracked {
 function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
   let found: THREE.Object3D | null = null;
   scene.traverse((o) => {
-    if (!found && /^Main Assembly$/i.test(o.name)) found = o;
+    if (!found && /^Main Assembly\b/i.test(authoredName(o))) found = o;
   });
   return found ?? scene;
+}
+
+/**
+ * The name Dell gave a node, not the one three.js left it with.
+ *
+ * GLTFLoader rewrites every node name so it is safe to use in an animation
+ * track: spaces become underscores and dots are dropped, and the original
+ * goes to userData.name. So "R760_ 2.5 HDD" arrives as "R760__25_HDD" and
+ * "Main Assembly (1)" as "Main_Assembly_(1)", and matching the table
+ * against `name` quietly misses the wrapper and every part whose name has a
+ * space or a dot in it: the drives, the memory, the processors, the power
+ * supplies. Nothing throws. The parts simply never move.
+ */
+function authoredName(o: THREE.Object3D): string {
+  const authored = (o.userData as { name?: unknown }).name;
+  return typeof authored === "string" ? authored : o.name;
 }
 
 export function TeardownModel({
@@ -80,7 +99,7 @@ export function TeardownModel({
     const root = findAssemblyRoot(scene);
     const out: Tracked[] = [];
     for (const child of root.children) {
-      const name = child.name.toLowerCase();
+      const name = authoredName(child).toLowerCase();
       if (name.includes(CHASSIS_MATCH)) continue;
       const part = TEARDOWN_PARTS.find((p) => name.includes(p.match.toLowerCase()));
       if (!part) continue;
@@ -131,6 +150,17 @@ export function TeardownModel({
     });
   }, [scene, tracked, selected]);
 
+  /*
+    What the callout layer needs to know about each part, measured once.
+    Skipped entirely when the layer is switched off.
+  */
+  const callouts = useMemo(
+    () => (EXPLODED_VIEW_ENABLED ? measureCallouts(scene, tracked) : null),
+    [scene, tracked],
+  );
+  const { tier } = useDeviceTier();
+  const calledOut = useCallback((label: string) => isCalledOut(label, tier), [tier]);
+
   useFrame(() => {
     const p = progressRef.current;
     for (const t of tracked) {
@@ -157,5 +187,18 @@ export function TeardownModel({
     onSelect?.(null);
   };
 
-  return <primitive object={scene} onClick={onClick} />;
+  return (
+    <>
+      <primitive object={scene} onClick={onClick} />
+      {callouts ? (
+        <ExplodedCallouts
+          seeds={callouts.seeds}
+          center={callouts.center}
+          progressRef={progressRef}
+          selected={selected ?? null}
+          isCalledOut={calledOut}
+        />
+      ) : null}
+    </>
+  );
 }
