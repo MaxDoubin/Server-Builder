@@ -2,7 +2,7 @@
 
 Oracle Cloud Infrastructure (OCI) is Oracle's public cloud. Everything a customer builds in it sits inside four nested structures: an account boundary (the tenancy), a logical hierarchy for organizing and securing resources (compartments), a physical layout (regions, availability domains and fault domains), and a network (the virtual cloud network). Identity and Access Management (IAM) decides who may touch what in all of them.
 
-This explainer walks through each layer in the order a new tenancy presents them, and pins each statement to Oracle's public documentation as it read in November 2026. Several details have changed in recent years, and the text points out where two Oracle pages disagree. It is a reading of the documentation, not a report from a production tenancy.
+This explainer walks through each layer in the order a new tenancy presents them, and pins each statement to Oracle's public documentation as it read in November 2026. The text points out where two Oracle pages disagree. It is a reading of the documentation, not a report from a production tenancy.
 
 ## The tenancy and the root compartment
 
@@ -11,15 +11,15 @@ A tenancy is the account that Oracle provisions for a customer. Oracle's setup g
 Two facts about a tenancy are fixed at sign-up.
 
 - **The home region.** Oracle creates the tenancy in one region, the home region, and the region documentation says it cannot be changed afterward. IAM resources are defined there. They are available in every other region the tenancy subscribes to, but edits are made in the home region and then propagated, which the documentation says can take up to several minutes.
-- **The realm.** Regions are grouped into realms. A tenancy exists in one realm and can reach only the regions in that realm. Nearly all commercial regions carry the realm key OC1.
+- **The realm.** Regions are grouped into realms. A tenancy exists in one realm and can reach only the regions in that realm. In the commercial table, 44 of the 45 regions carry the realm key OC1, and the Serbia Central (Jovanovac) region carries OC20.
 
 Subscribing to another region is a tenancy-level action, and the same page states that it cannot be reversed.
 
-Each tenancy also starts with a group named Administrators and a policy that gives that group access to everything. The documentation says the group and the policy cannot be deleted and that the group must always contain at least one user.
+Each tenancy starts with a group named Administrators and a policy that gives that group access to everything. The group and the policy cannot be deleted, and the group must always contain at least one user.
 
 ## Compartments
 
-A compartment is a logical container for resources. It is not a network boundary and it is not a physical location. Its two jobs are organization (the Console lists resources by compartment) and access control (policies name a compartment as their scope).
+A compartment is a logical container for resources, not a network boundary or a physical location. Its two jobs are organization (the Console lists resources by compartment) and access control (policies name a compartment as their scope).
 
 The points that matter most, from Oracle's compartment documentation:
 
@@ -40,7 +40,7 @@ A **region** is a localized geographic area. An **availability domain** is one o
 
 ### Most regions have one availability domain
 
-This detail is easy to miss. On the regions page as fetched for this article, the commercial region table had 45 rows, and only five of them listed three availability domains:
+This detail is easy to miss. On Oracle's regions page as read in November 2026, the table of commercial-realm regions had 45 rows, and only five of them listed three availability domains:
 
 | Region | Identifier | Availability domains |
 |---|---|---|
@@ -50,7 +50,7 @@ This detail is easy to miss. On the regions page as fetched for this article, th
 | US Midwest (Chicago) | us-chicago-1 | 3 |
 | US West (Phoenix) | us-phoenix-1 | 3 |
 
-Every other commercial region in the table listed one. The page explains that Oracle chose to launch regions in new geographies with a single availability domain in order to expand quickly. In those regions, fault domains are the only in-region separation available. The row count changes as Oracle adds regions, so treat 45 as a snapshot.
+The other 40 listed one. The page explains that Oracle chose to launch regions in new geographies with a single availability domain in order to expand quickly. In those regions, fault domains are the only in-region separation available. The row count changes as Oracle adds regions, so treat 45 as a snapshot.
 
 ### Availability domain names are per tenancy
 
@@ -67,8 +67,8 @@ The regions page gives a rule of thumb: IAM resources are cross-region, database
 Access in OCI is granted by policy statements written in a fixed, readable form:
 
 ```
-Allow <subject> to <verb> <resource-type> in <location>
-Allow <subject> to <verb> <resource-type> in <location> where <conditions>
+Allow <subject> to <verb> <resource> in <location>
+Allow <subject> to <verb> <resource> in <location> where <conditions>
 ```
 
 The subject is usually a group. The location is either a compartment or the word `tenancy`. Three examples from Oracle's own documentation:
@@ -83,7 +83,7 @@ Names such as `virtual-network-family` and `all-resources` cover a set of relate
 
 In a tenancy that uses identity domains (next section), the group is written with its domain name in front, as in `Allow group <identity_domain_name>/<group_name> to ...`. The syntax page says the prefix is needed unless the group is in the default identity domain.
 
-A policy is attached to a compartment or to the tenancy. Oracle notes that the attachment point controls who can later modify or delete the policy.
+A policy is attached to a compartment or to the tenancy. Oracle's common policies page notes that where a policy is placed decides whether the administrators of individual compartments control its statements.
 
 ### The four verbs
 
@@ -128,7 +128,7 @@ Identity domains replaced two older arrangements, which is why the documentation
 
 Oracle's getting-started page gives a simple test. If the Console navigation menu shows Domains under Identity & Security, the tenancy has been updated. If signing in lands on the IDCS admin console, the stripes have not been migrated yet.
 
-The practical consequence for a learner is that tutorials written for either older model may not match a current tenancy. The cleanup is also still in progress: the IAM release notes for 2026 include a March entry announcing that managing IDCS federated resources in the OCI Console is being deprecated, and a May entry about retiring a legacy local user.
+Tutorials written for either older model may not match a current tenancy, and the cleanup is still in progress: the IAM release notes for 2026 include a March entry announcing that managing IDCS federated resources in the OCI Console is being deprecated, and a May entry about retiring a legacy local user.
 
 ## The virtual cloud network
 
@@ -160,7 +160,7 @@ OCI has two ways to attach firewall rules to resources.
 | Applies to | All VNICs in every subnet that uses the list | Only the VNICs added to the group |
 | Rule source or destination | A CIDR block | A CIDR block or another NSG |
 | Documented limit | Five security lists per subnet | Five NSGs per VNIC |
-| Default | Every VCN has a default security list | No default NSG exists |
+| Default | Every VCN has a default security list | A VNIC joins an NSG only when added |
 
 Both use the same rule model. Rules only allow traffic, and without any rule no traffic is allowed in or out of a VNIC. Rules are stateful by default, meaning connection tracking permits the replies. A stateless rule needs a matching rule in the other direction for the reply.
 

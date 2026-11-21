@@ -51,7 +51,7 @@ Detection here is largely behavioral: unusual volumes, new destinations, periodi
 
 Across all three detection layers there are roughly three approaches, and most products mix them.
 
-**Rules and signatures.** A rule says "if a log entry matches these fields, alert." Sigma is a useful example because it is vendor-neutral: its documentation describes Sigma rules as YAML files containing the information needed to detect odd or malicious behavior in log files, usually within a SIEM. A Sigma rule is converted into the query language of whatever SIEM is in use. Rules are precise and explainable, but they only catch what someone anticipated.
+**Rules and signatures.** A rule says "if a log entry matches these fields, alert." Sigma is a useful example because it is vendor-neutral: its documentation describes Sigma rules as YAML files containing the information needed to detect odd, bad or malicious behavior in log files, usually within the context of a SIEM. A Sigma rule is converted into the query language of whatever SIEM is in use. Rules are precise and explainable, but they only catch what someone anticipated.
 
 **Correlation.** Correlation joins events that are harmless alone. A single failed login means little; many failures across many accounts followed by one success from the same source is a pattern. SP 800-92's description of rule-based correlation, matching on timestamps, addresses and event types across sources, is exactly this. SP 800-61 Rev. 3 recommends using event correlation technology, naming SIEM and SOAR as examples, to gather related data captured by multiple sources, and using cyber threat intelligence (CTI) to help.
 
@@ -83,16 +83,16 @@ The SEI post also warns that the biggest misperception about SOAR is that it can
 
 ## XDR: an umbrella without a standard
 
-XDR is the easiest of the five to describe and the hardest to define. Palo Alto Networks says its chief technology officer, Nir Zuk, coined the category in 2018. A December 2019 company blog post says the "X" in XDR is a variable that stands for "anything," and describes XDR products as platforms that take data from network, endpoint and cloud sensors and analyze it centrally.
+XDR is the easiest of the five to describe and the hardest to define. Palo Alto Networks says its chief technology officer and co-founder, Nir Zuk, coined the category in 2018; that is the company's own claim, not an independent finding. A December 2019 company blog post says the "X" in XDR is a variable that stands for "anything," and describes XDR products as platforms that take data from network, endpoint and cloud sensors and analyze it centrally.
 
-There is no standards-body definition comparable to NIST's glossary entry for SIEM. Even the analyst definitions vary depending on who is quoting them:
+Unlike SIEM, which has a NIST glossary entry, XDR has no definition from a standards body that this article found. That is an observation from the sources read, not a cited finding. Two vendors quote Gartner's definition in slightly different words:
 
-| Source | How it attributes XDR to Gartner |
+| Source | Gartner's definition as that vendor quotes it |
 |---|---|
-| Google Cloud explainer | A SaaS-based, vendor-specific detection and incident response tool that natively integrates multiple security products |
-| CrowdStrike explainer | A unified incident detection and response platform that automatically collects and correlates data from multiple proprietary security components |
+| Google Cloud explainer | "a SaaS-based, vendor-specific, security threat detection and incident response tool that natively integrates multiple security products into a cohesive security operations system that unifies all licensed components" |
+| CrowdStrike explainer | "unified security incident detection and response platform that automatically collects and correlates data from multiple proprietary security components" |
 
-Both definitions stress one vendor's own components, which is the "native" view of XDR. Other vendors market "open" or "hybrid" XDR that ingests third-party tools, which overlaps heavily with what a SIEM already does. The originating vendor's own description ("anything") and the differing analyst wording quoted by two large vendors are reasonable evidence that the term describes a product strategy, the consolidation of EDR, NDR, cloud and identity data into one console, rather than a defined technology.
+Both quotations stress one vendor's own components, which is the "native" view of XDR. Other vendors market "open" or "hybrid" XDR that ingests third-party tools, which overlaps heavily with what a SIEM already does. The originating vendor's own description ("anything") and the differing wording are why this article treats the term as describing a product strategy, the consolidation of EDR, NDR, cloud and identity data into one console, more than a precisely bounded technology. That reading is an inference, and vendors may disagree with it.
 
 For study purposes, a useful working description: XDR is usually EDR extended with other telemetry sources and built-in correlation and response, sold as one platform. When a job posting asks for XDR experience, it is worth checking which product it means.
 
@@ -107,7 +107,7 @@ The boundaries blur in practice:
 
 ## Failure modes
 
-**Alert fatigue.** Every rule that fires too often trains analysts to ignore it. The SEI post cites reports of false positive rates as high as 80 percent and of fewer than 10 percent of alerts being actively investigated. SP 800-61 Rev. 3 recommends tuning monitoring to reduce false positives and false negatives to acceptable levels, which in practice means retiring or rewriting noisy rules rather than adding more.
+**Alert fatigue.** Every rule that fires too often trains analysts to ignore it. The SEI post describes analysts facing ever-increasing numbers of alerts and false positives, with many alerts ignored because of resource constraints. SP 800-61 Rev. 3 recommends tuning monitoring to reduce false positives and false negatives to acceptable levels, which in practice means retiring or rewriting noisy rules rather than adding more.
 
 **Log gaps.** Detection is limited by collection. SP 800-92 identifies a high number of log sources, inconsistent content and formats, and growing volume as the core difficulties of log management. A source that stops sending, a logging policy that never enabled command-line capture, or a cloud service whose audit log was never connected all create blind spots that produce no alert at all. Monitoring for silence, sources that stopped reporting, is as important as monitoring for events.
 
@@ -123,7 +123,7 @@ The boundaries blur in practice:
 - EDR: endpoint sensor telemetry plus host response (Gartner, 2013).
 - NDR: network metadata analysis, agentless (renamed from NTA, 2020).
 - SOAR: playbook automation over other tools' alerts (Gartner, 2015).
-- XDR: vendor-era umbrella (Palo Alto Networks, 2018), no standard definition.
+- XDR: vendor-era umbrella (Palo Alto Networks says it coined the term in 2018), no standards-body definition found.
 - SP 800-61 Rev. 3 allows automated containment but keeps manual options for responders.
 
 ## Sources
@@ -144,3 +144,6 @@ The boundaries blur in practice:
 - [CrowdStrike: What is XDR?](https://www.crowdstrike.com/en-us/cybersecurity-101/what-is-xdr/)
 - [SigmaHQ documentation: Sigma Rules](https://sigmahq.io/docs/basics/rules.html)
 - [Zeek documentation: conn.log](https://docs.zeek.org/en/master/logs/conn.html)
+- [Zeek documentation: dns.log](https://docs.zeek.org/en/master/logs/dns.html)
+- [Zeek documentation: http.log](https://docs.zeek.org/en/master/logs/http.html)
+- [Zeek documentation: ssl.log](https://docs.zeek.org/en/master/logs/ssl.html)
