@@ -23092,7 +23092,10 @@ part I got wrong in my own prose, which I will come back to.
 
 Across these cases, the checks that tolerate anything at all allow 300 seconds
 and 30 seconds. A certificate's notBefore and an RRSIG's inception allow
-nothing: the edge is an edge.
+nothing in the specifications: the edge is an edge. Validators can add their
+own slack, though. Unbound by default forgives 10% of a signature's lifetime,
+clamped between one hour and a day, so check the resolver's skew settings
+before reading a DNSSEC failure as a hard edge.
 
 \`\`\`
 Kerberos, default clockskew      300 s
@@ -51220,7 +51223,7 @@ The \`ge\` and \`le\` keywords are where most people go wrong, so be precise abo
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS and Junos with no export policy both readvertise every active BGP route to an eBGP peer, while IOS XR, which behaves the way RFC 8212 now requires, advertises nothing to an eBGP peer until a policy is attached. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 
@@ -51644,7 +51647,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 \`\`\`bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep -E 'action="?deny' /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
 There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
@@ -51654,8 +51657,8 @@ There is a caveat that took me a while to internalize. Denies tell you what did 
 Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
 
 \`\`\`bash
-grep 'action=deny' /var/log/fortigate/traffic.log \\
-  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \\
+grep -E 'action="?deny' /var/log/fortigate/traffic.log \\
+  | sed -nE 's/.*(srcip=[0-9.]+) .*(dstip=[0-9.]+).*/\\1 \\2/p' \\
   | sort -u \\
   | awk '{print $1}' \\
   | uniq -c \\

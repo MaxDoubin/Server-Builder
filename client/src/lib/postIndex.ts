@@ -1130,7 +1130,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","operations","networking"],
     excerpt: "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
     coverImage: "/images/blog/the-clock-is-the-last-thing-anybody-checks.jpg",
-    wordCount: 1774,
+    wordCount: 1815,
   },
   {
     slug: "the-request-arrived-the-reply-did-not",
@@ -3043,7 +3043,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
     coverCredit: {"author":"Stefan Funke from Frankfurt, Germany","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DE-CIX_GERMANY_-_Switch_Rack_(6218137120).jpg"},
-    wordCount: 1504,
+    wordCount: 1526,
   },
   {
     slug: "secure-network-design-principles",
@@ -3076,7 +3076,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
     coverCredit: {"author":"ChrisDag","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/8558461@N08/5212583486"},
-    wordCount: 1640,
+    wordCount: 1643,
   },
   {
     slug: "qos-enterprise-networks",
