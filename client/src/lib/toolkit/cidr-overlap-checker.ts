@@ -82,13 +82,15 @@ export function formatCount(value: bigint): string {
 }
 
 /**
- * A block size for display. Powers of two past 2^40 read better as an
- * exponent than as thirteen or more digits, and every block size is a power
- * of two; unions of blocks are not and go through formatCount.
+ * A count of addresses for display. An exact power of two past 2^40 reads
+ * better as an exponent than as thirteen or more digits, and every block size
+ * is one. Anything else, such as the union of several blocks, is written out
+ * in full so it is never rounded to a power it is not.
  */
 export function formatSize(size: bigint): string {
   const bits = size.toString(2).length - 1;
-  return bits >= 40 ? `2^${bits}` : formatCount(size);
+  const power = size > 0n && (size & (size - 1n)) === 0n;
+  return power && bits >= 40 ? `2^${bits}` : formatCount(size);
 }
 
 export function blockText(block: Pick<Block, "family" | "network" | "prefix">): string {

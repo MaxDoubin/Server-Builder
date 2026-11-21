@@ -171,9 +171,13 @@ t("sizes and counts print exactly", () => {
   assert.equal(formatSize(1n), "1");
   assert.equal(formatSize(256n), "256");
   assert.equal(formatSize(1n << 32n), "4,294,967,296");
-  assert.equal(formatSize((1n << 40n) - 1n > 0n ? 1n << 39n : 0n), "549,755,813,888");
+  assert.equal(formatSize(1n << 39n), "549,755,813,888");
   assert.equal(formatSize(1n << 40n), "2^40");
   assert.equal(formatSize(1n << 128n), "2^128");
+  // A union that is not a power of two is never rounded to one.
+  assert.equal(formatSize((1n << 40n) + 1n), "1,099,511,627,777");
+  assert.equal(formatSize((1n << 41n) - 1n), "2,199,023,255,551");
+  assert.equal(formatSize(0n), "0");
 });
 
 /* ---- parsing ------------------------------------------------------------ */
