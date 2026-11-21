@@ -57,6 +57,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Secure access service edge (SASE) is an architecture, not a product: it delivers WAN networking and security together from a cloud provider's points of presence, a term Gartner coined in 2019.",
     coverImage: "/images/blog/sase-explained-photo.jpg",
+    coverCredit: {
+      author: "Robert.Harker",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cabinet_Asile.jpg",
+    },
     content: `## An architecture with a product-shaped name
 
 Secure access service edge, written SASE, is a way of arranging a wide area network (WAN) and its security controls so that both are delivered together from a cloud provider's points of presence instead of from boxes in one central data center. It is an architecture. It is not a protocol, it is not a standard wire format, and it is not a single product, even though the term appears on a great many product pages.
@@ -192,6 +198,12 @@ Reading the component definitions closely shows where the edges are.
     excerpt:
       "A remote-access VPN grants a path into a network, while zero trust network access grants access to one application at a time, which moves the trust decision from the door to each resource.",
     coverImage: "/images/blog/zero-trust-network-access-vs-vpn-photo.jpg",
+    coverCredit: {
+      author: "Nuclear Regulatory Commission",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Nuclear_Plant_Security-_Access_Control_Gates_(9680484758).jpg",
+    },
     content: `## Two answers to one question
 
 A remote employee, contractor, or administrator needs to reach an internal application. The traditional answer is a virtual private network (VPN): connect the device to the internal network, then let it reach whatever that network allows. The newer answer is zero trust network access (ZTNA): never place the device on the network, and instead grant access to one application at a time after checking who is asking and what device they are using.
@@ -343,6 +355,12 @@ None of these limits argue against the principles. They argue for treating a ZTN
     excerpt:
       "The Barracuda Firewall Control Center manages many CloudGen Firewalls from one place, grouping them into ranges and clusters and sharing configuration through repositories and templates.",
     coverImage: "/images/blog/barracuda-firewall-control-center-explained-photo.jpg",
+    coverCredit: {
+      author: "Alan Levine from United States",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NOC-IUPUI.jpg",
+    },
     content: `## Why One Console for Many Firewalls
 
 A single firewall is manageable by hand. Many firewalls are not: each box becomes its own small island of configuration, and the islands slowly stop matching. That slow divergence is usually called configuration drift, and it is covered in more general terms in [the post on idempotence and config drift](/blog/idempotence-and-config-drift).
@@ -537,6 +555,12 @@ The documented escape hatches (blocking updates, disabling updates for a range o
     excerpt:
       "An APM agent times the work inside an application, such as web transactions, database calls and external calls, so its numbers are only as complete as what the agent can see.",
     coverImage: "/images/blog/what-an-apm-agent-actually-measures-photo.jpg",
+    coverCredit: {
+      author: "Ansgar Koreng",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Stopwatch,_1810201155,_ako.jpg",
+    },
     content: `## What an APM agent is
 
 Application performance monitoring (APM) measures how a running application behaves from the inside: how long each request takes, how often requests fail, and where the time goes. The measuring is done by an agent, a library added to the application that times the code handling each request and reports summaries to a backend. New Relic's documentation describes adding a small library that instruments the application's code automatically. OpenTelemetry, the vendor-neutral open standard for telemetry (data about a running system), describes zero-code instrumentation the same way: it adds OpenTelemetry capabilities to an application, typically as an agent.
@@ -712,6 +736,12 @@ For the log side, see [Log analysis methodology](/blog/log-analysis-methodology)
     excerpt:
       "Distributed tracing follows one request across many services using spans and a trace identifier carried in the W3C traceparent header, and it breaks wherever that context is dropped.",
     coverImage: "/images/blog/distributed-tracing-explained-photo.jpg",
+    coverCredit: {
+      author: "Grešla",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Aerial_view_of_NS_Landers_Yard,_Chicago.jpg",
+    },
     content: `## One request, many services, no single log
 
 A request to a modern web application rarely stays in one program. A click might pass through a load balancer, a gateway, an authentication service, a database, and a background worker that sends an email later. Each component writes its own logs and metrics. When the request is slow or fails, the question is simple to ask and hard to answer: which hop was responsible?
@@ -929,6 +959,12 @@ Tracing works best alongside metrics and logs. Its contribution is the shape of 
     excerpt:
       "eBPF lets a small verified program watch system calls, network activity and function timing on a Linux host without changing the application, but it cannot read encrypted payloads or business context.",
     coverImage: "/images/blog/ebpf-what-it-can-see-and-what-it-cannot-photo.jpg",
+    coverCredit: {
+      author: "Ivan Radic",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Close-up_picture_of_a_beautiful_honeybee_(50039958923).jpg",
+    },
     content: `## A program that watches from outside
 
 Most observability starts inside the application. A developer adds a log line, a counter, or a tracing library, and the service starts reporting on itself. That works for code a team owns. It does not work for a third-party binary or a service that was never instrumented.
