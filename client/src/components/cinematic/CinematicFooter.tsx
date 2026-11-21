@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { PRESS } from "@/lib/siteConfig";
+import { PRESS } from "@/lib/pressConfig";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";

@@ -253,8 +253,23 @@ const INDEX = path.join(DIST, "index.html");
  * page and notes are lazy chunks, so the entry carries only its route, lazy
  * import, hover-prefetch row and registry entry. The four kilobytes above the
  * measurement are for catching an accident, not for the next batch.
+ *
+ * 764 KB, lowered from 772 by /accomplishments, which measured 762.0 against
+ * a baseline of 770.0 and so is the first surface to leave the entry smaller
+ * than it found it. The page needed the achievements, and reading them from
+ * siteConfig pulled 8 KB of entry growth, which looked like a leak and was
+ * not: the footer and home page imported PRESS from siteConfig.ts, which kept
+ * that whole module in the entry chunk, and Rollup had been dropping the
+ * properties no page read (the achievements and the "currently" lists) one
+ * property at a time. The first page to read them was charged for all of
+ * them. PRESS now lives in pressConfig.ts, so siteConfig loads with the lazy
+ * pages that use it and the entry carries only a few lines of press data.
+ * That returned the 8 KB and a little more, which the page's own route,
+ * palette row and prefetch row then spent a fraction of. The budget comes
+ * down to two kilobytes above the new measurement, as it was above the old
+ * one, so the win cannot be spent unnoticed.
  */
-const BUDGET_BYTES = 772 * 1024;
+const BUDGET_BYTES = 764 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

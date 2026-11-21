@@ -1,19 +1,11 @@
+import { PRESS } from "./pressConfig";
+
 /**
- * Press coverage, verified against the published article.
- *
- * Lives here rather than in an act component because the footer (main
- * bundle) and the biography act (lazy chunk) both need it, and importing
- * across that boundary would pull the lazy chunk into the entry bundle.
+ * PRESS is defined in pressConfig.ts so the footer and home page can import it
+ * without pulling this module into the entry chunk. It is re-exported here, so
+ * `import { PRESS } from "./siteConfig"` keeps working everywhere else.
  */
-export const PRESS = {
-  outlet: "Las Vegas Weekly",
-  headline:
-    "CCSD magnet programs and schools help prepare students for careers",
-  author: "Shannon Miller",
-  isoDate: "2026-07-30",
-  displayDate: "July 30, 2026",
-  url: "https://lasvegasweekly.com/news/2026/jul/30/ccsd-magnet-programs-and-schools-prepare-students/",
-} as const;
+export { PRESS };
 
 export const siteConfig = {
   name: "Max Doubin",
