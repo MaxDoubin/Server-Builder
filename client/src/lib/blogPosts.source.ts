@@ -528,6 +528,23 @@ Each path appears twice because a rule with \`arch=b64\` matches only 64-bit sys
 
 The \`/etc/ld.so.preload\` rule works even though that file normally does not exist. The kernel resolves the parent directory and records the file's inode only if the file is already there ([kernel/audit_watch.c](https://github.com/torvalds/linux/blob/master/kernel/audit_watch.c), \`audit_get_nd\`), and a create or rename event in the parent fills the inode in later (\`audit_watch_handle_event\`). The parent directory does have to exist, which \`/etc\` always does.
 
+A \`dir=\` rule is stricter. The kernel looks the directory up when the rule is added and returns the error if it is missing ([kernel/audit_tree.c](https://github.com/torvalds/linux/blob/master/kernel/audit_tree.c), \`audit_add_tree_rule\`), and auditctl stops at the first rule that fails unless the rules use \`-c\` or \`-i\`, so one missing directory also keeps every later line out. Four of these directories are often absent: \`/usr/local/lib/systemd/system\` until an administrator installs a unit there, \`/root/.ssh\` until root has a key, and \`/etc/cron.d\` and \`/var/spool/cron\` when cron is not installed. Check before loading:
+
+\`\`\`bash
+for d in /etc/cron.d /var/spool/cron /etc/systemd/system /usr/local/lib/systemd/system /etc/ld.so.conf.d /root/.ssh; do
+  [ -d "$d" ] || echo "missing: $d"
+done
+\`\`\`
+
+Creating the first two is harmless, since an empty unit directory adds no units and \`0700\` owned by root is the usual mode for \`.ssh\`:
+
+\`\`\`bash
+[ -d /usr/local/lib/systemd/system ] || sudo install -d -m 0755 -o root -g root /usr/local/lib/systemd/system
+[ -d /root/.ssh ] || sudo install -d -m 0700 -o root -g root /root/.ssh
+\`\`\`
+
+Do not create cron's directories by hand: their owner and mode differ between distributions and the cron package sets them. If cron is not installed, delete the two \`cron.d\` and two \`/var/spool/cron\` lines and add them back after installing it.
+
 [augenrules(8)](https://man7.org/linux/man-pages/man8/augenrules.8.html) merges the files in \`/etc/audit/rules.d\` that end in \`.rules\`, and \`augenrules --load\` loads the result. Then verify, which is the step people skip:
 
 \`\`\`bash
@@ -537,7 +554,7 @@ sudo touch /etc/cron.d/audit-test && sudo rm /etc/cron.d/audit-test
 sudo ausearch -k persist_cron -i | tail
 \`\`\`
 
-\`auditctl -l\` should print all 18 rules, including the two for \`/etc/ld.so.preload\`, and [ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html) should show the test file being created and removed. If either comes back empty, the rules are not live. Each rule names one literal path, so add one \`dir=\` line per account whose \`.ssh\` directory matters; \`-F dir=/home/\` would also log every ordinary write under it. Once the rules are right, auditctl's \`-e 2\` locks the configuration so that any attempt to change it "will be audited and denied" until a reboot. The manual says it is meant to be the last command in \`audit.rules\`, and it also means your own rule fixes need a reboot.
+\`auditctl -l\` should print all 18 rules, or 14 if you deleted the cron lines (then run the test against \`/etc/systemd/system\` and search for \`persist_systemd\`), including the two for \`/etc/ld.so.preload\`, and [ausearch(8)](https://man7.org/linux/man-pages/man8/ausearch.8.html) should show the test file being created and removed. If either comes back empty, the rules are not live. Each rule names one literal path, so add one \`dir=\` line per account whose \`.ssh\` directory matters; \`-F dir=/home/\` would also log every ordinary write under it. Once the rules are right, auditctl's \`-e 2\` locks the configuration so that any attempt to change it "will be audited and denied" until a reboot. The manual says it is meant to be the last command in \`audit.rules\`, and it also means your own rule fixes need a reboot.
 
 For a baseline of file state, AIDE's [manual](https://aide.github.io/doc/) says to build the database "immediately after the operating system and applications have been installed, before the machine is plugged into a network", to move it to read-only media along with the binary and configuration, and not to keep the config on the target machine, because an attacker "could read the config file and alter it". For queries across hosts, osquery exposes [\`crontab\`](https://github.com/osquery/osquery/blob/master/specs/posix/crontab.table), [\`authorized_keys\`](https://github.com/osquery/osquery/blob/master/specs/posix/authorized_keys.table) and [\`systemd_units\`](https://github.com/osquery/osquery/blob/master/specs/linux/systemd_units.table) tables, and Elastic notes that osquery "focuses on static on-disk presence" where telemetry shows activity over time.
 
