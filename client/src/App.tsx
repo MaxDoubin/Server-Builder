@@ -14,6 +14,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool-dispose";
 import { installLinkPrefetching } from "@/lib/prefetchOnHover";
 import { installPrintDisclosures } from "@/lib/printDisclosures";
+import { MotionConfig } from "framer-motion";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
@@ -742,6 +743,9 @@ const CinematicFlashcards = lazyWithRetry(() =>
 const CinematicCerts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCerts").then((m) => ({ default: m.CinematicCerts })),
 );
+const CinematicAccomplishments = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAccomplishments").then((m) => ({ default: m.CinematicAccomplishments })),
+);
 
 const CinematicData = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
@@ -957,6 +961,11 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
+          {/* Framer Motion drives transforms from JS, which the CSS
+              reduced-motion rule cannot reach. "user" drops transform and
+              layout animation for readers who ask for less motion and
+              keeps opacity, so nothing is left stuck invisible. */}
+          <MotionConfig reducedMotion="user">
           <ScrollProgressBar color="hsl(72 100% 50%)" />
           <CursorGlow color="hsl(72 100% 50% / 0.06)" size={400} />
           <Router>
@@ -965,6 +974,7 @@ export default function App() {
             </RouteChunkBoundary>
           </Router>
           <Toaster />
+          </MotionConfig>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
@@ -1540,6 +1550,11 @@ function AnimatedRoutes() {
           <Route path="/certifications">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCerts />
+            </Suspense>
+          </Route>
+          <Route path="/accomplishments">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAccomplishments />
             </Suspense>
           </Route>
           <Route path="/archive">

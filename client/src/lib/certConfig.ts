@@ -752,6 +752,56 @@ const GROUPS: CredentialGroup[] = [
     },
   },
   {
+    // New Relic Verified APM Practitioner: awarded for passing all six exams
+    // in the APM Practitioner track (APM Foundations, Managing Agent Data,
+    // Visualizing Insights, Full-Stack Observability Practices, AI Monitoring
+    // for APM and eBPF APM Basics). Issued November 15, 2026; it does not
+    // expire.
+    id: "new-relic",
+    heading: "New Relic",
+    meta: "Credential earned in 2026",
+    items: ["New Relic Verified APM Practitioner"],
+    badges: {
+      "New Relic Verified APM Practitioner": {
+        src: "/images/certs/new-relic-apm-practitioner.webp",
+        alt: "New Relic Verified APM Practitioner badge, Observability Associate",
+      },
+    },
+  },
+  {
+    // Netskope Academy's SASE Accreditation: the Certificate of Completion for
+    // the accreditation, signed by the Director of Netskope Academy and awarded
+    // November 15, 2026 through Netskope's Technology Experience Center. The
+    // badge is the accreditation's own logo, padded to a square in its own
+    // background color.
+    id: "netskope",
+    heading: "Netskope Academy",
+    meta: "Certificate earned in 2026",
+    items: ["SASE Accreditation"],
+    badges: {
+      "SASE Accreditation": {
+        src: "/images/certs/netskope-sase-accreditation.webp",
+        alt: "The SASE Accreditation badge from Netskope Academy",
+      },
+    },
+  },
+  {
+    // Barracuda Campus's CGF02 certification, CloudGen Firewall Large-Scale
+    // Management. The Certificate of Achievement is valid from November 14,
+    // 2026 until November 14, 2028. The badge is the CloudGen Firewall badge
+    // Barracuda gave for it, with its white margin made transparent.
+    id: "barracuda",
+    heading: "Barracuda Campus",
+    meta: "Certification earned in 2026, valid until November 14, 2028",
+    items: ["CGF02: CloudGen Firewall, Large-Scale Management"],
+    badges: {
+      "CGF02: CloudGen Firewall, Large-Scale Management": {
+        src: "/images/certs/barracuda-cgf02.webp",
+        alt: "Barracuda CloudGen Firewall badge for the CGF02 Large-Scale Management certification",
+      },
+    },
+  },
+  {
     id: "competition",
     heading: "Competition",
     meta: "National Cyber League and CyberWeek@UNLV",

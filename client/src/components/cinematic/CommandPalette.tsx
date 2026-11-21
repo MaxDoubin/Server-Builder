@@ -24,7 +24,9 @@
  * somewhere you already have in mind. Searching for what you do not is what
  * the archive page is for, and the palette links to it.
  *
- * WHAT IT COSTS on a page where nobody opens it: nothing beyond this file.
+ * WHAT IT COSTS on a page where nobody opens it: nothing. This file itself
+ * is loaded on demand too, see the note above the component; the layout keeps
+ * only the shortcut listener and the open flag.
  *
  * That took two corrections and both were the same mistake. This component
  * lives in the layout every page uses, so anything it imports at the top is
@@ -37,7 +39,7 @@
  * So everything the palette searches is now loaded when it is first opened,
  * and nothing before: the registries and the post index by dynamic import,
  * the hardware catalog by fetch. A reader who never presses the key pays
- * for this file and nothing else.
+ * for none of it.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -72,6 +74,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Resume", href: "/resume", terms: "cv experience" },
   { kind: "Page", title: "Timeline", href: "/timeline" },
   { kind: "Page", title: "Certifications", href: "/certifications", terms: "certs comptia cisco" },
+  { kind: "Page", title: "Accomplishments", href: "/accomplishments", terms: "achievements awards honors results record" },
   { kind: "Page", title: "Study by exam objective", href: "/study", terms: "security+ network+ ccna revision" },
   { kind: "Page", title: "Flashcards", href: "/flashcards", terms: "spaced repetition anki revision" },
   { kind: "Page", title: "Study timer", href: "/study-timer", terms: "pomodoro focus" },
@@ -219,9 +222,26 @@ function rank(entry: Entry, terms: string[]): number {
 const KIND_ORDER: Entry["kind"][] = ["Page", "Term", "Tool", "Rack", "Hardware", "Article"];
 const MAX_SHOWN = 24;
 
-export function CommandPalette() {
+interface Props {
+  /** Owned by CinematicLayout, so the shortcut works before this file loads. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Where focus was when the palette opened, so closing puts it back. */
+  returnTo: React.MutableRefObject<HTMLElement | null>;
+}
+
+/*
+  The shortcut listener and the open flag live in CinematicLayout, not here.
+
+  This file is loaded on demand: the layout imports it lazily and mounts it
+  the first time the palette is asked for, so a page where nobody opens it
+  does not download it. That only works if whatever listens for Cmd+K, / and
+  the navigation's Search button is something already loaded, which is the
+  layout. The first press flips the flag there, this chunk arrives, and it
+  mounts already open, so the keypress that asked for it is not lost.
+*/
+export function CommandPalette({ open, onOpenChange: setOpen, returnTo }: Props) {
   const [, navigate] = useLocation();
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const [gear, setGear] = useState<GearItem[] | null>(null);
@@ -241,41 +261,6 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  /* Where focus was, so closing puts it back rather than on the body. */
-  const returnTo = useRef<HTMLElement | null>(null);
-
-  /* Cmd+K, Ctrl+K, or / when the reader is not already typing somewhere. */
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      const typing =
-        !!el &&
-        (el.tagName === "INPUT" ||
-          el.tagName === "TEXTAREA" ||
-          el.tagName === "SELECT" ||
-          el.isContentEditable);
-      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        returnTo.current = document.activeElement as HTMLElement | null;
-        setOpen((v) => !v);
-      } else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        returnTo.current = document.activeElement as HTMLElement | null;
-        setOpen(true);
-      }
-    };
-    /* The navigation's Search button, for readers who never press a shortcut. */
-    const onOpen = () => {
-      returnTo.current = document.activeElement as HTMLElement | null;
-      setOpen(true);
-    };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("command-palette:open", onOpen);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("command-palette:open", onOpen);
-    };
-  }, []);
 
   /* Everything it searches, on first open. See the note at the top. */
   useEffect(() => {
@@ -409,14 +394,14 @@ export function CommandPalette() {
   const close = useCallback(() => {
     setOpen(false);
     returnTo.current?.focus?.();
-  }, []);
+  }, [setOpen, returnTo]);
 
   const go = useCallback(
     (entry: Entry) => {
       setOpen(false);
       navigate(entry.href);
     },
-    [navigate],
+    [navigate, setOpen],
   );
 
   /*
@@ -522,10 +507,17 @@ export function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search pages, tools, racks, hardware and articles..."
+            role="combobox"
             aria-label="Search this site"
-            aria-controls="command-palette-results"
+            aria-expanded={results.length > 0}
+            aria-controls={results.length > 0 ? "command-palette-results" : undefined}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              results[cursor] ? `command-palette-option-${cursor}` : undefined
+            }
+            autoComplete="off"
             data-testid="input-command-palette"
-            className="w-full bg-transparent py-4 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:outline-none"
+            className="my-2 w-full rounded-sm bg-transparent px-1 py-2 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
           />
           <button
             type="button"
@@ -563,16 +555,27 @@ export function CommandPalette() {
             className="max-h-[52vh] overflow-y-auto py-2"
           >
             {results.map((e, i) => (
-              <li key={`${e.kind}:${e.href}:${e.title}`} role="option" aria-selected={i === cursor}>
-                <button
-                  type="button"
-                  onMouseEnter={() => setCursor(i)}
-                  onClick={() => go(e)}
-                  data-testid={`command-result-${i}`}
-                  className={`flex w-full items-baseline gap-3 px-4 py-2.5 text-left transition-colors ${
-                    i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
-                  }`}
-                >
+              /*
+                The row is the option and focus stays in the search box:
+                the box points at the highlighted row through
+                aria-activedescendant. A button inside role="option" is a
+                nested interactive control, which a listbox may not hold,
+                and it put fifty extra Tab stops between the box and Close.
+              */
+              <li
+                key={`${e.kind}:${e.href}:${e.title}`}
+                id={`command-palette-option-${i}`}
+                role="option"
+                aria-selected={i === cursor}
+                onMouseEnter={() => setCursor(i)}
+                // Keep focus in the search box when a row is pressed.
+                onMouseDown={(ev) => ev.preventDefault()}
+                onClick={() => go(e)}
+                data-testid={`command-result-${i}`}
+                className={`flex w-full cursor-pointer items-baseline gap-3 px-4 py-2.5 text-left transition-colors ${
+                  i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
+                }`}
+              >
                   <span className="w-[4.5rem] shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                     {e.kind}
                   </span>
@@ -586,7 +589,6 @@ export function CommandPalette() {
                       </span>
                     ) : null}
                   </span>
-                </button>
               </li>
             ))}
           </ul>

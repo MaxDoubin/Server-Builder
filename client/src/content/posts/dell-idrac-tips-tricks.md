@@ -21,8 +21,11 @@ The fix is Remote File Share, also an Enterprise feature, which tells the iDRAC 
 
 ```bash
 racadm -r 10.0.10.31 -u lab-admin -p '...' remoteimage -c \
+  -u isoreader -p '...' \
   -l //10.0.10.20/isos/ubuntu-24.04-live-server-amd64.iso
 ```
+
+The `-u` and `-p` after `-c` are the credentials for the share itself, separate from the iDRAC login given before the subcommand.
 
 Pair it with a one-shot boot override so you do not have to catch F11 on the console:
 

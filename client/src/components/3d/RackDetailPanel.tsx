@@ -107,17 +107,41 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
       if (eqData) {
         const uHeight = eqData.equipment.uHeight;
         slots.push(
-          <div key={u} className="relative group cursor-pointer" onClick={() => handleSlotClick(u)}>
-            <Equipment3D
-              equipment={eqData.equipment}
-              installed={eqData.installed}
-              uHeight={uHeight}
-            />
+          <div key={u} className="relative group">
+            {/*
+              The button is the equipment face, not this wrapper: the
+              wrapper also holds Remove, and a button may not contain
+              another control. The two are siblings, face first, so Tab
+              reaches the slot and then Remove.
+
+              A locked rack ignores the click, so it offers no tab stop.
+            */}
+            <div
+              className="cursor-pointer"
+              role={isUnlocked ? "button" : undefined}
+              tabIndex={isUnlocked ? 0 : undefined}
+              aria-label={
+                isUnlocked ? `${eqData.equipment.name}, unit ${u}` : undefined
+              }
+              onClick={() => handleSlotClick(u)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleSlotClick(u);
+                }
+              }}
+            >
+              <Equipment3D
+                equipment={eqData.equipment}
+                installed={eqData.installed}
+                uHeight={uHeight}
+              />
+            </div>
             {isUnlocked && (
               <Button
                 size="icon"
                 variant="destructive"
-                className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isStaticMode) {

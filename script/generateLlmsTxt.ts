@@ -24,10 +24,11 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/blog", label: "Field Notes", note: "the archive, newest first, with full text search over every article body" },
   { path: "/topics", label: "Topic hubs", note: "the archive grouped by subject, each hub summarizing what its posts cover" },
   { path: "/study", label: "Certification study pages", note: "one page per published exam domain for Security+ SY0-701, Network+ N10-009 and CCNA 200-301, each listing the archive posts that cover it" },
-  { path: "/tools", label: "Browser tools", note: "17 utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
+  { path: "/tools", label: "Browser tools", note: "{toolCount} utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
   { path: "/ncl", label: "National Cyber League study guides", note: "one guide per competition category, each built around a practice problem written for this site; no NCL question is reproduced" },
   { path: "/resume", label: "Resume", note: "" },
+  { path: "/accomplishments", label: "Accomplishments", note: "everything on record in one place: certifications, training credentials, competition results, leadership, recognition, music, academics and projects" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },
 ];
 
@@ -47,6 +48,9 @@ const MACHINE_READABLE: { path: string; note: string }[] = [
 export async function generateLlmsTxt(): Promise<void> {
   const { postIndex } = await import("../client/src/lib/postIndex.ts");
   const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
+  // The /tools note used to say "17 utilities" long after the registry held
+  // over a hundred. Counted from the registry so it cannot drift again.
+  const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 
   const live = postIndex.filter((p: { draft?: boolean }) => !p.draft);
   const totalWords = live.reduce((n: number, p: { wordCount: number }) => n + p.wordCount, 0);
@@ -85,7 +89,7 @@ export async function generateLlmsTxt(): Promise<void> {
   push("## Start here");
   push();
   for (const page of KEY_PAGES) {
-    push(`- [${page.label}](${SITE}${page.path})${page.note ? `: ${page.note}` : ""}`);
+    push(`- [${page.label}](${SITE}${page.path})${page.note ? `: ${page.note.replace("{toolCount}", String(TOOLS.length))}` : ""}`);
   }
   push();
 

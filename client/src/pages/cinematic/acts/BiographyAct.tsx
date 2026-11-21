@@ -25,6 +25,7 @@ const PILLARS: Pillar[] = [
     accent: "signal",
     lines: [
       "1st place, CCSD capture the flag tournament at CyberWeek@UNLV, 2026",
+      "1st place, National Cyber League Fall 2026 Gymnasium (preseason), rank 1 of 6,518",
       "Top 1% in the National Cyber League Fall 2025 Individual Game",
       "Helped lead South CTA to 7th among U.S. high schools in the Fall 2025 Cyber Power Rankings, with an all-freshman team",
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",

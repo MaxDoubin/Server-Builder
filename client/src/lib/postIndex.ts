@@ -2419,7 +2419,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
     coverImage: "/images/blog/dell-idrac-tips-tricks.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
-    wordCount: 2671,
+    wordCount: 2698,
   },
   {
     slug: "mac-pro-storage-expansion",
@@ -2711,7 +2711,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","security","servers"],
     excerpt: "Default SSH configuration is functional but not secure. Here is how to harden it against the most common attack vectors.",
     coverImage: "/images/blog/ssh-hardening-linux-servers.jpg",
-    wordCount: 1470,
+    wordCount: 1551,
   },
   {
     slug: "ipv6-in-the-real-world",
@@ -2732,7 +2732,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
     coverCredit: {"author":"Robert","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_2800_series_router_(1).jpg"},
-    wordCount: 1724,
+    wordCount: 1745,
   },
   {
     slug: "storage-area-networks-explained",
@@ -2855,7 +2855,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Packet captures are the most powerful diagnostic tool in networking. Here is a systematic approach to using them effectively for real troubleshooting.",
     coverImage: "/images/blog/troubleshooting-packet-captures.jpg",
     coverCredit: {"author":"Laurachappell","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png"},
-    wordCount: 1696,
+    wordCount: 1701,
   },
   {
     slug: "ospf-routing-protocol",

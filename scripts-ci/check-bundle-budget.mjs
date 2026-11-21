@@ -253,8 +253,40 @@ const INDEX = path.join(DIST, "index.html");
  * page and notes are lazy chunks, so the entry carries only its route, lazy
  * import, hover-prefetch row and registry entry. The four kilobytes above the
  * measurement are for catching an accident, not for the next batch.
+ *
+ * 741 KB, lowered from 772 by loading the command palette on demand, measured
+ * at 739.2 against 770.0 before. CinematicLayout now imports CommandPalette
+ * through lazyWithRetry and mounts it the first time it is opened, keeping
+ * only the shortcut listener and the open flag in the entry. The entry chunk
+ * went from 497,698 to 466,117 bytes, a win of 31,581 bytes (30.8 KB), and
+ * the palette is its own 32 KB chunk that a page fetches only when someone
+ * presses Cmd+K, / or the Search button. The budget came down by that win,
+ * rounded to the nearest kilobyte, so the headroom stays what it was rather
+ * than banking thirty kilobytes for the next thing to spend unnoticed.
+ *
+ * This retires the reasoning in several notes above that a surface's palette
+ * row belongs in the entry because the palette opens on the first keystroke.
+ * The rows now ride in the palette's own chunk, and the first keystroke still
+ * works: it opens the palette as soon as that chunk arrives. So a new surface
+ * should now cost noticeably less than the kilobyte those notes record, and a
+ * surface that still costs a full kilobyte here is worth a look.
+ *
+ * 733 KB, lowered from 741 by /accomplishments, measured at 731.1 against
+ * 739.2 on main before it, so the first surface to leave the entry smaller
+ * than it found it. The page reads the achievements and the "currently"
+ * lists, and reading them from siteConfig first grew the entry by 8 KB, which
+ * looked like a leak and was not: the footer and home page imported PRESS from
+ * siteConfig.ts, which kept that whole module in the entry chunk, and Rollup
+ * had been dropping the properties no page read, one property at a time. The
+ * first page to read them was charged for all of them. PRESS now lives in
+ * pressConfig.ts, so siteConfig loads with the lazy pages that use it and the
+ * entry carries only a few lines of press data. The entry chunk went from
+ * 466,117 to 457,816 bytes, a win of 8,301 bytes (8.1 KB) after the page's own
+ * route and prefetch row, and its palette row rides in the palette's chunk.
+ * The budget came down by that win, so the headroom stays at about two
+ * kilobytes rather than banking eight for the next thing to spend unnoticed.
  */
-const BUDGET_BYTES = 772 * 1024;
+const BUDGET_BYTES = 733 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

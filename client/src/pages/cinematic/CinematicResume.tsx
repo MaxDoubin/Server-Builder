@@ -229,6 +229,14 @@ export function CinematicResume() {
                 </Bullet>
                 <Bullet>arcX: Foundation Level Threat Intelligence Analyst certificate, 2026</Bullet>
                 <Bullet>
+                  New Relic: Verified APM Practitioner credential, all six exams passed, 2026
+                </Bullet>
+                <Bullet>Netskope Academy: SASE Accreditation certificate, 2026</Bullet>
+                <Bullet>
+                  Barracuda Campus: CGF02 CloudGen Firewall Large-Scale Management certification,
+                  2026 (valid until November 2028)
+                </Bullet>
+                <Bullet>
                   Nutanix University: Enterprise Cloud Administration (ECA) 6.10 and Advanced
                   Administration and Performance Management (AAPM) courses, 2026
                 </Bullet>
@@ -379,6 +387,16 @@ export function CinematicResume() {
               </span>
             </p>
           </Section>
+
+          <p className="resume-noprint mt-10 border-t border-[hsl(var(--brand-iron))] pt-6">
+            <Link
+              href="/accomplishments"
+              data-testid="link-resume-accomplishments"
+              className="inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            >
+              All accomplishments, grouped by kind <span aria-hidden>→</span>
+            </Link>
+          </p>
 
         </div>
       </div>

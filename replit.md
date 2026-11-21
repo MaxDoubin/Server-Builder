@@ -35,6 +35,15 @@ A professional personal website for Max Doubin, focused on enterprise networking
 - Nothing in the entry graph may import `@/lib/asset-pool` (or anything else that imports `three`). App.tsx did, for one cleanup function, and it linked 681 KB of WebGL into every route. Use `@/lib/asset-pool-dispose`, which is three-free and gets its disposer registered by asset-pool when 3D actually loads.
 - `manualChunks` in vite.config.ts pins React, Vite's preload helper and Rollup's CommonJS interop helpers to the `react` chunk. Without those rules Rollup parked `jsx()`, `__vitePreload` and `getDefaultExportFromCjs` inside the `r3f` chunk, so the entry statically imported react-three-fiber (and therefore three) just to render any JSX at all. Symptom: `/contact` downloads 950 KB of WebGL and has no canvas on it. Check with the static closure of the entry chunk, not with the chunk sizes, which look fine either way.
 
+## Telling search engines about new pages (IndexNow)
+- IndexNow is a push protocol. After a deploy, the site POSTs its new and changed URLs to one endpoint (`https://api.indexnow.org/indexnow`) and the participating engines (Bing, Yandex, Seznam, Naver and others) hear about them at once. It is a hint to come and crawl, not a ranking signal.
+- **Google does not use IndexNow.** Google finds pages through `sitemap.xml` and its own crawl, and nothing here changes that.
+- The key file is `client/public/031b31fc844b1f556f870cf029180228.txt`. It holds only the key, no newline, and is served at the site root. The key is public by design, since the protocol needs it readable at that URL, so it is committed. To rotate it, run `openssl rand -hex 16`, add the new `<key>.txt` containing exactly that key, and delete the old file in the same commit. `scripts-ci/check-indexnow.mjs` fails unless there is exactly one valid key file.
+- After a deploy, once the deploy has finished: run `npm run build` if `dist/public/sitemap.xml` is not current, then `npm run indexnow:dry`. It prints the host, the key location, the URL count and the first five URLs, and sends nothing. When that looks right, `npm run indexnow -- --submit` sends it.
+- The key file must be live at `https://maxdoubin.com/<key>.txt` before submitting. `--submit` fetches it first and stops if it is missing, redirected or wrong, because an engine that cannot read it answers 403.
+- `--since 2026-11-01` sends only URLs whose sitemap `lastmod` is on or after that date. Pages with no `lastmod` are left out of a `--since` run, so use a full run when a new page has none. `--sitemap <path>` reads a different sitemap.
+- 200 and 202 are success. 400 is a malformed request, 403 a key the engine could not verify, 422 a URL not on the host, and 429 means stop and wait. Submit what changed, once per deploy.
+
 ## Hyperscale Game Equipment System
 - Equipment placement uses force-placement: clicking any slot (empty or occupied) opens the picker, and placing equipment auto-removes anything in the way
 - `addEquipmentToRack` in game-context.tsx handles overlap by removing existing equipment in the target U-range before placing new equipment

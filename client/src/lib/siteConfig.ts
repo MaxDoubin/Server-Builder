@@ -1,19 +1,11 @@
+import { PRESS } from "./pressConfig";
+
 /**
- * Press coverage, verified against the published article.
- *
- * Lives here rather than in an act component because the footer (main
- * bundle) and the biography act (lazy chunk) both need it, and importing
- * across that boundary would pull the lazy chunk into the entry bundle.
+ * PRESS is defined in pressConfig.ts so the footer and home page can import it
+ * without pulling this module into the entry chunk. It is re-exported here, so
+ * `import { PRESS } from "./siteConfig"` keeps working everywhere else.
  */
-export const PRESS = {
-  outlet: "Las Vegas Weekly",
-  headline:
-    "CCSD magnet programs and schools help prepare students for careers",
-  author: "Shannon Miller",
-  isoDate: "2026-07-30",
-  displayDate: "July 30, 2026",
-  url: "https://lasvegasweekly.com/news/2026/jul/30/ccsd-magnet-programs-and-schools-prepare-students/",
-} as const;
+export { PRESS };
 
 export const siteConfig = {
   name: "Max Doubin",
@@ -61,6 +53,9 @@ export const siteConfig = {
         "Independently designing and deploying a server lab for the South CTA cybersecurity program",
         "President of the South CTA Cyber Club since 2025",
         "President of the South CTA Music Club since 2025",
+        "Interclub Council member at South CTA since 2026",
+        "Cybersecurity Committee Chair for SkillsUSA since 2026",
+        "Chief of Information Technology for SkillsUSA since 2026",
         "Commissioner on the City of Henderson Blue Ribbon Commission on Educational Excellence and Youth Opportunity since 2025",
         "Youth Advisory Council member for the Nevada Office of Workforce Innovation (OWINN) since 2025",
         "Keynote panelist at the 2026 A4LE Southwest Region Conference",
@@ -183,6 +178,9 @@ export const siteConfig = {
         "OPSWAT Academy Introduction to Critical Infrastructure Protection (ICIP) certificate (2026)",
         "CISA ICS Cybersecurity (300) and ICS Cybersecurity Evaluation (401) courses, about 22 contact hours (2026)",
         "arcX Foundation Level Threat Intelligence Analyst certificate (2026)",
+        "New Relic Verified APM Practitioner, all six exams passed (2026)",
+        "Netskope Academy SASE Accreditation certificate (2026)",
+        "Barracuda Campus CGF02 CloudGen Firewall Large-Scale Management certification (2026, valid until November 2028)",
         "Nutanix University ECA 6.10 and AAPM courses (2026)",
         "Anthropic Claude Academy, 23 badges (2026)",
         "CompTIA Security+ (in progress)",

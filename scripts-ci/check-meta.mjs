@@ -16,6 +16,7 @@
  * Usage: node scripts-ci/check-meta.mjs   (after npm run build)
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import path from "node:path";
 
@@ -123,6 +124,13 @@ const SITE = "https://maxdoubin.com";
 const GENERIC_CARD = "images/og-image.jpg";
 const GENERIC_CARD_OK = new Set(["index.html", "404.html"]);
 const brokenCards = [];
+const cardHashes = new Map();
+function cardHash(file) {
+  if (!cardHashes.has(file)) {
+    cardHashes.set(file, createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 8));
+  }
+  return cardHashes.get(file);
+}
 const seenCard = new Set();
 for (const file of pages) {
   const html = readFileSync(file, "utf8");
@@ -139,12 +147,27 @@ for (const file of pages) {
       brokenCards.push(`  ${rel}: ${prop} is not an absolute ${SITE} URL: ${url}`);
       continue;
     }
-    const asset = url.slice(SITE.length + 1);
-    const key = `${rel}|${asset}`;
+    /*
+      The URL carries ?v=<first 8 hex of the card's sha256>, written by
+      script/prerender.ts so a regenerated card is a new URL and not a week
+      of stale previews from the edge cache. The query is not part of the
+      file name, and it has to match the file that is actually there: a
+      fingerprint that does not is one that will not change when the card
+      does.
+    */
+    const [asset, query = ""] = url.slice(SITE.length + 1).split("?");
+    const key = `${rel}|${asset}|${query}`;
     if (seenCard.has(key)) continue;
     seenCard.add(key);
     if (!existsSync(path.join(DIST, asset))) {
       brokenCards.push(`  ${rel}: ${prop} points at a missing file: /${asset}`);
+      continue;
+    }
+    const want = `v=${cardHash(path.join(DIST, asset))}`;
+    if (query !== want) {
+      brokenCards.push(
+        `  ${rel}: ${prop} has ${query ? `fingerprint ?${query}` : "no fingerprint"}, expected ?${want}: /${asset}`,
+      );
       continue;
     }
     /*
