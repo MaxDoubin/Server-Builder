@@ -1,12 +1,12 @@
 ## What this explains, and which release
 
-This explainer follows one new connection through a FortiGate, Fortinet's firewall product line, in the order Fortinet's public documentation describes it: policy match, inspection mode, security profiles, Secure Sockets Layer and Transport Layer Security (SSL/TLS) inspection, and network address translation (NAT). It ends with the Security Fabric, which surrounds the policy engine instead of sitting inside it. It is a reading of documentation. No device was tested.
+This explainer follows one new connection through a FortiGate, Fortinet's firewall product line, in the order Fortinet's public documentation describes it: policy match, inspection mode, security profiles, Secure Sockets Layer and Transport Layer Security (SSL/TLS) inspection, and network address translation (NAT). It ends with the Security Fabric, which this article reads as context around the policy engine and not a stage inside it (that reading is the article's own, not a Fortinet statement). It is a reading of documentation. No device was tested.
 
-Every behavior is pinned to FortiOS 7.6, the FortiGate operating system. The main source is the FortiOS 7.6.8 Administration Guide on docs.fortinet.com, the newest 7.6 release in the library's version list in November 2026. The list also showed 8.0.0 through 8.0.2, which were not read, so 8.0 is unchecked. The Best Practices pages cited carry a 7.6.0 header, defaults come from the 7.6.8 command-line interface (CLI) reference, and Fortinet Community tips, written for older releases, are labeled where used. Branch differences are in [FortiOS 7.6 vs 7.4](/blog/fortios-7-6-vs-7-4).
+Every behavior is pinned to FortiOS 7.6, the FortiGate operating system. The main source is the FortiOS 7.6.8 Administration Guide on docs.fortinet.com, the newest 7.6 release in the library's version list in November 2026. The list also showed 8.0.0 through 8.0.2, which were not read, so 8.0 is unchecked and behavior there may differ. The Best Practices pages cited carry a 7.6.0 header, defaults come from the 7.6.8 command-line interface (CLI) reference, and Fortinet Community tips, written for older releases, are labeled where used. Branch differences are in [FortiOS 7.6 vs 7.4](/blog/fortios-7-6-vs-7-4).
 
 ## The short version
 
-A FortiGate is a stateful firewall. The first packet of a connection is compared with the policy list from the top down, and the first policy that matches decides what happens. If none matches, the implicit deny drops it. The connection gets a session-table entry that records the matching policy, and that policy carries the remaining decisions: inspection mode, security profiles, SSL inspection and NAT. Reply packets follow the session instead of being matched again.
+A FortiGate is a stateful firewall. Traffic that starts a new connection is checked against the policy list in order, and the first policy that matches decides what happens. If none matches, the implicit deny drops it. Each session gets an entry in the session table, which the documentation says can show the number of the policy it matches, and that policy carries the remaining decisions: inspection mode, security profiles, SSL inspection and NAT. The session-table page describes the firewall as stateful, tracking sessions so that only packets consistent with the session state pass, which is why replies belong to an existing session.
 
 | Question | Decided by | Default for a new policy in 7.6.8 |
 |---|---|---|
@@ -22,15 +22,15 @@ A FortiGate is a stateful firewall. The first packet of a connection is compared
 
 The Administration Guide lists seven match parameters: incoming interface, outgoing interface, source address, destination address, user identity, service and schedule. A service is a protocol and port definition. The guide contrasts it with application control, which examines packets to find the protocol actually in use. Traffic that matches no policy is denied.
 
-Direction follows whoever starts the conversation, and each direction in which sessions can start needs its own policy. FortiOS does not run a reverse-path check on reply traffic that matches an allowed session by its Internet Protocol (IP) tuple, so a reply may return on a different interface. The session-table page adds that the stateful firewall applies features such as NAT, scanning and traffic shaping through the policy match.
+Direction follows whoever starts the conversation, and each direction in which sessions can start needs its own policy. FortiOS does not run a reverse-path check on reply traffic that matches an allowed session by its Internet Protocol (IP) tuple, so a reply may return on a different interface. The session-table page adds that checking for a policy match is where features such as NAT, scanning and traffic shaping can be applied.
 
-Routing comes first. The sample trace in the packet-flow page lists a packet arriving, a session being allocated, a next-hop route being found, a source NAT address being chosen and the matched policy being reported, in that order. Software-defined wide area network (SD-WAN) rules are policy-routing options that pick a member link, so they sit on the routing side. [FortiGate SD-WAN configuration](/blog/fortigate-sdwan-configuration) covers that half.
+Routing matters before the match. The Policy match tool works only if the relevant route exists, and the sample trace in the packet-flow page prints the next-hop route lookup before the line that reports the matched policy. Software-defined wide area network (SD-WAN) rules are policy-routing options that pick a member link, so they sit on the routing side. [FortiGate SD-WAN configuration](/blog/fortigate-sdwan-configuration) covers that half.
 
 ### First match wins
 
 Fortinet's Best Practices guide states it directly: "When traffic matches a policy, further policies are not processed." The graphical user interface (GUI) By Sequence view lists policies in the order they are checked, and the Interface Pair view groups the same policies by interface pair. A Policy match tool takes traffic parameters and highlights the matching policy, provided the route exists and the unit is not in transparent mode.
 
-A broad rule above a narrow one makes the narrow one unreachable, which [firewall policy design](/blog/firewall-policy-design) treats at length. The documented exception involves virtual IPs (VIPs), the objects used for destination NAT. The guide says policies with a VIP applied take priority over ordinary policies, so a plain deny does not stop traffic aimed at a VIP unless `match-vip` is enabled on it. Per the Best Practices page, new deny policies have it enabled by default from FortiOS 7.2.4, so an older deny is worth checking.
+A broad rule above a narrow one makes the narrow one unreachable, which [firewall policy design](/blog/firewall-policy-design) treats at length. The documented exception involves virtual IPs (VIPs), the objects used for destination NAT. The Best Practices page says policies that include a VIP, or that have `match-vip` enabled, have priority over other policies. Its example is a deny policy listed first and an accept policy that uses a VIP as its destination: traffic from the denied source to the VIP is not blocked until `match-vip` is enabled on the deny policy. The setting exists only on deny policies, and the page says that in FortiOS 7.2.4 and later it is enabled by default in new deny policies, so an older deny is worth checking.
 
 ### The implicit deny
 
@@ -86,19 +86,19 @@ A profile can only read what the FortiGate can see. Fortinet describes SSL inspe
 
 | Profile | What the FortiGate reads | Must clients trust the FortiGate's certificate authority (CA)? |
 |---|---|---|
-| `no-inspection` | Nothing inside the TLS session | No |
+| `no-inspection` | Presumably nothing inside the TLS session (inferred from the name; the guide lists the profile without describing it) | Presumably no |
 | `certificate-inspection` | Headers up to the SSL/TLS layer, not the content | Only to avoid warnings on HTTPS block pages |
 | `deep-inspection` | The decrypted content | Yes |
 
 ### Certificate inspection
 
-Fortinet positions certificate inspection for cases where scanning content is unwanted for privacy reasons but control over reachable sites is still wanted. The profile can check the Server Name Indication (SNI), the TLS extension in which a client names the server it wants (Request for Comments 6066), against the certificate's name. One catch: when a web filter blocks an HTTPS page, the replacement page is served over HTTPS, and the guide says its certificate is signed by the FortiGate CA. Clients that do not trust that CA see a warning on the block page.
+Fortinet positions certificate inspection for cases where scanning content is unwanted for privacy reasons but control over reachable sites is still wanted. The SSL/SSH profile has a setting that compares the Server Name Indication (SNI), the TLS extension in which a client names the server it wants (Request for Comments 6066), with the name fields of the certificate the server returns. One catch: when a web filter blocks an HTTPS page, the replacement page is served over HTTPS, and the guide says its certificate is signed by the FortiGate CA. Clients that do not trust that CA see a warning on the block page.
 
 ### Deep inspection and why clients must trust a CA
 
 Deep inspection works by impersonation. The guide says the FortiGate poses as the recipient of the client's SSL session, decrypts the content, inspects it, then re-encrypts it and sends it to the real server. For its half of the conversation with the client, the FortiGate must present a certificate for the requested site that it signed itself, using a CA certificate from its own store. By default that is `Fortinet_CA_SSL`, and an uploaded CA can be chosen instead.
 
-A client accepts a server certificate only if it chains to a CA the client already trusts, which the post on [TLS certificates](/blog/ssl-tls-certificates-explained) walks through. Browsers do not ship with `Fortinet_CA_SSL`, so the guide says they show an untrusted-certificate warning for each re-signed certificate until the CA is imported. The documented fix is to download the CA from the profile and install it in the client's trusted root store, with Windows group policy suggested for an Active Directory domain. The guide also says, "Never import the Fortinet_CA_Untrusted certificate into your browser," and ties lingering warnings to that second certificate. The profile options "Keep Untrusted & Allow" and "Trust & Allow" suggest it signs for servers whose own certificate the FortiGate could not validate, but that is an inference from the option names.
+A client accepts a server certificate only if it chains to a CA the client already trusts, which the post on [TLS certificates](/blog/ssl-tls-certificates-explained) walks through. Browsers do not ship with `Fortinet_CA_SSL`, so the guide says they show an untrusted-certificate warning for each re-signed certificate until the CA is imported. The documented fix is to download the CA from the profile and install it in the client's trusted root store, with Windows group policy suggested for an Active Directory domain. The guide also says, "Never import the Fortinet_CA_Untrusted certificate into your browser," and ties lingering warnings to that second certificate. The profile page describes one option for server certificates that fail validation as re-signing the certificate as trusted and another as keeping it untrusted, which suggests that Fortinet_CA_Untrusted signs for the second case. That is an inference: the guide does not say so.
 
 Two consequences follow, both reasoning from how certificate trust works, not claims from the guide. Clients that cannot be given the CA, such as unmanaged guest devices, are poor candidates for deep inspection. And a CA that clients trust can sign a certificate for any site, so its private key deserves the protection given to any internal root.
 
@@ -108,22 +108,22 @@ Traffic can be exempted by address, by FortiGuard web category or through an all
 
 NAT is configured on or beside the matching policy, and the guide splits it into source NAT (SNAT) and destination NAT (DNAT).
 
-- **Static SNAT.** Enabling NAT on a policy with the outgoing interface address rewrites the source to that address. The guide counts 60,416 usable ports per address.
+- **Static SNAT.** Enabling NAT on a policy with the outgoing interface address rewrites the source to that address. The Static SNAT page counts 60,416 available port numbers for that one address, which it says can serve 60,416 internal addresses reaching the same service, defined as one protocol, destination address and destination port.
 - **Dynamic SNAT.** An IP pool supplies the translated address. The guide describes four Internet Protocol version 4 (IPv4) pool types: overload, one-to-one (no port translation), fixed port range and port block allocation.
 - **Central SNAT.** A separate rule table read from the top down until one matches, applied after a security policy. It is off by default, and when enabled the per-policy NAT option is skipped.
 - **DNAT.** A VIP maps an external address to an internal one and is chosen as the policy's destination. This is the VIP whose priority over ordinary policies was described under first match.
 
-In the sample trace, the SNAT address and port are chosen before the policy match is reported, and the translation is applied once the policy allows the session.
+One ordering question is left open on purpose. The Central SNAT page says its rules apply to traffic after a security policy, while the packet-flow page's sample trace prints the line that chooses the SNAT address and port before the line that reports the matched policy. The documentation does not reconcile the two, so this article makes no claim about the exact internal order. What the trace does show is that later packets of the same connection match the existing session and have SNAT applied, with no further policy line.
 
 ## The Security Fabric
 
 Fortinet describes the Security Fabric as an architecture that "interconnects discrete security solutions into an integrated whole." The 7.6.8 guide names four visible parts: a topology view, security rating checks, fabric connectors for cloud and partner platforms, and automation that pairs an event trigger with actions.
 
-For the evaluation path, the visible link is address objects. The `FABRIC_DEVICE` dynamic address group, which represents Fortinet devices connected to the Fabric, can be used as an address in firewall policies, and its contents fill in dynamically. None of the Fabric pages read describes it changing the match order or the inspection path, so it is best understood as shared context around the policy engine, not a stage in the per-packet decision. One capacity note: models with 2 GB of memory, including the 40F, 50G and 60F series, can authorize up to five devices as a Fabric root.
+For the evaluation path, the visible link is address objects. The `FABRIC_DEVICE` dynamic address group, which represents Fortinet devices connected to the Fabric, can be used as an address in firewall policies, and its contents fill in dynamically. None of the Fabric pages read describes it changing the match order or the inspection path, so this article reads it as shared context around the policy engine and not a stage in the per-packet decision. That is the article's reading, not a Fortinet statement, and the Fabric pages were read only at an introductory level. One capacity note: models with 2 GB of memory, including the 40F, 50G and 60F series, can authorize up to five devices as a Fabric root.
 
 ## Limits and common mistakes
 
-- **A deny that misses a VIP.** Without `match-vip`, a deny policy does not catch traffic aimed at a VIP.
+- **A deny that misses a VIP.** Without `match-vip`, a deny policy can be outranked by a later policy that uses a VIP as its destination.
 - **Policy changes and live sessions.** The default `firewall-session-dirty` setting, `check-all`, flags affected sessions for revalidation after a policy or routing change, and sessions that no longer conform are dropped. `check-new` applies changes to new sessions only.
 - **Same-interface forwarding.** Starting in 7.6.5, `allow-traffic-redirect` is disabled by default, and the guide says it is disabled after an upgrade even if it was enabled before. Traffic leaving through its arrival interface then needs an IPv4 policy or it meets the implicit deny.
 - **Port mapping differs by mode.** In deep inspection, protocol port mapping applies only to proxy-based inspection, and flow-based inspection scans all ports regardless.
