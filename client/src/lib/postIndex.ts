@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 324 of them. Regenerate with script/generatePostIndex.ts.
+ * 330 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,60 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "sase-explained",
+    title: "SASE explained: an architecture, not a product",
+    date: "2026-11-21",
+    tags: ["networking","security","cybersecurity","firewall","learning"],
+    excerpt: "Secure access service edge (SASE) is an architecture, not a product: it delivers WAN networking and security together from a cloud provider's points of presence, a term Gartner coined in 2019.",
+    coverImage: "/images/blog/sase-explained-photo.jpg",
+    wordCount: 2677,
+  },
+  {
+    slug: "zero-trust-network-access-vs-vpn",
+    title: "Zero trust network access versus a VPN",
+    date: "2026-11-21",
+    tags: ["networking","security","cybersecurity","learning"],
+    excerpt: "A remote-access VPN grants a path into a network, while zero trust network access grants access to one application at a time, which moves the trust decision from the door to each resource.",
+    coverImage: "/images/blog/zero-trust-network-access-vs-vpn-photo.jpg",
+    wordCount: 2717,
+  },
+  {
+    slug: "barracuda-firewall-control-center-explained",
+    title: "Barracuda Firewall Control Center: Managing Many Firewalls",
+    date: "2026-11-21",
+    tags: ["firewall","security","networking","operations","monitoring"],
+    excerpt: "The Barracuda Firewall Control Center manages many CloudGen Firewalls from one place, grouping them into ranges and clusters and sharing configuration through repositories and templates.",
+    coverImage: "/images/blog/barracuda-firewall-control-center-explained-photo.jpg",
+    wordCount: 2921,
+  },
+  {
+    slug: "what-an-apm-agent-actually-measures",
+    title: "What an APM Agent Actually Measures",
+    date: "2026-11-21",
+    tags: ["monitoring","performance","engineering"],
+    excerpt: "An APM agent times the work inside an application, such as web transactions, database calls and external calls, so its numbers are only as complete as what the agent can see.",
+    coverImage: "/images/blog/what-an-apm-agent-actually-measures-photo.jpg",
+    wordCount: 2708,
+  },
+  {
+    slug: "distributed-tracing-explained",
+    title: "Distributed tracing, explained",
+    date: "2026-11-21",
+    tags: ["monitoring","operations","networking","troubleshooting"],
+    excerpt: "Distributed tracing follows one request across many services using spans and a trace identifier carried in the W3C traceparent header, and it breaks wherever that context is dropped.",
+    coverImage: "/images/blog/distributed-tracing-explained-photo.jpg",
+    wordCount: 2778,
+  },
+  {
+    slug: "ebpf-what-it-can-see-and-what-it-cannot",
+    title: "eBPF for Observability: What It Can and Cannot See",
+    date: "2026-11-21",
+    tags: ["linux","monitoring","security"],
+    excerpt: "eBPF lets a small verified program watch system calls, network activity and function timing on a Linux host without changing the application, but it cannot read encrypted payloads or business context.",
+    coverImage: "/images/blog/ebpf-what-it-can-see-and-what-it-cannot-photo.jpg",
+    wordCount: 2774,
+  },
   {
     slug: "rescue-a-google-jamboard-without-flashing",
     title: "Repurpose a Google Jamboard Without Flashing It: Android 7, No ADB",
@@ -3189,10 +3243,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 324;
+export const POST_COUNT = 330;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and twenty four";
+export const POST_COUNT_SPELLED = "three hundred and thirty";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3201,10 +3255,10 @@ export const POST_COUNT_SPELLED = "three hundred and twenty four";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2751;
+export const CITATION_COUNT = 2817;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 196;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2926;
+export const CHECKED_URL_COUNT = 2992;
