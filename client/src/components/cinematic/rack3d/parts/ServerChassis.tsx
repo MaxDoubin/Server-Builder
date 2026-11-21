@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { Led, LedField, LedStrip } from "./Led";
+import { BootGlow, Led, LedField, LedStrip } from "./Led";
 import { InstancedBoxes } from "./InstancedBoxes";
 import { ACCENT_HEX, RACK_DEPTH, RACK_INNER_WIDTH, U } from "../rackConfig";
 import type { GearKind } from "../rackConfig";
@@ -196,10 +196,12 @@ function HoneycombVent({ width, height }: { width: number; height: number }) {
 
 function AccentRule({ width, y, color, opacity = 0.9 }: { width: number; y: number; color: string; opacity?: number }) {
   return (
-    <mesh position={[0, y, FACE_Z + 0.0012]}>
-      <boxGeometry args={[width, 0.0026, 0.0008]} />
-      <meshBasicMaterial color={color} transparent opacity={opacity} toneMapped={false} />
-    </mesh>
+    <BootGlow>
+      <mesh position={[0, y, FACE_Z + 0.0012]}>
+        <boxGeometry args={[width, 0.0026, 0.0008]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity} toneMapped={false} />
+      </mesh>
+    </BootGlow>
   );
 }
 
@@ -230,10 +232,10 @@ function DriveBay({
       </mesh>
       <group position={[w * 0.35, 0, 0.005]}>
         <group position={[0, h * 0.14, 0]}>
-          <Led color="#64e6ff" size={kind === "lff" ? 0.0032 : 0.0022} blink={active} seed={seed + 1} />
+          <Led boot="activity" color="#64e6ff" size={kind === "lff" ? 0.0032 : 0.0022} blink={active} seed={seed + 1} />
         </group>
         <group position={[0, -h * 0.14, 0]}>
-          <Led color={active ? "#c7f000" : "#1d2024"} size={kind === "lff" ? 0.0032 : 0.0022} intensity={active ? 2.1 : 0.1} />
+          <Led boot="drive" seed={seed} color={active ? "#c7f000" : "#1d2024"} size={kind === "lff" ? 0.0032 : 0.0022} intensity={active ? 2.1 : 0.1} />
         </group>
       </group>
     </group>
@@ -254,16 +256,18 @@ function ServerControlPanel({
       <mesh position={[0, 0, FACE_Z - 0.0005]} material={mats.darkPlastic}>
         <boxGeometry args={[0.1, 0.022, 0.003]} />
       </mesh>
-      <mesh position={[0, 0.007, FACE_Z + 0.001]}>
-        <boxGeometry args={[0.06, 0.004, 0.0007]} />
-        <meshBasicMaterial color="#64e6ff" transparent opacity={0.35} toneMapped={false} />
-      </mesh>
+      <BootGlow>
+        <mesh position={[0, 0.007, FACE_Z + 0.001]}>
+          <boxGeometry args={[0.06, 0.004, 0.0007]} />
+          <meshBasicMaterial color="#64e6ff" transparent opacity={0.35} toneMapped={false} />
+        </mesh>
+      </BootGlow>
       <mesh position={[-0.034, 0, FACE_Z + 0.0018]}>
         <cylinderGeometry args={[0.0045, 0.0045, 0.0015, 12]} />
         <meshStandardMaterial color="#1a1d22" metalness={0.7} roughness={0.4} />
       </mesh>
       <group position={[-0.034, 0, FACE_Z + 0.0024]}>
-        <Led color={ACCENT_HEX[accent]} size={0.0028} blink seed={seed + 2} />
+        <Led boot="power" color={ACCENT_HEX[accent]} size={0.0028} blink seed={seed + 2} />
       </group>
       <group position={[0.002, 0, FACE_Z + 0.001]}>
         <LedStrip
@@ -330,9 +334,9 @@ function PatchPanelFace({ accentColor, seed }: { accentColor: string; seed: numb
         size={[0.012, 0.009, 0.0022]}
         material={mats.patchPort}
       />
-      <LedField points={portLeds} size={0.0019} seed={seed} />
+      <LedField boot points={portLeds} size={0.0019} seed={seed} />
       <group position={[0, -0.014, FACE_Z + 0.0018]}>
-        <LedStrip count={28} length={0.36} color={accentColor} size={0.002} seed={seed + 18} />
+        <LedStrip boot count={28} length={0.36} color={accentColor} size={0.002} seed={seed + 18} />
       </group>
     </group>
   );
@@ -407,7 +411,7 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
           </group>
           <VentStrip width={0.12} height={0.06} rows={4} cols={24} xOffset={0.02} />
           <group position={[0.02, -0.024, FACE_Z + 0.0016]}>
-            <LedStrip count={12} length={0.16} color={accentColor} size={0.0022} seed={seed + 15} />
+            <LedStrip boot count={12} length={0.16} color={accentColor} size={0.0022} seed={seed + 15} />
           </group>
           <group position={[0.19, 0, 0]}>
             <ServerControlPanel accent={accent} label={label} seed={seed} />
@@ -464,7 +468,7 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
             })}
           </group>
           <group position={[0, -h * 0.34, FACE_Z + 0.0016]}>
-            <LedStrip count={18} length={0.28} color={accentColor} size={0.0022} seed={seed + 21} />
+            <LedStrip boot count={18} length={0.28} color={accentColor} size={0.0022} seed={seed + 21} />
           </group>
           <RackEars sizeU={sizeU} />
         </group>
@@ -501,10 +505,10 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
             );
           })}
           <group position={[-0.045 - 0.08, 0.011, FACE_Z + 0.0022]}>
-            <LedStrip count={24} length={0.32} color={accentColor} size={0.0022} seed={seed} />
+            <LedStrip boot count={24} length={0.32} color={accentColor} size={0.0022} seed={seed} />
           </group>
           <group position={[-0.045 - 0.08, -0.011, FACE_Z + 0.0022]}>
-            <LedStrip count={24} length={0.32} color="#64e6ff" size={0.0022} seed={seed + 10} />
+            <LedStrip boot count={24} length={0.32} color="#64e6ff" size={0.0022} seed={seed + 10} />
           </group>
           {Array.from({ length: 4 }).map((_, i) => (
             <group key={i} position={[0.11 + i * 0.018, 0.011, FACE_Z + 0.0016]}>
@@ -513,7 +517,7 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
                 <meshStandardMaterial color="#0b0d10" metalness={0.3} roughness={0.82} />
               </mesh>
               <group position={[0, -0.009, 0.001]}>
-                <Led color={i % 2 === 0 ? accentColor : "#64e6ff"} size={0.0024} blink seed={seed + i * 3} />
+                <Led boot="activity" color={i % 2 === 0 ? accentColor : "#64e6ff"} size={0.0024} blink seed={seed + i * 3} />
               </group>
             </group>
           ))}
@@ -523,13 +527,13 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
               <meshStandardMaterial color="#0c0f13" roughness={0.9} />
             </mesh>
             <group position={[0, -0.01, FACE_Z + 0.0018]}>
-              <Led color={accentColor} size={0.0022} blink seed={seed} />
+              <Led boot="activity" color={accentColor} size={0.0022} blink seed={seed} />
             </group>
             <group position={[-0.02, 0.010, FACE_Z + 0.0018]}>
-              <Led color="#64e6ff" size={0.002} blink seed={seed + 5} />
+              <Led boot="activity" color="#64e6ff" size={0.002} blink seed={seed + 5} />
             </group>
             <group position={[0.020, 0.010, FACE_Z + 0.0018]}>
-              <Led color="#ff9a1f" size={0.002} intensity={1.5} />
+              <Led boot="activity" color="#ff9a1f" size={0.002} intensity={1.5} />
             </group>
           </group>
           <RackEars sizeU={sizeU} />
@@ -566,14 +570,14 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
                     <meshStandardMaterial color="#050608" roughness={0.95} />
                   </mesh>
                   <group position={[0, -0.015, 0.001]}>
-                    <Led color={j % 2 === 0 ? accentColor : "#64e6ff"} size={0.0022} blink seed={seed + i * 10 + j} />
+                    <Led boot="activity" color={j % 2 === 0 ? accentColor : "#64e6ff"} size={0.0022} blink seed={seed + i * 10 + j} />
                   </group>
                 </group>
               ))}
             </group>
           ))}
           <group position={[0, -0.038, FACE_Z + 0.0016]}>
-            <LedStrip count={16} length={0.22} color={accentColor} size={0.0021} seed={seed + 30} />
+            <LedStrip boot count={16} length={0.22} color={accentColor} size={0.0021} seed={seed + 30} />
           </group>
           <RackEars sizeU={sizeU} />
         </group>
@@ -591,20 +595,22 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
               <HoneycombVent width={0.092} height={h * 0.72} />
             </group>
           ))}
-          <mesh position={[0, h * 0.42, FACE_Z + 0.0012]}>
-            <boxGeometry args={[RACK_INNER_WIDTH - 0.04, 0.003, 0.0008]} />
-            <meshStandardMaterial
-              color={accentColor}
-              emissive={accentColor}
-              emissiveIntensity={1.4}
-              toneMapped={false}
-            />
-          </mesh>
+          <BootGlow>
+            <mesh position={[0, h * 0.42, FACE_Z + 0.0012]}>
+              <boxGeometry args={[RACK_INNER_WIDTH - 0.04, 0.003, 0.0008]} />
+              <meshStandardMaterial
+                color={accentColor}
+                emissive={accentColor}
+                emissiveIntensity={1.4}
+                toneMapped={false}
+              />
+            </mesh>
+          </BootGlow>
           <group position={[0, -h * 0.42, FACE_Z + 0.0014]}>
-            <LedStrip count={32} length={0.38} color={accentColor} seed={seed} size={0.0026} />
+            <LedStrip boot count={32} length={0.38} color={accentColor} seed={seed} size={0.0026} />
           </group>
           <group position={[0, -h * 0.32, FACE_Z + 0.0016]}>
-            <LedStrip count={12} length={0.14} color="#64e6ff" seed={seed + 5} size={0.0023} />
+            <LedStrip boot count={12} length={0.14} color="#64e6ff" seed={seed + 5} size={0.0023} />
           </group>
           <RackEars sizeU={sizeU} />
         </group>
@@ -632,6 +638,7 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
               </mesh>
               <group position={[0.018, h * 0.33, 0.003]}>
                 <Led
+                  boot="activity"
                   color={i === 2 ? "#ff9a1f" : accentColor}
                   size={0.0032}
                   blink
@@ -639,21 +646,23 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
                 />
               </group>
               <group position={[-0.016, h * 0.33, 0.003]}>
-                <Led color="#64e6ff" size={0.0024} blink seed={seed + i * 7 + 1} />
+                <Led boot="activity" color="#64e6ff" size={0.0024} blink seed={seed + i * 7 + 1} />
               </group>
               <group position={[0, -h * 0.15, 0.003]}>
-                <LedStrip count={5} length={0.032} color={accentColor} size={0.002} seed={seed + i} />
+                <LedStrip boot count={5} length={0.032} color={accentColor} size={0.002} seed={seed + i} />
               </group>
             </group>
           ))}
           <group position={[0, 0, FACE_Z + 0.0014]}>
-            <LedStrip count={20} length={0.28} color="#64e6ff" size={0.0021} seed={seed + 64} />
+            <LedStrip boot count={20} length={0.28} color="#64e6ff" size={0.0021} seed={seed + 64} />
           </group>
           <RackEars sizeU={sizeU} />
         </group>
       );
 
     case "ups-2u":
+      // Nothing here joins the boot cascade: the UPS is what the rest of
+      // the rack powers on from, so it is already up when the wave starts.
       return (
         <group>
           <ChassisBody sizeU={sizeU} />
@@ -689,18 +698,20 @@ export function ServerChassis({ kind, sizeU, accent = "signal", label, seed = 1 
           <mesh position={[0, 0, FACE_Z - 0.0005]} material={mats.chassisFront}>
             <boxGeometry args={[RACK_INNER_WIDTH - 0.004, h - 0.003, 0.003]} />
           </mesh>
-          <mesh position={[0, 0, FACE_Z + 0.0005]}>
-            <boxGeometry args={[0.36, h * 0.5, 0.002]} />
-            <meshStandardMaterial color="#02050a" emissive="#052018" emissiveIntensity={0.48} toneMapped={false} />
-          </mesh>
+          <BootGlow>
+            <mesh position={[0, 0, FACE_Z + 0.0005]}>
+              <boxGeometry args={[0.36, h * 0.5, 0.002]} />
+              <meshStandardMaterial color="#02050a" emissive="#052018" emissiveIntensity={0.48} toneMapped={false} />
+            </mesh>
+          </BootGlow>
           <mesh position={[0, -h * 0.28, FACE_Z + 0.001]} material={mats.handle}>
             <boxGeometry args={[0.10, 0.006, 0.002]} />
           </mesh>
           <group position={[0.18, 0, FACE_Z + 0.001]}>
-            <Led color={accentColor} size={0.0025} blink seed={seed} />
+            <Led boot="activity" color={accentColor} size={0.0025} blink seed={seed} />
           </group>
           <group position={[0, -0.012, FACE_Z + 0.0015]}>
-            <LedStrip count={10} length={0.12} color="#64e6ff" size={0.0021} seed={seed + 40} />
+            <LedStrip boot count={10} length={0.12} color="#64e6ff" size={0.0021} seed={seed + 40} />
           </group>
           <RackEars sizeU={sizeU} />
         </group>

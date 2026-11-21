@@ -18,6 +18,7 @@ import {
 } from "./rackConfig";
 import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { BootCascade } from "./BootCascade";
 
 export type ContinuousProgressRef = { current: number };
 
@@ -720,6 +721,13 @@ export function ContinuousRackScene({
       </Suspense>
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
+      {/* Power-on choreography; the switch is BOOT_CASCADE_ENABLED in ./bootCascade.ts. */}
+      <BootCascade
+        progressRef={progressRef}
+        reducedMotion={reducedMotion}
+        tier={tier}
+        absentUnits={INSTALL_TARGETS}
+      />
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />

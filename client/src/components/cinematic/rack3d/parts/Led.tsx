@@ -1,6 +1,45 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import {
+  activityLevel,
+  bootState,
+  burstDepth,
+  driveLevel,
+  glowLevel,
+  localTime,
+  powerLed,
+  stripLevel,
+  unitDelay,
+} from "../bootCascade";
+
+/**
+ * What an LED does during the boot cascade (see ../bootCascade.ts).
+ * Leaving the prop off opts the LED out, which is right for anything that
+ * is not the booting host: rack frame lights, the PDUs, the UPS.
+ */
+export type BootRole = "power" | "drive" | "activity";
+
+const OFF = new THREE.Color("#08090c");
+const worldScratch = new THREE.Vector3();
+const colorScratch = new THREE.Color();
+
+/**
+ * Per-run delay for whatever `objRef` points at, measured from its height
+ * in the rack. Measured once per cascade rather than once per mount because
+ * the sliding servers are not at their final height on the first frame.
+ */
+function useUnitDelay(objRef: React.RefObject<THREE.Object3D>) {
+  const run = useRef(-1);
+  const delay = useRef(0);
+  return () => {
+    if (run.current !== bootState.run && objRef.current) {
+      run.current = bootState.run;
+      delay.current = unitDelay(objRef.current.getWorldPosition(worldScratch).y);
+    }
+    return delay.current;
+  };
+}
 
 export interface LedProps {
   color?: string;
@@ -9,6 +48,8 @@ export interface LedProps {
   blink?: boolean;
   /** 0..1, relative blink offset so adjacent LEDs don't pulse in sync. */
   seed?: number;
+  /** Join the boot cascade in this role. Omit for always-on LEDs. */
+  boot?: BootRole;
 }
 
 export function Led({
@@ -17,9 +58,15 @@ export function Led({
   intensity = 2.5,
   blink = false,
   seed = 0,
+  boot,
 }: LedProps) {
   const mat = useRef<THREE.MeshStandardMaterial>(null);
   const meshRef = useRef<THREE.Mesh>(null);
+  const base = useMemo(() => new THREE.Color(color), [color]);
+  const getDelay = useUnitDelay(meshRef);
+  // True while the material holds boot colors, so they are put back exactly
+  // once when the cascade ends instead of being rewritten every frame.
+  const tinted = useRef(false);
 
   useFrame(({ clock }) => {
     if (!mat.current) return;
@@ -27,9 +74,35 @@ export function Led({
     const t = clock.elapsedTime * 4 + seed * 6.28;
     const carrier = 0.58 + 0.42 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.3 + seed * 3.14));
     const flicker = 0.86 + 0.14 * Math.sin(clock.elapsedTime * 11 + seed * 9.7);
-    const active = blink ? carrier : 1;
+    let active = blink ? carrier : 1;
+    let gate = 1;
 
-    mat.current.emissiveIntensity = intensity * active * flicker;
+    if (boot && bootState.active) {
+      const lt = localTime(getDelay());
+      if (boot === "power") {
+        gate = powerLed(lt, base, colorScratch);
+        mat.current.emissive.copy(colorScratch);
+        // The power LED is solid or flashing by the legend, never shimmering.
+        active = 1;
+      } else {
+        gate = boot === "drive" ? driveLevel(lt, seed) : activityLevel(lt, seed);
+        colorScratch.copy(base);
+        if (blink) {
+          // Same blink rate, deeper swing: busy without flashing faster.
+          const deep = 0.1 + 0.9 * ((carrier - 0.58) / 0.42);
+          active = carrier + (deep - carrier) * burstDepth(lt);
+        }
+      }
+      // An unlit LED is a dark lens, not a bright box catching the key light.
+      mat.current.color.copy(colorScratch).multiplyScalar(0.1 + 0.9 * Math.min(1, gate));
+      tinted.current = true;
+    } else if (tinted.current) {
+      mat.current.color.copy(base);
+      mat.current.emissive.copy(base);
+      tinted.current = false;
+    }
+
+    mat.current.emissiveIntensity = intensity * active * flicker * gate;
 
     if (meshRef.current) {
       const scale = 1 + (blink ? (carrier - 0.5) * 0.18 : 0.04);
@@ -62,6 +135,7 @@ export function LedStrip({
   blink = true,
   blinkProbability = 0.84,
   seed = 1,
+  boot = false,
 }: {
   count: number;
   length: number;
@@ -70,6 +144,8 @@ export function LedStrip({
   blink?: boolean;
   blinkProbability?: number;
   seed?: number;
+  /** Join the boot cascade: dark, a POST lamp-test sweep, then normal. */
+  boot?: boolean;
 }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -84,12 +160,16 @@ export function LedStrip({
 
   const color3 = useMemo(() => new THREE.Color(color), [color]);
   const dim = useMemo(() => color3.clone().multiplyScalar(0.12), [color3]);
-  const off = useMemo(() => new THREE.Color("#08090c"), []);
+  const off = OFF;
+  const scratch = useMemo(() => new THREE.Color(), []);
+  const getDelay = useUnitDelay(meshRef);
 
   useFrame(({ clock }) => {
     const m = meshRef.current;
     if (!m) return;
     const step = count > 1 ? length / (count - 1) : 0;
+    const booting = boot && bootState.active;
+    const lt = booting ? localTime(getDelay()) : 0;
     for (let i = 0; i < count; i++) {
       dummy.position.set(-length / 2 + i * step, 0, 0);
       dummy.updateMatrix();
@@ -98,10 +178,15 @@ export function LedStrip({
       if (blink && lit[i]) {
         const t = clock.elapsedTime * 5.8 + phases[i] * 6.28;
         const v = 0.48 + 0.52 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.9 + phases[i] * 3.1));
-        m.setColorAt(i, color3.clone().lerp(dim, 1 - v));
+        scratch.copy(color3).lerp(dim, 1 - v);
       } else {
-        m.setColorAt(i, lit[i] ? dim : off);
+        scratch.copy(lit[i] ? dim : off);
       }
+      // LEDs that idle dark stay dark; the rest follow the POST sweep.
+      if (booting && lit[i]) {
+        scratch.lerp(off, 1 - stripLevel(lt, count > 1 ? i / (count - 1) : 0));
+      }
+      m.setColorAt(i, scratch);
     }
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
@@ -137,6 +222,7 @@ export function LedField({
   points,
   size = 0.0019,
   seed = 0,
+  boot = false,
 }: {
   points: Array<{
     position: [number, number, number];
@@ -145,9 +231,12 @@ export function LedField({
   }>;
   size?: number;
   seed?: number;
+  /** Join the boot cascade: each LED comes up at its own moment. */
+  boot?: boolean;
 }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = points.length;
+  const getDelay = useUnitDelay(meshRef);
 
   const colors = useMemo(
     () => points.map((p) => new THREE.Color(p.color)),
@@ -181,15 +270,19 @@ export function LedField({
     const mesh = meshRef.current;
     if (!mesh || count === 0) return;
     const t = clock.elapsedTime;
+    const booting = boot && bootState.active;
+    const lt = booting ? localTime(getDelay()) : 0;
     for (let i = 0; i < count; i++) {
       if (points[i].blink === false) {
-        mesh.setColorAt(i, colors[i]);
-        continue;
+        scratch.copy(colors[i]);
+      } else {
+        const phase = phases[i] * 6.28;
+        const v =
+          0.5 + 0.5 * (0.5 + 0.5 * Math.sin(t * 5.2 + phase) * Math.cos(t * 1.7 + phase));
+        scratch.copy(dims[i]).lerp(colors[i], v);
       }
-      const phase = phases[i] * 6.28;
-      const v =
-        0.5 + 0.5 * (0.5 + 0.5 * Math.sin(t * 5.2 + phase) * Math.cos(t * 1.7 + phase));
-      mesh.setColorAt(i, scratch.copy(dims[i]).lerp(colors[i], v));
+      if (booting) scratch.lerp(OFF, 1 - activityLevel(lt, seed + i));
+      mesh.setColorAt(i, scratch);
     }
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   });
@@ -202,4 +295,43 @@ export function LedField({
       <meshBasicMaterial toneMapped={false} />
     </instancedMesh>
   );
+}
+
+
+/**
+ * Gates the light bars and screens inside it on the boot cascade, so a
+ * unit that has no power yet is actually dark rather than dark with its
+ * accent strip glowing.
+ *
+ * Children must be meshes that own their material (every caller passes
+ * inline materials): the base opacity or emissive intensity is remembered
+ * on the first boot frame and restored when the cascade ends.
+ */
+export function BootGlow({ children }: { children: React.ReactNode }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const getDelay = useUnitDelay(groupRef);
+  const dimmed = useRef(false);
+
+  useFrame(() => {
+    const group = groupRef.current;
+    if (!group) return;
+    if (!bootState.active && !dimmed.current) return;
+    const level = bootState.active ? glowLevel(localTime(getDelay())) : 1;
+    for (let i = 0; i < group.children.length; i++) {
+      const mat = (group.children[i] as THREE.Mesh).material as
+        | (THREE.Material & { emissiveIntensity?: number })
+        | undefined;
+      if (!mat) continue;
+      const emissive = typeof mat.emissiveIntensity === "number";
+      if (mat.userData.bootBase === undefined) {
+        mat.userData.bootBase = emissive ? mat.emissiveIntensity : mat.opacity;
+      }
+      const value = (mat.userData.bootBase as number) * level;
+      if (emissive) mat.emissiveIntensity = value;
+      else mat.opacity = value;
+    }
+    dimmed.current = bootState.active;
+  });
+
+  return <group ref={groupRef}>{children}</group>;
 }
