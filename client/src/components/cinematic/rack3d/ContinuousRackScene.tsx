@@ -8,6 +8,8 @@ import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
+import { PacketFlow } from "./parts/PacketFlow";
+import { PauseWhenHidden } from "./PauseWhenHidden";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -20,6 +22,13 @@ import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 export type ContinuousProgressRef = { current: number };
+
+/**
+ * Packet flow: light pulses traveling along the hero rack's patch cables
+ * (parts/PacketFlow.tsx). Set to false to remove the effect; nothing else
+ * depends on it.
+ */
+const SHOW_PACKET_FLOW = true;
 
 const FOCUS_SLOT: GearSlot = {
   u: 9,
@@ -667,6 +676,8 @@ export function ContinuousRackScene({
         stencil: false,
       }}
       style={{ background: "transparent" }}
+      // Decorative: the beats it illustrates are all in the page copy.
+      aria-hidden
     >
       <color attach="background" args={["#04050a"]} />
       <fog attach="fog" args={["#04050a", 4.0, 18.0]} />
@@ -716,10 +727,14 @@ export function ContinuousRackScene({
           />
         ))}
         <FocusServer progressRef={progressRef} />
+        {SHOW_PACKET_FLOW && !reducedMotion && (
+          <PacketFlow progressRef={progressRef} tier={tier} />
+        )}
         <HallContents progressRef={progressRef} tier={tier} />
       </Suspense>
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
+      <PauseWhenHidden />
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />

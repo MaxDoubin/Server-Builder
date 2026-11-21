@@ -9,9 +9,9 @@ import {
   U,
 } from "../rackConfig";
 
-type Accent = "signal" | "amber" | "cyan" | "copper" | "dark";
+export type CableAccent = "signal" | "amber" | "cyan" | "copper" | "dark";
 
-const ACCENT_COLORS: Record<Accent, string> = {
+const ACCENT_COLORS: Record<CableAccent, string> = {
   signal: "#3a5a20",
   cyan: "#1f4a6a",
   amber: "#6a3a14",
@@ -21,54 +21,99 @@ const ACCENT_COLORS: Record<Accent, string> = {
 
 interface CableRun {
   targetU: number;
-  accent: Accent;
+  accent: CableAccent;
   lane: number;
 }
 
+const RUNS: CableRun[] = [
+  { targetU: 3, accent: "cyan", lane: 0 },
+  { targetU: 4, accent: "signal", lane: 1 },
+  { targetU: 7, accent: "signal", lane: 2 },
+  { targetU: 9, accent: "copper", lane: 3 },
+  { targetU: 10, accent: "signal", lane: 4 },
+  { targetU: 12, accent: "signal", lane: 5 },
+  { targetU: 17, accent: "copper", lane: 6 },
+  { targetU: 18, accent: "dark", lane: 7 },
+  { targetU: 21, accent: "cyan", lane: 8 },
+  { targetU: 22, accent: "cyan", lane: 9 },
+  { targetU: 32, accent: "amber", lane: 10 },
+  { targetU: 33, accent: "signal", lane: 11 },
+  { targetU: 34, accent: "signal", lane: 12 },
+  { targetU: 38, accent: "dark", lane: 13 },
+  { targetU: 39, accent: "cyan", lane: 14 },
+  { targetU: 40, accent: "signal", lane: 15 },
+];
+
+const LANE_STEP = 0.0018;
+const RIGHT_LANE_X = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
+const LEFT_LANE_X = -RIGHT_LANE_X;
+const FRONT_Z = RACK_DEPTH / 2 - 0.015;
+const BACK_Z = -RACK_DEPTH / 2 + 0.12;
+
+const switchY = (u: number) => RACK_FEET_HEIGHT + u * U + U * 0.5;
+
+/** One patch cable: the path it takes and the jacket accent it wears. */
+export interface CablePath {
+  curve: THREE.CatmullRomCurve3;
+  accent: CableAccent;
+}
+
+function buildCableCurve(fromY: number, toY: number, laneX: number) {
+  const start = new THREE.Vector3(laneX, fromY, FRONT_Z);
+  const dropIn = new THREE.Vector3(laneX + 0.003, fromY - U * 0.3, FRONT_Z - 0.015);
+  const managerTop = new THREE.Vector3(laneX + 0.006, Math.max(fromY, toY) + U * 0.15, BACK_Z + 0.02);
+  const managerMid = new THREE.Vector3(laneX + 0.006, (fromY + toY) / 2, BACK_Z + 0.02);
+  const managerBot = new THREE.Vector3(laneX + 0.006, Math.min(fromY, toY) - U * 0.15, BACK_Z + 0.02);
+  const climbOut = new THREE.Vector3(laneX + 0.003, toY - U * 0.3, FRONT_Z - 0.015);
+  const end = new THREE.Vector3(laneX, toY, FRONT_Z);
+
+  const goingDown = fromY > toY;
+  const points = goingDown
+    ? [start, dropIn, managerTop, managerMid, managerBot, climbOut, end]
+    : [start, dropIn, managerBot, managerMid, managerTop, climbOut, end];
+
+  return new THREE.CatmullRomCurve3(points, false, "centripetal", 0.5);
+}
+
+/**
+ * Every patch cable in the rack as a curve running from its switch port
+ * (t = 0) to the device port (t = 1).
+ *
+ * The single source of truth for cable routing: the tubes below are swept
+ * along these curves and the packet-flow pulses ride the same ones, so the
+ * light can never drift off the jacket it is meant to be inside.
+ */
+export function buildCablePaths(): CablePath[] {
+  return RUNS.map((run) => {
+    const targetY = RACK_FEET_HEIGHT + run.targetU * U + U * 0.35;
+    const useLeft = run.targetU <= 9 || run.targetU === 17 || run.targetU === 18;
+    const baseX = useLeft ? LEFT_LANE_X : RIGHT_LANE_X;
+    const laneX = baseX + (useLeft ? -1 : 1) * (run.lane * LANE_STEP * 0.55);
+    const fromY = run.targetU >= 35
+      ? switchY(35)
+      : run.targetU >= 30
+        ? switchY(30)
+        : run.targetU >= 16 && run.targetU <= 22
+          ? switchY(15)
+          : switchY(14);
+    return { curve: buildCableCurve(fromY, targetY, laneX), accent: run.accent };
+  });
+}
+
 function CableTube({
-  fromY,
-  toY,
-  laneX,
-  frontZ,
-  backZ,
+  curve,
   color,
   radius,
 }: {
-  fromY: number;
-  toY: number;
-  laneX: number;
-  frontZ: number;
-  backZ: number;
+  curve: THREE.CatmullRomCurve3;
   color: string;
   radius: number;
 }) {
   const geometry = useMemo(() => {
-    const start = new THREE.Vector3(laneX, fromY, frontZ);
-    const dropIn = new THREE.Vector3(laneX + 0.003, fromY - U * 0.3, frontZ - 0.015);
-    const managerTop = new THREE.Vector3(laneX + 0.006, Math.max(fromY, toY) + U * 0.15, backZ + 0.02);
-    const managerMid = new THREE.Vector3(
-      laneX + 0.006,
-      (fromY + toY) / 2,
-      backZ + 0.02,
-    );
-    const managerBot = new THREE.Vector3(
-      laneX + 0.006,
-      Math.min(fromY, toY) - U * 0.15,
-      backZ + 0.02,
-    );
-    const climbOut = new THREE.Vector3(laneX + 0.003, toY - U * 0.3, frontZ - 0.015);
-    const end = new THREE.Vector3(laneX, toY, frontZ);
-
-    const goingDown = fromY > toY;
-    const points = goingDown
-      ? [start, dropIn, managerTop, managerMid, managerBot, climbOut, end]
-      : [start, dropIn, managerBot, managerMid, managerTop, climbOut, end];
-
-    const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.5);
     const length = curve.getLength();
     const segments = Math.max(24, Math.min(64, Math.round(length * 80)));
     return new THREE.TubeGeometry(curve, segments, radius, 6, false);
-  }, [fromY, toY, laneX, frontZ, backZ, radius]);
+  }, [curve, radius]);
 
   return (
     <mesh geometry={geometry}>
@@ -162,77 +207,26 @@ function RearTrunkBundle({ x, color, height }: { x: number; color: string; heigh
 }
 
 export function Cables() {
-  const rightLaneX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
-  const leftLaneX = -(RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004);
+  const rightLaneX = RIGHT_LANE_X;
+  const leftLaneX = LEFT_LANE_X;
+  const frontZ = FRONT_Z;
+  const backZ = BACK_Z;
 
-  const frontZ = RACK_DEPTH / 2 - 0.015;
-  const backZ = -RACK_DEPTH / 2 + 0.12;
-
-  const switchY14 = RACK_FEET_HEIGHT + 14 * U + U * 0.5;
-  const switchY15 = RACK_FEET_HEIGHT + 15 * U + U * 0.5;
-  const switchY30 = RACK_FEET_HEIGHT + 30 * U + U * 0.5;
-  const switchY35 = RACK_FEET_HEIGHT + 35 * U + U * 0.5;
-
-  const runs: CableRun[] = useMemo(
-    () => [
-      { targetU: 3, accent: "cyan", lane: 0 },
-      { targetU: 4, accent: "signal", lane: 1 },
-      { targetU: 7, accent: "signal", lane: 2 },
-      { targetU: 9, accent: "copper", lane: 3 },
-      { targetU: 10, accent: "signal", lane: 4 },
-      { targetU: 12, accent: "signal", lane: 5 },
-      { targetU: 17, accent: "copper", lane: 6 },
-      { targetU: 18, accent: "dark", lane: 7 },
-      { targetU: 21, accent: "cyan", lane: 8 },
-      { targetU: 22, accent: "cyan", lane: 9 },
-      { targetU: 32, accent: "amber", lane: 10 },
-      { targetU: 33, accent: "signal", lane: 11 },
-      { targetU: 34, accent: "signal", lane: 12 },
-      { targetU: 38, accent: "dark", lane: 13 },
-      { targetU: 39, accent: "cyan", lane: 14 },
-      { targetU: 40, accent: "signal", lane: 15 },
-    ],
-    [],
-  );
-
-  const laneStep = 0.0018;
+  const paths = useMemo(buildCablePaths, []);
 
   return (
     <group>
       <CableManager x={rightLaneX} frontZ={frontZ} backZ={backZ} />
       <CableManager x={leftLaneX} frontZ={frontZ} backZ={backZ} />
 
-      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY14} z={backZ + 0.02} />
-      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY30} z={backZ + 0.02} />
-      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY15} z={backZ + 0.02} />
-      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY35} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY(14)} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY(30)} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY(15)} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY(35)} z={backZ + 0.02} />
 
-      {runs.map((run, i) => {
-        const targetY = RACK_FEET_HEIGHT + run.targetU * U + U * 0.35;
-        const useLeft = run.targetU <= 9 || run.targetU === 17 || run.targetU === 18;
-        const baseX = useLeft ? leftLaneX : rightLaneX;
-        const laneX = baseX + (useLeft ? -1 : 1) * (run.lane * laneStep * 0.55);
-        const fromY = run.targetU >= 35
-          ? switchY35
-          : run.targetU >= 30
-            ? switchY30
-            : run.targetU >= 16 && run.targetU <= 22
-              ? switchY15
-              : switchY14;
-
-        return (
-          <CableTube
-            key={i}
-            fromY={fromY}
-            toY={targetY}
-            laneX={laneX}
-            frontZ={frontZ}
-            backZ={backZ}
-            color={ACCENT_COLORS[run.accent]}
-            radius={0.0014}
-          />
-        );
-      })}
+      {paths.map((path, i) => (
+        <CableTube key={i} curve={path.curve} color={ACCENT_COLORS[path.accent]} radius={0.0014} />
+      ))}
 
       <RearTrunkBundle x={-0.14} color="#18202a" height={RACK_INTERNAL_HEIGHT * 0.86} />
       <RearTrunkBundle x={0.02} color="#1f4a6a" height={RACK_INTERNAL_HEIGHT * 0.72} />
