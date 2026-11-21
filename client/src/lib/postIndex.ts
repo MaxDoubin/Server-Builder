@@ -266,7 +266,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
     coverImage: "/images/blog/ilo-6-vs-ilo-7.jpg",
     coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg"},
-    wordCount: 1732,
+    wordCount: 1762,
   },
   {
     slug: "lsi-9207-8i-vs-9211-8i",
@@ -1393,7 +1393,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
     coverImage: "/images/blog/spf-dkim-dmarc.jpg",
     coverCredit: {"author":"RubyGoes","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/61997808@N00/8456755757"},
-    wordCount: 1288,
+    wordCount: 1343,
   },
   {
     slug: "flash-caching-tiers",
@@ -1403,7 +1403,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
     coverImage: "/images/blog/flash-caching-tiers.jpg",
     coverCredit: {"author":"osde8info","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/8764442@N07/8721114332"},
-    wordCount: 1048,
+    wordCount: 1054,
   },
   {
     slug: "policy-based-routing-linux",
@@ -1412,7 +1412,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","routing","linux"],
     excerpt: "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
     coverImage: "/images/blog/policy-based-routing-linux.jpg",
-    wordCount: 1014,
+    wordCount: 1032,
   },
   {
     slug: "inference-determinism",
@@ -1765,7 +1765,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Stub, forwarder, recursive: three different jobs people all call a DNS server. Here is the walk down the tree, the caching rules, and how to watch it happen.",
     coverImage: "/images/blog/recursive-resolver-internals.jpg",
     coverCredit: {"author":"comedy_nose","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://www.flickr.com/photos/23408922@N07/4150503612"},
-    wordCount: 1033,
+    wordCount: 1098,
   },
   {
     slug: "gpu-passthrough-proxmox",
@@ -2032,7 +2032,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","security","operations"],
     excerpt: "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
     coverImage: "/images/blog/systemd-service-hardening.jpg",
-    wordCount: 833,
+    wordCount: 856,
   },
   {
     slug: "sriov-and-device-passthrough",
@@ -2445,7 +2445,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
     coverImage: "/images/blog/sfp-transceivers-explained.jpg",
     coverCredit: {"author":"Aurélien Rinaldi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Modules_SFP_officiels_et_compatibles.jpg"},
-    wordCount: 1635,
+    wordCount: 1639,
   },
   {
     slug: "backup-strategy-321-rule",
@@ -2698,7 +2698,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","homelab","hardware"],
     excerpt: "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
     coverImage: "/images/blog/homelab-network-evolution.jpg",
-    wordCount: 1869,
+    wordCount: 1896,
   },
   {
     slug: "container-orchestration-basics",
@@ -2717,7 +2717,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
     coverCredit: {"author":"pmsyyz","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/96671942@N00/5768497319"},
-    wordCount: 1817,
+    wordCount: 1830,
   },
   {
     slug: "fortigate-cli-essentials",
@@ -2727,7 +2727,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
     coverImage: "/images/blog/fortigate-cli-essentials.jpg",
     coverCredit: {"author":"Premeditated","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png"},
-    wordCount: 1555,
+    wordCount: 1599,
   },
   {
     slug: "nvme-vs-sata-enterprise-storage",
@@ -2830,7 +2830,7 @@ export const postIndex: PostMeta[] = [
     tags: ["fortinet","networking","firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
-    wordCount: 1591,
+    wordCount: 1644,
   },
   {
     slug: "power-over-ethernet-poe",
@@ -2912,7 +2912,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
     coverCredit: {"author":"Jupeterson","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Network_Virtualization_Platform_Architecture_Example.png"},
-    wordCount: 1697,
+    wordCount: 1716,
   },
   {
     slug: "troubleshooting-packet-captures",
@@ -2993,7 +2993,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
     coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
     coverCredit: {"author":"PauleMiranda","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Home_Server_Debian.jpg"},
-    wordCount: 1499,
+    wordCount: 1519,
   },
   {
     slug: "lacp-link-aggregation",
@@ -3003,7 +3003,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
     coverImage: "/images/blog/lacp-link-aggregation.jpg",
     coverCredit: {"author":"JITHIN","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Network-bonding-2.png"},
-    wordCount: 1582,
+    wordCount: 1604,
   },
   {
     slug: "enterprise-wifi-vs-consumer",
@@ -3339,10 +3339,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2991;
+export const CITATION_COUNT = 2993;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 209;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3177;
+export const CHECKED_URL_COUNT = 3179;
