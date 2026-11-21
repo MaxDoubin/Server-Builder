@@ -163,7 +163,7 @@ export const postIndex: PostMeta[] = [
     title: "SSH to an Old Device: No Matching Host Key Type Found, Their Offer: ssh-rsa",
     date: "2026-11-06",
     tags: ["networking","security","troubleshooting"],
-    excerpt: "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms override, how ssh -G confirms it, and when PubkeyAcceptedAlgorithms is also needed.",
+    excerpt: "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms fix, checking it with ssh -G, and when PubkeyAcceptedAlgorithms is needed.",
     coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
     coverCredit: {"author":"BrokenSphere","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Panduit_Pan-Net_Cable_Management_System_front.JPG"},
     wordCount: 3161,

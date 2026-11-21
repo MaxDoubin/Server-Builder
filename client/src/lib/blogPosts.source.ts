@@ -2518,7 +2518,7 @@ The [it works in the shell](/blog/it-works-in-the-shell) article covers the matc
     date: "2026-11-06",
     tags: ["networking", "security", "troubleshooting"],
     excerpt:
-      "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms override, how ssh -G confirms it, and when PubkeyAcceptedAlgorithms is also needed.",
+      "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms fix, checking it with ssh -G, and when PubkeyAcceptedAlgorithms is needed.",
     coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
     coverCredit: {
       author: "BrokenSphere",
