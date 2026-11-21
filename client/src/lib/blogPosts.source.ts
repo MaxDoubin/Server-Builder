@@ -23,6 +23,14 @@ export interface CoverCredit {
   licenseUrl: string;
   /** The file's description page at the source. */
   sourceUrl: string;
+  /**
+   * How the cover differs from the source file, shown after the license.
+   * Omit it and the credit says COVER_MODIFICATION from lib/coverCredit,
+   * which is true of every cover the pipeline makes (1600x900, center
+   * cropped to 16:9). Set a string when a cover was changed differently,
+   * or false only for a file shown exactly as published.
+   */
+  modified?: string | false;
 }
 
 export interface BlogPost {

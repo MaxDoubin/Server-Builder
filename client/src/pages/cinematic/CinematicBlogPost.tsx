@@ -23,6 +23,7 @@ import { useSEO } from "@/lib/useSEO";
 import { getTagPage } from "@/lib/tagPages";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import { formatPostDate } from "@/lib/formatDate";
+import { coverModification } from "@/lib/coverCredit";
 
 /*
   breaks: false, so a single newline inside a paragraph is a space, as it is
@@ -460,6 +461,12 @@ export function CinematicBlogPost() {
               >
                 {post.coverCredit.license}
               </a>
+              {coverModification(post.coverCredit) && (
+                <>
+                  {" "}
+                  · {coverModification(post.coverCredit)}
+                </>
+              )}
             </p>
           )}
 
