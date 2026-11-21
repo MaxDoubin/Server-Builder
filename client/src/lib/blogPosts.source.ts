@@ -31206,7 +31206,7 @@ My practice is to set \`memory.high\` deliberately low at first and watch \`memo
 When a service disappears without a word in its own logs, or slows down for no obvious reason, read what the kernel recorded before reading the application:
 
 1. Find the cgroup. \`systemctl status name.service\` prints it, or read \`/proc/PID/cgroup\`.
-2. Check \`memory.events\`. A nonzero \`oom_kill\` means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing too, the limit killed it. If they are flat, the host itself ran out of memory and picked a victim here. Either way it did not crash. It ran out of budget, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
+2. Check \`memory.events\`. A nonzero \`oom_kill\` means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing too, the limit killed it. If they are flat, the host itself ran out of memory and picked a victim here. Either way it did not crash. It was killed for memory, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
 3. Check \`cpu.stat\`. A rising \`nr_throttled\` means the quota is the bottleneck.
 4. Check the pressure files to see which resource tasks were waiting on.
 5. Only then look at the application.
