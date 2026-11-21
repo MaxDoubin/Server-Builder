@@ -24,6 +24,8 @@ import {
 import { DataCenterNetworkMesh } from "./NetworkTraffic";
 import { HolographicHUD } from "./HolographicHUD";
 import { CameraController, CinematicFlythrough } from "./CameraController";
+import { HallFlythrough } from "./flythrough/HallFlythrough";
+import type { FlythroughTransport } from "./flythrough/useHallFlythrough";
 import { generateProceduralRacks } from "./ProceduralRacks";
 import { PerformanceOverlay } from "./PerformanceOverlay";
 import type { Rack, Equipment, InstalledEquipment } from "@shared/schema";
@@ -43,7 +45,19 @@ interface DatacenterSceneProps {
   selectedRackId: string | null;
   isUnlocked: boolean;
   showEffects?: boolean;
-  cameraMode?: "orbit" | "auto" | "cinematic";
+  cameraMode?: "orbit" | "auto" | "cinematic" | "flythrough";
+  /**
+   * Playback state for the "flythrough" camera mode, the opt-in dolly down
+   * the aisle. Ignored by every other mode.
+   */
+  flythrough?: {
+    playing: boolean;
+    /** Reduced motion: one establishing frame, no camera movement. */
+    still: boolean;
+    runId: number;
+    transport: FlythroughTransport;
+    onEnd: () => void;
+  };
   showHUD?: boolean;
   showPerfOverlay?: boolean;
   rackScale?: number;
@@ -721,6 +735,7 @@ export function DatacenterScene({
   isUnlocked,
   showEffects = true,
   cameraMode = "orbit",
+  flythrough,
   showHUD = true,
   showPerfOverlay = false,
   rackScale = 1,
@@ -1041,6 +1056,19 @@ export function DatacenterScene({
             active
             maxHeight={ceilingHeight - 0.5}
             minHeight={minCameraHeight}
+          />
+        )}
+
+        {cameraMode === "flythrough" && flythrough && !photoFraming && (
+          <HallFlythrough
+            cells={displayRacks}
+            playing={flythrough.playing}
+            still={flythrough.still}
+            runId={flythrough.runId}
+            transport={flythrough.transport}
+            onEnd={flythrough.onEnd}
+            effects={showEffects && !useLowEffects}
+            daylight={isDaylight || isLight}
           />
         )}
 
