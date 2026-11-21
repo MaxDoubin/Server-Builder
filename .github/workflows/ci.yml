@@ -200,6 +200,20 @@ jobs:
       - name: Sitemap coverage
         run: node scripts-ci/check-sitemap-coverage.mjs
 
+      # IndexNow only trusts a submission if <key>.txt is served at the site
+      # root and holds the key, and a script that submits by default would turn
+      # any stray run into a request to a third party. This checks the one
+      # root key file (and that the build copied it) and that
+      # script/indexnow.ts is dry-run unless --submit is typed. Google does
+      # not use IndexNow; this is for Bing, Yandex, Seznam and Naver.
+      - name: IndexNow key file and dry-run default
+        run: node scripts-ci/check-indexnow.mjs
+
+      # Offline: parses the sitemap this build just wrote and prints what a
+      # submission would contain. Sends nothing, to any host.
+      - name: IndexNow dry run
+        run: npx tsx script/indexnow.ts --dry-run
+
       - name: Bundle budget
         run: node scripts-ci/check-bundle-budget.mjs
 
