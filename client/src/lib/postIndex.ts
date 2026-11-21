@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 330 of them. Regenerate with script/generatePostIndex.ts.
+ * 337 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -15,6 +15,14 @@ export interface CoverCredit {
   licenseUrl: string;
   /** The file's description page at the source. */
   sourceUrl: string;
+  /**
+   * How the cover differs from the source file, shown after the license.
+   * Omit it and the credit says COVER_MODIFICATION from lib/coverCredit,
+   * which is true of every cover the pipeline makes (1600x900, center
+   * cropped to 16:9). Set a string when a cover was changed differently,
+   * or false only for a file shown exactly as published.
+   */
+  modified?: string | false;
 }
 
 /**
@@ -99,6 +107,76 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/ebpf-what-it-can-see-and-what-it-cannot-photo.jpg",
     coverCredit: {"author":"Ivan Radic","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Close-up_picture_of_a_beautiful_honeybee_(50039958923).jpg"},
     wordCount: 2774,
+  },
+  {
+    slug: "dell-r630-vs-r640",
+    title: "Dell PowerEdge R630 vs R640: what changed, and which to buy used",
+    date: "2026-11-11",
+    tags: ["dell","servers","hardware","homelab"],
+    excerpt: "The R640 adds six-channel memory, up to ten direct-attach NVMe bays, BOSS boot and a still-maintained iDRAC9 over the R630, but Dell's own noise and idle power figures do not favor it.",
+    coverImage: "/images/blog/dell-r630-vs-r640-photo.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
+    wordCount: 4034,
+  },
+  {
+    slug: "hunting-linux-persistence",
+    title: "Hunting Linux Persistence: Cron, Systemd, authorized_keys and ld.so.preload",
+    date: "2026-11-10",
+    tags: ["linux","security","servers"],
+    excerpt: "A defensive checklist for finding where an attacker can make code run again on a Linux server, covering cron and at jobs, systemd timers and units, authorized_keys and sshd options, /etc/ld.so.preload, package verification and audit rules that catch the next change.",
+    coverImage: "/images/blog/hunting-linux-persistence-photo.jpg",
+    coverCredit: {"author":"ImagePerson","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Padlock_7642.jpg"},
+    wordCount: 4447,
+  },
+  {
+    slug: "sata-3-3v-pin-power-disable",
+    title: "SATA Power Disable: Why a New Drive Won't Spin Up and How to Fix the 3.3 V Pin",
+    date: "2026-11-09",
+    tags: ["storage","hardware","homelab"],
+    excerpt: "A new or shucked SATA drive that never spins up is often held in reset by 3.3 V on power pin 3 (Power Disable, PWDIS); here is how to confirm it, which drives have it, and which fixes hold.",
+    coverImage: "/images/blog/sata-3-3v-pin-power-disable-photo.jpg",
+    coverCredit: {"author":"Bubba73","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:SATA_data_and_power_connectors.jpg"},
+    wordCount: 3531,
+  },
+  {
+    slug: "zfs-permanent-errors-detected",
+    title: "ZFS \"Permanent errors have been detected\": What It Means and How to Clear It",
+    date: "2026-11-08",
+    tags: ["storage","linux","servers","troubleshooting"],
+    excerpt: "What the ZFS-8000-8A permanent errors message means, how to find the cause, and the restore, scrub and clear order that actually empties the list.",
+    coverImage: "/images/blog/zfs-permanent-errors-detected-photo.jpg",
+    coverCredit: {"author":"Mk2010","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Hard_disk_drive_platter,_Western_Digital_Caviar_250Gb_WD2500AAKS.jpg"},
+    wordCount: 4081,
+  },
+  {
+    slug: "systemd-status-203-exec",
+    title: "systemd status=203/EXEC: what it means and how to fix it",
+    date: "2026-11-07",
+    tags: ["systemd","linux","servers","troubleshooting"],
+    excerpt: "With a Failed at step EXEC spawning line in the journal, status=203/EXEC means execve failed before your program ran. That line's error text says whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang; without it, the program itself may have exited 203.",
+    coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
+    coverCredit: {"author":"Solijon Solayev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Arch_Linux_system_update_via_pacman_on_an_Acer_laptop.jpg"},
+    wordCount: 4281,
+  },
+  {
+    slug: "ssh-no-matching-host-key-type-ssh-rsa",
+    title: "SSH to an Old Device: No Matching Host Key Type Found, Their Offer: ssh-rsa",
+    date: "2026-11-06",
+    tags: ["networking","security","troubleshooting"],
+    excerpt: "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms fix, checking it with ssh -G, and when PubkeyAcceptedAlgorithms is needed.",
+    coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
+    coverCredit: {"author":"BrokenSphere","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Panduit_Pan-Net_Cable_Management_System_front.JPG"},
+    wordCount: 3161,
+  },
+  {
+    slug: "hpe-smart-array-p408i-mixed-mode",
+    title: "HPE Smart Array P408i-a Mixed Mode: Pass-Through, ssacli, smartpqi and ZFS",
+    date: "2026-11-05",
+    tags: ["storage","servers","hardware","homelab"],
+    excerpt: "The Gen10 P408i-a has no HBA-mode switch: any drive outside a logical drive or spare is passed to the OS automatically, so you delete the logical drives with ssacli and check the result under the smartpqi driver.",
+    coverImage: "/images/blog/hpe-smart-array-p408i-mixed-mode-photo.jpg",
+    coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL580_G7_in_2023.jpg"},
+    wordCount: 3646,
   },
   {
     slug: "rescue-a-google-jamboard-without-flashing",
@@ -3249,10 +3327,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 330;
+export const POST_COUNT = 337;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and thirty";
+export const POST_COUNT_SPELLED = "three hundred and thirty seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3261,10 +3339,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2817;
+export const CITATION_COUNT = 2991;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 202;
+export const ATTRIBUTION_URL_COUNT = 209;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2997;
+export const CHECKED_URL_COUNT = 3177;
