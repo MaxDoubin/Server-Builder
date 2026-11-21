@@ -1,6 +1,6 @@
 ## The short answer
 
-`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with `HostKeyAlgorithms +ssh-rsa` and `PubkeyAcceptedAlgorithms +ssh-rsa` in a `Host` block of `~/.ssh/config`, and confirm it with `ssh -G`. Add `KexAlgorithms` or `Ciphers` lines only if a later `Their offer:` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
+`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with `HostKeyAlgorithms +ssh-rsa` in a `Host` block of `~/.ssh/config`, and confirm it with `ssh -G`. That fixes this error on its own. Add `PubkeyAcceptedAlgorithms +ssh-rsa` only if login then fails with `no mutual signature algorithm`, and `KexAlgorithms` or `Ciphers` lines only if a later `Their offer:` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
 
 ## What does "no matching host key type found. Their offer: ssh-rsa" mean?
 
@@ -59,26 +59,27 @@ The lines after `peer server KEXINIT proposal` are the device's lists. The lines
 For a single connection, pass the options on the command line.
 
 ```bash
-ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa admin@192.0.2.10
+ssh -o HostKeyAlgorithms=+ssh-rsa admin@192.0.2.10
 ```
 
-To make it permanent for that device only, use the stanza from the 8.8 notes, with a host alias.
+To make it permanent for that device only, put it in a `Host` block with an alias.
 
 ```text
 Host old-switch
     HostName 192.0.2.10
     User admin
     HostKeyAlgorithms +ssh-rsa
-    PubkeyAcceptedAlgorithms +ssh-rsa
 ```
 
-The [ssh_config(5)](https://man.openbsd.org/ssh_config) page defines the `+` prefix: the algorithms "will be appended to the default set instead of replacing them," so the strong algorithms stay first. A bare `HostKeyAlgorithms ssh-rsa` replaces the defaults, which is the weakening this approach avoids. The same page says "the first obtained value for each directive is used," so "more host-specific declarations should be given near the beginning of the file, and general defaults at the end." Put the stanza above any `Host *` block, then check the result.
+The 8.8 notes give a two-line stanza that also adds `PubkeyAcceptedAlgorithms +ssh-rsa`, and they say why: the options re-enable RSA/SHA-1 "to allow connection and/or user authentication." These are separate negotiations. [ssh_config(5)](https://man.openbsd.org/ssh_config) defines `HostKeyAlgorithms` as "the host key signature algorithms that the client wants to use" and `PubkeyAcceptedAlgorithms` as "the signature algorithms that will be used for public key authentication." The host key error at the top of this article needs only the first. The second lets your own RSA key sign with SHA-1, so leave it out until login fails with `no mutual signature algorithm`, [covered below](#why-does-no-mutual-signature-algorithm-appear-with-an-rsa-key). A password login or an Ed25519 key never needs it.
+
+The same page defines the `+` prefix: the algorithms "will be appended to the default set instead of replacing them," so the strong algorithms stay first. A bare `HostKeyAlgorithms ssh-rsa` replaces the defaults, which is the weakening this approach avoids. The same page says "the first obtained value for each directive is used," so "more host-specific declarations should be given near the beginning of the file, and general defaults at the end." Put the stanza above any `Host *` block, then check the result.
 
 ```bash
-ssh -G old-switch | grep -i -E '^(hostkeyalgorithms|pubkeyacceptedalgorithms)'
+ssh -G old-switch | grep -i '^hostkeyalgorithms'
 ```
 
-`ssh -G` prints the configuration ssh would use for that host without connecting. Both lines should end with `ssh-rsa`. A config file shared with clients older than 8.5 should spell the second option `PubkeyAcceptedKeyTypes`, which the 8.5 notes kept as an alias.
+`ssh -G` prints the configuration ssh would use for that host without connecting. The line should end with `ssh-rsa`. If you later add `PubkeyAcceptedAlgorithms`, check it the same way, and in a config file shared with clients older than 8.5 spell it `PubkeyAcceptedKeyTypes`, which the 8.5 notes kept as an alias.
 
 Other tools follow the same stanza. The [scp(1)](https://man.openbsd.org/scp) page says `-o` passes options to ssh "in the format used in ssh_config(5)," and sftp and git over SSH run ssh, so they read `~/.ssh/config` too.
 

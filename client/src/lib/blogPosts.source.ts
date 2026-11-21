@@ -2225,7 +2225,7 @@ A \`<metadata>\` entry that survives a clean scrub is not stale. The 8A page say
     date: "2026-11-07",
     tags: ["systemd", "linux", "servers", "troubleshooting"],
     excerpt:
-      "status=203/EXEC means systemd forked the service process but execve failed before any of your program ran, and the error text in the journal tells you whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang.",
+      "With a Failed at step EXEC spawning line in the journal, status=203/EXEC means execve failed before your program ran. That line's error text says whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang; without it, the program itself may have exited 203.",
     coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
     coverCredit: {
       author: "Solijon Solayev",
@@ -2235,13 +2235,13 @@ A \`<metadata>\` entry that survives a clean scrub is not stale. The 8A page say
     },
     content: `## The short answer
 
-systemd is the service manager that starts and supervises services on most Linux distributions. When it reports \`status=203/EXEC\`, it forked a process for the service, but the \`execve(2)\` system call that should have replaced that process with the program failed. None of the program's own code ran. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says this is "Most likely" caused by "a missing or non-accessible executable file". The journal line \`Failed at step EXEC spawning <path>: <error>\` carries the kernel's error text, and that text settles which case it is:
+systemd is the service manager that starts and supervises services on most Linux distributions. When it reports \`status=203/EXEC\` and the journal has a matching \`Failed at step EXEC spawning\` line, it forked a process for the service, but the \`execve(2)\` system call that should have replaced that process with the program failed. None of the program's own code ran. Without that line, the program may have started and exited 203 itself, which shows the same status ([see below](#what-else-can-hide-or-fake-a-203-exec)). [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says this is "Most likely" caused by "a missing or non-accessible executable file". The full journal line, \`Failed at step EXEC spawning <path>: <error>\`, carries the kernel's error text, and that text settles which case it is:
 
 - "No such file or directory" (ENOENT): the file, or the interpreter named on its \`#!\` line, does not exist where the unit looks.
 - "Permission denied" (EACCES): no execute bit, a directory the unit's user cannot search, a \`noexec\` mount, an SELinux denial or a sandbox setting.
 - "Exec format error" (ENOEXEC): a script with no \`#!\` line, or a binary for another CPU.
 
-Read the line with \`journalctl -u NAME -b\`, test the path with \`namei -l\`, and decode the number with \`systemd-analyze exit-status 203\`. The same manual table lists 43 systemd-specific codes from 200 to 245. Each one names a setup step that failed before the program started, such as 226/NAMESPACE for a missing \`ReadWritePaths=\` target and 217/USER for a missing \`User=\` account.
+Read the line with \`journalctl -u NAME -b\`, test the path with \`namei -l\`, and decode the number with \`systemd-analyze exit-status 203\`. Current systemd releases name 45 codes of their own, from 200 to 246, and older ones fewer. Each one names a setup step that failed before the program started, such as 226/NAMESPACE for a missing \`ReadWritePaths=\` target and 217/USER for a missing \`User=\` account.
 
 ## What does status=203/EXEC mean?
 
@@ -2361,16 +2361,16 @@ Some notes on those:
 
 Before any of that, \`systemd-analyze verify myapp.service\` reports "commands listed in \`ExecStart=\` and similar which are not found in the system or not executable". [Its source](https://raw.githubusercontent.com/systemd/systemd/main/src/analyze/analyze-verify-util.c) skips commands prefixed with \`-\`, and it checks from the caller's side. It cannot see a sandbox, another user or an SELinux label.
 
-## What do the other exit codes from 200 to 245 mean?
+## What do the other exit codes in the 200s mean?
 
-The "systemd-specific exit codes" table in [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) lists 43 codes from 200 (\`EXIT_CHDIR\`) to 245 (\`EXIT_BPF\`). It says "The LSB specification suggests that error codes 200 and above are reserved for implementations." LSB is the Linux Standard Base, an older cross-distribution standard. Numbers 223 and 234 are missing from the table. [The header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) marks them reserved: "used to be tcpwrap, don't reuse!" and "used to be used by kdbus, don't reuse". The page also lists C library codes 0 and 1, LSB codes 2 to 7 and BSD codes 64 to 78. A status outside 200 to 245 usually came from the program itself.
+The "systemd-specific exit codes" table in [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) has 43 rows, from 200 (\`EXIT_CHDIR\`) to 245 (\`EXIT_BPF\`), and that last number is wrong, as explained below the second table. It says "The LSB specification suggests that error codes 200 and above are reserved for implementations." LSB is the Linux Standard Base, an older cross-distribution standard. Numbers 223 and 234 are missing from the table. [The header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) marks them reserved: "used to be tcpwrap, don't reuse!" and "used to be used by kdbus, don't reuse". The page also lists C library codes 0 and 1, LSB codes 2 to 7 and BSD codes 64 to 78. A status outside the 200s usually came from the program itself.
 
-The grouping below is my reading aid, not systemd's own classification. The counts 10, 11, 7, 6, 5, 3 and 1 add up to the 43 rows of the table.
+The table below uses the numbers the code assigns, which is what the status line prints. The grouping is my reading aid, not systemd's own classification. The counts 10, 13, 7, 6, 5, 3 and 1 add up to 45, the codes on systemd 260 and later. Releases 254 to 259 have 44 (no 246), and 250 to 253 have 43 (no 245 either).
 
 | Family | Codes | Count |
 |---|---|---|
-| Sandboxing, namespaces and labels | 210 CHROOT, 225 NETWORK, 226 NAMESPACE, 227 NO_NEW_PRIVILEGES, 228 SECCOMP, 229 SELINUX_CONTEXT, 231 APPARMOR_PROFILE, 232 ADDRESS_FAMILIES, 236 SMACK_PROCESS_LABEL, 245 BPF | 10 |
-| Scheduling, limits and process properties | 201 NICE, 204 MEMORY, 205 LIMITS, 206 OOM_ADJUST, 207 SIGNAL_MASK, 211 IOPRIO, 212 TIMERSLACK, 214 SETSCHEDULER, 215 CPUAFFINITY, 230 PERSONALITY, 242 NUMA_POLICY | 11 |
+| Sandboxing, namespaces and labels | 210 CHROOT, 225 NETWORK, 226 NAMESPACE, 227 NO_NEW_PRIVILEGES, 228 SECCOMP, 229 SELINUX_CONTEXT, 231 APPARMOR_PROFILE, 232 ADDRESS_FAMILIES, 236 SMACK_PROCESS_LABEL, 244 BPF | 10 |
+| Scheduling, limits and process properties | 201 NICE, 204 MEMORY, 205 LIMITS, 206 OOM_ADJUST, 207 SIGNAL_MASK, 211 IOPRIO, 212 TIMERSLACK, 214 SETSCHEDULER, 215 CPUAFFINITY, 230 PERSONALITY, 242 NUMA_POLICY, 245 KSM (254 and later), 246 MEMORY_THP (260 and later) | 13 |
 | Descriptors, cgroup, keyring and other | 202 FDS, 219 CGROUP, 220 SETSID, 221 CONFIRM, 235 CHOWN, 237 KEYRING, 243 CREDENTIALS | 7 |
 | Directories | 200 CHDIR, 233 RUNTIME_DIRECTORY, 238 STATE_DIRECTORY, 239 CACHE_DIRECTORY, 240 LOGS_DIRECTORY, 241 CONFIGURATION_DIRECTORY | 6 |
 | User, group and privileges | 213 SECUREBITS, 216 GROUP, 217 USER, 218 CAPABILITIES, 224 PAM | 5 |
@@ -2391,7 +2391,7 @@ The next table pairs the codes that configuration mistakes tend to produce with 
 
 The quotes in the Trigger column are from [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html).
 
-The manual and the code disagree on one number, as I read them on the main branch. The page gives \`EXIT_BPF\` as 245. The enum in [the header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) starts at \`EXIT_CHDIR = 200\` and counts up in sequence through the two reserved slots, which puts \`EXIT_CREDENTIALS\` at 243, \`EXIT_BPF\` at 244 and \`EXIT_KSM\` at 245, followed by \`EXIT_MEMORY_THP\`. The man page has no row for the last two. \`systemd-analyze exit-status\` prints the table from the installed systemd, so trust it when the last digit matters. The status line also uses short names: [the source table](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c) names 231 \`APPARMOR\`, not \`APPARMOR_PROFILE\`.
+The manual and the code disagree on one number. The page, in the v255 source and on the main branch, gives \`EXIT_BPF\` as 245. The enum in [the header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) starts at \`EXIT_CHDIR = 200\` and counts up in sequence through the two reserved slots, which puts \`EXIT_CREDENTIALS\` at 243, \`EXIT_BPF\` at 244, \`EXIT_KSM\` at 245 and \`EXIT_MEMORY_THP\` at 246. The man page has no row for the last two. The header at each release tag shows when they arrived: \`EXIT_BPF\` first appears in v250, \`EXIT_KSM\` in v254 and \`EXIT_MEMORY_THP\` in v260. So BPF has been 244 in every release that has it, and on 250 to 253 a status of 245 is not a systemd code at all. \`systemd-analyze exit-status\` prints the table from the installed systemd, so trust it when the last digit matters. The status line also uses short names: [the source table](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c) names 231 \`APPARMOR\`, not \`APPARMOR_PROFILE\`.
 
 ## Why did hardening a unit start producing 226/NAMESPACE or 217/USER?
 
@@ -2518,7 +2518,7 @@ The [it works in the shell](/blog/it-works-in-the-shell) article covers the matc
     date: "2026-11-06",
     tags: ["networking", "security", "troubleshooting"],
     excerpt:
-      "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms and PubkeyAcceptedAlgorithms override, how ssh -G confirms it, and the errors that follow.",
+      "Why OpenSSH 8.8 and later refuse an ssh-rsa host key, the per-host HostKeyAlgorithms override, how ssh -G confirms it, and when PubkeyAcceptedAlgorithms is also needed.",
     coverImage: "/images/blog/ssh-no-matching-host-key-type-ssh-rsa-photo.jpg",
     coverCredit: {
       author: "BrokenSphere",
@@ -2528,7 +2528,7 @@ The [it works in the shell](/blog/it-works-in-the-shell) article covers the matc
     },
     content: `## The short answer
 
-\`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa\` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with \`HostKeyAlgorithms +ssh-rsa\` and \`PubkeyAcceptedAlgorithms +ssh-rsa\` in a \`Host\` block of \`~/.ssh/config\`, and confirm it with \`ssh -G\`. Add \`KexAlgorithms\` or \`Ciphers\` lines only if a later \`Their offer:\` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
+\`Unable to negotiate with HOST port 22: no matching host key type found. Their offer: ssh-rsa\` means the device can sign its host key only with RSA and SHA-1, and [OpenSSH 8.8](https://www.openssh.org/txt/release-8.8) (September 26, 2021) turned that signature off by default. The RSA key itself is fine: the release notes say "there is no need to replace ssh-rsa keys," because the same key can sign with SHA-2 once the device's software supports it. Until it does, scope an override to that one device with \`HostKeyAlgorithms +ssh-rsa\` in a \`Host\` block of \`~/.ssh/config\`, and confirm it with \`ssh -G\`. That fixes this error on its own. Add \`PubkeyAcceptedAlgorithms +ssh-rsa\` only if login then fails with \`no mutual signature algorithm\`, and \`KexAlgorithms\` or \`Ciphers\` lines only if a later \`Their offer:\` line names something you need. The notes recommend enabling RSA with SHA-1 "only as a stopgap measure." If the next error is about key exchange on a Cisco switch, the [no matching key exchange method article](/blog/ssh-no-matching-key-exchange-method-cisco) covers that case in full.
 
 ## What does "no matching host key type found. Their offer: ssh-rsa" mean?
 
@@ -2587,26 +2587,27 @@ The lines after \`peer server KEXINIT proposal\` are the device's lists. The lin
 For a single connection, pass the options on the command line.
 
 \`\`\`bash
-ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa admin@192.0.2.10
+ssh -o HostKeyAlgorithms=+ssh-rsa admin@192.0.2.10
 \`\`\`
 
-To make it permanent for that device only, use the stanza from the 8.8 notes, with a host alias.
+To make it permanent for that device only, put it in a \`Host\` block with an alias.
 
 \`\`\`text
 Host old-switch
     HostName 192.0.2.10
     User admin
     HostKeyAlgorithms +ssh-rsa
-    PubkeyAcceptedAlgorithms +ssh-rsa
 \`\`\`
 
-The [ssh_config(5)](https://man.openbsd.org/ssh_config) page defines the \`+\` prefix: the algorithms "will be appended to the default set instead of replacing them," so the strong algorithms stay first. A bare \`HostKeyAlgorithms ssh-rsa\` replaces the defaults, which is the weakening this approach avoids. The same page says "the first obtained value for each directive is used," so "more host-specific declarations should be given near the beginning of the file, and general defaults at the end." Put the stanza above any \`Host *\` block, then check the result.
+The 8.8 notes give a two-line stanza that also adds \`PubkeyAcceptedAlgorithms +ssh-rsa\`, and they say why: the options re-enable RSA/SHA-1 "to allow connection and/or user authentication." These are separate negotiations. [ssh_config(5)](https://man.openbsd.org/ssh_config) defines \`HostKeyAlgorithms\` as "the host key signature algorithms that the client wants to use" and \`PubkeyAcceptedAlgorithms\` as "the signature algorithms that will be used for public key authentication." The host key error at the top of this article needs only the first. The second lets your own RSA key sign with SHA-1, so leave it out until login fails with \`no mutual signature algorithm\`, [covered below](#why-does-no-mutual-signature-algorithm-appear-with-an-rsa-key). A password login or an Ed25519 key never needs it.
+
+The same page defines the \`+\` prefix: the algorithms "will be appended to the default set instead of replacing them," so the strong algorithms stay first. A bare \`HostKeyAlgorithms ssh-rsa\` replaces the defaults, which is the weakening this approach avoids. The same page says "the first obtained value for each directive is used," so "more host-specific declarations should be given near the beginning of the file, and general defaults at the end." Put the stanza above any \`Host *\` block, then check the result.
 
 \`\`\`bash
-ssh -G old-switch | grep -i -E '^(hostkeyalgorithms|pubkeyacceptedalgorithms)'
+ssh -G old-switch | grep -i '^hostkeyalgorithms'
 \`\`\`
 
-\`ssh -G\` prints the configuration ssh would use for that host without connecting. Both lines should end with \`ssh-rsa\`. A config file shared with clients older than 8.5 should spell the second option \`PubkeyAcceptedKeyTypes\`, which the 8.5 notes kept as an alias.
+\`ssh -G\` prints the configuration ssh would use for that host without connecting. The line should end with \`ssh-rsa\`. If you later add \`PubkeyAcceptedAlgorithms\`, check it the same way, and in a config file shared with clients older than 8.5 spell it \`PubkeyAcceptedKeyTypes\`, which the 8.5 notes kept as an alias.
 
 Other tools follow the same stanza. The [scp(1)](https://man.openbsd.org/scp) page says \`-o\` passes options to ssh "in the format used in ssh_config(5)," and sftp and git over SSH run ssh, so they read \`~/.ssh/config\` too.
 
