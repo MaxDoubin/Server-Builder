@@ -1329,7 +1329,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","networking","security"],
     excerpt: "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
     coverImage: "/images/blog/netfilter-hook-order.jpg",
-    wordCount: 983,
+    wordCount: 984,
   },
   {
     slug: "oom-killer-and-swap-sizing",

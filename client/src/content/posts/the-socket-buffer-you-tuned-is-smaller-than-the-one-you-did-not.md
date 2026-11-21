@@ -103,10 +103,11 @@ While we are here, they are three behaviors and not one limit with two
 warnings:
 
 - **Below the first**, TCP is not bothered about its memory use. The global
-  counter is still updated on every allocation; nothing acts on it. A zero in
-  `sockstat`'s `mem` column on a lightly loaded host means almost no socket
-  buffer memory is charged at that moment, not that accounting is broken. Measured on a quiet box: 42
-  established connections, `TCP: ... mem 0`.
+  counter is still updated on every allocation; nothing throttles on it. A
+  zero in `sockstat`'s `mem` column on a lightly loaded host means almost no
+  socket buffer memory is charged at that moment, not that accounting is
+  broken. Measured on a quiet box: 42 established connections,
+  `TCP: ... mem 0`.
 - **Between the first and second**, nothing changes yet, except that TCP
   already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
