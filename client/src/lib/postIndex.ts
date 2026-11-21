@@ -841,7 +841,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
     coverImage: "/images/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not.jpg",
-    wordCount: 963,
+    wordCount: 995,
   },
   {
     slug: "too-many-open-files-and-which-of-the-four-limits-it-was",
@@ -1329,7 +1329,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","networking","security"],
     excerpt: "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
     coverImage: "/images/blog/netfilter-hook-order.jpg",
-    wordCount: 923,
+    wordCount: 983,
   },
   {
     slug: "oom-killer-and-swap-sizing",
@@ -1573,7 +1573,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
     coverImage: "/images/blog/linux-disk-io-troubleshooting.jpg",
     coverCredit: {"author":"TJStamp","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/40246732@N00/6917858944"},
-    wordCount: 995,
+    wordCount: 996,
   },
   {
     slug: "gpu-utilization-metrics",
@@ -1820,7 +1820,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","linux","servers"],
     excerpt: "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
     coverImage: "/images/blog/zfs-arc-l2arc-tuning.jpg",
-    wordCount: 1027,
+    wordCount: 1037,
   },
   {
     slug: "idempotence-and-config-drift",
@@ -2953,7 +2953,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
     coverCredit: {"author":"Dereckson","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png"},
-    wordCount: 1551,
+    wordCount: 1584,
   },
   {
     slug: "ssh-key-based-authentication",
@@ -3136,7 +3136,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","cybersecurity","operations"],
     excerpt: "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
     coverImage: "/images/blog/how-totp-codes-actually-work.jpg",
-    wordCount: 1341,
+    wordCount: 1355,
   },
   {
     slug: "init-scripts-to-systemd-units",

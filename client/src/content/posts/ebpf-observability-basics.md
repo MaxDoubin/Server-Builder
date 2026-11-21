@@ -52,7 +52,7 @@ tracepoint:sched:sched_switch
 {
   @off[args->prev_pid] = nsecs;
   if (@off[args->next_pid]) {
-    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    @us[args->next_comm] = hist((nsecs - @off[args->next_pid]) / 1000);
     delete(@off[args->next_pid]);
   }
 }

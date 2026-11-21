@@ -55,9 +55,9 @@ Expected output on a working dual-stack segment:
 
 ```
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
-    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+    inet6 2001:db8:1234:1:a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
        valid_lft 86200sec preferred_lft 14200sec
-    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+    inet6 2001:db8:1234:1:1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
        valid_lft 86200sec preferred_lft 14200sec
     inet6 fe80::5054:ff:fe12:3456/64 scope link
        valid_lft forever preferred_lft forever

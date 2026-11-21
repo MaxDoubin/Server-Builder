@@ -15765,11 +15765,13 @@ which one applies depends on nothing but whether a line of code exists.
 While we are here, they are three behaviors and not one limit with two
 warnings:
 
-- **Below the first**, the kernel does not do the global accounting at all.
-  A zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means you are
-  under this mark, not that accounting is broken. Measured on a quiet box: 42
+- **Below the first**, TCP is not bothered about its memory use. The global
+  counter is still updated on every allocation; nothing acts on it. A zero in
+  \`sockstat\`'s \`mem\` column on a lightly loaded host means almost no socket
+  buffer memory is charged at that moment, not that accounting is broken. Measured on a quiet box: 42
   established connections, \`TCP: ... mem 0\`.
-- **Between the first and second**, it charges normally.
+- **Between the first and second**, nothing changes yet, except that TCP
+  already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
   socket buffers*. This is the interesting one, because it shows up as
   throughput falling on every connection at once and as an error nowhere.
@@ -27058,7 +27060,7 @@ Notice also that the nat hooks have \`policy accept\`. A nat chain is not a filt
 
 \`ct state\` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
 
-First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
+First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource, and an established TCP entry is kept for five days by default (\`nf_conntrack_tcp_timeout_established\` is 432000 seconds) unless the connection closes cleanly. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
 
 Second, the \`invalid\` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
 
@@ -27067,11 +27069,12 @@ Second, the \`invalid\` state is not noise. It usually means the tracker saw a p
 Two commands answer most questions. \`nft monitor trace\` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
 
 \`\`\`bash
-nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft add chain inet fw trace_chain '{ type filter hook prerouting priority -301; }'
+nft add rule inet fw trace_chain ip saddr 10.10.5.77 meta nftrace set 1
 nft monitor trace
 \`\`\`
 
-And counters tell you whether a rule is dead code:
+And counters tell you whether a rule is dead code, but only on rules that have one. nftables counts nothing by default, so add a \`counter\` statement to the rules you want to audit (\`iifname "mgmt0" tcp dport 22 counter accept\`) and let traffic run:
 
 \`\`\`bash
 nft --handle list ruleset | grep -n "counter packets 0"
@@ -27233,7 +27236,7 @@ tracepoint:sched:sched_switch
 {
   @off[args->prev_pid] = nsecs;
   if (@off[args->next_pid]) {
-    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    @us[args->next_comm] = hist((nsecs - @off[args->next_pid]) / 1000);
     delete(@off[args->next_pid]);
   }
 }
@@ -30368,6 +30371,7 @@ runtime=60
 time_based=1
 group_reporting=1
 filename=/mnt/data/fiotest
+size=4g
 
 [random-read-4k]
 rw=randread
@@ -34077,8 +34081,9 @@ Which means a SLOG only helps synchronous writes. Ordinary asynchronous writes, 
 Where it genuinely helps: NFS exports with sync semantics, databases issuing sync commits, and virtual machine storage over iSCSI or NFS where the guest is flushing. Check whether your workload is even synchronous before shopping.
 
 \`\`\`bash
-# Are writes to this dataset synchronous at all?
-zpool iostat -v 1
+# Are applications asking for synchronous writes at all?
+# Run it twice; a climbing zil_commit_count means yes (Linux path)
+grep zil_commit_count /proc/spl/kstat/zfs/zil
 
 # Dataset sync policy: standard honors the application, always forces sync
 zfs get sync tank/vmstore
@@ -47866,9 +47871,9 @@ Expected output on a working dual-stack segment:
 
 \`\`\`
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
-    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+    inet6 2001:db8:1234:1:a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
        valid_lft 86200sec preferred_lft 14200sec
-    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+    inet6 2001:db8:1234:1:1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
        valid_lft 86200sec preferred_lft 14200sec
     inet6 fe80::5054:ff:fe12:3456/64 scope link
        valid_lft forever preferred_lft forever
@@ -50065,7 +50070,7 @@ Kubernetes Services provide stable IP addresses for groups of pods. Service IPs 
 
 Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
 
-A ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
+In kube-proxy's iptables and nftables modes, a ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. (IPVS mode is the exception: it binds every ClusterIP to a dummy interface, \`kube-ipvs0\`, so the node answers the ping, which proves nothing about the backends either.) Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
 
 kube-proxy's default \`iptables\` mode writes one chain per Service plus one per endpoint, and load balancing is a chain of statistically weighted jumps. Rule evaluation and, more importantly, full-table resync are roughly linear in the number of Services, so clusters with several thousand Services see multi-second sync times and slow endpoint convergence. IPVS mode replaces the linear chain with a hash table and stays flat as the Service count grows; the newer \`nftables\` mode does the same with maps. If your cluster is small, iptables mode is simpler and easier to read with \`iptables-save -t nat | grep <service-name>\`.
 
@@ -52655,8 +52660,9 @@ back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 
 \`\`\`bash
-# What the server would accept with a window of one step either side
-oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+# What the server would accept with a window of one step either side:
+# -w only counts forward, so start one step early and print three codes
+oathtool --totp -b --now "2026-08-25 08:59:30 UTC" -w 2 JBSWY3DPEHPK3PXP
 \`\`\`
 
 The window is a real cost, not free tolerance. Every extra step you accept
