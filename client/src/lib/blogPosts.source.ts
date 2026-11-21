@@ -15279,6 +15279,7 @@ each.
     slug: "commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit",
     title: "CommitLimit Is Half the Memory, and It Is Not a Memory Limit",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "troubleshooting", "performance"],
     excerpt:
       "vm.overcommit_ratio defaults to 50 and applies to RAM alone, so a host with no swap has a CommitLimit of half its memory. In the default mode nothing reads that number. Set vm.overcommit_memory to 2 to stop the OOM killer and it becomes a wall that refuses a 5 GiB allocation with 13.92 GiB free. Measured on one machine, including the page arithmetic that makes the obvious formula two kilobytes wrong.",
@@ -15411,8 +15412,9 @@ This is the part that makes mode 2 a bad answer to the question people ask it.
 
 The killer runs when physical memory is exhausted. Strict accounting governs
 *promises*, and the two come apart in at least three ways: reservations are
-counted rather than pages touched, page cache and shared pages are not in
-\`Committed_AS\` at all, and a ratio above 100 hands out more than exists.
+counted rather than pages touched, page cache and file-backed shared mappings
+are not in \`Committed_AS\` at all (anonymous shared memory is counted at its
+full size), and a ratio above 100 hands out more than exists.
 
 Mode 2 changes when an allocation is refused. It does not change what happens
 when the pages are finally written to.
@@ -20442,6 +20444,7 @@ You can trace ten of these, including the ones where every rule is correct, at
     slug: "minus-one-thousand-is-not-a-hint",
     title: "oom_score_adj Explained: Why -1000 Is Not Just a Low Score",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "kernel"],
     excerpt:
       "oom_score_adj reads like a nudge and it is a quantity of memory. On a 16 GiB host one point is worth 16.4 MiB, so an adj of 200 adds 3.2 GiB to a process score and -800 subtracts 12.8 GiB. And -1000 is not the bottom of the scale, it is a different code path: set it on every unit and the kernel has no candidate, so a lost process becomes a lost machine.",
@@ -20619,9 +20622,11 @@ oom 12
 oom_kill 12
 \`\`\`
 
-If \`oom_kill\` there is climbing, the machine was never full and the answer is a
-limit that is too low or a service that leaks. If it is flat and processes are
-dying anyway, the host is oversubscribed.
+If \`oom\` and \`max\` are climbing along with \`oom_kill\`, the cgroup hit its own
+limit, the machine was never full, and the answer is a limit that is too low or
+a service that leaks. \`oom_kill\` counts kills by any OOM killer, so if it rises
+while \`oom\` and \`max\` stay flat, a system OOM chose a victim in this cgroup and
+the host is oversubscribed.
 
 ## What memory.oom.group changes
 
@@ -26316,6 +26321,7 @@ step in the table is that argument winning again.
     slug: "post-quantum-tls-handshake-bytes",
     title: "Post-Quantum TLS Handshake Size: What X25519MLKEM768 Adds",
     date: "2026-09-05",
+    updated: "2026-11-21",
     tags: ["security", "networking", "cybersecurity"],
     excerpt:
       "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
@@ -26375,10 +26381,10 @@ flaw in it, if there is one, has had about two years to run. X25519 has had
 twenty.
 
 So a hybrid derives its secret from both, and an attacker has to break both to
-recover it. RFC 9954, published a month earlier as Informational, is the
-document that lays out that reasoning and the security properties a hybrid has
-to preserve. Reading them in the other order, 9954 then 10024, is the right
-way round: one is why, the other is exactly what.
+recover it. RFC 9954, published a month earlier as Informational, defines the
+general hybrid construction for TLS 1.3 and lays out that reasoning and the
+goals a hybrid has to meet. Reading them in the other order, 9954 then 10024,
+is the right way round: one is why and how, the other is exactly what.
 
 There is a second reason, less discussed and just as real. Harvest now, decrypt
 later is not a hypothetical for anything with a long confidentiality life. A
@@ -26395,9 +26401,10 @@ and the failure mode was not slowness, it was connections that did not
 complete at all. Middleboxes, load balancers and TLS-terminating proxies had
 been written on the assumption that a ClientHello arrives in one packet,
 because for twenty years it always had. Feed them one that spans two and some
-of them simply stop. Their measurements found breakage clustering around 10kB
-and 30kB, thresholds that correspond to nothing in the protocol and everything
-in somebody's buffer.
+of them simply stop. In a separate test of inflated certificate chains,
+Cloudflare found failures jumping when the chain grew by more than 10kB or
+30kB, thresholds that correspond to nothing in the protocol and everything in
+somebody's buffer.
 
 This is protocol ossification, and it is the most useful thing to take away
 from the whole exercise. Nothing in TLS ever said the ClientHello fitted in a
@@ -26450,7 +26457,7 @@ anything about cryptography.
 ## References
 
 - [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
-- [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
+- [RFC 9954: Hybrid Key Exchange in TLS 1.3](https://www.rfc-editor.org/rfc/rfc9954.html)
 - [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
 - [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters)
 - [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)
@@ -29216,6 +29223,7 @@ tenants from memory first, then check whether the compute split makes sense.
     slug: "wal-point-in-time-recovery",
     title: "Write-Ahead Logs and Recovering to a Point in Time",
     date: "2026-07-27",
+    updated: "2026-11-21",
     tags: ["storage", "operations", "servers"],
     excerpt:
       "A write-ahead log exists so a crash cannot corrupt the database. The same log lets you rewind to any second before someone ran the bad DELETE.",
@@ -29293,7 +29301,9 @@ runs.
 ## Recovering to a target
 
 Recovery is: put the base backup in place, tell the server where the archived
-segments are, tell it when to stop.
+segments are, tell it when to stop, and create an empty \`recovery.signal\` file
+in the data directory. Without that file PostgreSQL 12 and later start normally
+and ignore the recovery settings below.
 
 \`\`\`ini
 # postgresql.conf on the recovery instance
@@ -31036,6 +31046,7 @@ Threat modeling has made me a better builder, not just a better defender. Once y
     slug: "cgroups-resource-limits",
     title: "cgroups v2: Making One Server Behave Like Several",
     date: "2026-04-18",
+    updated: "2026-11-21",
     tags: ["linux", "virtualization", "operations"],
     excerpt:
       "One runaway process should not take down everything else on the box. Control groups are how Linux enforces that, and you can use them without containers.",
@@ -31195,7 +31206,7 @@ My practice is to set \`memory.high\` deliberately low at first and watch \`memo
 When a service disappears without a word in its own logs, or slows down for no obvious reason, read what the kernel recorded before reading the application:
 
 1. Find the cgroup. \`systemctl status name.service\` prints it, or read \`/proc/PID/cgroup\`.
-2. Check \`memory.events\`. A nonzero \`oom_kill\` means the limit killed it. It did not crash. It ran out of budget, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
+2. Check \`memory.events\`. A nonzero \`oom_kill\` means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing too, the limit killed it. If they are flat, the host itself ran out of memory and picked a victim here. Either way it did not crash. It ran out of budget, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
 3. Check \`cpu.stat\`. A rising \`nr_throttled\` means the quota is the bottleneck.
 4. Check the pressure files to see which resource tasks were waiting on.
 5. Only then look at the application.
@@ -46292,7 +46303,7 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
     slug: "ssl-tls-certificates-explained",
     title: "SSL/TLS Certificates: What They Are and How They Work",
     date: "2025-09-25",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "networking", "servers"],
     excerpt:
       "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
@@ -46413,7 +46424,7 @@ The protocol underneath is ACME, standardized as RFC 8555. The CA gives your cli
 
 Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
 
-Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates has been 398 days since 2020, and it continues to move shorter.
+Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates was 398 days from 2020, dropped to 200 days for certificates issued from March 15, 2026, and is scheduled to fall to 100 days in March 2027 and 47 days in March 2029.
 
 ## Certificate management
 
@@ -50394,6 +50405,7 @@ Serving the same dataset over both protocols at once is the one thing I would te
     slug: "ntp-enterprise-networks",
     title: "NTP: Why Time Synchronization Matters in Enterprise Networks",
     date: "2026-03-23",
+    updated: "2026-11-21",
     tags: ["networking", "servers", "operations"],
     excerpt: "Accurate time is foundational to authentication, logging, and troubleshooting. Here is how NTP works and how to deploy it properly.",
     coverImage: "/images/blog/ntp-enterprise-networks.jpg",
@@ -50418,7 +50430,7 @@ NTP measures the round-trip delay to the time server and uses statistical algori
 
 The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is \`(T4 - T1) - (T3 - T2)\` and offset is \`((T2 - T1) + (T3 - T4)) / 2\`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
 
-Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. \`chronyc tracking\` does not print 16 for the local machine: an unsynchronized chronyd shows \`Stratum : 0\`, \`Reference ID : 00000000\` and \`Leap status : Not synchronised\`. If you see that on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -50455,7 +50467,7 @@ chronyc tracking
 chronyc sources -v
 \`\`\`
 
-\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes days. \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
+\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes about half a day even at chronyd's default maximum slew rate of 83333 ppm (one twelfth). \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
 
 ## Network Devices
 
@@ -52060,7 +52072,7 @@ Finally, Ansible is push-based and stateless. It has no continuous reconciliatio
     slug: "tls-modern-encryption",
     title: "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
     date: "2026-04-06",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "encryption", "networking"],
     excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
     coverImage: "/images/blog/tls-modern-encryption.jpg",
@@ -52119,9 +52131,9 @@ ssl_prefer_server_ciphers on;
 
 Two things about that config are easy to get wrong.
 
-\`ssl_ciphers\` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API and nginx does not expose a directive for them, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing \`ECDH+AESGCM\` from the string will not disable \`TLS_AES_128_GCM_SHA256\`.
+\`ssl_ciphers\` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing \`ECDH+AESGCM\` from the string will not disable \`TLS_AES_128_GCM_SHA256\`. Since nginx 1.19.4 you can set them with \`ssl_conf_command Ciphersuites\`, for example \`ssl_conf_command Ciphersuites TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;\`. Before 1.19.4 nginx had no directive for them.
 
-\`ssl_prefer_server_ciphers\` also has no effect on TLS 1.3. Suite preference in 1.3 is client-driven by design, which is deliberate: it lets a phone pick ChaCha20-Poly1305 because it has no AES hardware, while a server with AES-NI gets AES-GCM.
+\`ssl_prefer_server_ciphers\` does apply to TLS 1.3 when nginx is built with OpenSSL. The server always picks from the suites the client offers; with the option on it uses its own order, with it off it follows the client's. If you prefer server order, add \`ssl_conf_command Options PrioritizeChaCha;\` so a phone that lists ChaCha20-Poly1305 first, because it has no AES hardware, still gets it, while clients with AES hardware get AES-GCM.
 
 You also need a build that can do it. TLS 1.3 support in nginx requires OpenSSL 1.1.1 or newer, and the \`TLSv1.3\` parameter arrived in nginx 1.13.0. Check what you actually have:
 
