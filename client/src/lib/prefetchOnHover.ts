@@ -142,6 +142,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/game": { load: () => import("@/pages/cinematic/CinematicGame"), heavy: true },
   "/archive": { load: () => import("@/pages/cinematic/CinematicArchive") },
   "/ask": { load: () => import("@/pages/cinematic/CinematicAsk") },
+  "/accomplishments": { load: () => import("@/pages/cinematic/CinematicAccomplishments") },
   "/certifications": { load: () => import("@/pages/cinematic/CinematicCerts") },
   "/coding-camps": { load: () => import("@/pages/cinematic/CinematicCamps") },
   "/faq": { load: () => import("@/pages/cinematic/CinematicFaq") },

@@ -79,6 +79,7 @@ PAGE_EYEBROWS = {
     "resume": "RESUME",
     "projects": "PROJECTS",
     "certifications": "CERTIFICATIONS",
+    "accomplishments": "ACCOMPLISHMENTS",
     "blog": "FIELD NOTES",
     "archive": "ARCHIVE",
     "data": "OPEN DATA",

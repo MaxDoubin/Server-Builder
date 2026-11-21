@@ -72,6 +72,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Resume", href: "/resume", terms: "cv experience" },
   { kind: "Page", title: "Timeline", href: "/timeline" },
   { kind: "Page", title: "Certifications", href: "/certifications", terms: "certs comptia cisco" },
+  { kind: "Page", title: "Accomplishments", href: "/accomplishments", terms: "achievements awards honors results record" },
   { kind: "Page", title: "Study by exam objective", href: "/study", terms: "security+ network+ ccna revision" },
   { kind: "Page", title: "Flashcards", href: "/flashcards", terms: "spaced repetition anki revision" },
   { kind: "Page", title: "Study timer", href: "/study-timer", terms: "pomodoro focus" },

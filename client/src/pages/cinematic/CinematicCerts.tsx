@@ -74,6 +74,16 @@ export function CinematicCerts() {
             </p>
           </div>
 
+          <p className="mt-6">
+            <Link
+              href="/accomplishments"
+              data-testid="link-certs-accomplishments"
+              className="inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            >
+              All accomplishments, not only certifications <span aria-hidden>→</span>
+            </Link>
+          </p>
+
           <section className="mt-14" aria-labelledby="earned-heading">
             <h2
               id="earned-heading"
