@@ -116,8 +116,10 @@ capability at all.
 **SystemCallFilter.** The `@system-service` set is a curated allowlist covering
 what normal daemons do. Subtracting `@privileged`, `@resources`, and `@obsolete`
 removes administrative calls, resource limit manipulation, and legacy interfaces
-nobody should be calling. Blocked calls return an error, and you will see them
-in the journal, which makes debugging a broken filter straightforward.
+nobody should be calling. By default a blocked call kills the process with
+`SIGSYS`, which shows up in the journal as the service dying on signal SYS. Add
+`SystemCallErrorNumber=EPERM` if you would rather the call fail with an error,
+and `SystemCallLog=` to log which calls are hit.
 
 **IPAddressDeny and IPAddressAllow.** A per service firewall implemented in the
 kernel filter layer. A web application that only needs to talk to a local

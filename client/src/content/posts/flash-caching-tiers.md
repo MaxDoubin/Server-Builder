@@ -59,7 +59,7 @@ The way to find out is to measure. `lvs` exposes hit and miss counters for a cac
 Endurance is the constraint people forget. Every promotion into the cache is a write to the flash device, and on a workload with poor locality the tier can churn constantly, writing far more to the SSD than the application ever wrote. Check the drive's endurance rating in drive writes per day, then check what you are actually doing to it:
 
 ```bash
-smartctl -A /dev/nvme0n1 | grep -Ei 'percentage_used|data_units_written|media_errors'
+smartctl -A /dev/nvme0n1 | grep -Ei 'percentage used|data units written|media and data integrity'
 ```
 
 If percentage used is climbing noticeably in the first months, the cache is thrashing and either the cache is too small or the workload is not cacheable.

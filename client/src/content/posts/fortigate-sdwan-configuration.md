@@ -105,10 +105,9 @@ end
 `set mode` controls the selection strategy, and the default is `manual`, meaning it simply uses `priority-members` in the order listed. The options that matter:
 
 - `manual` uses the first listed member, period. No SLA awareness.
-- `priority` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behavior.
-- `sla` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
-- `load-balance` distributes across members regardless of quality.
-- `best-quality` picks the single best member by whichever metric `set quality-link` or `sla-compare-method` names.
+- `sla` (the GUI calls it Lowest Cost SLA) uses the lowest cost member that meets the SLA, taking members in the listed order when costs tie, and falls to the next when it does not. This is the classic active/backup behavior.
+- `priority` (Best Quality in the GUI) picks the member with the best measured value of the metric named by `set link-cost-factor`, such as latency, jitter, or packet loss.
+- `set load-balance enable` spreads sessions across members. Since FortiOS 7.4.1 it is a separate option used with `manual` or `sla` rather than a mode; with `sla` it balances only across the members that meet the SLA. Before 7.4.1 this was `set mode load-balance`, which the GUI called Maximize Bandwidth SLA.
 
 Rules are evaluated top to bottom by sequence number and the first match wins, exactly like firewall policies. If a rule is never taking effect, check whether a broader rule above it is catching the traffic first. Traffic that matches no rule falls through to the implicit rule, which uses the global `load-balance-mode`, defaulting to `source-ip-based`.
 
