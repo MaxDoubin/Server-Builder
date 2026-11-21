@@ -23095,7 +23095,7 @@ and 30 seconds. A certificate's notBefore and an RRSIG's inception allow
 nothing in the specifications: the edge is an edge. Validators can add their
 own slack, though. Unbound by default forgives 10% of a signature's lifetime,
 clamped between one hour and a day, so check the resolver's skew settings
-before reading a DNSSEC failure as a hard edge.
+before reading a [DNSSEC](/blog/dns-security-dnssec) failure as a hard edge.
 
 \`\`\`
 Kerberos, default clockskew      300 s
