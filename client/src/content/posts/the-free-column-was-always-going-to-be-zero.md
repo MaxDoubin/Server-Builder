@@ -108,8 +108,8 @@ promise, read `Dirty` and `Writeback` next to it.
 
 `free` before procps-ng 4.0.1 computes used as total minus free minus
 buff/cache, which is the formula the output above adds up under. Nothing
-tracks it and nothing chose it: it is what is left over after the cache, so it moves
-whenever the cache moves, which is constantly.
+tracks it and nothing chose it: it is what is left over after the cache, so it
+moves whenever the cache moves, which is constantly.
 
 Two readings of the same server ten minutes apart, nothing deployed and no
 process started or stopped, and the used column goes from 2.6 GiB to 8.5 GiB.

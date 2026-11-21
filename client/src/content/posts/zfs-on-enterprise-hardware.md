@@ -110,7 +110,7 @@ Snapshots are nearly free at creation, because copy-on-write means a snapshot is
 
 ZFS rewards careful planning. Choose your pool layout thoughtfully because changing it later means destroying and recreating the pool. Buy drives from different batches to avoid correlated failures. And always have more RAM than you think you need, because ZFS uses memory aggressively for caching.
 
-On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: the ARC on Linux defaulted to about half of system memory before OpenZFS 2.3, and since 2.3 it may grow to the larger of 5/8 of memory or all memory minus 1 GiB, that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
+On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: by default the ARC may grow to the larger of 5/8 of system memory or all memory minus 1 GiB (OpenZFS 2.3 and later; earlier releases on Linux stopped at about half), that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
 
 ## What breaks
 

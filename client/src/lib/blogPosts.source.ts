@@ -16546,9 +16546,9 @@ that keeps the default 120 second maximum RTO, whatever the path, whatever the
 round trip time, whatever the connection's measured RTO. Since Linux 6.15 that
 maximum is tunable with the \`net.ipv4.tcp_rto_max_ms\` sysctl and the
 \`TCP_RTO_MAX_MS\` socket option, which is why the function calls
-\`tcp_rto_max(sk)\`; lower it and the budget shrinks with it. The "13 to 30 minutes, depending on the
-retransmission timeout" in the manual page describes a dependency the code does
-not have.
+\`tcp_rto_max(sk)\`; lower it and the budget shrinks with it. The "13 to 30
+minutes, depending on the retransmission timeout" in the manual page describes
+a dependency the code does not have.
 
 ## Measuring it
 
@@ -21991,8 +21991,8 @@ promise, read \`Dirty\` and \`Writeback\` next to it.
 
 \`free\` before procps-ng 4.0.1 computes used as total minus free minus
 buff/cache, which is the formula the output above adds up under. Nothing
-tracks it and nothing chose it: it is what is left over after the cache, so it moves
-whenever the cache moves, which is constantly.
+tracks it and nothing chose it: it is what is left over after the cache, so it
+moves whenever the cache moves, which is constantly.
 
 Two readings of the same server ten minutes apart, nothing deployed and no
 process started or stopped, and the used column goes from 2.6 GiB to 8.5 GiB.
@@ -40840,7 +40840,7 @@ Snapshots are nearly free at creation, because copy-on-write means a snapshot is
 
 ZFS rewards careful planning. Choose your pool layout thoughtfully because changing it later means destroying and recreating the pool. Buy drives from different batches to avoid correlated failures. And always have more RAM than you think you need, because ZFS uses memory aggressively for caching.
 
-On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: the ARC on Linux defaulted to about half of system memory before OpenZFS 2.3, and since 2.3 it may grow to the larger of 5/8 of memory or all memory minus 1 GiB, that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
+On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: by default the ARC may grow to the larger of 5/8 of system memory or all memory minus 1 GiB (OpenZFS 2.3 and later; earlier releases on Linux stopped at about half), that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
 
 ## What breaks
 
@@ -49056,7 +49056,7 @@ When the SCSI translation overhead itself is the bottleneck, [NVMe over Fabrics]
 
 I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can access the same iSCSI volumes from TrueNAS, which enables live VM migration and HA failover. The setup takes about an hour to configure properly, and once it is running it is very reliable.
 
-The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and through Proxmox VE 8 it costs you snapshots: LVM on a shared LUN in Proxmox is thick provisioned and does not support VM snapshots on those versions. Proxmox VE 9 added VM snapshots on it as volume chains, a per-storage option marked a technology preview. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
+The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and through Proxmox VE 8 it cost you snapshots: LVM on a shared LUN in Proxmox is thick provisioned, and those versions do not support VM snapshots on it. Proxmox VE 9 added VM snapshots on it as volume chains, a per-storage option marked a technology preview. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
 
 ## References
 

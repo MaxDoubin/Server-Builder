@@ -100,9 +100,9 @@ that keeps the default 120 second maximum RTO, whatever the path, whatever the
 round trip time, whatever the connection's measured RTO. Since Linux 6.15 that
 maximum is tunable with the `net.ipv4.tcp_rto_max_ms` sysctl and the
 `TCP_RTO_MAX_MS` socket option, which is why the function calls
-`tcp_rto_max(sk)`; lower it and the budget shrinks with it. The "13 to 30 minutes, depending on the
-retransmission timeout" in the manual page describes a dependency the code does
-not have.
+`tcp_rto_max(sk)`; lower it and the budget shrinks with it. The "13 to 30
+minutes, depending on the retransmission timeout" in the manual page describes
+a dependency the code does not have.
 
 ## Measuring it
 
