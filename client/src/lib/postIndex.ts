@@ -47,6 +47,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","cybersecurity","firewall","learning"],
     excerpt: "Secure access service edge (SASE) is an architecture, not a product: it delivers WAN networking and security together from a cloud provider's points of presence, a term Gartner coined in 2019.",
     coverImage: "/images/blog/sase-explained-photo.jpg",
+    coverCredit: {"author":"Robert.Harker","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cabinet_Asile.jpg"},
     wordCount: 2677,
   },
   {
@@ -56,6 +57,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","cybersecurity","learning"],
     excerpt: "A remote-access VPN grants a path into a network, while zero trust network access grants access to one application at a time, which moves the trust decision from the door to each resource.",
     coverImage: "/images/blog/zero-trust-network-access-vs-vpn-photo.jpg",
+    coverCredit: {"author":"Nuclear Regulatory Commission","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Nuclear_Plant_Security-_Access_Control_Gates_(9680484758).jpg"},
     wordCount: 2717,
   },
   {
@@ -65,6 +67,7 @@ export const postIndex: PostMeta[] = [
     tags: ["firewall","security","networking","operations","monitoring"],
     excerpt: "The Barracuda Firewall Control Center manages many CloudGen Firewalls from one place, grouping them into ranges and clusters and sharing configuration through repositories and templates.",
     coverImage: "/images/blog/barracuda-firewall-control-center-explained-photo.jpg",
+    coverCredit: {"author":"Alan Levine from United States","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:NOC-IUPUI.jpg"},
     wordCount: 2921,
   },
   {
@@ -74,6 +77,7 @@ export const postIndex: PostMeta[] = [
     tags: ["monitoring","performance","engineering"],
     excerpt: "An APM agent times the work inside an application, such as web transactions, database calls and external calls, so its numbers are only as complete as what the agent can see.",
     coverImage: "/images/blog/what-an-apm-agent-actually-measures-photo.jpg",
+    coverCredit: {"author":"Ansgar Koreng","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Stopwatch,_1810201155,_ako.jpg"},
     wordCount: 2708,
   },
   {
@@ -83,6 +87,7 @@ export const postIndex: PostMeta[] = [
     tags: ["monitoring","operations","networking","troubleshooting"],
     excerpt: "Distributed tracing follows one request across many services using spans and a trace identifier carried in the W3C traceparent header, and it breaks wherever that context is dropped.",
     coverImage: "/images/blog/distributed-tracing-explained-photo.jpg",
+    coverCredit: {"author":"Grešla","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Aerial_view_of_NS_Landers_Yard,_Chicago.jpg"},
     wordCount: 2778,
   },
   {
@@ -92,6 +97,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","monitoring","security"],
     excerpt: "eBPF lets a small verified program watch system calls, network activity and function timing on a Linux host without changing the application, but it cannot read encrypted payloads or business context.",
     coverImage: "/images/blog/ebpf-what-it-can-see-and-what-it-cannot-photo.jpg",
+    coverCredit: {"author":"Ivan Radic","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Close-up_picture_of_a_beautiful_honeybee_(50039958923).jpg"},
     wordCount: 2774,
   },
   {
@@ -3258,7 +3264,7 @@ export const POST_COUNT_SPELLED = "three hundred and thirty";
 export const CITATION_COUNT = 2817;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 196;
+export const ATTRIBUTION_URL_COUNT = 202;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2992;
+export const CHECKED_URL_COUNT = 2997;
