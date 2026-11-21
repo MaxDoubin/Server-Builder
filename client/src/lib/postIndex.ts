@@ -156,7 +156,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "With a Failed at step EXEC spawning line in the journal, status=203/EXEC means execve failed before your program ran. That line's error text says whether the cause is a missing file, a permission or SELinux problem, or a script with no shebang; without it, the program itself may have exited 203.",
     coverImage: "/images/blog/systemd-status-203-exec-photo.jpg",
     coverCredit: {"author":"Solijon Solayev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Arch_Linux_system_update_via_pacman_on_an_Acer_laptop.jpg"},
-    wordCount: 4039,
+    wordCount: 4281,
   },
   {
     slug: "ssh-no-matching-host-key-type-ssh-rsa",
@@ -3339,10 +3339,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2990;
+export const CITATION_COUNT = 2991;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 209;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3176;
+export const CHECKED_URL_COUNT = 3177;

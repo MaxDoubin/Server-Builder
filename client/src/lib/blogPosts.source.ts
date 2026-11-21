@@ -2241,13 +2241,15 @@ systemd is the service manager that starts and supervises services on most Linux
 - "Permission denied" (EACCES): no execute bit, a directory the unit's user cannot search, a \`noexec\` mount, an SELinux denial or a sandbox setting.
 - "Exec format error" (ENOEXEC): a script with no \`#!\` line, or a binary for another CPU.
 
-Read the line with \`journalctl -u NAME -b\`, test the path with \`namei -l\`, and decode the number with \`systemd-analyze exit-status 203\`. Current systemd releases name 45 codes of their own, from 200 to 246, and older ones fewer. Each one names a setup step that failed before the program started, such as 226/NAMESPACE for a missing \`ReadWritePaths=\` target and 217/USER for a missing \`User=\` account.
+Read the line with \`journalctl -u NAME -b\`, test the path with \`namei -l\`, and decode the number with \`systemd-analyze exit-status 203\`. Current systemd releases name 45 codes of their own, from 200 to 246, and older ones fewer. By convention each one names a setup step that failed before the program started, such as 226/NAMESPACE for a missing \`ReadWritePaths=\` target and 217/USER for a missing \`User=\` account. systemd applies the name to the number whoever returned it, so the matching \`Failed at step NAME spawning\` journal line is what confirms the step really failed ([why](#what-does-status-203-exec-mean)).
 
 ## What does status=203/EXEC mean?
 
 The number comes from the child process the manager creates for every command line. [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) says that when the manager cannot apply a unit's execution settings, "the already created service process will exit with a non-zero exit code" before the configured command runs. That is after \`fork(2)\` and before the program. The 203 row, \`EXIT_EXEC\`, reads: "The actual process execution failed (specifically, the execve(2) system call). Most likely this is caused by a missing or non-accessible executable file."
 
 The word after the slash is the entry's name in systemd's own table, where [the source](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.c) has \`[EXIT_EXEC] = { "EXEC", EXIT_STATUS_SYSTEMD }\`. The same name appears in the journal, because [the executor](https://raw.githubusercontent.com/systemd/systemd/main/src/core/executor.c) logs \`Failed at step %s spawning %s: %m\` with that name and the command path. "Step EXEC" and "203/EXEC" are one fact reported twice.
+
+The status line, though, is built from the number alone. [unit.c](https://raw.githubusercontent.com/systemd/systemd/main/src/core/unit.c) writes \`status=%i/%s\` with the name from \`exit_status_to_string()\`, a table lookup on the exit code, and the status line carries nothing else about why the process exited. A program that starts normally and returns 203, or 217, gets the same \`203/EXEC\` or \`217/USER\` label as a real setup failure. The journal line is what separates them. The executor logs \`Failed at step %s spawning\` only when \`exec_invoke()\` returns an error, which happens during setup or when \`execve()\` itself fails; once \`execve()\` succeeds the process is the program and no systemd code runs in it to log anything. Every name in the 200s below is therefore systemd's conventional meaning, confirmed by that line, and the rest of this article reads the codes that way.
 
 Status 203 also says something about the steps before it. In [the current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c), a comment shortly before the executable lookup begins: "Now that the mount namespace has been set up and privileges adjusted, let's look for the thing we shall execute". The lookup therefore happens inside the unit's own view of the filesystem, with the unit's sandbox in place. A file that a root shell can see may be hidden or unusable there.
 
@@ -2365,9 +2367,9 @@ Before any of that, \`systemd-analyze verify myapp.service\` reports "commands l
 
 The "systemd-specific exit codes" table in [systemd.exec(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes) has 43 rows, from 200 (\`EXIT_CHDIR\`) to 245 (\`EXIT_BPF\`), and that last number is wrong, as explained below the second table. It says "The LSB specification suggests that error codes 200 and above are reserved for implementations." LSB is the Linux Standard Base, an older cross-distribution standard. Numbers 223 and 234 are missing from the table. [The header](https://raw.githubusercontent.com/systemd/systemd/main/src/shared/exit-status.h) marks them reserved: "used to be tcpwrap, don't reuse!" and "used to be used by kdbus, don't reuse". The page also lists C library codes 0 and 1, LSB codes 2 to 7 and BSD codes 64 to 78. A status outside the 200s usually came from the program itself.
 
-The table below uses the numbers the code assigns, which is what the status line prints. The grouping is my reading aid, not systemd's own classification. The counts 10, 13, 7, 6, 5, 3 and 1 add up to 45, the codes on systemd 260 and later. Releases 254 to 259 have 44 (no 246), and 250 to 253 have 43 (no 245 either).
+The table below uses the numbers the code assigns, which is what the status line prints. Each name is the conventional meaning, which the matching \`Failed at step\` line confirms ([see above](#what-does-status-203-exec-mean)). The grouping is my reading aid, not systemd's own classification. The counts 10, 13, 7, 6, 5, 3 and 1 add up to 45, the codes on systemd 260 and later. Releases 254 to 259 have 44 (no 246), and 250 to 253 have 43 (no 245 either).
 
-| Family | Codes | Count |
+| Family | Codes, by conventional name | Count |
 |---|---|---|
 | Sandboxing, namespaces and labels | 210 CHROOT, 225 NETWORK, 226 NAMESPACE, 227 NO_NEW_PRIVILEGES, 228 SECCOMP, 229 SELINUX_CONTEXT, 231 APPARMOR_PROFILE, 232 ADDRESS_FAMILIES, 236 SMACK_PROCESS_LABEL, 244 BPF | 10 |
 | Scheduling, limits and process properties | 201 NICE, 204 MEMORY, 205 LIMITS, 206 OOM_ADJUST, 207 SIGNAL_MASK, 211 IOPRIO, 212 TIMERSLACK, 214 SETSCHEDULER, 215 CPUAFFINITY, 230 PERSONALITY, 242 NUMA_POLICY, 245 KSM (254 and later), 246 MEMORY_THP (260 and later) | 13 |
@@ -2377,9 +2379,9 @@ The table below uses the numbers the code assigns, which is what the status line
 | Standard streams | 208 STDIN, 209 STDOUT, 222 STDERR | 3 |
 | Exec itself | 203 EXEC | 1 |
 
-The next table pairs the codes that configuration mistakes tend to produce with the setting involved and a message that [the current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c) logs:
+The next table pairs the codes that configuration mistakes tend to produce with the setting involved and a message that [the current source](https://raw.githubusercontent.com/systemd/systemd/main/src/core/exec-invoke.c) logs during setup. That message, followed by the \`Failed at step\` line, is the evidence that the step itself failed:
 
-| Code | Trigger | Logged message |
+| Code, by convention | Trigger | Logged message |
 |---|---|---|
 | 200/CHDIR | \`WorkingDirectory=\` missing; with a \`-\` prefix a missing directory "is not considered fatal" | "Changing to the requested working directory failed: %m" |
 | 208, 209, 222 | \`StandardInput=\`, \`StandardOutput=\` or \`StandardError=\` target cannot be set up | "Failed to set up standard output: %m" and its input and error twins |
@@ -2395,7 +2397,7 @@ The manual and the code disagree on one number. The page, in the v255 source and
 
 ## Why did hardening a unit start producing 226/NAMESPACE or 217/USER?
 
-Sandboxing directives change the child process before the program runs, so the unit fails with a code in the 200s while the program is untouched. The [service hardening](/blog/systemd-service-hardening) article covers what to set, and \`systemd-analyze security\` estimates an exposure level from 0.0 to 10.0 per unit, according to [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html). This section covers reading the failures.
+Sandboxing directives change the child process before the program runs, so a directive that cannot be applied fails the unit with a code in the 200s and a \`Failed at step\` line before the program starts. The [service hardening](/blog/systemd-service-hardening) article covers what to set, and \`systemd-analyze security\` estimates an exposure level from 0.0 to 10.0 per unit, according to [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html). This section covers reading the failures.
 
 | Directive added | Code | Why, per systemd.exec(5) |
 |---|---|---|
@@ -2405,11 +2407,11 @@ Sandboxing directives change the child process before the program runs, so the u
 | \`User=\` for an account missing from the user database | 217/USER | Accounts must exist "no later than the moment the service is started" |
 | \`SystemCallFilter=\` blocking a call the program makes | Not 228 | "The default action when a system call is denied is to terminate the processes with a SIGSYS signal" |
 
-All rows quote the [exec settings manual](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html). The last row matters because the two failures look different. Status 228 means the filter could not be installed. A denied call at runtime kills the program with \`SIGSYS\`, which systemd reports as a signal, not as a code in the 200s.
+All rows quote the [exec settings manual](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html). The last row matters because the two failures look different. Status 228 with its \`Failed at step SECCOMP spawning\` line means the filter could not be installed. A denied call at runtime kills the program with \`SIGSYS\`, which systemd reports as a signal, not as a code in the 200s.
 
 For 226, the journal names the culprit. The message is built from the failing path, so a missing directory appears in the form \`Failed to set up mount namespacing: /var/lib/myapp: No such file or directory\`. Create the directory, prefix the path with \`-\` if it is optional, or use \`StateDirectory=\`. [The same manual](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html) says that setting creates the directory under \`/var/lib/\` and excludes it from the effect of \`ProtectSystem=\`.
 
-A method that keeps this manageable is one directive per restart. Add it, run \`systemctl daemon-reload\` and \`systemctl restart\`, read the status, and keep the change only if the service still starts. If it fails, the code names the family, and the "See ... above" text in the manual's row names the setting to look at.
+A method that keeps this manageable is one directive per restart. Add it, run \`systemctl daemon-reload\` and \`systemctl restart\`, read the status, and keep the change only if the service still starts. If it fails, the code and its \`Failed at step\` line name the family, and the "See ... above" text in the manual's row names the setting to look at.
 
 ## How do you test a unit change before restarting the service?
 
@@ -2471,7 +2473,7 @@ The \`od -c\` output shows \`\\r\` before \`\\n\` if the shebang has Windows lin
 
 **Retries hide the first failure.** With \`Restart=on-failure\`, the service "will be restarted when the process exits with a non-zero exit code", per [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html). A missing binary fails the same way every time, and the retries run into the start limit described in [the service that crashed faster is the one that stopped](/blog/the-service-that-crashed-faster-is-the-one-that-stopped). Read the first spawn failure in the journal, not the last status.
 
-**A program can exit 203 itself.** The numbers are a convention for what systemd's child process returns before the program starts. Nothing stops a program from returning 203 on its own, and \`systemctl status\` prints the same \`203/EXEC\` either way. The \`Failed at step EXEC spawning\` line is what tells them apart. More on reading exit statuses from the shell side is in [one byte and two kinds of news](/blog/one-byte-and-two-kinds-of-news).
+**A program can exit 203 itself.** The same goes for any number in the 200s. The numbers are a convention for what systemd's child process returns before the program starts, and nothing stops a program from returning 203 or 217 on its own; \`systemctl status\` prints the same \`203/EXEC\` or \`217/USER\` either way. The \`Failed at step\` line is what tells them apart, as [explained above](#what-does-status-203-exec-mean). More on reading exit statuses from the shell side is in [one byte and two kinds of news](/blog/one-byte-and-two-kinds-of-news).
 
 **An unreloaded edit.** The manager runs the unit it loaded, not the file on disk. A fixed file and a still-failing unit can mean \`daemon-reload\` was skipped. \`NeedDaemonReload\` exists to answer that question.
 
