@@ -438,11 +438,15 @@ export function CinematicBlogPost() {
               no license at all, on a CC BY image. Seventeen of the 145
               credited posts were long enough to lose it.
 
-              Three lines is the ceiling: the title block above reserves 64px
-              of bottom padding, and three lines of this size come to about
-              36px, so the credit cannot grow into the headline.
+              Four lines is the ceiling: the title block above reserves 64px
+              of bottom padding, and four lines of this size measure 54px,
+              which with the 8px bottom offset stays under it, so the credit
+              cannot grow into the headline. It was three until the
+              "Cropped and resized" notice from lib/coverCredit was added at
+              the end; the two longest credits then needed a fourth line at
+              375px and a phone would have dropped the notice.
             */
-            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[0.625rem] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[0.625rem]">
+            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-4 max-w-[80vw] text-right font-mono-tight text-[0.625rem] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[0.625rem]">
               Photo{" "}
               <a
                 href={post.coverCredit.sourceUrl}
