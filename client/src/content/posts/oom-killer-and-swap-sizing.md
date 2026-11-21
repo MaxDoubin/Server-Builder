@@ -34,8 +34,10 @@ done | sort -k2 -rn | head
 The important consequence is that the biggest process usually dies, and on most servers the biggest process is the one doing the actual work. The database gets killed, not the leaky agent that caused the pressure. If you have a process that must survive, bias it explicitly:
 
 ```bash
-echo -800 > /proc/$(pidof postgres)/oom_score_adj
+echo -800 > /proc/$(head -1 "$PGDATA/postmaster.pid")/oom_score_adj
 ```
+
+That targets the postmaster alone. `pidof postgres` returns every PostgreSQL process, and a redirect to more than one path fails as ambiguous. Backends forked afterward inherit the postmaster's value, so [PostgreSQL's documentation](https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT) suggests setting it in the startup script instead, with `PG_OOM_ADJUST_FILE` and `PG_OOM_ADJUST_VALUE` set so backends go back to 0 and stay killable.
 
 and if you have something you would rather lose first, bias it the other way with a positive number. Do not set -1000 on more than one thing. If nothing is eligible, the kernel panics instead.
 
