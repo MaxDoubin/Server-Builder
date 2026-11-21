@@ -743,6 +743,9 @@ const CinematicFlashcards = lazyWithRetry(() =>
 const CinematicCerts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCerts").then((m) => ({ default: m.CinematicCerts })),
 );
+const CinematicAccomplishments = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAccomplishments").then((m) => ({ default: m.CinematicAccomplishments })),
+);
 
 const CinematicData = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
@@ -1547,6 +1550,11 @@ function AnimatedRoutes() {
           <Route path="/certifications">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCerts />
+            </Suspense>
+          </Route>
+          <Route path="/accomplishments">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAccomplishments />
             </Suspense>
           </Route>
           <Route path="/archive">

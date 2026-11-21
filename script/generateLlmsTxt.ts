@@ -28,6 +28,7 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
   { path: "/ncl", label: "National Cyber League study guides", note: "one guide per competition category, each built around a practice problem written for this site; no NCL question is reproduced" },
   { path: "/resume", label: "Resume", note: "" },
+  { path: "/accomplishments", label: "Accomplishments", note: "everything on record in one place: certifications, training credentials, competition results, leadership, recognition, music, academics and projects" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },
 ];
 

@@ -2,7 +2,7 @@ import { Suspense, lazy, useRef } from "react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { SystemsAct } from "./acts/SystemsAct";
-import { PRESS } from "@/lib/siteConfig";
+import { PRESS } from "@/lib/pressConfig";
 
 const BiographyAct = lazy(() =>
   import("./acts/BiographyAct").then((m) => ({ default: m.BiographyAct })),

@@ -97,6 +97,7 @@ const { usesConfig } = await import("../client/src/lib/usesConfig.ts");
 const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
 const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
 const { ALL_CERTS, CREDENTIAL_GROUPS } = await import("../client/src/lib/certConfig.ts");
+const ACCOMPLISHMENTS = await import("../client/src/lib/accomplishmentsConfig.ts");
 const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
 const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
 const { ANSWERED } = await import("../client/src/lib/askConfig.ts");
@@ -1216,6 +1217,14 @@ ${[...NCL_GUIDE_DATA]
       canonical: `${SITE_URL}/certifications`,
     },
     {
+      // Title and description come from the same module as the page, so the
+      // counts in them are computed from the data and cannot go stale.
+      dir: "accomplishments",
+      title: ACCOMPLISHMENTS.ACCOMPLISHMENTS_TITLE,
+      description: ACCOMPLISHMENTS.accomplishmentsDescription(),
+      canonical: `${SITE_URL}${ACCOMPLISHMENTS.ACCOMPLISHMENTS_PATH}`,
+    },
+    {
       // A trainer, not an article. Indexing it would put a page of controls
       // into results alongside the writing.
       dir: "flashcards",
@@ -1398,7 +1407,7 @@ ${JSON.stringify({
     <h2>Contact</h2>
     <p><a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a></p>
   </section>
-  ${backLinks([["/projects", "Projects"], ["/timeline", "Timeline"], ["/certifications", "Certifications"], ["/contact", "Contact"]])}
+  ${backLinks([["/projects", "Projects"], ["/timeline", "Timeline"], ["/certifications", "Certifications"], ["/accomplishments", "Accomplishments"], ["/contact", "Contact"]])}
 </main>`;
 
   const projectsContent = `
@@ -1477,8 +1486,95 @@ ${JSON.stringify({
     )}</ul>
   </section>`,
   ).join("\n  ")}
-  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"]])}
+  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"], ["/accomplishments", "Accomplishments"]])}
 </main>`;
+
+  /*
+    /accomplishments: every section is read from accomplishmentsConfig, the
+    module the React page renders from, so the two cannot disagree and no
+    figure below is typed here.
+  */
+  const accomplishmentsContent = (() => {
+    const A = ACCOMPLISHMENTS;
+    type Badges = Record<string, { src: string; alt: string }>;
+    const credentialItem = (group: { badges?: Badges }, item: string) => {
+      const badge = group.badges?.[item];
+      return badge
+        ? `<img src="${badge.src}" alt="${esc(badge.alt)}" width="96" height="96" loading="lazy" decoding="async"> ${esc(item)}`
+        : esc(item);
+    };
+    const certItem = (cert: (typeof A.EARNED_CERTS)[number]) =>
+      `${cert.badge ? `<img src="${cert.badge.src}" alt="${esc(cert.badge.alt)}" width="96" height="96" loading="lazy" decoding="async"> ` : ""}${esc(cert.name)}${cert.code ? ` (${esc(cert.code)})` : ""}, ${esc(cert.vendor)}. Status: ${esc(cert.statusLabel)}. ${esc(cert.statusDetail)}`;
+    const achievements = (items: Array<{ title: string; description: string }>) =>
+      `<dl>${dl(items.map((a) => ({ title: a.title, detail: a.description })))}</dl>`;
+    return `
+<main>
+  <h1>Accomplishments</h1>
+  <p>Everything on record for ${esc(siteConfig.name)}, grouped by kind. Each count is computed from the same records as the resume, timeline and certifications pages.</p>
+  <ul>${li(A.STATS.map((stat: { value: number; label: string }) => `${stat.value} ${esc(stat.label)}`))}</ul>
+  <section>
+    <h2>Competition and cybersecurity</h2>
+    ${achievements(A.COMPETITION)}
+  </section>
+  <section>
+    <h2>Certifications</h2>
+    <h3>Earned (${A.EARNED_CERTS.length})</h3>
+    <ul>${li(A.EARNED_CERTS.map(certItem))}</ul>
+    <h3>In progress, not yet earned (${A.IN_PROGRESS_CERTS.length})</h3>
+    <p>The exams for these have not been sat, and none is counted as earned.</p>
+    <ul>${li(A.IN_PROGRESS_CERTS.map(certItem))}</ul>
+  </section>
+  <section>
+    <h2>Training credentials and badges</h2>
+    <p>${A.TRAINING_COUNT} credentials from ${A.ISSUER_GROUPS.length} issuers, ${A.BADGE_COUNT} of them with the badge the issuer gave.</p>
+    ${A.ISSUER_GROUPS.map(
+      (group: { heading: string; meta: string; items: string[]; badges?: Badges }) => `<h3>${esc(group.heading)} (${group.items.length})</h3>
+    <p>${esc(group.meta)}</p>
+    <ul>${li(group.items.map((item: string) => credentialItem(group, item)))}</ul>`,
+    ).join("\n    ")}
+  </section>
+  <section>
+    <h2>Leadership and community</h2>
+    <dl>${dl(
+      A.LEADERSHIP.map((role: { title: string; org: string; details: string[] }) => ({
+        title: `${role.title}, ${role.org}`,
+        detail: `${role.details.join(". ")}.`,
+      })),
+    )}</dl>
+  </section>
+  <section>
+    <h2>Recognition and press</h2>
+    ${A.PRESS_ITEMS.map(
+      (press: { url: string; headline: string; outlet: string; displayDate: string; author: string }) =>
+        `<p>In the press: <a href="${press.url}">${esc(press.headline)}</a>, ${esc(press.outlet)}, ${esc(press.displayDate)}. By ${esc(press.author)}.</p>`,
+    ).join("\n    ")}
+    ${achievements(A.RECOGNITION)}
+  </section>
+  <section>
+    <h2>Music</h2>
+    ${achievements(A.MUSIC)}
+  </section>
+  <section>
+    <h2>Academics</h2>
+    <ul>${li(A.ACADEMICS.map(esc))}</ul>
+  </section>
+  <section>
+    <h2>Projects</h2>
+    ${A.PROJECTS.map(
+      (project: { title: string; description: string; tech: string[]; link: string }) => `<h3>${esc(project.title)}</h3>
+    <p>${esc(project.description)}</p>
+    <p>Built with: ${project.tech.map(esc).join(", ")}</p>
+    <p><a href="${project.link.startsWith("http") ? project.link : SITE_URL + project.link}">Open ${esc(project.title)}</a></p>`,
+    ).join("\n    ")}
+  </section>
+  <section>
+    <h2>Year by year</h2>
+    <p>${A.MILESTONE_COUNT} milestones on the timeline.</p>
+    <ul>${li(A.YEARS.map((year: { label: string; count: number }) => `${esc(year.label)}: ${year.count} ${year.count === 1 ? "milestone" : "milestones"}`))}</ul>
+  </section>
+  ${backLinks([["/resume", "Resume"], ["/timeline", "Timeline"], ["/certifications", "Certifications"], ["/projects", "Projects"]])}
+</main>`;
+  })();
 
   const nowContent = `
 <main>
@@ -1892,6 +1988,7 @@ const teardownContent = `
     "study-timer": studyTimerContent,
     ask: askContent,
     certifications: certificationsContent,
+    accomplishments: accomplishmentsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
     noc: nocDashContent,
@@ -10682,6 +10779,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/timeline`, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/coding-camps`, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/certifications`, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/accomplishments`, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/links`, changefreq: "monthly", priority: "0.5" },
       { loc: `${SITE_URL}/ask`, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/study-timer`, changefreq: "monthly", priority: "0.4" },
