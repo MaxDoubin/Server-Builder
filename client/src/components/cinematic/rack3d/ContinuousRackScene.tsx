@@ -18,6 +18,8 @@ import {
 } from "./rackConfig";
 import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+// RAID heartbeat animation: self-contained, switch lives in that file.
+import { RaidHeartbeat } from "./parts/RaidHeartbeat";
 
 export type ContinuousProgressRef = { current: number };
 
@@ -720,6 +722,8 @@ export function ContinuousRackScene({
       </Suspense>
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
+
+      <RaidHeartbeat progressRef={progressRef} />
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />
