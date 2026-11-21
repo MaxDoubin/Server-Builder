@@ -253,8 +253,25 @@ const INDEX = path.join(DIST, "index.html");
  * page and notes are lazy chunks, so the entry carries only its route, lazy
  * import, hover-prefetch row and registry entry. The four kilobytes above the
  * measurement are for catching an accident, not for the next batch.
+ *
+ * 741 KB, lowered from 772 by loading the command palette on demand, measured
+ * at 739.2 against 770.0 before. CinematicLayout now imports CommandPalette
+ * through lazyWithRetry and mounts it the first time it is opened, keeping
+ * only the shortcut listener and the open flag in the entry. The entry chunk
+ * went from 497,698 to 466,117 bytes, a win of 31,581 bytes (30.8 KB), and
+ * the palette is its own 32 KB chunk that a page fetches only when someone
+ * presses Cmd+K, / or the Search button. The budget came down by that win,
+ * rounded to the nearest kilobyte, so the headroom stays what it was rather
+ * than banking thirty kilobytes for the next thing to spend unnoticed.
+ *
+ * This retires the reasoning in several notes above that a surface's palette
+ * row belongs in the entry because the palette opens on the first keystroke.
+ * The rows now ride in the palette's own chunk, and the first keystroke still
+ * works: it opens the palette as soon as that chunk arrives. So a new surface
+ * should now cost noticeably less than the kilobyte those notes record, and a
+ * surface that still costs a full kilobyte here is worth a look.
  */
-const BUDGET_BYTES = 772 * 1024;
+const BUDGET_BYTES = 741 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
