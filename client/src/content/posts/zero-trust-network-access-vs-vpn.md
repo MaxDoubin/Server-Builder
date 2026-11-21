@@ -61,7 +61,7 @@ The PE and PA together form the policy decision point (PDP). These parts talk ov
 
 ### No inbound exposure of the application
 
-The application's host does not need to accept connections from the internet. Instead, a small connector next to the application dials out to the broker and holds that connection open, and user traffic is relayed over it. Cloudflare's tunnel documentation describes this pattern: its connector "initiates an outbound connection through your firewall," the setup works "without a publicly routable IP address," and the origin does not use an inbound listener. A firewall can then block all inbound traffic to that host.
+The application's host does not need to accept connections from the internet. Instead, a small connector next to the application dials out to the broker and holds that connection open, and user traffic is relayed over it. Cloudflare's tunnel documentation describes this pattern: its connector "initiates an outbound connection through your firewall," the setup works "without a publicly routable IP address," and, in its words, the tunnel "does not use an inbound listener on your origin." The application itself still listens, typically on a local or private address that the connector reaches, as Cloudflare's origin settings describe for a "local service." What goes away is a publicly reachable listener: a firewall can block all inbound traffic to that host, and no inbound port needs to be open to the internet.
 
 Exposure is moved, not erased. Users must be able to reach the broker, so it is usually internet-facing. SP 800-207 notes that the portal model "allows attackers to discover and attempt to access the portal or attempt a denial-of-service (DoS) attack against the portal." The application's own listener is no longer the front door, and the broker takes that role.
 
@@ -71,7 +71,7 @@ Exposure is moved, not erased. Users must be able to reach the broker, so it is 
 | --- | --- | --- |
 | What is granted | A path into a network | Access to a named application |
 | Main decision point | When the tunnel is built, then network rules | At each application, repeated as policy and product allow |
-| Application listener | Reachable from the VPN address pool | Can have no inbound listener; a connector dials out |
+| Application listener | Reachable from the VPN address pool | Can avoid any publicly reachable listener or open inbound port; a connector dials out and reaches the application locally |
 | Internet-facing piece | The VPN gateway | The broker, hosted by a vendor or by the organization |
 | Typical weakness | Flat network, broad reach from one stolen credential | Broker dependency, policy upkeep, lock-in, protocol coverage |
 
