@@ -24,7 +24,9 @@
  * somewhere you already have in mind. Searching for what you do not is what
  * the archive page is for, and the palette links to it.
  *
- * WHAT IT COSTS on a page where nobody opens it: nothing beyond this file.
+ * WHAT IT COSTS on a page where nobody opens it: nothing. This file itself
+ * is loaded on demand too, see the note above the component; the layout keeps
+ * only the shortcut listener and the open flag.
  *
  * That took two corrections and both were the same mistake. This component
  * lives in the layout every page uses, so anything it imports at the top is
@@ -37,7 +39,7 @@
  * So everything the palette searches is now loaded when it is first opened,
  * and nothing before: the registries and the post index by dynamic import,
  * the hardware catalog by fetch. A reader who never presses the key pays
- * for this file and nothing else.
+ * for none of it.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -220,9 +222,26 @@ function rank(entry: Entry, terms: string[]): number {
 const KIND_ORDER: Entry["kind"][] = ["Page", "Term", "Tool", "Rack", "Hardware", "Article"];
 const MAX_SHOWN = 24;
 
-export function CommandPalette() {
+interface Props {
+  /** Owned by CinematicLayout, so the shortcut works before this file loads. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Where focus was when the palette opened, so closing puts it back. */
+  returnTo: React.MutableRefObject<HTMLElement | null>;
+}
+
+/*
+  The shortcut listener and the open flag live in CinematicLayout, not here.
+
+  This file is loaded on demand: the layout imports it lazily and mounts it
+  the first time the palette is asked for, so a page where nobody opens it
+  does not download it. That only works if whatever listens for Cmd+K, / and
+  the navigation's Search button is something already loaded, which is the
+  layout. The first press flips the flag there, this chunk arrives, and it
+  mounts already open, so the keypress that asked for it is not lost.
+*/
+export function CommandPalette({ open, onOpenChange: setOpen, returnTo }: Props) {
   const [, navigate] = useLocation();
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const [gear, setGear] = useState<GearItem[] | null>(null);
@@ -242,41 +261,6 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  /* Where focus was, so closing puts it back rather than on the body. */
-  const returnTo = useRef<HTMLElement | null>(null);
-
-  /* Cmd+K, Ctrl+K, or / when the reader is not already typing somewhere. */
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      const typing =
-        !!el &&
-        (el.tagName === "INPUT" ||
-          el.tagName === "TEXTAREA" ||
-          el.tagName === "SELECT" ||
-          el.isContentEditable);
-      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        returnTo.current = document.activeElement as HTMLElement | null;
-        setOpen((v) => !v);
-      } else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        returnTo.current = document.activeElement as HTMLElement | null;
-        setOpen(true);
-      }
-    };
-    /* The navigation's Search button, for readers who never press a shortcut. */
-    const onOpen = () => {
-      returnTo.current = document.activeElement as HTMLElement | null;
-      setOpen(true);
-    };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("command-palette:open", onOpen);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("command-palette:open", onOpen);
-    };
-  }, []);
 
   /* Everything it searches, on first open. See the note at the top. */
   useEffect(() => {
@@ -410,14 +394,14 @@ export function CommandPalette() {
   const close = useCallback(() => {
     setOpen(false);
     returnTo.current?.focus?.();
-  }, []);
+  }, [setOpen, returnTo]);
 
   const go = useCallback(
     (entry: Entry) => {
       setOpen(false);
       navigate(entry.href);
     },
-    [navigate],
+    [navigate, setOpen],
   );
 
   /*
