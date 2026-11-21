@@ -1544,7 +1544,10 @@ ${JSON.stringify({
   </section>
   <section>
     <h2>Recognition and press</h2>
-    <p>In the press: <a href="${A.PRESS.url}">${esc(A.PRESS.headline)}</a>, ${esc(A.PRESS.outlet)}, ${esc(A.PRESS.displayDate)}. By ${esc(A.PRESS.author)}.</p>
+    ${A.PRESS_ITEMS.map(
+      (press: { url: string; headline: string; outlet: string; displayDate: string; author: string }) =>
+        `<p>In the press: <a href="${press.url}">${esc(press.headline)}</a>, ${esc(press.outlet)}, ${esc(press.displayDate)}. By ${esc(press.author)}.</p>`,
+    ).join("\n    ")}
     ${achievements(A.RECOGNITION)}
   </section>
   <section>

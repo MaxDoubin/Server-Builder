@@ -101,6 +101,10 @@ const byTopic = (topic: Topic): Achievement[] =>
 export const COMPETITION: Achievement[] = byTopic("competition");
 export const MUSIC: Achievement[] = byTopic("music");
 export const RECOGNITION: Achievement[] = byTopic("recognition");
+/** Press stories the Recognition section renders beside its achievements. */
+export const PRESS_ITEMS = [PRESS];
+/** Everything under the Recognition heading, so its count is what a reader finds there. */
+export const RECOGNITION_COUNT = RECOGNITION.length + PRESS_ITEMS.length;
 /** Achievements that restate a certification or training credential, listed in those sections instead. */
 export const COVERED_BY_CREDENTIALS: Achievement[] = byTopic("credential");
 
@@ -124,21 +128,37 @@ export const MILESTONE_COUNT = YEARS.reduce((sum, year) => sum + year.count, 0);
 /* ---------------------------------------------------------------- stats */
 
 export interface Stat {
+  /** Also the id of the section it counts, so the stat's jump link and the section share one name. */
   id: string;
   value: number;
   label: string;
-  /** The section the figure counts, so each stat doubles as a jump link. */
   href: string;
 }
 
+/**
+ * One stat per section, in page order. Each figure counts exactly the items
+ * its section renders and nothing else, and the section heading reads its
+ * count from here (see statValue), so a stat and the section it links to
+ * cannot disagree. Earned certifications are counted apart from the in
+ * progress ones, which the section shows in their own block.
+ */
 export const STATS: Stat[] = [
-  { id: "certs", value: EARNED_CERTS.length, label: "exam certifications earned", href: "#certifications" },
-  { id: "training", value: TRAINING_COUNT, label: "training credentials and badges", href: "#training" },
   { id: "competition", value: COMPETITION.length, label: "competition and cybersecurity results", href: "#competition" },
+  { id: "certifications", value: EARNED_CERTS.length, label: "exam certifications earned", href: "#certifications" },
+  { id: "training", value: TRAINING_COUNT, label: "training credentials and badges", href: "#training" },
   { id: "leadership", value: LEADERSHIP.length, label: "leadership and community roles", href: "#leadership" },
-  { id: "recognition", value: RECOGNITION.length + MUSIC.length, label: "honors and recognitions", href: "#recognition" },
+  { id: "recognition", value: RECOGNITION_COUNT, label: "recognitions and press features", href: "#recognition" },
+  { id: "music", value: MUSIC.length, label: "music honors", href: "#music" },
+  { id: "academics", value: ACADEMICS.length, label: "academic highlights", href: "#academics" },
   { id: "projects", value: PROJECTS.length, label: "projects built", href: "#projects" },
 ];
+
+/** A stat's figure by section id, for the section heading that carries the same number. */
+export function statValue(id: string): number {
+  const stat = STATS.find((candidate) => candidate.id === id);
+  if (!stat) throw new Error(`no stat for section "${id}"`);
+  return stat.value;
+}
 
 /* ----------------------------------------------------------------- meta */
 

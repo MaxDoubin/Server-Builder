@@ -15,13 +15,14 @@ import {
   LEADERSHIP,
   MILESTONE_COUNT,
   MUSIC,
-  PRESS,
   PROJECTS,
   RECOGNITION,
   STATS,
   TRAINING_COUNT,
+  PRESS_ITEMS,
   YEARS,
   accomplishmentsDescription,
+  statValue,
   type Achievement,
   type Leadership,
   type Project,
@@ -91,7 +92,7 @@ export function CinematicAccomplishments() {
           {/* The counts are computed, and each one jumps to the section it counts. */}
           <ul
             data-testid="accomplishment-stats"
-            className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3"
+            className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4"
           >
             {STATS.map((stat) => (
               <li key={stat.id}>
@@ -127,11 +128,11 @@ export function CinematicAccomplishments() {
             </p>
           </div>
 
-          <Section id="competition" title="Competition and cybersecurity" count={COMPETITION.length} unit="results">
+          <Section id="competition" title="Competition and cybersecurity" unit="results">
             <AchievementGrid items={COMPETITION} />
           </Section>
 
-          <Section id="certifications" title="Certifications" count={EARNED_CERTS.length} unit="earned">
+          <Section id="certifications" title="Certifications" unit="earned">
             <h3 className={`mt-6 ${H3}`}>
               Earned <span className={EYEBROW}>· {EARNED_CERTS.length} exams passed</span>
             </h3>
@@ -168,7 +169,7 @@ export function CinematicAccomplishments() {
             </div>
           </Section>
 
-          <Section id="training" title="Training credentials and badges" count={TRAINING_COUNT} unit="credentials">
+          <Section id="training" title="Training credentials and badges" unit="credentials">
             <p className={`mt-3 max-w-2xl ${BODY}`}>
               {TRAINING_COUNT} credentials from {ISSUER_GROUPS.length} issuers, {BADGE_COUNT} of them
               with the badge the issuer gave, grouped by issuer.
@@ -176,7 +177,7 @@ export function CinematicAccomplishments() {
             <IssuerGroups groups={ISSUER_GROUPS} />
           </Section>
 
-          <Section id="leadership" title="Leadership and community" count={LEADERSHIP.length} unit="roles">
+          <Section id="leadership" title="Leadership and community" unit="roles">
             <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {LEADERSHIP.map((role) => (
                 <RoleCard key={`${role.title}-${role.org}`} role={role} />
@@ -184,33 +185,39 @@ export function CinematicAccomplishments() {
             </ul>
           </Section>
 
-          <Section id="recognition" title="Recognition and press" count={RECOGNITION.length + 1} unit="entries">
-            <article className="mt-6 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.07)] p-6">
-              <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
-                In the press
-              </div>
-              <h3 className={`mt-2 ${H3} md:text-xl`}>
-                <a
-                  href={PRESS.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="break-words underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
-                >
-                  {PRESS.headline} <span aria-hidden>↗</span>
-                </a>
-              </h3>
-              <p className={`mt-2 ${BODY}`}>
-                {PRESS.outlet}, {PRESS.displayDate}. By {PRESS.author}.
-              </p>
-            </article>
+          <Section id="recognition" title="Recognition and press" unit="entries">
+            {PRESS_ITEMS.map((press) => (
+              <article
+                key={press.url}
+                data-testid="recognition-press"
+                className="mt-6 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.07)] p-6"
+              >
+                <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                  In the press
+                </div>
+                <h3 className={`mt-2 ${H3} md:text-xl`}>
+                  <a
+                    href={press.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-words underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
+                  >
+                    {press.headline} <span aria-hidden>↗</span>
+                  </a>
+                </h3>
+                <p className={`mt-2 ${BODY}`}>
+                  {press.outlet}, {press.displayDate}. By {press.author}.
+                </p>
+              </article>
+            ))}
             <AchievementGrid items={RECOGNITION} />
           </Section>
 
-          <Section id="music" title="Music" count={MUSIC.length} unit="honors">
+          <Section id="music" title="Music" unit="honors">
             <AchievementGrid items={MUSIC} />
           </Section>
 
-          <Section id="academics" title="Academics">
+          <Section id="academics" title="Academics" unit="highlights">
             <ul
               data-testid="accomplishment-academics"
               className="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm sm:grid-cols-2 md:p-8"
@@ -221,7 +228,7 @@ export function CinematicAccomplishments() {
             </ul>
           </Section>
 
-          <Section id="projects" title="Projects" count={PROJECTS.length} unit="projects">
+          <Section id="projects" title="Projects" unit="projects">
             <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {PROJECTS.map((project) => (
                 <ProjectCard key={project.id} project={project} />
@@ -260,6 +267,11 @@ export function CinematicAccomplishments() {
   );
 }
 
+/**
+ * A section heading with its count. The count is the stat of the same id when
+ * there is one, so the figure in the stat row and the figure here are the same
+ * number; the year-by-year section has no stat and passes its own.
+ */
 function Section({
   id,
   title,
@@ -273,18 +285,20 @@ function Section({
   unit?: string;
   children: ReactNode;
 }) {
+  const shown = count ?? statValue(id);
   return (
     <section id={id} className="mt-16 scroll-mt-28" aria-labelledby={`${id}-heading`}>
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <h2 id={`${id}-heading`} className={H2}>
           {title}
         </h2>
-        {count !== undefined ? (
-          <span className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
-            {count}
-            {unit ? ` ${unit}` : ""}
-          </span>
-        ) : null}
+        <span
+          data-testid={`count-${id}`}
+          className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]"
+        >
+          {shown}
+          {unit ? ` ${unit}` : ""}
+        </span>
       </div>
       {children}
     </section>
