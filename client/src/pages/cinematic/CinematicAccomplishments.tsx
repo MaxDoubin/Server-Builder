@@ -127,11 +127,11 @@ export function CinematicAccomplishments() {
             </p>
           </div>
 
-          <Section id="competition" title="Competition and cybersecurity" count={COMPETITION.length}>
+          <Section id="competition" title="Competition and cybersecurity" count={COMPETITION.length} unit="results">
             <AchievementGrid items={COMPETITION} />
           </Section>
 
-          <Section id="certifications" title="Certifications" count={EARNED_CERTS.length}>
+          <Section id="certifications" title="Certifications" count={EARNED_CERTS.length} unit="earned">
             <h3 className={`mt-6 ${H3}`}>
               Earned <span className={EYEBROW}>· {EARNED_CERTS.length} exams passed</span>
             </h3>
@@ -168,7 +168,7 @@ export function CinematicAccomplishments() {
             </div>
           </Section>
 
-          <Section id="training" title="Training credentials and badges" count={TRAINING_COUNT}>
+          <Section id="training" title="Training credentials and badges" count={TRAINING_COUNT} unit="credentials">
             <p className={`mt-3 max-w-2xl ${BODY}`}>
               {TRAINING_COUNT} credentials from {ISSUER_GROUPS.length} issuers, {BADGE_COUNT} of them
               with the badge the issuer gave, grouped by issuer.
@@ -176,7 +176,7 @@ export function CinematicAccomplishments() {
             <IssuerGroups groups={ISSUER_GROUPS} />
           </Section>
 
-          <Section id="leadership" title="Leadership and community" count={LEADERSHIP.length}>
+          <Section id="leadership" title="Leadership and community" count={LEADERSHIP.length} unit="roles">
             <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {LEADERSHIP.map((role) => (
                 <RoleCard key={`${role.title}-${role.org}`} role={role} />
@@ -184,7 +184,7 @@ export function CinematicAccomplishments() {
             </ul>
           </Section>
 
-          <Section id="recognition" title="Recognition and press" count={RECOGNITION.length + 1}>
+          <Section id="recognition" title="Recognition and press" count={RECOGNITION.length + 1} unit="entries">
             <article className="mt-6 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.07)] p-6">
               <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                 In the press
@@ -206,7 +206,7 @@ export function CinematicAccomplishments() {
             <AchievementGrid items={RECOGNITION} />
           </Section>
 
-          <Section id="music" title="Music" count={MUSIC.length}>
+          <Section id="music" title="Music" count={MUSIC.length} unit="honors">
             <AchievementGrid items={MUSIC} />
           </Section>
 
@@ -221,7 +221,7 @@ export function CinematicAccomplishments() {
             </ul>
           </Section>
 
-          <Section id="projects" title="Projects" count={PROJECTS.length}>
+          <Section id="projects" title="Projects" count={PROJECTS.length} unit="projects">
             <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {PROJECTS.map((project) => (
                 <ProjectCard key={project.id} project={project} />
@@ -334,20 +334,18 @@ function CertTile({ cert }: { cert: Cert }) {
             decoding="async"
             className={TILE_BADGE}
           />
-        ) : (
+        ) : cert.status === "earned" ? (
           // Some issuers give a certificate but no badge image; a plain mark
-          // keeps the tile's shape without imitating one.
+          // keeps the tile's shape without imitating one. An exam not yet sat
+          // gets no mark at all: an empty box beside "in progress" reads as a
+          // missing image, and the chip already says what it is.
           <span
             aria-hidden
-            className={`${TILE_BADGE} flex items-center justify-center rounded-2xl border border-[hsl(var(--brand-iron))] font-mono-tight text-3xl ${
-              cert.status === "earned"
-                ? "text-[hsl(var(--brand-signal))]"
-                : "text-[hsl(var(--brand-amber))]"
-            }`}
+            className={`${TILE_BADGE} flex items-center justify-center rounded-2xl border border-[hsl(var(--brand-iron))] font-mono-tight text-3xl text-[hsl(var(--brand-signal))]`}
           >
-            {cert.status === "earned" ? "✓" : "◔"}
+            ✓
           </span>
-        )}
+        ) : null}
         <StatusChip cert={cert} />
       </div>
       <div className={`mt-4 ${EYEBROW}`}>
@@ -390,9 +388,12 @@ function IssuerGroups({ groups }: { groups: CredentialGroup[] }) {
         </div>
       ))}
 
-      <div className="mt-10 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Each cell is three rows of the shared grid (heading, meta, tile), so
+          a meta line that wraps in one cell does not push its tile below its
+          neighbors'. */}
+      <div className="mt-10 grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
         {tiledOne.map((group) => (
-          <div key={group.id}>
+          <div key={group.id} className="row-span-3 mb-8 grid grid-rows-subgrid gap-y-0">
             <GroupHeading group={group} />
             <BadgeTiles group={group} single />
           </div>
