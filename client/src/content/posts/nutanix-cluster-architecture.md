@@ -4,7 +4,7 @@ A traditional virtualization stack has three tiers: servers that run virtual mac
 
 Nutanix's version of this idea has one design choice that explains most of its behavior: the storage controller is not a kernel module and not a separate appliance. It is an ordinary virtual machine, called the Controller VM (CVM), and one runs on every node. The CVM owns the node's drives, serves all storage input/output (I/O) for the VMs on that host, and talks to the CVMs on every other node to keep the data replicated.
 
-This explainer follows Nutanix's public documentation and the Nutanix Bible, the vendor's own architecture book at nutanixbible.com. Nutanix's core software, AOS (which the Bible glosses as the Nutanix core software that runs in every CVM), has changed a lot across releases, so where a behavior is tied to a release, the release is named. Numbers the Bible gives without a version describe its current edition (the copy consulted is marked 2025).
+This explainer follows Nutanix's public documentation and the Nutanix Bible, the vendor's own architecture book at nutanixbible.com. Nutanix's core software, AOS (which the Bible glosses as the Nutanix core software that runs in every CVM), has changed a lot across releases, so where a behavior is tied to a release, the release is named. Numbers the Bible gives without a version come from the edition read for this article, whose pages carry a 2025 copyright line and name no release. Treat every such timer and threshold as version dependent.
 
 ## Nodes, blocks and the cluster
 
@@ -12,7 +12,7 @@ A node is one physical server: central processing units (CPUs), memory, network 
 
 Every node runs two layers of software:
 
-- A hypervisor that runs the guest VMs. The Bible lists ESXi (VMware), AHV (Nutanix's own) and Hyper-V (Microsoft) as hypervisors a node can run.
+- A hypervisor that runs the guest VMs. The Bible names ESXi (VMware), AHV (Nutanix's own) and Hyper-V (Microsoft). Which hypervisors a current AOS release supports was not checked for this article and depends on the release, so none is claimed here.
 - The CVM, which runs the Nutanix software and, in the Bible's words, serves all of the I/O operations for the hypervisor and every VM on that host.
 
 A cluster is a group of these nodes managed as one system. Adding a node adds compute, capacity and another storage controller at once, so background work such as rebuilds spreads across more controllers.
@@ -82,7 +82,7 @@ Metadata has its own replication. Metadata lives in the Cassandra-based ring and
 - **FT1:** data RF2, metadata RF3. The cluster tolerates one failure.
 - **FT2:** data RF3, metadata RF5. The cluster tolerates two failures.
 
-The Bible notes these FT levels as supported as of AOS 5.0, and says RF3 needs at least 5 nodes because metadata then needs five copies.
+The Bible notes these FT levels as supported as of AOS 5.0, and its awareness table lists 5 nodes as the minimum for FT2 with node awareness, which fits metadata needing five copies.
 
 Two newer details, both from Nutanix's AOS 6 announcement:
 
@@ -149,9 +149,9 @@ Meanwhile Curator finds the replicas that lived on the dead node and the whole c
 ## Limits and common mistakes
 
 - **Running full.** Replication protects only if there is free space to rebuild into.
-- **Assuming RF3 or block awareness on a small cluster.** RF3 needs five nodes; block awareness needs at least three blocks.
+- **Assuming RF3 or block awareness on a small cluster.** The Bible lists five nodes as the FT2 minimum with node awareness, and block awareness needs at least three blocks.
 - **Using rack awareness as a stretched cluster.** The Bible says spanning one cluster across two rooms or buildings with block or rack awareness is theoretically possible but not recommended, and points to synchronous or near-synchronous replication, optionally with a metro cluster, instead. AOS 6.0 added AHV Metro Availability for that purpose.
-- **Reading old numbers as current.** Timers and thresholds quoted here come from the current Bible edition, not a named release. Check the documentation for your AOS version.
+- **Reading old numbers as current.** Timers and thresholds quoted here come from the Bible edition read, not a named release. Check the documentation for your AOS version.
 
 ## Study notes
 

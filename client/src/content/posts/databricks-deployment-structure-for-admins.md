@@ -4,7 +4,7 @@ An administrator looking at a Databricks deployment for the first time is usuall
 
 This explainer is a neutral map of those levels, based on the public documentation at docs.databricks.com. The pages read were the Amazon Web Services edition. Azure and Google Cloud editions exist and were not compared here. Topics are the account and workspace levels, the control plane and compute plane, serverless and classic compute, Unity Catalog, identities and System for Cross-domain Identity Management (SCIM), privileges and ownership, and compute policies.
 
-Databricks renames features often. The names below are the ones used on the pages read in November 2026, and a table near the end records where names differ. Treat every name as a snapshot, not a permanent label.
+Databricks renames features. The names below are the ones used on the pages read in November 2026, and a table near the end records where names differ. Treat every name as a snapshot, not a permanent label.
 
 ## Account and workspace
 
@@ -81,7 +81,7 @@ Below the metastore sits a three-level namespace. Tables, views, volumes, functi
 SELECT * FROM prod.sales.orders;
 ```
 
-Other securables sit directly under the metastore: storage credentials, external locations, connections and shares. Shares belong to the sharing feature now branded OpenSharing, formerly Delta Sharing (see the names table).
+Other securables sit directly under the metastore: storage credentials, external locations, connections and shares. Shares belong to the sharing feature that Databricks says Delta Sharing evolved into, now called OpenSharing (see the names table).
 
 Two design points come from the best practices page:
 
@@ -130,7 +130,7 @@ The privileges page states that initially users have no access to data in a meta
 
 ### Inheritance and the usage privileges
 
-Granting a privilege on a catalog or schema applies it to child objects. The example in the documentation is granting the modify privilege on a schema, which covers all current and future tables in it.
+The permissions model page says that a privilege granted on a container object automatically applies to all current and future child objects. Its example is granting `SELECT` on a catalog, which allows users to read all tables in that catalog, given the appropriate usage privileges.
 
 Reading a table takes three grants working together: `SELECT` on the table (or inherited from above), `USE SCHEMA` on the parent schema, and `USE CATALOG` on the parent catalog. The usage privileges do not grant access to data by themselves.
 
@@ -189,7 +189,7 @@ The table records what the pages read for this article said about names, and whe
 | Compute plane | Data plane (not used on the pages read) | The pages use compute plane throughout and document no rename, so no history is claimed here. |
 | Compute policies | Cluster policies | The URL path and some interface wording still say cluster. The rename date is not stated. |
 | Git folder | Repos | The concepts page says the former name was Repos. |
-| OpenSharing | Delta Sharing | A Databricks blog post says Delta Sharing became OpenSharing, announced June 10, 2026, and that existing Delta Sharing clients remain compatible. |
+| OpenSharing | Delta Sharing | A Databricks blog post says Delta Sharing evolved into OpenSharing, announced June 10, 2026 with the Linux Foundation, and that existing Delta Sharing clients remain compatible. The docs page on creating a metastore already uses the OpenSharing name. |
 | Standard and Dedicated access modes | Not stated | The compute configuration page names no earlier labels. |
 
 ## Study notes
@@ -208,6 +208,7 @@ The table records what the pages read for this article said about names, and whe
 - https://docs.databricks.com/aws/en/data-governance/unity-catalog/create-metastore
 - https://docs.databricks.com/aws/en/data-governance/unity-catalog/manage-privileges/
 - https://docs.databricks.com/aws/en/data-governance/unity-catalog/manage-privileges/privileges
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/access-control/permissions-concepts
 - https://docs.databricks.com/aws/en/admin/users-groups/
 - https://docs.databricks.com/aws/en/admin/users-groups/scim/
 - https://docs.databricks.com/aws/en/admin/clusters/policies
