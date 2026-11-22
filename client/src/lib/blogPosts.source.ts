@@ -277,6 +277,12 @@ The brief describes Content-ID as combining a real-time threat prevention engine
     excerpt:
       "How a FortiGate matches policies, picks flow or proxy inspection, applies profiles, SSL inspection and NAT, per the FortiOS 7.6.8 documentation.",
     coverImage: "/images/blog/how-a-fortigate-evaluates-traffic-photo.jpg",
+    coverCredit: {
+      author: "Inisheer",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:CERN-20060225-01.jpg",
+    },
     content: `## What this explains, and which release
 
 This explainer follows one new connection through a FortiGate, Fortinet's firewall product line, in the order Fortinet's public documentation describes it: policy match, inspection mode, security profiles, Secure Sockets Layer and Transport Layer Security (SSL/TLS) inspection, and network address translation (NAT). It ends with the Security Fabric, which this article reads as context around the policy engine and not a stage inside it (that reading is the article's own, not a Fortinet statement). It is a reading of documentation. No device was tested.
