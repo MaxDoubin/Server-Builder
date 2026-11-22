@@ -1024,7 +1024,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","kernel"],
     excerpt: "oom_score_adj reads like a nudge and it is a quantity of memory. On a 16 GiB host one point is worth 16.4 MiB, so an adj of 200 adds 3.2 GiB to a process score and -800 subtracts 12.8 GiB. And -1000 is not the bottom of the scale, it is a different code path: set it on every unit and the kernel has no candidate, so a lost process becomes a lost machine.",
     coverImage: "/images/blog/minus-one-thousand-is-not-a-hint.jpg",
-    wordCount: 1902,
+    wordCount: 1928,
   },
   {
     slug: "the-alert-was-pending-all-day",
@@ -1627,7 +1627,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "One runaway process should not take down everything else on the box. Control groups are how Linux enforces that, and you can use them without containers.",
     coverImage: "/images/blog/cgroups-resource-limits.jpg",
     coverCredit: {"author":"barnoid","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/50359335@N00/410484763"},
-    wordCount: 1791,
+    wordCount: 1829,
   },
   {
     slug: "rate-limiting-algorithms",
