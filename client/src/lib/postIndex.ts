@@ -267,7 +267,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
     coverImage: "/images/blog/ilo-6-vs-ilo-7.jpg",
     coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg"},
-    wordCount: 1762,
+    wordCount: 1763,
   },
   {
     slug: "lsi-9207-8i-vs-9211-8i",
