@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { ACCENT_HEX } from "../rackConfig";
 import { buildCablePaths, type CableAccent } from "./Cables";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
@@ -127,7 +127,9 @@ const VERTEX = /* glsl */ `
       // A faint standing glow along the whole cable so the routes read.
       s = along / ${RIBBON_REACH.toFixed(1)};
       width = 0.0011;
-      gain = 0.085 * smoothstep(0.0, 0.04, s) * smoothstep(1.0, 0.96, s);
+      // Edges always ascending: smoothstep with edge0 > edge1 is undefined
+      // in GLSL ES and real drivers disagree about it.
+      gain = 0.085 * smoothstep(0.0, 0.04, s) * (1.0 - smoothstep(0.96, 1.0, s));
       vAlong = -1.0;
     } else {
       // One trip lasts 1 + TAIL so the tail has time to drain into the port.
@@ -313,13 +315,23 @@ function buildFlow(tier: DeviceTier) {
   return { geometry, material, curves };
 }
 
-export function PacketFlow({
-  progressRef,
-  tier,
-}: {
+interface PacketFlowProps {
   progressRef: { current: number };
   tier: DeviceTier;
-}) {
+}
+
+/**
+ * The shader reads the curve texture with texelFetch, which is GLSL ES 3.00.
+ * three still falls back to a WebGL 1 context where WebGL 2 is missing, and
+ * there the program would fail to compile. The effect is an extra, so on
+ * such a device it simply is not mounted: no shader, no texture, no error.
+ */
+export function PacketFlow(props: PacketFlowProps) {
+  const isWebGL2 = useThree((s) => s.gl.capabilities.isWebGL2);
+  return isWebGL2 ? <PacketFlowMesh {...props} /> : null;
+}
+
+function PacketFlowMesh({ progressRef, tier }: PacketFlowProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const flow = useMemo(() => buildFlow(tier), [tier]);
 
