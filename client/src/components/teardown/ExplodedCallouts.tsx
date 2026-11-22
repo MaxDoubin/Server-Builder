@@ -342,13 +342,22 @@ export function ExplodedCallouts({
     }
 
     /** Repaint the names and resize every leader to fit them. */
+    /*
+      Leader lengths, four of them in rotation across the machine. Half the
+      parts lift straight up, so their names would all land in one row and
+      print over each other. Ordering the named parts by where they end up
+      from left to right (as the opening camera sees them) and stepping the
+      length by more than a label's height puts neighbors on separate rows.
+    */
+    const across = (s: CalloutSeed) => (s.home.x + s.travel.x) * 0.8 - (s.home.z + s.travel.z) * 0.6;
+    const named = seeds.filter((s) => isCalledOut(s.label)).sort((a, b) => across(a) - across(b));
+    const reaches = seeds.map((s, i) => 40 + ((named.indexOf(s) + 1 || i) % 4) * 26);
+
     const layout = () => {
       const widths = paintAtlas(canvas, seeds);
       seeds.forEach((s, i) => {
         const shown = isCalledOut(s.label) ? 1 : 0;
-        // Three leader lengths in rotation, so neighbors do not end level
-        // with each other and print their names on top of one another.
-        const reach = 44 + (i % 3) * 20;
+        const reach = reaches[i];
         for (let v = 0; v < LINE_VERTS; v++) line.look.set([reach, widths[i], shown], (i * LINE_VERTS + v) * 3);
         const u0 = ((i % ATLAS_COLS) * CELL_W * ATLAS_SCALE) / canvas.width;
         const u1 = u0 + (widths[i] * ATLAS_SCALE) / canvas.width;
