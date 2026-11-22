@@ -20625,13 +20625,13 @@ oom_kill 12
 If \`oom\` and \`max\` are climbing along with \`oom_kill\`, the cgroup hit its own
 limit, the machine was never full, and the answer is a limit that is too low or
 a service that leaks. \`oom_kill\` counts kills by any OOM killer, so if it rises
-while \`oom\` and \`max\` stay flat, the limit that was hit belongs to something
-else. A parent slice with its own \`memory.max\` shows the event in its own file
-and not in this one, so read the parents' files before you decide that a system
-OOM chose a victim here and the host is oversubscribed. If the service has child
-cgroups, read \`memory.events.local\` instead: plain \`memory.events\` rolls every
-field up from descendants, so a child that hit its own limit would make these
-counters climb here too.
+while \`oom\` and \`max\` stay flat, the limit that was hit belongs to another
+cgroup or to the whole machine. The counters can also split across a hierarchy,
+because the cgroup whose limit fired and the cgroup the victim lived in are
+charged separately. When that matters, let the kernel's own line decide: the
+\`oom-kill:\` message names \`constraint=\` (\`CONSTRAINT_MEMCG\` for a cgroup limit,
+\`CONSTRAINT_NONE\` for a system-wide OOM), \`oom_memcg=\` (the cgroup whose limit
+was hit) and \`task_memcg=\` (the cgroup the victim was in).
 
 ## What memory.oom.group changes
 
@@ -31211,7 +31211,7 @@ My practice is to set \`memory.high\` deliberately low at first and watch \`memo
 When a service disappears without a word in its own logs, or slows down for no obvious reason, read what the kernel recorded before reading the application:
 
 1. Find the cgroup. \`systemctl status name.service\` prints it, or read \`/proc/PID/cgroup\`.
-2. Check \`memory.events.local\`. Plain \`memory.events\` rolls every field up from child cgroups, so it can show events that belong to a descendant; the \`.local\` file counts only this cgroup. A nonzero \`oom_kill\` there means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing in the same file, this cgroup's own limit killed it. If they are flat, the limit that was hit belongs to a parent slice or to the whole host: read \`memory.events.local\` one level up, because a parent's limit is counted in the parent's file and never in the child's. If no cgroup up the chain shows it, the host itself ran out of memory and picked a victim here. Whichever it was, it did not crash. It was killed for memory, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
+2. Check \`memory.events.local\`, which counts only this cgroup (plain \`memory.events\` also rolls up events from child cgroups). A nonzero \`oom_kill\` there means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing in the same file, this cgroup's own limit killed it. If they are flat, the limit that was hit belongs to a parent slice or to the whole host, and with nested cgroups the counters can be split between the cgroup whose limit fired and the cgroup the victim lived in. The kernel's \`oom-kill:\` line settles it: \`oom_memcg=\` is the cgroup whose limit was hit, \`task_memcg=\` is the victim's cgroup, and \`constraint=CONSTRAINT_NONE\` means the host itself ran out of memory. Whichever it was, it did not crash. It was killed for memory, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
 3. Check \`cpu.stat\`. A rising \`nr_throttled\` means the quota is the bottleneck.
 4. Check the pressure files to see which resource tasks were waiting on.
 5. Only then look at the application.

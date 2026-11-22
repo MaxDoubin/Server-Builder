@@ -174,13 +174,13 @@ oom_kill 12
 If `oom` and `max` are climbing along with `oom_kill`, the cgroup hit its own
 limit, the machine was never full, and the answer is a limit that is too low or
 a service that leaks. `oom_kill` counts kills by any OOM killer, so if it rises
-while `oom` and `max` stay flat, the limit that was hit belongs to something
-else. A parent slice with its own `memory.max` shows the event in its own file
-and not in this one, so read the parents' files before you decide that a system
-OOM chose a victim here and the host is oversubscribed. If the service has child
-cgroups, read `memory.events.local` instead: plain `memory.events` rolls every
-field up from descendants, so a child that hit its own limit would make these
-counters climb here too.
+while `oom` and `max` stay flat, the limit that was hit belongs to another
+cgroup or to the whole machine. The counters can also split across a hierarchy,
+because the cgroup whose limit fired and the cgroup the victim lived in are
+charged separately. When that matters, let the kernel's own line decide: the
+`oom-kill:` message names `constraint=` (`CONSTRAINT_MEMCG` for a cgroup limit,
+`CONSTRAINT_NONE` for a system-wide OOM), `oom_memcg=` (the cgroup whose limit
+was hit) and `task_memcg=` (the cgroup the victim was in).
 
 ## What memory.oom.group changes
 
