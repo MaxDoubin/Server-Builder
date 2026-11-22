@@ -15657,6 +15657,7 @@ each.
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
       "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
@@ -23025,6 +23026,7 @@ device](/space).
     slug: "the-clock-is-the-last-thing-anybody-checks",
     title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["security", "operations", "networking"],
     excerpt:
       "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
@@ -26986,6 +26988,7 @@ One security note that applies to both. SNMPv1 and v2c send a community string i
     slug: "netfilter-hook-order",
     title: "Netfilter Hooks And The Order Your Rules Really Run In",
     date: "2026-06-23",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "security"],
     excerpt:
       "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
@@ -27182,6 +27185,7 @@ cat /proc/pressure/memory
     slug: "ebpf-observability-basics",
     title: "eBPF Is How I Ask The Kernel Questions",
     date: "2026-07-04",
+    updated: "2026-11-21",
     tags: ["linux", "monitoring", "tools"],
     excerpt:
       "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
@@ -30290,6 +30294,7 @@ In my experience the culprit is almost always one forgotten port or one overly e
     slug: "linux-disk-io-troubleshooting",
     title: "Troubleshooting Disk I/O on Linux Without Guessing",
     date: "2026-04-13",
+    updated: "2026-11-21",
     tags: ["linux", "storage", "operations"],
     excerpt:
       "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
@@ -34026,6 +34031,7 @@ just an unusually eloquent client.
     slug: "zfs-arc-l2arc-tuning",
     title: "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
     date: "2026-06-26",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "servers"],
     excerpt:
       "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
@@ -47808,7 +47814,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -49996,6 +50002,7 @@ Three security properties are worth being blunt about.
     slug: "container-networking-fundamentals",
     title: "Container Networking Fundamentals: How Pods and Containers Communicate",
     date: "2026-03-20",
+    updated: "2026-11-21",
     tags: ["networking", "containers", "kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
@@ -51186,6 +51193,7 @@ Finally, a stale target simply stops producing samples. Prometheus looks back a 
     slug: "bgp-route-filtering-security",
     title: "BGP Route Filtering and Security Best Practices",
     date: "2026-03-29",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
@@ -51612,7 +51620,7 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
@@ -52565,6 +52573,7 @@ was answering correctly the entire time.
     slug: "how-totp-codes-actually-work",
     title: "How TOTP Codes Actually Work",
     date: "2026-08-24",
+    updated: "2026-11-21",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
       "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
