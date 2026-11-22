@@ -285,8 +285,22 @@ const INDEX = path.join(DIST, "index.html");
  * route and prefetch row, and its palette row rides in the palette's chunk.
  * The budget came down by that win, so the headroom stays at about two
  * kilobytes rather than banking eight for the next thing to spend unnoticed.
+ *
+ * 690 KB, lowered from 733 by serving every tool from one /tools/:slug route,
+ * measured at 687.7 against 731.5 on main before it. App.tsx carried a lazy
+ * import and a <Route> per tool and prefetchOnHover.ts a hover row per tool,
+ * about 0.42 KB a tool across 106 of them, which is the four tenths the batch
+ * notes above kept recording. The route now asks a slug map for the page,
+ * and the map (pages/tools/toolPages.ts, an import.meta.glob over the tool
+ * pages) is reached only through a dynamic import, so it rides in its own
+ * 17.4 KB chunk that only a tool visit or a hover on a tool link fetches.
+ * The entry chunk went from 458,271 to 413,428 bytes, a win of 44,843 bytes
+ * (43.8 KB), and every tool page chunk is byte for byte the size it was. A
+ * new tool now costs this closure nothing, so a tool that moves this number
+ * has leaked something into the entry. The budget came down by the win, so
+ * the headroom stays at about two kilobytes.
  */
-const BUDGET_BYTES = 733 * 1024;
+const BUDGET_BYTES = 690 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

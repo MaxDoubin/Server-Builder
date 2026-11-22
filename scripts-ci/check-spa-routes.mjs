@@ -44,6 +44,17 @@ const DYNAMIC_COVERED_BY = {
   "/study/:exam/sheet": "study",
 };
 
+/**
+ * Dynamic route families whose slugs come from a registry, and so can be
+ * checked one by one rather than by a directory existing. Every tool used to
+ * have its own <Route> here, each checked on its own; one /tools/:slug route
+ * now serves them all, and this keeps that per-tool check: each registry
+ * slug must be prerendered or rewritten, or the gate fails naming it.
+ */
+const REGISTRY_FAMILIES = {
+  "/tools/:slug": { registry: "client/src/lib/toolsRegistry.ts", prefix: "/tools/" },
+};
+
 const ruleLines = redirects
   .split("\n")
   .map((l) => l.trim())
@@ -130,6 +141,20 @@ if (rules.includes("/*")) {
 const unreachable = [];
 for (const route of routes) {
   if (route === "*" || route === "/:rest*") continue;
+  const family = REGISTRY_FAMILIES[route];
+  if (family) {
+    const slugs = [...readFileSync(family.registry, "utf8").matchAll(/^\s*slug:\s*"([^"]+)"/gm)].map(
+      (m) => m[1],
+    );
+    if (slugs.length === 0) {
+      unreachable.push(`${route} (parsed no slugs out of ${family.registry}; fix this script)`);
+    }
+    for (const slug of slugs) {
+      const page = family.prefix + slug;
+      if (!prerendered(page) && !coveredByRule(page)) unreachable.push(`${page} (from ${route})`);
+    }
+    continue;
+  }
   if (route.includes(":")) {
     const dir = DYNAMIC_COVERED_BY[route];
     if (dir && existsSync(path.join(DIST, dir))) continue;
