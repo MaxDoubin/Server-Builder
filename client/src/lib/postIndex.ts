@@ -512,11 +512,12 @@ export const postIndex: PostMeta[] = [
     slug: "opencore-legacy-patcher-tahoe",
     title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["apple","tools","hardware","troubleshooting"],
     excerpt: "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
     coverImage: "/images/blog/opencore-legacy-patcher-tahoe.jpg",
     coverCredit: {"author":"Amada44","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Macbook_A1286.jpg"},
-    wordCount: 3203,
+    wordCount: 3247,
   },
   {
     slug: "fortigate-homelab-license",
@@ -875,10 +876,11 @@ export const postIndex: PostMeta[] = [
     slug: "tcp-retries2-is-not-a-count",
     title: "tcp_retries2 Is Not a Count",
     date: "2026-09-19",
+    updated: "2026-11-21",
     tags: ["networking","linux","troubleshooting","operations"],
     excerpt: "tcp(7) calls tcp_retries2 the maximum number of times a packet is retransmitted before giving up, and says the duration depends on the retransmission timeout. The kernel never counts a retransmission, and the duration does not depend on the path: retransmits_timed_out turns the number into a time budget modeled from TCP_RTO_MIN, so the default is 924.6 seconds on every Linux host. Measured on a real kernel, tcp_retries2 at 5 aborts after 13.25 seconds having sent 6 segments, one more than the sysctl names, and a slow path gets fewer attempts in the same time rather than more.",
     coverImage: "/images/blog/tcp-retries2-is-not-a-count.jpg",
-    wordCount: 1460,
+    wordCount: 1496,
   },
   {
     slug: "the-connection-refused-by-a-daemon-doing-nothing",
@@ -1074,10 +1076,11 @@ export const postIndex: PostMeta[] = [
     slug: "the-free-column-was-always-going-to-be-zero",
     title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
+    updated: "2026-11-21",
     tags: ["linux","operations","monitoring"],
     excerpt: "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
     coverImage: "/images/blog/the-free-column-was-always-going-to-be-zero.jpg",
-    wordCount: 1431,
+    wordCount: 1484,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -1338,10 +1341,11 @@ export const postIndex: PostMeta[] = [
     slug: "oom-killer-and-swap-sizing",
     title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
+    updated: "2026-11-21",
     tags: ["linux","servers","operations"],
     excerpt: "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
     coverImage: "/images/blog/oom-killer-and-swap-sizing.jpg",
-    wordCount: 946,
+    wordCount: 1039,
   },
   {
     slug: "ebpf-observability-basics",
@@ -1481,7 +1485,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "HTTP caching is two separate mechanisms, freshness and validation. Most caching bugs come from configuring one and expecting the other.",
     coverImage: "/images/blog/http-caching-headers-etags.jpg",
     coverCredit: {"author":"dmitrybarsky","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/84816487@N00/2261404199"},
-    wordCount: 907,
+    wordCount: 913,
   },
   {
     slug: "luks-at-rest-encryption",
@@ -1776,11 +1780,12 @@ export const postIndex: PostMeta[] = [
     slug: "gpu-passthrough-proxmox",
     title: "GPU Passthrough on Proxmox Without the Guesswork",
     date: "2026-06-18",
+    updated: "2026-11-21",
     tags: ["virtualization","linux","homelab"],
     excerpt: "IOMMU groups, VFIO binding, and the handful of failure modes that eat an entire evening. How I reason through passthrough problems instead of copying forum posts.",
     coverImage: "/images/blog/gpu-passthrough-proxmox.jpg",
     coverCredit: {"author":"kaeru.my","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/57634952@N00/3222436402"},
-    wordCount: 965,
+    wordCount: 1001,
   },
   {
     slug: "inference-cost-per-request",
@@ -2260,12 +2265,12 @@ export const postIndex: PostMeta[] = [
     slug: "zfs-on-enterprise-hardware",
     title: "Running ZFS on Dell Enterprise Hardware",
     date: "2026-02-08",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage","zfs","servers","homelab"],
     excerpt: "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
     coverImage: "/images/blog/zfs-on-enterprise-hardware.jpg",
     coverCredit: {"author":"Markus Then","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:ZFS_hardware_storage_29.jpg"},
-    wordCount: 1963,
+    wordCount: 1983,
   },
   {
     slug: "10gbe-networking-homelab",
@@ -2710,10 +2715,11 @@ export const postIndex: PostMeta[] = [
     slug: "container-orchestration-basics",
     title: "Container Orchestration: Docker and LXC in a Homelab",
     date: "2025-09-15",
+    updated: "2026-11-21",
     tags: ["virtualization","servers","homelab"],
     excerpt: "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
     coverImage: "/images/blog/container-orchestration-basics.jpg",
-    wordCount: 1548,
+    wordCount: 1567,
   },
   {
     slug: "bgp-for-network-engineers",
@@ -2739,12 +2745,12 @@ export const postIndex: PostMeta[] = [
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage","hardware","servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
     coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
     coverCredit: {"author":"Dmitry Nosachev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Intel_P3608_NVMe_flash_SSD,_PCI-E_add-in_card.jpg"},
-    wordCount: 1907,
+    wordCount: 1912,
   },
   {
     slug: "network-monitoring-system-build",
@@ -2802,11 +2808,12 @@ export const postIndex: PostMeta[] = [
     slug: "cisco-ios-fundamentals",
     title: "Cisco IOS Fundamentals Every Network Engineer Should Know",
     date: "2026-03-02",
+    updated: "2026-11-21",
     tags: ["cisco","networking","routing"],
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
     coverCredit: {"author":"Robert","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_2800_series_router_(1).jpg"},
-    wordCount: 1745,
+    wordCount: 1749,
   },
   {
     slug: "storage-area-networks-explained",
@@ -2842,11 +2849,12 @@ export const postIndex: PostMeta[] = [
     slug: "power-over-ethernet-poe",
     title: "Power over Ethernet: How PoE Works in Enterprise Networks",
     date: "2026-03-07",
+    updated: "2026-11-21",
     tags: ["networking","hardware","switching"],
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
     coverImage: "/images/blog/power-over-ethernet-poe.jpg",
     coverCredit: {"author":"Phiarc","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:PowerDsine_3524G_24-Port_Gigabit_Ethernet_PoE_Midspan_Injector_with_top_cover_removed,_oblique_view.jpg"},
-    wordCount: 1650,
+    wordCount: 1642,
   },
   {
     slug: "server-memory-architecture",
@@ -2873,11 +2881,12 @@ export const postIndex: PostMeta[] = [
     slug: "iscsi-storage-protocol",
     title: "iSCSI Storage: How to Configure and Use It",
     date: "2026-03-10",
+    updated: "2026-11-21",
     tags: ["storage","networking","servers"],
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
     coverImage: "/images/blog/iscsi-storage-protocol.jpg",
     coverCredit: {"author":"KorP","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:NetApp_E5700.jpg"},
-    wordCount: 1785,
+    wordCount: 1811,
   },
   {
     slug: "dns-security-dnssec",
@@ -2945,11 +2954,12 @@ export const postIndex: PostMeta[] = [
     slug: "syslog-centralized-logging",
     title: "Centralized Logging with Syslog: A Practical Guide",
     date: "2026-03-19",
+    updated: "2026-11-21",
     tags: ["operations","monitoring","servers"],
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
     coverImage: "/images/blog/syslog-centralized-logging.jpg",
     coverCredit: {"author":"Klapi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Kibana_demo_screenshot.jpg"},
-    wordCount: 1434,
+    wordCount: 1469,
   },
   {
     slug: "container-networking-fundamentals",
@@ -3348,10 +3358,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2991;
+export const CITATION_COUNT = 2993;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 209;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3177;
+export const CHECKED_URL_COUNT = 3179;
