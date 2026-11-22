@@ -9,7 +9,7 @@ import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import { LINK_BRINGUP_ENABLED, LinkBringUp } from "./parts/LinkBringUp";
-import { PauseWhenHidden } from "./parts/PauseWhenHidden";
+import { useVisibleFrameloop } from "./parts/useVisibleFrameloop";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -650,9 +650,12 @@ export function ContinuousRackScene({
   const { dpr, effects, tier, mobile } = useDeviceTier();
   const reducedMotion = useReducedMotion();
   const insertions = useMemo(buildInsertions, []);
+  const [canvasRef, frameloop] = useVisibleFrameloop();
 
   return (
     <Canvas
+      ref={canvasRef}
+      frameloop={frameloop}
       dpr={dpr}
       shadows={false}
       performance={{ min: 0.6, debounce: 200 }}
@@ -728,8 +731,6 @@ export function ContinuousRackScene({
           />
         )}
       </Suspense>
-
-      <PauseWhenHidden />
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
 

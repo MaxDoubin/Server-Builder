@@ -270,7 +270,9 @@ function Legend({ innerRef, mobile }: { innerRef: RefObject<HTMLDivElement>; mob
             <span>{row.text}</span>
           </div>
         ))}
-        <div style={{ marginTop: "8px", color: "hsl(40 8% 72%)" }}>LED colors vary by vendor</div>
+        <div style={{ marginTop: "8px", color: "hsl(40 8% 72%)" }}>
+          Illustrative · LED colors vary by vendor, and most ports stay dark until link
+        </div>
       </div>
     </Html>
   );
