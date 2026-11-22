@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 337 of them. Regenerate with script/generatePostIndex.ts.
+ * 343 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -48,6 +48,66 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "vulnerability-prioritization-cvss-epss-trurisk",
+    title: "How Vulnerability Platforms Rank What to Fix",
+    date: "2026-11-21",
+    tags: ["security","cybersecurity","operations","tools"],
+    excerpt: "How scans detect flaws, how QIDs differ from CVEs, what CVSS v3.1 and v4.0 measure, and how EPSS, CISA KEV and Qualys TruRisk reorder the fix list.",
+    coverImage: "/images/blog/vulnerability-prioritization-cvss-epss-trurisk-photo.jpg",
+    coverCredit: {"author":"Shixart1985","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Close-up_of_the_key_with_house_keychain.jpg"},
+    wordCount: 3166,
+  },
+  {
+    slug: "opentelemetry-collector-pipelines",
+    title: "The OpenTelemetry Collector and Its Pipelines",
+    date: "2026-11-21",
+    tags: ["monitoring","networking","linux"],
+    excerpt: "How the OpenTelemetry Collector receives, processes and exports telemetry: components, per-signal pipelines, agent vs gateway, and processor order.",
+    coverImage: "/images/blog/opentelemetry-collector-pipelines-photo.jpg",
+    coverCredit: {"author":"Clem Rutter, Rochester, Kent","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Ashton_Canal_Bridge_of_pipes_5187.JPG"},
+    wordCount: 2863,
+  },
+  {
+    slug: "oci-tenancy-structure-explained",
+    title: "How an Oracle Cloud (OCI) Tenancy Is Structured",
+    date: "2026-11-21",
+    tags: ["networking","security","operations","learning"],
+    excerpt: "Tenancy, compartments, regions, IAM policy verbs, identity domains and the VCN in Oracle Cloud, pinned to Oracle's current public documentation.",
+    coverImage: "/images/blog/oci-tenancy-structure-explained-photo.jpg",
+    coverCredit: {"author":"Wilfredor","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apartment_building_facade_with_window_air_conditioners_in_Rio_de_Janeiro,_Brazil.jpg"},
+    wordCount: 2797,
+  },
+  {
+    slug: "siem-soar-edr-ndr-xdr-explained",
+    title: "SIEM, SOAR, EDR, NDR and XDR: what each one does",
+    date: "2026-11-21",
+    tags: ["security","cybersecurity","monitoring","operations"],
+    excerpt: "A neutral guide to SIEM, SOAR, EDR, NDR and XDR: what data each ingests, how detections are written, where automation should stop, and how they fail.",
+    coverImage: "/images/blog/siem-soar-edr-ndr-xdr-explained-photo.jpg",
+    coverCredit: {"author":"Tutkamestari","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Antenna_radar_L-band_TAR_Finland.JPG"},
+    wordCount: 2882,
+  },
+  {
+    slug: "databricks-deployment-structure-for-admins",
+    title: "How a Databricks Deployment Is Organized for Admins",
+    date: "2026-11-21",
+    tags: ["security","operations","learning"],
+    excerpt: "A neutral map of Databricks accounts, workspaces, planes, Unity Catalog, identities, privileges and compute policies, as read in November 2026.",
+    coverImage: "/images/blog/databricks-deployment-structure-for-admins-photo.jpg",
+    coverCredit: {"author":"OKJaguar","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Perry_Lake_Park_boathouse,_Perry,_OK.jpg"},
+    wordCount: 2778,
+  },
+  {
+    slug: "nutanix-cluster-architecture",
+    title: "How a Nutanix Hyperconverged Cluster Fits Together",
+    date: "2026-11-21",
+    tags: ["virtualization","storage","servers","high-availability"],
+    excerpt: "How Nutanix nodes, Controller VMs, AHV or ESXi, RF2/RF3 replication, data locality and Prism fit together, and what CVM and node failures do.",
+    coverImage: "/images/blog/nutanix-cluster-architecture-photo.jpg",
+    coverCredit: {"author":"I am R.","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Truck_day_2012_june_19_(38).jpg"},
+    wordCount: 2901,
+  },
   {
     slug: "sase-explained",
     title: "SASE explained: an architecture, not a product",
@@ -3346,10 +3406,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 337;
+export const POST_COUNT = 343;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and thirty seven";
+export const POST_COUNT_SPELLED = "three hundred and forty three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3358,10 +3418,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2993;
+export const CITATION_COUNT = 3094;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 209;
+export const ATTRIBUTION_URL_COUNT = 215;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3179;
+export const CHECKED_URL_COUNT = 3286;

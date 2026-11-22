@@ -492,4 +492,23 @@ export const SYSTEMS: Term[] = [
       "The two uses are unrelated in practice. An SFF-8643 cable says nothing about the size of the drives at the other end, and an SFF drive cage does not fit an LFF chassis, so a used server listing has to be read for which bay size it was built with.",
     see: ["SAS", "HBA"],
   },
+  {
+    term: "CVM",
+    expansion: "Controller VM",
+    field: "storage",
+    definition:
+      "In a Nutanix cluster, the virtual machine on each node that owns the node's drives and serves the storage I/O for the VMs on that host. The CVMs of all nodes talk to each other to keep data replicated.",
+    confusion:
+      "It is an ordinary VM, not a kernel module or a separate appliance, so a CVM can reboot or fail while its host keeps running. Storage is then served by the CVMs on other nodes, over the network and at higher latency.",
+    see: ["AOS"],
+  },
+  {
+    term: "AOS",
+    field: "storage",
+    definition:
+      "Nutanix's core software, which runs in every Controller VM and provides the distributed storage layer and the cluster services. Releases are numbered, for example AOS 6.",
+    confusion:
+      "It is not the hypervisor. A cluster pairs it with AHV or ESXi, and the timers and thresholds that the Nutanix Bible ties to a release are version dependent, so check the documentation for the AOS version in use.",
+    see: ["CVM"],
+  },
 ];
