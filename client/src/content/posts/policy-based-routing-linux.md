@@ -77,7 +77,7 @@ sysctl -w net.ipv4.conf.all.rp_filter=2
 sysctl -w net.ipv4.conf.eth1.rp_filter=2
 ```
 
-Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the `all` setting and the per interface setting, so setting the interface to 2 while `all` is 1 does nothing.
+Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the `all` setting and the per interface setting, so setting the interface to 2 while `all` is 1 does give loose mode on that interface, but setting it to 0 while `all` is 1 or 2 does nothing.
 
 ## Debugging: ask the kernel, do not read the tables
 

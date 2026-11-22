@@ -37,7 +37,7 @@ ip link set vxlan100 up
 ip addr add 10.100.0.1/24 dev vxlan100
 ```
 
-Set the MTU explicitly at the same time, because the kernel will not work it out for you:
+Check the MTU straight away. With `dev eth0` the kernel subtracts the 50 bytes of overhead from eth0's MTU for you, but without a `dev` the interface stays at 1500, so setting it explicitly does no harm:
 
 ```bash
 ip link set vxlan100 mtu 1450

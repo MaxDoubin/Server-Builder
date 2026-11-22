@@ -23,7 +23,7 @@ iLO 6 firmware gained [TLS 1.3](/blog/tls-modern-encryption) support starting wi
 
 iLO 7 is the newer security design. [StorageReview](https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025) says iLO 7 was initially launched in February and "uses a dedicated security processor and a secure storage area, known as a secure enclave, to protect HPE ProLiant Gen12 servers from unauthorized access." [Techzine](https://www.techzine.eu/news/devices/128668/hpe-launches-proliant-gen12-servers-packed-with-security-and-ai-features/) describes the enclave as "an ASIC processor entirely focused on security," and says the new protection extends beyond today's threats to "attacks on the firmware of the servers themselves."
 
-Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security."
+Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security." Longer RSA keys are a classical-security improvement, not post-quantum protection: NIST lists RSA at every key size as quantum-vulnerable, and its post-quantum signature standards include ML-DSA and SLH-DSA.
 
 | Area | iLO 6 (Gen11) | iLO 7 (Gen12) |
 |---|---|---|
@@ -76,7 +76,7 @@ Key management is the other planned change. StorageReview reports that by 2026, 
 
 ## What this means
 
-Gen12 with iLO 7 is the choice when you need its secure enclave, the quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
+Gen12 with iLO 7 is the choice when you need its secure enclave, HPE's stated quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
 
 Before you order, PC Server and Parts says HPE's QuickSpecs name the controller for each generation, so check the QuickSpecs entry for your exact model. Then check HPE's licensing documentation for the features that need a license, and price Advanced into any server you plan to manage remotely. Those vendor documents answer both questions.
 
@@ -90,5 +90,6 @@ Before you order, PC Server and Parts says HPE's QuickSpecs name the controller 
 - https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025
 - https://www.prodisknetwork.com/blog/hpe-ilo-licensing-explained-standard-vs-advanced
 - https://support.hpe.com/docs/display/public/ilo-license/index.html
+- https://csrc.nist.gov/pubs/ir/8547/final
 - https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg
 - https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL360_and_two_DL380.jpg

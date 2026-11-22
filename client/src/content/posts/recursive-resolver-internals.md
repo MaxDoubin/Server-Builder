@@ -31,8 +31,12 @@ Suppose the cache is completely cold and someone asks for
 3. Ask an `example.com` server. This one is authoritative for the zone, so it
    answers with the A record and the authoritative answer flag set.
 
-Three key details people get wrong. The resolver asks the *full* name at every
-step, not one label at a time. The root does not "know about" example.com in
+Three key details people get wrong. The walk above is the classic one, in which
+the resolver asks the *full* name at every step. Modern resolvers such as
+Unbound use QNAME minimisation (RFC 9156) by default, so the root is asked only
+about `com`, the `com` servers about `example.com`, and only the zone's own
+servers see `api.example.com`, with a fallback to the full name when a server
+answers badly. Either way the referrals are the same. The root does not "know about" example.com in
 any sense, it just knows who is authoritative for `com`. And the resolver seeds
 this whole process from a static list of root server addresses, the root hints,
 which is the only DNS data that arrives out of band.
@@ -122,4 +126,5 @@ waiting on the authoritative side will change that.
 - [RFC 2308: Negative Caching of DNS Queries](https://www.rfc-editor.org/rfc/rfc2308.html)
 - [RFC 6891: Extension Mechanisms for DNS (EDNS(0))](https://www.rfc-editor.org/rfc/rfc6891.html)
 - [RFC 8767: Serving Stale Data to Improve DNS Resiliency](https://www.rfc-editor.org/rfc/rfc8767.html)
+- [RFC 9156: DNS Query Name Minimisation to Improve Privacy](https://www.rfc-editor.org/rfc/rfc9156.html)
 - [Unbound documentation](https://unbound.docs.nlnetlabs.nl/en/latest/)

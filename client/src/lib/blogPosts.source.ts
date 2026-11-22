@@ -5626,6 +5626,7 @@ Licensing changed on later servers. [Velocity Tech Solutions' license guide](htt
     slug: "ilo-6-vs-ilo-7",
     title: "iLO 6 vs iLO 7: Gen11 vs Gen12, Security and Licensing",
     date: "2026-10-17",
+    updated: "2026-11-21",
     tags: ["servers", "hardware", "security"],
     excerpt:
       "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
@@ -5661,7 +5662,7 @@ iLO 6 firmware gained [TLS 1.3](/blog/tls-modern-encryption) support starting wi
 
 iLO 7 is the newer security design. [StorageReview](https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025) says iLO 7 was initially launched in February and "uses a dedicated security processor and a secure storage area, known as a secure enclave, to protect HPE ProLiant Gen12 servers from unauthorized access." [Techzine](https://www.techzine.eu/news/devices/128668/hpe-launches-proliant-gen12-servers-packed-with-security-and-ai-features/) describes the enclave as "an ASIC processor entirely focused on security," and says the new protection extends beyond today's threats to "attacks on the firmware of the servers themselves."
 
-Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security."
+Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security." Longer RSA keys are a classical-security improvement, not post-quantum protection: NIST lists RSA at every key size as quantum-vulnerable, and its post-quantum signature standards include ML-DSA and SLH-DSA.
 
 | Area | iLO 6 (Gen11) | iLO 7 (Gen12) |
 |---|---|---|
@@ -5714,7 +5715,7 @@ Key management is the other planned change. StorageReview reports that by 2026, 
 
 ## What this means
 
-Gen12 with iLO 7 is the choice when you need its secure enclave, the quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
+Gen12 with iLO 7 is the choice when you need its secure enclave, HPE's stated quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
 
 Before you order, PC Server and Parts says HPE's QuickSpecs name the controller for each generation, so check the QuickSpecs entry for your exact model. Then check HPE's licensing documentation for the features that need a license, and price Advanced into any server you plan to manage remotely. Those vendor documents answer both questions.
 
@@ -5728,6 +5729,7 @@ Before you order, PC Server and Parts says HPE's QuickSpecs name the controller 
 - https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025
 - https://www.prodisknetwork.com/blog/hpe-ilo-licensing-explained-standard-vs-advanced
 - https://support.hpe.com/docs/display/public/ilo-license/index.html
+- https://csrc.nist.gov/pubs/ir/8547/final
 - https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg
 - https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL360_and_two_DL380.jpg
 `,
@@ -9044,6 +9046,7 @@ If you already own a 4,1, flash it only for six-core CPUs, 1333MHz memory, NVMe 
     slug: "mac-pro-6-1-latest-os",
     title: "Mac Pro 6,1 Latest macOS: Monterey Officially, Sequoia With OCLP",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["mac-pro", "apple", "security", "hardware"],
     excerpt:
       "The 2013 Mac Pro officially tops out at macOS Monterey 12.7.6, last patched July 29, 2024. See what OpenCore Legacy Patcher adds after it, what breaks, and what to run.",
@@ -9067,7 +9070,7 @@ macOS 27 Golden Gate is the current release, and [Apple's compatibility page](ht
 
 ## Does the 2013 Mac Pro still get security updates?
 
-No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as September 28, 2026.
+No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as November 9, 2026.
 
 <figure>
 <img src="/images/blog/mac-pro-6-1-latest-os/home-setting.jpg" alt="A black cylindrical 2013 Mac Pro on a patterned rug with HDMI and power cables in its rear panel" width="1200" height="1100" loading="lazy" decoding="async">
@@ -9093,9 +9096,9 @@ The docs pages for [Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/
 | Monterey 12 | Official | 12.7.6, July 29, 2024 |
 | Ventura 13 | OCLP 0.5.1 and newer | 13.7.8, August 20, 2025 |
 | Sonoma 14 | OCLP 1.0.0 and newer | 14.8.9, August 6, 2026 |
-| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.1, September 28, 2026 |
-| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.1, September 28, 2026 |
-| Golden Gate 27 | Not possible, Apple silicon only | 27.0.1, September 28, 2026 |
+| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.3, November 9, 2026 |
+| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.3, November 9, 2026 |
+| Golden Gate 27 | Not possible, Apple silicon only | 27.2.1, November 9, 2026 |
 
 Tahoe is where the project's signals conflict. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The Tahoe work ships only in [OCLP 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), whose changelog says "Implement macOS Tahoe support" and whose warning reads "Expect issues resulting in instability, system crashes, and potential data loss." Neither the release notes nor the docs say whether the 6,1's GPUs are covered on Tahoe.
 
@@ -9143,7 +9146,7 @@ Linux runs on it too. [Phoronix reported](https://www.phoronix.com/news/Linux-6.
 | Use case | Run | Why | Watch for |
 |---|---|---|---|
 | Isolated workstation or fixed-function rig (audio, video, legacy apps) | Monterey 12.7.6 | Apple supports it, native GPU drivers, no root patches | No security fixes since July 29, 2024 |
-| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.1, September 28, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
+| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.3, November 9, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
 | Headless homelab node | Monterey on its own VLAN, or Linux | No GPU patching to maintain | Linux GPU setup on older kernels |
 | Windows-only software | Windows 10 through Boot Camp | The only Windows Apple supports on it | Out of support since October 14, 2025 |
 | Newest macOS features | Not this Mac | OCLP's Tahoe support is a pre-release with no 6,1 statement | Wait for a stable 3.0.0 |
@@ -28954,6 +28957,7 @@ None of these are exotic. They are the same configuration management and regress
     slug: "spf-dkim-dmarc",
     title: "SPF, DKIM, And DMARC Without The Mystery",
     date: "2026-07-09",
+    updated: "2026-11-21",
     tags: ["security", "networking", "operations"],
     excerpt:
       "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
@@ -29015,7 +29019,7 @@ First, **alignment**. DMARC requires that the domain validated by SPF or DKIM ma
 Second, **policy and reporting**.
 
 \`\`\`dns
-_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r; pct=100"
+_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r"
 \`\`\`
 
 - \`p=\` is the policy: \`none\`, \`quarantine\`, or \`reject\`.
@@ -29029,7 +29033,7 @@ The order matters, and rushing it is how you drop legitimate mail from a system 
 1. **Publish SPF and DKIM first.** Sign everything, from every system that sends: the mail server, the ticketing system, the monitoring alerts, the thing in the closet that emails a nightly report.
 2. **Publish \`p=none\` with \`rua=\`.** This changes nothing about delivery. It asks the world to send you daily aggregate reports in XML listing every IP that sent mail claiming your domain, and whether it passed.
 3. **Read the reports for several weeks.** This is the entire value of the exercise. You will find senders you forgot about. Everybody does. Fix or authorize each legitimate one before you go further.
-4. **Move to \`p=quarantine\`,** optionally with \`pct=\` to ramp gradually.
+4. **Move to \`p=quarantine\`,** optionally with \`t=y\` first, which asks receivers to apply one level less than the stated policy while you watch the reports. RFC 9989 replaced the old \`pct=\` tag with \`t=\`. Receivers that still follow RFC 7489 ignore \`t=\` and apply the full policy, so expect some real quarantining even in test mode.
 5. **Move to \`p=reject\`** once the reports are clean.
 
 Then the forwarding problem. Legitimate forwarders and mailing lists break SPF and sometimes DKIM, and under \`p=reject\` that mail is refused. ARC exists to address this by letting intermediaries record the authentication results they saw, so a downstream receiver can choose to trust that chain. Support is uneven, so the practical answer is still to know which forwarding paths your users depend on before you enforce.
@@ -29054,6 +29058,7 @@ One last point, because it is the reason to do any of this: these records do not
 
 - [RFC 7208: Sender Policy Framework (SPF) for Authorizing Use of Domains in Email, Version 1](https://www.rfc-editor.org/rfc/rfc7208)
 - [RFC 6376: DomainKeys Identified Mail (DKIM) Signatures](https://www.rfc-editor.org/rfc/rfc6376)
+- [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989)
 - [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489)
 - [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617)
 - [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321)
@@ -29065,6 +29070,7 @@ One last point, because it is the reason to do any of this: these records do not
     slug: "flash-caching-tiers",
     title: "SSD Caching for HDD Arrays: bcache vs dm-cache and Writeback",
     date: "2026-07-10",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "hardware"],
     excerpt:
       "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
@@ -29136,7 +29142,7 @@ The way to find out is to measure. \`lvs\` exposes hit and miss counters for a c
 Endurance is the constraint people forget. Every promotion into the cache is a write to the flash device, and on a workload with poor locality the tier can churn constantly, writing far more to the SSD than the application ever wrote. Check the drive's endurance rating in drive writes per day, then check what you are actually doing to it:
 
 \`\`\`bash
-smartctl -A /dev/nvme0n1 | grep -Ei 'percentage_used|data_units_written|media_errors'
+smartctl -A /dev/nvme0n1 | grep -Ei 'percentage used|data units written|media and data integrity'
 \`\`\`
 
 If percentage used is climbing noticeably in the first months, the cache is thrashing and either the cache is too small or the workload is not cacheable.
@@ -29160,6 +29166,7 @@ And if your slow tier is already fast enough for the workload, adding a cache is
     slug: "policy-based-routing-linux",
     title: "Policy-Based Routing on Linux: ip rule, Marks, and rp_filter",
     date: "2026-07-11",
+    updated: "2026-11-21",
     tags: ["networking", "routing", "linux"],
     excerpt:
       "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
@@ -29243,7 +29250,7 @@ sysctl -w net.ipv4.conf.all.rp_filter=2
 sysctl -w net.ipv4.conf.eth1.rp_filter=2
 \`\`\`
 
-Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the \`all\` setting and the per interface setting, so setting the interface to 2 while \`all\` is 1 does nothing.
+Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the \`all\` setting and the per interface setting, so setting the interface to 2 while \`all\` is 1 does give loose mode on that interface, but setting it to 0 while \`all\` is 1 or 2 does nothing.
 
 ## Debugging: ask the kernel, do not read the tables
 
@@ -34572,6 +34579,7 @@ list.
     slug: "recursive-resolver-internals",
     title: "What A Recursive Resolver Actually Does",
     date: "2026-06-17",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations"],
     excerpt:
       "Stub, forwarder, recursive: three different jobs people all call a DNS server. Here is the walk down the tree, the caching rules, and how to watch it happen.",
@@ -34615,8 +34623,12 @@ Suppose the cache is completely cold and someone asks for
 3. Ask an \`example.com\` server. This one is authoritative for the zone, so it
    answers with the A record and the authoritative answer flag set.
 
-Three key details people get wrong. The resolver asks the *full* name at every
-step, not one label at a time. The root does not "know about" example.com in
+Three key details people get wrong. The walk above is the classic one, in which
+the resolver asks the *full* name at every step. Modern resolvers such as
+Unbound use QNAME minimisation (RFC 9156) by default, so the root is asked only
+about \`com\`, the \`com\` servers about \`example.com\`, and only the zone's own
+servers see \`api.example.com\`, with a fallback to the full name when a server
+answers badly. Either way the referrals are the same. The root does not "know about" example.com in
 any sense, it just knows who is authoritative for \`com\`. And the resolver seeds
 this whole process from a static list of root server addresses, the root hints,
 which is the only DNS data that arrives out of band.
@@ -34706,6 +34718,7 @@ waiting on the authoritative side will change that.
 - [RFC 2308: Negative Caching of DNS Queries](https://www.rfc-editor.org/rfc/rfc2308.html)
 - [RFC 6891: Extension Mechanisms for DNS (EDNS(0))](https://www.rfc-editor.org/rfc/rfc6891.html)
 - [RFC 8767: Serving Stale Data to Improve DNS Resiliency](https://www.rfc-editor.org/rfc/rfc8767.html)
+- [RFC 9156: DNS Query Name Minimisation to Improve Privacy](https://www.rfc-editor.org/rfc/rfc9156.html)
 - [Unbound documentation](https://unbound.docs.nlnetlabs.nl/en/latest/)
 `,
   },
@@ -39042,6 +39055,7 @@ anything like it does now.
     slug: "systemd-service-hardening",
     title: "Hardening A systemd Service In Twenty Lines",
     date: "2026-08-20",
+    updated: "2026-11-21",
     tags: ["linux", "security", "operations"],
     excerpt:
       "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
@@ -39164,8 +39178,10 @@ capability at all.
 **SystemCallFilter.** The \`@system-service\` set is a curated allowlist covering
 what normal daemons do. Subtracting \`@privileged\`, \`@resources\`, and \`@obsolete\`
 removes administrative calls, resource limit manipulation, and legacy interfaces
-nobody should be calling. Blocked calls return an error, and you will see them
-in the journal, which makes debugging a broken filter straightforward.
+nobody should be calling. By default a blocked call kills the process with
+\`SIGSYS\`, which shows up in the journal as the service dying on signal SYS. Add
+\`SystemCallErrorNumber=EPERM\` if you would rather the call fail with an error,
+and \`SystemCallLog=@privileged @resources @obsolete\` to log when the service makes one of the calls you removed. It needs a list: an empty \`SystemCallLog=\` resets the setting and logs nothing.
 
 **IPAddressDeny and IPAddressAllow.** A per service firewall implemented in the
 kernel filter layer. A web application that only needs to talk to a local
@@ -44390,7 +44406,7 @@ One rule for lab practice: the attack lab must not route to anything you care ab
     slug: "sfp-transceivers-explained",
     title: "SFP, SFP+, and QSFP: Transceivers Explained",
     date: "2025-12-15",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
@@ -44454,7 +44470,7 @@ Fiber ends are the most common physical failure and the easiest to fix. A finger
 
 ## Third-party vs OEM
 
-Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
+Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now part of Coherent, formerly II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
 
 Some switches check for OEM transceivers and will display warnings or refuse to use third-party modules. Cisco is notorious for this. The workaround is usually a CLI command to accept non-certified transceivers:
 
@@ -47941,6 +47957,7 @@ This hybrid approach uses each filesystem where it is strongest.
     slug: "homelab-network-evolution",
     title: "How My Home Network Evolved Over Three Years",
     date: "2025-09-18",
+    updated: "2026-11-21",
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
@@ -47972,7 +47989,7 @@ Three things go wrong here, in roughly this order:
 
 **DHCP stops working the moment you add a VLAN.** A \`DHCPDISCOVER\` is a broadcast, and broadcasts do not cross a layer 3 boundary. A client in the new VLAN sits there with an APIPA address while the DHCP server two VLANs away never hears it. The answer is a DHCP relay, configured on the router or the SVI as \`ip helper-address\`, which unicasts the request to the server and populates the giaddr field so the server knows which scope to answer from. RFC 2131 describes the whole exchange, and reading it once saves you from the guesswork.
 
-**Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. Effective inter-VLAN throughput is roughly 500 Mbps total, shared by every VLAN pair. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
+**Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. The link is full duplex, so one transfer can still approach gigabit speed, but all routed traffic shares the trunk's 1 Gbps in each direction, so two busy VLAN pairs, or routed traffic plus internet traffic, split it between them. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
 
 Once you have two switches, [spanning tree](/blog/spanning-tree-protocol-deep-dive) stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
 
@@ -48127,6 +48144,7 @@ Written as a decision sequence: does it need a non-Linux OS, a different kernel,
     slug: "bgp-for-network-engineers",
     title: "BGP for Network Engineers: A Practical Introduction",
     date: "2026-02-21",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "routing"],
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
@@ -48184,7 +48202,7 @@ Read that \`network\` statement carefully, because it does not do what it looks 
 
 BGP's state machine has six states, and the useful thing is that each one points at a different layer. **Idle** means BGP is not even trying, usually because there is no route to the peer. **Connect** and **Active** are both TCP problems: Active in particular sounds positive and is not, it means the router keeps trying to open a TCP session and keeps failing, which is almost always a firewall blocking 179 or a wrong peer address. **OpenSent** and **OpenConfirm** mean TCP worked and the peers are arguing about parameters, so check for an AS number mismatch or an authentication mismatch. **Established** is the only good state.
 
-Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 default hold time is 180 seconds with keepalives every 60, and peers negotiate down to the lower of their two values. So the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
+Once established, the session is kept alive by KEEPALIVE messages. RFC 4271 suggests a 90 second hold time with keepalives every 30, but [Cisco IOS](/blog/cisco-ios-fundamentals) and FRR default to 180 seconds and 60, and peers negotiate down to the lower of their two values. So on those platforms the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
 
 ## What Actually Goes Wrong
 
@@ -48230,6 +48248,7 @@ Containerlab with FRR is the lightest way in now: a multi-AS topology defined in
     slug: "fortigate-cli-essentials",
     title: "FortiGate CLI: Commands You Will Use Every Day",
     date: "2026-02-22",
+    updated: "2026-11-21",
     tags: ["fortinet", "firewall", "networking"],
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
     coverImage: "/images/blog/fortigate-cli-essentials.jpg",
@@ -48351,11 +48370,11 @@ When the cluster is formed but behaving oddly, \`diagnose sys ha checksum show\`
 
 Always run \`diagnose debug disable\` and \`diagnose debug reset\` when you are done debugging. Leaving debug enabled affects performance. And document any changes you make in the CLI, because the GUI does not always show CLI-only configurations clearly.
 
-Two more habits worth building. First, run \`execute backup config tftp <filename> <server-ip>\` before any risky change. FortiOS has no equivalent of the IOS \`reload in 5\` safety net, so if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via \`execute revision list config\` help, but only if the unit is still reachable.
+Two more habits worth building. First, run \`execute backup config tftp <filename> <server-ip>\` before any risky change. FortiOS has no \`reload in 5\`, but it has a similar safety net: under \`config system global\`, \`set cfg-save revert\` and \`set cfg-revert-timeout 600\`. Changes then last only until you run \`execute cfg save\`, and if the timeout passes without a save the unit reboots into the last saved configuration. Without it, if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via \`execute revision list config\` help, but only if the unit is still reachable.
 
 Second, if the CLI is producing \`command parse error\` on a command you know exists, check your scope. On a unit with VDOMs enabled, most \`config system\` settings live in the global scope and firewall objects live inside each VDOM. \`config global\` and \`config vdom\` then \`edit <name>\` move you between them, and the same command is genuinely invalid in the wrong place.
 
-Two operational numbers worth remembering: \`get system performance status\` reports CPU and memory alongside a 1, 10, 30, and 60 minute average, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
+Two operational numbers worth remembering: \`get system performance status\` reports current CPU and memory use, plus 1, 10, and 30 minute averages for network usage and sessions, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
 
 ## References
 
@@ -49702,6 +49721,7 @@ A cluster also concentrates risk. Three standalone nodes fail one at a time. A t
     slug: "fortigate-sdwan-configuration",
     title: "FortiGate SD-WAN: Intelligent WAN Link Selection",
     date: "2026-03-05",
+    updated: "2026-11-21",
     tags: ["fortinet", "networking", "firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
@@ -49812,10 +49832,9 @@ end
 \`set mode\` controls the selection strategy, and the default is \`manual\`, meaning it simply uses \`priority-members\` in the order listed. The options that matter:
 
 - \`manual\` uses the first listed member, period. No SLA awareness.
-- \`priority\` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behavior.
-- \`sla\` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
-- \`load-balance\` distributes across members regardless of quality.
-- \`best-quality\` picks the single best member by whichever metric \`set quality-link\` or \`sla-compare-method\` names.
+- \`sla\` (the GUI calls it Lowest Cost SLA) uses the lowest cost member that meets the SLA, taking members in the listed order when costs tie, and falls to the next when it does not. This is the classic active/backup behavior.
+- \`priority\` (Best Quality in the GUI) picks the member with the best measured value of the metric named by \`set link-cost-factor\`, such as latency, jitter, or packet loss.
+- \`set load-balance enable\` spreads sessions across members. Since FortiOS 7.4.1 it is a separate option used with \`manual\` or \`sla\` rather than a mode; with \`sla\` it balances across the members that meet the SLA, and when none of them do but their health checks are still alive, Fortinet's documentation for the earlier Maximize Bandwidth (SLA) mode says they tie and traffic is balanced across all of them. Before 7.4.1 this was \`set mode load-balance\`, which the GUI called Maximize Bandwidth SLA.
 
 Rules are evaluated top to bottom by sequence number and the first match wins, exactly like firewall policies. If a rule is never taking effect, check whether a broader rule above it is catching the traffic first. Traffic that matches no rule falls through to the implicit rule, which uses the global \`load-balance-mode\`, defaulting to \`source-ip-based\`.
 
@@ -50697,7 +50716,7 @@ On the supplicant side, plan for the client experience. Windows has a \`Wired Au
     slug: "vxlan-network-virtualization",
     title: "VXLAN and Network Virtualization Explained",
     date: "2026-03-14",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "virtualization", "datacenter"],
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
@@ -50746,7 +50765,7 @@ ip link set vxlan100 up
 ip addr add 10.100.0.1/24 dev vxlan100
 \`\`\`
 
-Set the MTU explicitly at the same time, because the kernel will not work it out for you:
+Check the MTU straight away. With \`dev eth0\` the kernel subtracts the 50 bytes of overhead from eth0's MTU for you, but without a \`dev\` the interface stays at 1500, so setting it explicitly does no harm:
 
 \`\`\`bash
 ip link set vxlan100 mtu 1450
@@ -51826,6 +51845,7 @@ Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause s
     slug: "nginx-reverse-proxy-setup",
     title: "Setting Up Nginx as a Reverse Proxy for Lab Services",
     date: "2026-03-24",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "servers"],
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
     coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
@@ -51920,7 +51940,7 @@ openssl x509 -req -in grafana.csr -CA ca.crt -CAkey ca.key \\
   -extfile <(printf "subjectAltName=DNS:grafana.lab.internal")
 \`\`\`
 
-The 397 day figure is not arbitrary. Apple platforms reject TLS server certificates with a validity period longer than 398 days, so a lab certificate issued for ten years works in Firefox on your desktop and fails on every iPhone in the house. Ten years is fine for the CA itself, which is not subject to that limit.
+The 397 day figure is a habit worth keeping rather than a requirement here. Apple platforms reject publicly trusted TLS server certificates with a validity period longer than 398 days, but Apple says the rule does not affect certificates issued from user-added or administrator-added root CAs, so a lab CA's certificates are not subject to it. Short-lived leaves are still easier to rotate. Ten years is fine for the CA itself, which is not subject to that limit.
 
 One more nginx-specific detail: \`ssl_certificate\` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while \`curl\`, \`openssl s_client\`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
 
@@ -51969,6 +51989,7 @@ Nginx is also not a web application firewall, not an identity provider, and not 
     slug: "lacp-link-aggregation",
     title: "LACP and Link Aggregation: Combining Links for More Bandwidth",
     date: "2026-03-25",
+    updated: "2026-11-21",
     tags: ["networking", "switching", "hardware"],
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
     coverImage: "/images/blog/lacp-link-aggregation.jpg",
@@ -52053,13 +52074,13 @@ Each member interface needs its own \`.network\` file with \`Bond=bond0\` and no
 
 The file to read when something is wrong is \`/proc/net/bonding/bond0\`. It prints the aggregator ID, the actor and partner state bytes, and the churn counters for every member. Two lines matter most. \`Aggregator ID\` should be identical for every member: if two members show different aggregator IDs, only one aggregator is active and the other members are silently idle. \`Partner Mac Address\` of 00:00:00:00:00:00 means no LACPDUs are being received at all, which points at the switch side or at a port that was never added to the channel group.
 
-Note that \`Mode=802.3ad\` is the only bonding mode that requires switch configuration. Round-robin (mode 0) needs none, which is why tutorials reach for it, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
+Note that \`Mode=802.3ad\` is the only bonding mode that negotiates with the switch, but it is not the only one that needs switch configuration: round-robin (mode 0), balance-xor and broadcast need the switch ports grouped into a static channel. Round-robin is the one tutorials reach for, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
 
 ## What LACP Cannot Do
 
 It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
 
-It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
+It cannot span two independent switches. A standard 802.1AX aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
 
 It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
 
