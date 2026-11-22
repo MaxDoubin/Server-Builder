@@ -397,7 +397,7 @@ type BoardLayout = {
  * a little toward where the camera comes to rest. A phone's portrait frame
  * only sees about a meter of the row, so it gets a narrower board.
  */
-const BOARD_WIDE: BoardLayout = { width: 2.3, height: 0.66, position: [0.12, 1.66, 0.74], yaw: 0.2 };
+const BOARD_WIDE: BoardLayout = { width: 2.3, height: 0.66, position: [0.12, 1.53, 0.74], yaw: 0.2 };
 const BOARD_NARROW: BoardLayout = { width: 1.02, height: 0.6, position: [0.36, 1.56, 0.74], yaw: 0.26 };
 
 type Run = {
