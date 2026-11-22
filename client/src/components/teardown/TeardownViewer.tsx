@@ -17,6 +17,7 @@ import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "@/components/racks/StudioEnvironment";
 import * as THREE from "three";
 import { TeardownModel } from "./TeardownScene";
+import { EXPLODED_VIEW_ENABLED } from "./explodedView";
 
 function Rig() {
   /*
@@ -29,6 +30,14 @@ function Rig() {
     <OrbitControls
       makeDefault
       enablePan={false}
+      /*
+        With the exploded view on, the wheel belongs to the page. The
+        viewer is pinned and fills most of a desktop screen, so a wheel
+        that zoomed the model instead would leave the reader with nowhere
+        to put the pointer in order to scroll, and scrolling is what opens
+        the machine.
+      */
+      enableZoom={!EXPLODED_VIEW_ENABLED}
       minDistance={0.55}
       maxDistance={3.2}
       minPolarAngle={0.15}
