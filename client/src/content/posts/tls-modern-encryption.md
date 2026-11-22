@@ -47,9 +47,9 @@ ssl_prefer_server_ciphers on;
 
 Two things about that config are easy to get wrong.
 
-`ssl_ciphers` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API and nginx does not expose a directive for them, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing `ECDH+AESGCM` from the string will not disable `TLS_AES_128_GCM_SHA256`.
+`ssl_ciphers` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing `ECDH+AESGCM` from the string will not disable `TLS_AES_128_GCM_SHA256`. Since nginx 1.19.4 you can set them with `ssl_conf_command Ciphersuites`, for example `ssl_conf_command Ciphersuites TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;`. Before 1.19.4 nginx had no directive for them.
 
-`ssl_prefer_server_ciphers` also has no effect on TLS 1.3. Suite preference in 1.3 is client-driven by design, which is deliberate: it lets a phone pick ChaCha20-Poly1305 because it has no AES hardware, while a server with AES-NI gets AES-GCM.
+`ssl_prefer_server_ciphers` does apply to TLS 1.3 when nginx is built with OpenSSL. The server always picks from the suites the client offers; with the option on it uses its own order, with it off it follows the client's. If you prefer server order, add `ssl_conf_command Options PrioritizeChaCha;` so a phone that lists ChaCha20-Poly1305 first, because it has no AES hardware, still gets it, while clients with AES hardware get AES-GCM.
 
 You also need a build that can do it. TLS 1.3 support in nginx requires OpenSSL 1.1.1 or newer, and the `TLSv1.3` parameter arrived in nginx 1.13.0. Check what you actually have:
 

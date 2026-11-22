@@ -136,6 +136,9 @@ const MATCH = new RegExp(`\\b(${Object.keys(BRITISH).join("|")})\\b`, "gi");
  * and the log line older kernels printed, which is the string most search
  * results for this failure still show. Quoting them accurately is the point
  * of writing about them.
+ *
+ * `Leap status : Not synchronised` is chronyc's own output, the line a
+ * reader greps `chronyc tracking` for, so it is quoted as chrony spells it.
  */
 const blankProtected = (line) =>
   line
@@ -143,7 +146,8 @@ const blankProtected = (line) =>
     .replace(/fibre channel/gi, "############# ")
     .replace(/neighbour\.c/gi, (m) => "#".repeat(m.length))
     .replace(/ip-neighbour/gi, (m) => "#".repeat(m.length))
-    .replace(/Neighbour table overflow/gi, (m) => "#".repeat(m.length));
+    .replace(/Neighbour table overflow/gi, (m) => "#".repeat(m.length))
+    .replace(/Leap status : Not synchronised/g, (m) => "#".repeat(m.length));
 
 const isProse = (inner) => inner.includes(" ");
 
