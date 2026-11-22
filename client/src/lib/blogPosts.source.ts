@@ -4360,6 +4360,7 @@ Licensing changed on later servers. [Velocity Tech Solutions' license guide](htt
     slug: "ilo-6-vs-ilo-7",
     title: "iLO 6 vs iLO 7: Gen11 vs Gen12, Security and Licensing",
     date: "2026-10-17",
+    updated: "2026-11-21",
     tags: ["servers", "hardware", "security"],
     excerpt:
       "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
@@ -7779,6 +7780,7 @@ If you already own a 4,1, flash it only for six-core CPUs, 1333MHz memory, NVMe 
     slug: "mac-pro-6-1-latest-os",
     title: "Mac Pro 6,1 Latest macOS: Monterey Officially, Sequoia With OCLP",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["mac-pro", "apple", "security", "hardware"],
     excerpt:
       "The 2013 Mac Pro officially tops out at macOS Monterey 12.7.6, last patched July 29, 2024. See what OpenCore Legacy Patcher adds after it, what breaks, and what to run.",
@@ -7802,7 +7804,7 @@ macOS 27 Golden Gate is the current release, and [Apple's compatibility page](ht
 
 ## Does the 2013 Mac Pro still get security updates?
 
-No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as September 28, 2026.
+No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as November 9, 2026.
 
 <figure>
 <img src="/images/blog/mac-pro-6-1-latest-os/home-setting.jpg" alt="A black cylindrical 2013 Mac Pro on a patterned rug with HDMI and power cables in its rear panel" width="1200" height="1100" loading="lazy" decoding="async">
@@ -7828,9 +7830,9 @@ The docs pages for [Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/
 | Monterey 12 | Official | 12.7.6, July 29, 2024 |
 | Ventura 13 | OCLP 0.5.1 and newer | 13.7.8, August 20, 2025 |
 | Sonoma 14 | OCLP 1.0.0 and newer | 14.8.9, August 6, 2026 |
-| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.1, September 28, 2026 |
-| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.1, September 28, 2026 |
-| Golden Gate 27 | Not possible, Apple silicon only | 27.0.1, September 28, 2026 |
+| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.3, November 9, 2026 |
+| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.3, November 9, 2026 |
+| Golden Gate 27 | Not possible, Apple silicon only | 27.2.1, November 9, 2026 |
 
 Tahoe is where the project's signals conflict. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The Tahoe work ships only in [OCLP 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), whose changelog says "Implement macOS Tahoe support" and whose warning reads "Expect issues resulting in instability, system crashes, and potential data loss." Neither the release notes nor the docs say whether the 6,1's GPUs are covered on Tahoe.
 
@@ -7878,7 +7880,7 @@ Linux runs on it too. [Phoronix reported](https://www.phoronix.com/news/Linux-6.
 | Use case | Run | Why | Watch for |
 |---|---|---|---|
 | Isolated workstation or fixed-function rig (audio, video, legacy apps) | Monterey 12.7.6 | Apple supports it, native GPU drivers, no root patches | No security fixes since July 29, 2024 |
-| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.1, September 28, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
+| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.3, November 9, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
 | Headless homelab node | Monterey on its own VLAN, or Linux | No GPU patching to maintain | Linux GPU setup on older kernels |
 | Windows-only software | Windows 10 through Boot Camp | The only Windows Apple supports on it | Out of support since October 14, 2025 |
 | Newest macOS features | Not this Mac | OCLP's Tahoe support is a pre-release with no 6,1 statement | Wait for a stable 3.0.0 |
@@ -27660,6 +27662,7 @@ None of these are exotic. They are the same configuration management and regress
     slug: "spf-dkim-dmarc",
     title: "SPF, DKIM, And DMARC Without The Mystery",
     date: "2026-07-09",
+    updated: "2026-11-21",
     tags: ["security", "networking", "operations"],
     excerpt:
       "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
@@ -27772,6 +27775,7 @@ One last point, because it is the reason to do any of this: these records do not
     slug: "flash-caching-tiers",
     title: "SSD Caching for HDD Arrays: bcache vs dm-cache and Writeback",
     date: "2026-07-10",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "hardware"],
     excerpt:
       "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
@@ -27867,6 +27871,7 @@ And if your slow tier is already fast enough for the workload, adding a cache is
     slug: "policy-based-routing-linux",
     title: "Policy-Based Routing on Linux: ip rule, Marks, and rp_filter",
     date: "2026-07-11",
+    updated: "2026-11-21",
     tags: ["networking", "routing", "linux"],
     excerpt:
       "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
@@ -33277,6 +33282,7 @@ list.
     slug: "recursive-resolver-internals",
     title: "What A Recursive Resolver Actually Does",
     date: "2026-06-17",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations"],
     excerpt:
       "Stub, forwarder, recursive: three different jobs people all call a DNS server. Here is the walk down the tree, the caching rules, and how to watch it happen.",
@@ -37748,6 +37754,7 @@ anything like it does now.
     slug: "systemd-service-hardening",
     title: "Hardening A systemd Service In Twenty Lines",
     date: "2026-08-20",
+    updated: "2026-11-21",
     tags: ["linux", "security", "operations"],
     excerpt:
       "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
@@ -43098,7 +43105,7 @@ One rule for lab practice: the attack lab must not route to anything you care ab
     slug: "sfp-transceivers-explained",
     title: "SFP, SFP+, and QSFP: Transceivers Explained",
     date: "2025-12-15",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
@@ -46649,6 +46656,7 @@ This hybrid approach uses each filesystem where it is strongest.
     slug: "homelab-network-evolution",
     title: "How My Home Network Evolved Over Three Years",
     date: "2025-09-18",
+    updated: "2026-11-21",
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
@@ -46834,6 +46842,7 @@ Written as a decision sequence: does it need a non-Linux OS, a different kernel,
     slug: "bgp-for-network-engineers",
     title: "BGP for Network Engineers: A Practical Introduction",
     date: "2026-02-21",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "routing"],
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
@@ -46937,6 +46946,7 @@ Containerlab with FRR is the lightest way in now: a multi-AS topology defined in
     slug: "fortigate-cli-essentials",
     title: "FortiGate CLI: Commands You Will Use Every Day",
     date: "2026-02-22",
+    updated: "2026-11-21",
     tags: ["fortinet", "firewall", "networking"],
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
     coverImage: "/images/blog/fortigate-cli-essentials.jpg",
@@ -48408,6 +48418,7 @@ A cluster also concentrates risk. Three standalone nodes fail one at a time. A t
     slug: "fortigate-sdwan-configuration",
     title: "FortiGate SD-WAN: Intelligent WAN Link Selection",
     date: "2026-03-05",
+    updated: "2026-11-21",
     tags: ["fortinet", "networking", "firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
@@ -49400,7 +49411,7 @@ On the supplicant side, plan for the client experience. Windows has a \`Wired Au
     slug: "vxlan-network-virtualization",
     title: "VXLAN and Network Virtualization Explained",
     date: "2026-03-14",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "virtualization", "datacenter"],
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
@@ -50527,6 +50538,7 @@ Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause s
     slug: "nginx-reverse-proxy-setup",
     title: "Setting Up Nginx as a Reverse Proxy for Lab Services",
     date: "2026-03-24",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "servers"],
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
     coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
@@ -50670,6 +50682,7 @@ Nginx is also not a web application firewall, not an identity provider, and not 
     slug: "lacp-link-aggregation",
     title: "LACP and Link Aggregation: Combining Links for More Bandwidth",
     date: "2026-03-25",
+    updated: "2026-11-21",
     tags: ["networking", "switching", "hardware"],
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
     coverImage: "/images/blog/lacp-link-aggregation.jpg",

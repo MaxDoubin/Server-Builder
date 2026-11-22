@@ -11,7 +11,7 @@ macOS 27 Golden Gate is the current release, and [Apple's compatibility page](ht
 
 ## Does the 2013 Mac Pro still get security updates?
 
-No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as September 28, 2026.
+No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as November 9, 2026.
 
 <figure>
 <img src="/images/blog/mac-pro-6-1-latest-os/home-setting.jpg" alt="A black cylindrical 2013 Mac Pro on a patterned rug with HDMI and power cables in its rear panel" width="1200" height="1100" loading="lazy" decoding="async">
@@ -37,9 +37,9 @@ The docs pages for [Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/
 | Monterey 12 | Official | 12.7.6, July 29, 2024 |
 | Ventura 13 | OCLP 0.5.1 and newer | 13.7.8, August 20, 2025 |
 | Sonoma 14 | OCLP 1.0.0 and newer | 14.8.9, August 6, 2026 |
-| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.1, September 28, 2026 |
-| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.1, September 28, 2026 |
-| Golden Gate 27 | Not possible, Apple silicon only | 27.0.1, September 28, 2026 |
+| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.3, November 9, 2026 |
+| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.3, November 9, 2026 |
+| Golden Gate 27 | Not possible, Apple silicon only | 27.2.1, November 9, 2026 |
 
 Tahoe is where the project's signals conflict. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The Tahoe work ships only in [OCLP 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), whose changelog says "Implement macOS Tahoe support" and whose warning reads "Expect issues resulting in instability, system crashes, and potential data loss." Neither the release notes nor the docs say whether the 6,1's GPUs are covered on Tahoe.
 
@@ -87,7 +87,7 @@ Linux runs on it too. [Phoronix reported](https://www.phoronix.com/news/Linux-6.
 | Use case | Run | Why | Watch for |
 |---|---|---|---|
 | Isolated workstation or fixed-function rig (audio, video, legacy apps) | Monterey 12.7.6 | Apple supports it, native GPU drivers, no root patches | No security fixes since July 29, 2024 |
-| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.1, September 28, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
+| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.3, November 9, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
 | Headless homelab node | Monterey on its own VLAN, or Linux | No GPU patching to maintain | Linux GPU setup on older kernels |
 | Windows-only software | Windows 10 through Boot Camp | The only Windows Apple supports on it | Out of support since October 14, 2025 |
 | Newest macOS features | Not this Mac | OCLP's Tahoe support is a pre-release with no 6,1 statement | Wait for a stable 3.0.0 |
