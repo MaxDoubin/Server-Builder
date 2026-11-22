@@ -24,7 +24,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 ```bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep -E 'action="?deny' /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 ```
 
 There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
@@ -34,8 +34,8 @@ There is a caveat that took me a while to internalize. Denies tell you what did 
 Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
 
 ```bash
-grep 'action=deny' /var/log/fortigate/traffic.log \
-  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \
+grep -E 'action="?deny' /var/log/fortigate/traffic.log \
+  | sed -nE 's/.*(srcip=[0-9.]+) .*(dstip=[0-9.]+).*/\1 \2/p' \
   | sort -u \
   | awk '{print $1}' \
   | uniq -c \

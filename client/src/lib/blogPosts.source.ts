@@ -9942,6 +9942,7 @@ Fit a Metal-capable graphics card first, because Mojave requires one and later v
     slug: "opencore-legacy-patcher-tahoe",
     title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["apple", "tools", "hardware", "troubleshooting"],
     excerpt:
       "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
@@ -9955,7 +9956,7 @@ Fit a Metal-capable graphics card first, because Mojave requires one and later v
     content: `
 ## The short answer
 
-OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
+OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, and later candidates through [3.0.0-rc.5](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.5) on October 28, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
 
 ## Does OpenCore Legacy Patcher support macOS Tahoe?
 
@@ -9967,10 +9968,12 @@ The documentation has not caught up. The [README](https://raw.githubusercontent.
 
 ## What is the latest OpenCore Legacy Patcher version?
 
-The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.2 pre-release. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
+The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.5 pre-release. The source analysis below is of rc.2. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
 
 | Version | Published | Status | macOS range in its source |
 | :--- | :--- | :--- | :--- |
+| 3.0.0-rc.5 | October 28, 2026 | Pre-release | Big Sur through Tahoe |
+| 3.0.0-rc.3 | October 8, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.2 | October 4, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.1 | October 4, 2026 | Pre-release | Tahoe only with a developer file |
 | 2.5.1 | September 19, 2026 | Latest stable | [Big Sur through Sequoia](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.5.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) |
@@ -16923,6 +16926,7 @@ each.
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
       "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
@@ -17031,11 +17035,14 @@ which one applies depends on nothing but whether a line of code exists.
 While we are here, they are three behaviors and not one limit with two
 warnings:
 
-- **Below the first**, the kernel does not do the global accounting at all.
-  A zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means you are
-  under this mark, not that accounting is broken. Measured on a quiet box: 42
-  established connections, \`TCP: ... mem 0\`.
-- **Between the first and second**, it charges normally.
+- **Below the first**, TCP is not bothered about its memory use. The global
+  counter is still updated on every allocation; nothing throttles on it. A
+  zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means almost no
+  socket buffer memory is charged at that moment, not that accounting is
+  broken. Measured on a quiet box: 42 established connections,
+  \`TCP: ... mem 0\`.
+- **Between the first and second**, nothing changes yet, except that TCP
+  already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
   socket buffers*. This is the interesting one, because it shows up as
   throughput falling on every connection at once and as an error nowhere.
@@ -17702,6 +17709,7 @@ to fill a default table.
     slug: "tcp-retries2-is-not-a-count",
     title: "tcp_retries2 Is Not a Count",
     date: "2026-09-19",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "troubleshooting", "operations"],
     excerpt:
       "tcp(7) calls tcp_retries2 the maximum number of times a packet is retransmitted before giving up, and says the duration depends on the retransmission timeout. The kernel never counts a retransmission, and the duration does not depend on the path: retransmits_timed_out turns the number into a time budget modeled from TCP_RTO_MIN, so the default is 924.6 seconds on every Linux host. Measured on a real kernel, tcp_retries2 at 5 aborts after 13.25 seconds having sent 6 segments, one more than the sysctl names, and a slow path gets fewer attempts in the same time rather than more.",
@@ -17804,10 +17812,13 @@ is 9. At the default boundary of 15 the second branch applies:
 \`\`\`
 
 **924.6 seconds.** Fifteen minutes and twenty-five seconds, on every Linux host
-in the world, whatever the path, whatever the round trip time, whatever the
-connection's measured RTO. The "13 to 30 minutes, depending on the
-retransmission timeout" in the manual page describes a dependency the code does
-not have.
+that keeps the default 120 second maximum RTO, whatever the path, whatever the
+round trip time, whatever the connection's measured RTO. Since Linux 6.15 that
+maximum is tunable with the \`net.ipv4.tcp_rto_max_ms\` sysctl and the
+\`TCP_RTO_MAX_MS\` socket option, which is why the function calls
+\`tcp_rto_max(sk)\`; lower it and the budget shrinks with it. The "13 to 30
+minutes, depending on the retransmission timeout" in the manual page describes
+a dependency the code does not have.
 
 ## Measuring it
 
@@ -23135,6 +23146,7 @@ one where the shell was telling the truth, at
     slug: "the-free-column-was-always-going-to-be-zero",
     title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "monitoring"],
     excerpt:
       "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
@@ -23247,15 +23259,21 @@ promise, read \`Dirty\` and \`Writeback\` next to it.
 
 ## The used column is a residue
 
-\`free\` computes used as total minus free minus buff/cache. Nothing tracks it
-and nothing chose it: it is what is left over after the cache, so it moves
-whenever the cache moves, which is constantly.
+\`free\` before procps-ng 4.0.1 computes used as total minus free minus
+buff/cache, which is the formula the output above adds up under. Nothing
+tracks it and nothing chose it: it is what is left over after the cache, so it
+moves whenever the cache moves, which is constantly.
 
 Two readings of the same server ten minutes apart, nothing deployed and no
 process started or stopped, and the used column goes from 2.6 GiB to 8.5 GiB.
 What happened is that something read a large file and displaced 6 GiB of cache.
 Not one byte of anonymous memory was allocated. It is the column people
 screenshot and it has the least meaning in the output.
+
+Since procps-ng 4.0.1, \`free\` computes used as total minus available instead.
+That follows the kernel's MemAvailable estimate rather than the raw cache size,
+so it is steadier, but it is still derived rather than a count of what programs
+hold.
 
 For what programs are actually holding:
 
@@ -24288,6 +24306,7 @@ device](/space).
     slug: "the-clock-is-the-last-thing-anybody-checks",
     title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["security", "operations", "networking"],
     excerpt:
       "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
@@ -24356,7 +24375,10 @@ part I got wrong in my own prose, which I will come back to.
 
 Across these cases, the checks that tolerate anything at all allow 300 seconds
 and 30 seconds. A certificate's notBefore and an RRSIG's inception allow
-nothing: the edge is an edge.
+nothing in the specifications: the edge is an edge. Validators can add their
+own slack, though. Unbound by default forgives 10% of a signature's lifetime,
+clamped between one hour and a day, so check the resolver's skew settings
+before reading a [DNSSEC](/blog/dns-security-dnssec) failure as a hard edge.
 
 \`\`\`
 Kerberos, default clockskew      300 s
@@ -28246,6 +28268,7 @@ One security note that applies to both. SNMPv1 and v2c send a community string i
     slug: "netfilter-hook-order",
     title: "Netfilter Hooks And The Order Your Rules Really Run In",
     date: "2026-06-23",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "security"],
     excerpt:
       "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
@@ -28324,7 +28347,7 @@ Notice also that the nat hooks have \`policy accept\`. A nat chain is not a filt
 
 \`ct state\` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
 
-First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
+First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource, and an idle established TCP entry is kept for five days by default (\`nf_conntrack_tcp_timeout_established\` is 432000 seconds) unless the connection closes cleanly. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
 
 Second, the \`invalid\` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
 
@@ -28333,11 +28356,12 @@ Second, the \`invalid\` state is not noise. It usually means the tracker saw a p
 Two commands answer most questions. \`nft monitor trace\` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
 
 \`\`\`bash
-nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft add chain inet fw trace_chain '{ type filter hook prerouting priority -301; }'
+nft add rule inet fw trace_chain ip saddr 10.10.5.77 meta nftrace set 1
 nft monitor trace
 \`\`\`
 
-And counters tell you whether a rule is dead code:
+And counters tell you whether a rule is dead code, but only on rules that have one. nftables counts nothing by default, so add a \`counter\` statement to the rules you want to audit (\`iifname "mgmt0" tcp dport 22 counter accept\`) and let traffic run:
 
 \`\`\`bash
 nft --handle list ruleset | grep -n "counter packets 0"
@@ -28358,6 +28382,7 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
     slug: "oom-killer-and-swap-sizing",
     title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
+    updated: "2026-11-21",
     tags: ["linux", "servers", "operations"],
     excerpt:
       "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
@@ -28398,8 +28423,11 @@ done | sort -k2 -rn | head
 The important consequence is that the biggest process usually dies, and on most servers the biggest process is the one doing the actual work. The database gets killed, not the leaky agent that caused the pressure. If you have a process that must survive, bias it explicitly:
 
 \`\`\`bash
-echo -800 > /proc/$(pidof postgres)/oom_score_adj
+PGDATA=$(sudo -u postgres psql -Atc 'SHOW data_directory')
+echo -800 > /proc/$(head -1 "$PGDATA/postmaster.pid")/oom_score_adj
 \`\`\`
+
+The first line asks the running server where its data directory is, and the second (run as root) reads the postmaster's PID from the first line of \`postmaster.pid\` in that directory. That targets the postmaster alone. \`pidof postgres\` returns every PostgreSQL process, and a redirect to more than one path fails as ambiguous. Backends forked afterward inherit the postmaster's value, so [PostgreSQL's documentation](https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT) suggests setting it in the startup script instead, with \`PG_OOM_ADJUST_FILE\` and \`PG_OOM_ADJUST_VALUE\` set so backends go back to 0 and stay killable.
 
 and if you have something you would rather lose first, bias it the other way with a positive number. Do not set -1000 on more than one thing. If nothing is eligible, the kernel panics instead.
 
@@ -28441,6 +28469,7 @@ cat /proc/pressure/memory
     slug: "ebpf-observability-basics",
     title: "eBPF Is How I Ask The Kernel Questions",
     date: "2026-07-04",
+    updated: "2026-11-21",
     tags: ["linux", "monitoring", "tools"],
     excerpt:
       "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
@@ -28499,7 +28528,7 @@ tracepoint:sched:sched_switch
 {
   @off[args->prev_pid] = nsecs;
   if (@off[args->next_pid]) {
-    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    @us[args->next_comm] = hist((nsecs - @off[args->next_pid]) / 1000);
     delete(@off[args->next_pid]);
   }
 }
@@ -30052,7 +30081,7 @@ per object, and people are surprised their cache "is not working."
 
 ## Cache-Control directives that matter
 
-The response directives worth knowing, from RFC 9111:
+The response directives worth knowing, from RFC 9111 and two extensions:
 
 - \`max-age=N\` seconds of freshness for any cache.
 - \`s-maxage=N\` overrides \`max-age\` for shared caches only. This is how you
@@ -30065,8 +30094,8 @@ The response directives worth knowing, from RFC 9111:
   sensitive responses, not as a general safety blanket.
 - \`private\` means a browser may cache it but a shared cache must not. Get this
   wrong on a personalized page and one user sees another user's data.
-- \`immutable\` promises the body will never change for this URL, so a client
-  should not revalidate even on a reload.
+- \`immutable\` from RFC 8246 promises the body will never change for this URL,
+  so a client should not revalidate even on a reload.
 - \`stale-while-revalidate=N\` from RFC 5861 lets a cache serve a stale copy
   immediately and refresh in the background. It smooths out the latency
   spike every time an object expires.
@@ -31549,6 +31578,7 @@ In my experience the culprit is almost always one forgotten port or one overly e
     slug: "linux-disk-io-troubleshooting",
     title: "Troubleshooting Disk I/O on Linux Without Guessing",
     date: "2026-04-13",
+    updated: "2026-11-21",
     tags: ["linux", "storage", "operations"],
     excerpt:
       "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
@@ -31634,6 +31664,7 @@ runtime=60
 time_based=1
 group_reporting=1
 filename=/mnt/data/fiotest
+size=4g
 
 [random-read-4k]
 rw=randread
@@ -34682,6 +34713,7 @@ waiting on the authoritative side will change that.
     slug: "gpu-passthrough-proxmox",
     title: "GPU Passthrough on Proxmox Without the Guesswork",
     date: "2026-06-18",
+    updated: "2026-11-21",
     tags: ["virtualization", "linux", "homelab"],
     excerpt:
       "IOMMU groups, VFIO binding, and the handful of failure modes that eat an entire evening. How I reason through passthrough problems instead of copying forum posts.",
@@ -34703,13 +34735,14 @@ The goal is to take a PCIe device away from the host kernel and hand it, with it
 
 The IOMMU exists so a device can do DMA using guest physical addresses without being able to scribble anywhere in host memory. Without it, passthrough would be a security hole with a nice UI.
 
-Enable it on the kernel command line, then reboot and verify rather than assume.
+Enable it in firmware (VT-d or AMD-Vi) and, where your kernel needs it, on the kernel command line, then reboot and verify rather than assume.
 
 \`\`\`bash
-# Intel hosts
-intel_iommu=on iommu=pt
-# AMD hosts
-amd_iommu=on iommu=pt
+# Intel hosts on kernels older than 6.8 (6.8 and newer enable it by default)
+intel_iommu=on
+# AMD hosts enable it by default; nothing to add
+# Optional on either, may improve host performance
+iommu=pt
 
 # After reboot, confirm the kernel actually brought it up
 dmesg | grep -e DMAR -e IOMMU | head
@@ -35284,6 +35317,7 @@ just an unusually eloquent client.
     slug: "zfs-arc-l2arc-tuning",
     title: "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
     date: "2026-06-26",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "servers"],
     excerpt:
       "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
@@ -35343,8 +35377,9 @@ Which means a SLOG only helps synchronous writes. Ordinary asynchronous writes, 
 Where it genuinely helps: NFS exports with sync semantics, databases issuing sync commits, and virtual machine storage over iSCSI or NFS where the guest is flushing. Check whether your workload is even synchronous before shopping.
 
 \`\`\`bash
-# Are writes to this dataset synchronous at all?
-zpool iostat -v 1
+# Are applications asking for synchronous writes at all?
+# Run it twice; a climbing zil_commit_count means yes (Linux path)
+grep zil_commit_count /proc/spl/kstat/zfs/zil
 
 # Dataset sync policy: standard honors the application, always forces sync
 zfs get sync tank/vmstore
@@ -41964,7 +41999,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     slug: "zfs-on-enterprise-hardware",
     title: "Running ZFS on Dell Enterprise Hardware",
     date: "2026-02-08",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage", "zfs", "servers", "homelab"],
     excerpt:
       "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
@@ -42087,7 +42122,7 @@ Snapshots are nearly free at creation, because copy-on-write means a snapshot is
 
 ZFS rewards careful planning. Choose your pool layout thoughtfully because changing it later means destroying and recreating the pool. Buy drives from different batches to avoid correlated failures. And always have more RAM than you think you need, because ZFS uses memory aggressively for caching.
 
-On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: the ARC on Linux defaults to using about half of system memory, that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
+On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: by default the ARC may grow to the larger of 5/8 of system memory or all memory minus 1 GiB (OpenZFS 2.3 and later; earlier releases on Linux stopped at about half), that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
 
 ## What breaks
 
@@ -47998,6 +48033,7 @@ Buy the rack-mount servers when you have a workload that needs them: many VMs at
     slug: "container-orchestration-basics",
     title: "Container Orchestration: Docker and LXC in a Homelab",
     date: "2025-09-15",
+    updated: "2026-11-21",
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
@@ -48063,7 +48099,7 @@ One note on that file: the \`version\` key is a leftover from Compose V1 and the
 
 The mental model difference is that an LXC container is a machine you maintain and a Docker container is a process you replace. LXC containers have an init system, get patched with \`apt upgrade\`, and accumulate state. Docker images are immutable layers on an overlay filesystem; you do not patch a running container, you build a new image and recreate it. Anything you write inside a Docker container that is not on a named volume or bind mount is gone the moment the container is recreated, and losing a database that way is a rite of passage.
 
-Running Docker *inside* an unprivileged LXC container is the most popular bad idea in the Proxmox community. It can be made to work with the \`nesting=1\` and \`keyctl=1\` features, but Docker's overlay2 storage driver does not work on a ZFS-backed unprivileged container, so it silently falls back to the \`vfs\` driver. \`vfs\` makes a full copy of every layer instead of stacking them, so a 400 MB image becomes several gigabytes on disk and image pulls crawl. If you want Docker on Proxmox, put it in a VM.
+Running Docker *inside* an unprivileged LXC container is the most popular bad idea in the Proxmox community. It can be made to work with the \`nesting=1\` and \`keyctl=1\` features, but before OpenZFS 2.2, Docker's overlay2 storage driver did not work on a ZFS-backed unprivileged container, so it silently fell back to the \`vfs\` driver. OpenZFS 2.2 added overlayfs support, so check \`docker info\` for the storage driver you actually got. \`vfs\` makes a full copy of every layer instead of stacking them, so a 400 MB image becomes several gigabytes on disk and image pulls crawl. If you want Docker on Proxmox, put it in a VM.
 
 ## When You Actually Need an Orchestrator
 
@@ -48335,7 +48371,7 @@ Two operational numbers worth remembering: \`get system performance status\` rep
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage", "hardware", "servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
     coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
@@ -48452,7 +48488,7 @@ media_errors                        : 0
 
 **M.2 drives throttle in server chassis.** A drive that starts at 6,000 MB/s and settles at 900 MB/s two minutes into a copy is not defective, it is hot. Watch \`nvme smart-log\` temperature during a sustained run, and if it is climbing into the drive's throttle range, the fix is airflow or a different form factor, not firmware.
 
-**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded \`dd\` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at \`avgqu-sz\` in \`iostat -x 1\` on the live system.
+**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded \`dd\` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at \`aqu-sz\` (\`avgqu-sz\` in older sysstat releases) in \`iostat -x 1\` on the live system.
 
 **Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
 
@@ -49065,7 +49101,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -49132,9 +49168,9 @@ Expected output on a working dual-stack segment:
 
 \`\`\`
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
-    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+    inet6 2001:db8:1234:1:a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
        valid_lft 86200sec preferred_lft 14200sec
-    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+    inet6 2001:db8:1234:1:1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
        valid_lft 86200sec preferred_lft 14200sec
     inet6 fe80::5054:ff:fe12:3456/64 scope link
        valid_lft forever preferred_lft forever
@@ -49203,6 +49239,7 @@ Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global a
     slug: "cisco-ios-fundamentals",
     title: "Cisco IOS Fundamentals Every Network Engineer Should Know",
     date: "2026-03-02",
+    updated: "2026-11-21",
     tags: ["cisco", "networking", "routing"],
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
@@ -49283,7 +49320,7 @@ interface GigabitEthernet0/0
   no shutdown
 \`\`\`
 
-The \`description\` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in \`show ip interface brief\` output on modern IOS and in most monitoring tools.
+The \`description\` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in \`show interfaces description\` output and in most monitoring tools. \`show ip interface brief\` does not show it.
 
 Interface naming differs between platforms and it trips people up. On a router, \`GigabitEthernet0/0\` is slot/port. On a stackable switch, \`GigabitEthernet1/0/1\` is switch-number/module/port, so the leading \`1\` is the stack member, not the slot. Type the wrong form and IOS reports an invalid interface rather than telling you the naming scheme changed.
 
@@ -49826,6 +49863,7 @@ And it does nothing at a single-WAN site. If there is one circuit, there is no d
     slug: "power-over-ethernet-poe",
     title: "Power over Ethernet: How PoE Works in Enterprise Networks",
     date: "2026-03-07",
+    updated: "2026-11-21",
     tags: ["networking", "hardware", "switching"],
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
     coverImage: "/images/blog/power-over-ethernet-poe.jpg",
@@ -49850,7 +49888,7 @@ The power is DC, injected at roughly 48 V, and it travels on the same twisted pa
 
 **PoE++ (IEEE 802.3bt):** Up to 60W (Type 3) or 90W (Type 4) per port. Powers high-performance APs, thin clients, and even small displays.
 
-Two numbers matter for every one of these, and vendors quote whichever one flatters them. The first is what the switch puts out at the port. The second is what the device is guaranteed to receive after cable losses, which the standard budgets at up to 12.5 percent over a full 100 m run. So 802.3af is 15.4 W at the port and 12.95 W guaranteed at the device. 802.3at is 30 W out and 25.5 W in. 802.3bt Type 3 is 60 W out and 51 W in, and Type 4 is 90 W out and 71.3 W in. If a product page advertises "100 W PoE", that is marketing rather than 802.3bt, because Type 4 tops out at 90 W from the source. Cisco's UPOE and UPOE+ are 60 W and 90 W respectively.
+Two numbers matter for every one of these, and vendors quote whichever one flatters them. The first is what the switch puts out at the port. The second is what the device is guaranteed to receive after worst-case cable losses over a full 100 m run. So 802.3af is 15.4 W at the port and 12.95 W guaranteed at the device. 802.3at is 30 W out and 25.5 W in. 802.3bt Type 3 is 60 W out and 51 W in, and Type 4 is 90 W out and 71.3 W in. If a product page advertises "100 W PoE", that is marketing rather than 802.3bt, because Type 4 tops out at 90 W from the source. Cisco's UPOE and UPOE+ are 60 W and 90 W respectively.
 
 The other split is how many pairs are used. 802.3af and 802.3at power two pairs. The standard defines Alternative A, which uses the data pairs (1/2 and 3/6), and Alternative B, which uses the spare pairs (4/5 and 7/8) on 100BASE-TX. The switch picks one and a compliant device has to accept either. 802.3bt uses all four pairs, which is how it reaches 90 W without exceeding the per-conductor current limit. This is why a run that works fine for a phone can fail for a Type 3 access point: if a pair is broken, or a cheap patch cable only landed two pairs, 100 Mbps data still works and 4-pair PoE does not.
 
@@ -50181,6 +50219,7 @@ The habits transfer directly. Narrowing a time window, aggregating before readin
     slug: "iscsi-storage-protocol",
     title: "iSCSI Storage: How to Configure and Use It",
     date: "2026-03-10",
+    updated: "2026-11-21",
     tags: ["storage", "networking", "servers"],
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
     coverImage: "/images/blog/iscsi-storage-protocol.jpg",
@@ -50299,7 +50338,7 @@ When the SCSI translation overhead itself is the bottleneck, [NVMe over Fabrics]
 
 I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can access the same iSCSI volumes from TrueNAS, which enables live VM migration and HA failover. The setup takes about an hour to configure properly, and once it is running it is very reliable.
 
-The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and it costs you snapshots: LVM on a shared LUN in Proxmox is thick provisioned and does not support VM snapshots. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
+The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and through Proxmox VE 8 it cost you snapshots: LVM on a shared LUN in Proxmox is thick provisioned, and those versions do not support VM snapshots on it. Proxmox VE 9 added VM snapshots on it as volume chains, a per-storage option marked a technology preview. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
 
 ## References
 
@@ -51123,6 +51162,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
     slug: "syslog-centralized-logging",
     title: "Centralized Logging with Syslog: A Practical Guide",
     date: "2026-03-19",
+    updated: "2026-11-21",
     tags: ["operations", "monitoring", "servers"],
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
     coverImage: "/images/blog/syslog-centralized-logging.jpg",
@@ -51169,10 +51209,10 @@ template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PRO
 Add one thing to the UDP input before you rely on it:
 
 \`\`\`bash
-module(load="imudp" rcvbufSize="16m")
+input(type="imudp" port="514" rcvbufSize="16m")
 \`\`\`
 
-UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. Raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
+UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. \`rcvbufSize\` belongs on the \`input()\` line, replacing the plain one above; on \`module()\` it does nothing. rsyslog uses \`SO_RCVBUFFORCE\` when it has the privilege (root or \`CAP_NET_ADMIN\`), which can exceed \`net.core.rmem_max\`. Without that privilege, raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
 
 Put \`/var/log/remote\` on its own filesystem. A log server that fills its root partition stops logging and frequently stops working, and the classic version of this outage is one misbehaving host emitting debug output at ten thousand lines per second overnight.
 
@@ -51253,6 +51293,7 @@ Three security properties are worth being blunt about.
     slug: "container-networking-fundamentals",
     title: "Container Networking Fundamentals: How Pods and Containers Communicate",
     date: "2026-03-20",
+    updated: "2026-11-21",
     tags: ["networking", "containers", "kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
@@ -51331,7 +51372,7 @@ Kubernetes Services provide stable IP addresses for groups of pods. Service IPs 
 
 Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
 
-A ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
+In kube-proxy's iptables and nftables modes, a ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. (IPVS mode is the exception: it binds every ClusterIP to a dummy interface, \`kube-ipvs0\`, so the node answers the ping, which proves nothing about the backends either.) Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
 
 kube-proxy's default \`iptables\` mode writes one chain per Service plus one per endpoint, and load balancing is a chain of statistically weighted jumps. Rule evaluation and, more importantly, full-table resync are roughly linear in the number of Services, so clusters with several thousand Services see multi-second sync times and slow endpoint convergence. IPVS mode replaces the linear chain with a hash table and stays flat as the Service count grows; the newer \`nftables\` mode does the same with maps. If your cluster is small, iptables mode is simpler and easier to read with \`iptables-save -t nat | grep <service-name>\`.
 
@@ -52443,6 +52484,7 @@ Finally, a stale target simply stops producing samples. Prometheus looks back a 
     slug: "bgp-route-filtering-security",
     title: "BGP Route Filtering and Security Best Practices",
     date: "2026-03-29",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
@@ -52481,7 +52523,7 @@ The \`ge\` and \`le\` keywords are where most people go wrong, so be precise abo
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS and Junos with no export policy both readvertise every active BGP route to an eBGP peer, while IOS XR, which behaves the way RFC 8212 now requires, advertises nothing to an eBGP peer until a policy is attached. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 
@@ -52869,7 +52911,7 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
@@ -52905,7 +52947,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 \`\`\`bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep -E 'action="?deny' /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
 There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
@@ -52915,8 +52957,8 @@ There is a caveat that took me a while to internalize. Denies tell you what did 
 Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
 
 \`\`\`bash
-grep 'action=deny' /var/log/fortigate/traffic.log \\
-  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \\
+grep -E 'action="?deny' /var/log/fortigate/traffic.log \\
+  | sed -nE 's/.*(srcip=[0-9.]+) .*(dstip=[0-9.]+).*/\\1 \\2/p' \\
   | sort -u \\
   | awk '{print $1}' \\
   | uniq -c \\
@@ -53822,6 +53864,7 @@ was answering correctly the entire time.
     slug: "how-totp-codes-actually-work",
     title: "How TOTP Codes Actually Work",
     date: "2026-08-24",
+    updated: "2026-11-21",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
       "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
@@ -53921,8 +53964,9 @@ back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 
 \`\`\`bash
-# What the server would accept with a window of one step either side
-oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+# What the server would accept with a window of one step either side:
+# -w only counts forward, so start one step early and print three codes
+oathtool --totp -b --now "2026-08-25 08:59:30 UTC" -w 2 JBSWY3DPEHPK3PXP
 \`\`\`
 
 The window is a real cost, not free tolerance. Every extra step you accept
