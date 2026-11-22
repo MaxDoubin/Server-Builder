@@ -116,12 +116,17 @@ export function CidrOverlapChecker() {
   const stat = (label: string, family: "v4" | "v6", testId: string) => {
     const s = analysis[family];
     if (s.blocks === 0) return null;
+    // Two short rows rather than one sentence: ToolResult breaks anywhere, so a
+    // long value wraps mid-word on a phone.
     return (
-      <ToolResult
-        label={label}
-        testId={testId}
-        value={`${formatCount(BigInt(s.blocks))} ${pluralise(s.blocks, "block")}, ${addresses(s.covered)} covered`}
-      />
+      <>
+        <ToolResult label={`${label} blocks`} testId={testId} value={formatCount(BigInt(s.blocks))} />
+        <ToolResult
+          label={`${label} addresses covered`}
+          testId={`${testId}-covered`}
+          value={formatSize(s.covered)}
+        />
+      </>
     );
   };
 
