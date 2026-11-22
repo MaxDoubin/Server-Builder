@@ -56,7 +56,7 @@ const BREATH_SECONDS = 16;
 /** Samples per cable in the curve texture, spaced evenly by arc length. */
 const CURVE_SAMPLES = 64;
 /** Ribbon segments from tail to head. Enough to bend around the manager. */
-const RIBBON_SEGMENTS = 24;
+const RIBBON_SEGMENTS = 48;
 /** The ribbon runs a little past the head so the leading edge is soft too. */
 const RIBBON_REACH = 1.1;
 
@@ -87,7 +87,7 @@ const VERTEX = /* glsl */ `
   const float SAMPLES = ${CURVE_SAMPLES.toFixed(1)};
   const float OMEGA = ${((2 * Math.PI) / BREATH_SECONDS).toFixed(6)};
   const float SWING = 0.35;
-  const float TAIL = 0.16;
+  const float TAIL = 0.2;
 
   // Position on a cable at arc fraction s. NEAREST texels blended by hand,
   // because linear filtering of float textures is an optional extension.
@@ -127,7 +127,7 @@ const VERTEX = /* glsl */ `
       // A faint standing glow along the whole cable so the routes read.
       s = along / ${RIBBON_REACH.toFixed(1)};
       width = 0.0011;
-      gain = 0.1 * smoothstep(0.0, 0.04, s) * smoothstep(1.0, 0.96, s);
+      gain = 0.085 * smoothstep(0.0, 0.04, s) * smoothstep(1.0, 0.96, s);
       vAlong = -1.0;
     } else {
       // One trip lasts 1 + TAIL so the tail has time to drain into the port.
@@ -143,7 +143,7 @@ const VERTEX = /* glsl */ `
       // Density: higher-ranked pulses only run while the load is up.
       float busy = smoothstep(aPulse.z - 0.1, aPulse.z + 0.1, load);
       gain = alive * busy * (0.75 + 0.25 * load) * (1.0 + 1.5 * arrive);
-      width = mix(0.0012, 0.0042, along / ${RIBBON_REACH.toFixed(1)}) * (1.0 + 0.6 * arrive);
+      width = mix(0.0012, 0.0052, along / ${RIBBON_REACH.toFixed(1)}) * (1.0 + 0.6 * arrive);
       vAlong = along;
     }
 
