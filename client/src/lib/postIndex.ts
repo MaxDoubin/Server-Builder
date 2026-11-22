@@ -1342,7 +1342,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","servers","operations"],
     excerpt: "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
     coverImage: "/images/blog/oom-killer-and-swap-sizing.jpg",
-    wordCount: 1001,
+    wordCount: 1039,
   },
   {
     slug: "ebpf-observability-basics",
