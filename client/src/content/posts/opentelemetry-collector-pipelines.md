@@ -2,7 +2,7 @@
 
 Instrumented software produces traces, metrics, and logs, and something has to carry them to a backend. The simplest option is for each application to send directly. The OpenTelemetry Collector is the other option: a separate program that sits in the middle, accepts telemetry, works on it, and forwards it.
 
-The OpenTelemetry documentation describes the Collector as a vendor-agnostic way to receive, process, and export telemetry data. In practice that means one process can accept data in several formats (OpenTelemetry's own protocol, Jaeger, Prometheus, and others), clean or reshape it, and send it to one or more open source or commercial backends. The documentation adds that this removes the need to run and maintain several separate agents or collectors.
+The OpenTelemetry documentation describes the Collector as a vendor-agnostic way to receive, process, and export telemetry data. In practice that means one process can accept data in several formats (OpenTelemetry's own protocol, Jaeger, [Prometheus](/blog/prometheus-server-monitoring), and others), clean or reshape it, and send it to one or more open source or commercial backends. The documentation adds that this removes the need to run and maintain several separate agents or collectors.
 
 This article covers the Collector's building blocks, pipelines, deployment patterns, processor ordering, default ports, and distributions, and ends with a small configuration checked against Collector version 0.165.0.
 

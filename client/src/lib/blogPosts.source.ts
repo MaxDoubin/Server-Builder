@@ -262,7 +262,7 @@ A vendor score like TruRisk bundles assumptions about weights and data sources. 
 
 Instrumented software produces traces, metrics, and logs, and something has to carry them to a backend. The simplest option is for each application to send directly. The OpenTelemetry Collector is the other option: a separate program that sits in the middle, accepts telemetry, works on it, and forwards it.
 
-The OpenTelemetry documentation describes the Collector as a vendor-agnostic way to receive, process, and export telemetry data. In practice that means one process can accept data in several formats (OpenTelemetry's own protocol, Jaeger, Prometheus, and others), clean or reshape it, and send it to one or more open source or commercial backends. The documentation adds that this removes the need to run and maintain several separate agents or collectors.
+The OpenTelemetry documentation describes the Collector as a vendor-agnostic way to receive, process, and export telemetry data. In practice that means one process can accept data in several formats (OpenTelemetry's own protocol, Jaeger, [Prometheus](/blog/prometheus-server-monitoring), and others), clean or reshape it, and send it to one or more open source or commercial backends. The documentation adds that this removes the need to run and maintain several separate agents or collectors.
 
 This article covers the Collector's building blocks, pipelines, deployment patterns, processor ordering, default ports, and distributions, and ends with a small configuration checked against Collector version 0.165.0.
 
@@ -1272,7 +1272,7 @@ The Bible describes three failure levels and their effect on VMs:
 
 ### Disk failure
 
-When Stargate sees I/O errors or timeouts, it marks the disk offline, and a service called Hades runs S.M.A.R.T. (Self-Monitoring, Analysis and Reporting Technology) checks. A Curator scan starts immediately to find which data lived on that disk and where the other replicas are, then spreads the rebuild across all nodes. Rebuilds start at once rather than after a waiting period. Why rebuild speed matters for any redundant array of independent disks (RAID) or replicated system is covered in [RAID rebuild risk math](/blog/raid-rebuild-risk-math).
+When Stargate sees I/O errors or timeouts, it marks the disk offline, and a service called Hades runs S.M.A.R.T. (Self-Monitoring, Analysis and Reporting Technology) checks. A Curator scan starts immediately to find which data lived on that disk and where the other replicas are, then spreads the rebuild across all nodes. Rebuilds start at once rather than after a waiting period. Why rebuild speed matters for any redundant array of independent disks ([RAID](/blog/raid-levels-comparison)) or replicated system is covered in [RAID rebuild risk math](/blog/raid-rebuild-risk-math).
 
 ### CVM failure
 
