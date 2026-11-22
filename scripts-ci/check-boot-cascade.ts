@@ -18,6 +18,12 @@
  * The first two are properties of the source text and the third of the pure
  * curves, so all three can be held here without a browser.
  *
+ * The third came back once. The fix silenced the blink and the flicker in
+ * the LED's brightness and left the size pulse, which reads the same carrier
+ * on a different line. So part 4 checks the shape of the code rather than
+ * one term: the carrier may only be read before the boot block, and every
+ * idle term derived from it has to be blended by the power override.
+ *
  * Usage: npx tsx scripts-ci/check-boot-cascade.ts
  */
 
@@ -122,9 +128,44 @@ if (!near(powerOverride(0.5), 0)) fail("powerOverride ignores settle");
 
 if (!(BOOT_DURATION > BOOT_T.END)) fail("BOOT_DURATION does not cover the stagger");
 
+/* 4. The power LED: no idle term escapes the override. */
+
+const led = readFileSync(`${DIR}/parts/Led.tsx`, "utf8");
+const bodyStart = led.indexOf("export function Led(");
+const bodyEnd = led.indexOf("export function LedStrip(");
+const body = led.slice(bodyStart, bodyEnd);
+const bootBlock = body.indexOf("if (boot && bootState.active)");
+if (bodyStart < 0 || bodyEnd < bodyStart || bootBlock < 0) {
+  fail("Led.tsx: could not find the Led component or its boot block");
+} else {
+  // Idle terms: every `let` before the boot block, bar the gate itself.
+  const idleTerms = [...body.slice(0, bootBlock).matchAll(/^\s*let (\w+) =/gm)]
+    .map((m) => m[1])
+    .filter((name) => name !== "gate");
+  if (idleTerms.length < 3) {
+    fail(`Led.tsx: found idle terms [${idleTerms.join(", ")}], expected at least active, flicker and scale`);
+  }
+  const powerStart = body.indexOf('if (boot === "power")');
+  const powerEnd = body.indexOf("} else {", powerStart);
+  const power = body.slice(powerStart, powerEnd);
+  for (const name of idleTerms) {
+    if (!new RegExp(`\\b${name} \\+= .*\\* own;`).test(power)) {
+      fail(`Led.tsx: idle term "${name}" is not blended by powerOverride in the power branch, so the power LED keeps that part of its idle look`);
+    }
+  }
+  // After the boot block nothing may reach back to the raw idle signals.
+  const after = body.slice(powerEnd);
+  for (const raw of ["carrier", "clock"]) {
+    const tail = after.slice(after.indexOf("emissiveIntensity ="));
+    if (new RegExp(`\\b${raw}\\b`).test(tail)) {
+      fail(`Led.tsx: "${raw}" is read after the boot block, where the power override can no longer silence it`);
+    }
+  }
+}
+
 if (failures.length) {
   console.error(`FAIL  boot cascade: ${failures.length} problem(s)\n`);
   for (const f of failures) console.error("  " + f);
   process.exit(1);
 }
-console.log(`OK  boot cascade: ${ledCount} LED elements gated, ${stepCount} shader smoothstep calls ordered, curves dark before power and steady after.`);
+console.log(`OK  boot cascade: ${ledCount} LED elements gated, ${stepCount} shader smoothstep calls ordered, curves dark before power and steady after, power LED idle terms all overridden.`);

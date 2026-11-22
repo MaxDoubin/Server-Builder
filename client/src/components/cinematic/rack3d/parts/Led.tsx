@@ -22,6 +22,8 @@ import {
 export type BootRole = "power" | "drive" | "activity";
 
 const OFF = new THREE.Color("#08090c");
+/** Mesh scale of an LED that is lit without blinking. */
+const SOLID_SCALE = 1.04;
 const worldScratch = new THREE.Vector3();
 const colorScratch = new THREE.Color();
 
@@ -74,8 +76,12 @@ export function Led({
 
     const t = clock.elapsedTime * 4 + seed * 6.28;
     const carrier = 0.58 + 0.42 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.3 + seed * 3.14));
+    // The three idle modulations, all taken from the carrier here and nowhere
+    // below, so a boot role that has to silence the idle look has one place
+    // to do it and cannot miss a term.
     let flicker = 0.86 + 0.14 * Math.sin(clock.elapsedTime * 11 + seed * 9.7);
     let active = blink ? carrier : 1;
+    let scale = blink ? 1 + (carrier - 0.5) * 0.18 : SOLID_SCALE;
     let gate = 1;
 
     if (boot && bootState.active) {
@@ -84,12 +90,14 @@ export function Led({
         gate = powerLed(lt, base, colorScratch);
         mat.current.emissive.copy(colorScratch);
         // The power LED is solid or flashing by the legend, never shimmering:
-        // both idle modulations (the slow blink and the 1.75 Hz flicker) are
-        // faded out while the legend owns it, and eased back in afterwards
-        // rather than switched, so there is no step when the boot ends.
+        // every idle modulation (the slow blink, the 1.75 Hz flicker and the
+        // size pulse that goes with the blink) is faded out while the legend
+        // owns it, and eased back in afterwards rather than switched, so
+        // there is no step when the boot ends.
         const own = powerOverride(lt);
         active += (1 - active) * own;
         flicker += (1 - flicker) * own;
+        scale += (SOLID_SCALE - scale) * own;
       } else {
         gate = boot === "drive" ? driveLevel(lt, seed) : activityLevel(lt, seed);
         colorScratch.copy(base);
@@ -110,10 +118,7 @@ export function Led({
 
     mat.current.emissiveIntensity = intensity * active * flicker * gate;
 
-    if (meshRef.current) {
-      const scale = 1 + (blink ? (carrier - 0.5) * 0.18 : 0.04);
-      meshRef.current.scale.setScalar(scale);
-    }
+    if (meshRef.current) meshRef.current.scale.setScalar(scale);
   });
 
   return (
