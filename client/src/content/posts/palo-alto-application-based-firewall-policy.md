@@ -10,7 +10,7 @@ The release matters, because behavior changes between versions of PAN-OS, the op
 
 - The policy pages (Security Policy, Components of a Security Policy Rule, Policy Types, Application Override Policy) are from the PAN-OS 11.1 Administrator's Guide and carry the 11.1 label. The zone help pages sit under an 11-1 path.
 - The App-ID, User-ID and rule optimization pages come from the vendor's unified Next-Generation Firewall documentation (the App-ID overview showed an update date of November 18, 2026). Its release selector lists PAN-OS 12.2 down to 8.1, and the body text does not say which release it was written for. No single release number covers all of it.
-- The Content-ID passage rests on a single undated vendor tech brief in PDF form, described where it is used.
+- The Content-ID passage rests on a single vendor tech brief in PDF form, with a 2016 copyright footer, described where it is used.
 
 A cross-product Network Security page, shared with the vendor's cloud-delivered service, carries the same rule table, and its wording matches the 11.1 page on the points used here. The list of rule actions below is taken from it. Each major section opens with a line naming which documentation it follows, and a real firewall calls for the pages of the release it runs.
 
