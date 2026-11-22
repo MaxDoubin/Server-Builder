@@ -51,7 +51,7 @@ Fiber ends are the most common physical failure and the easiest to fix. A finger
 
 ## Third-party vs OEM
 
-Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
+Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now part of Coherent, formerly II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
 
 Some switches check for OEM transceivers and will display warnings or refuse to use third-party modules. Cisco is notorious for this. The workaround is usually a CLI command to accept non-certified transceivers:
 

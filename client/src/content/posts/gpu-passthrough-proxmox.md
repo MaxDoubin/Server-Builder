@@ -9,13 +9,14 @@ The goal is to take a PCIe device away from the host kernel and hand it, with it
 
 The IOMMU exists so a device can do DMA using guest physical addresses without being able to scribble anywhere in host memory. Without it, passthrough would be a security hole with a nice UI.
 
-Enable it on the kernel command line, then reboot and verify rather than assume.
+Enable it in firmware (VT-d or AMD-Vi) and, where your kernel needs it, on the kernel command line, then reboot and verify rather than assume.
 
 ```bash
-# Intel hosts
-intel_iommu=on iommu=pt
-# AMD hosts
-amd_iommu=on iommu=pt
+# Intel hosts on kernels older than 6.8 (6.8 and newer enable it by default)
+intel_iommu=on
+# AMD hosts enable it by default; nothing to add
+# Optional on either, may improve host performance
+iommu=pt
 
 # After reboot, confirm the kernel actually brought it up
 dmesg | grep -e DMAR -e IOMMU | head

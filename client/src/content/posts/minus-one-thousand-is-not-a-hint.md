@@ -160,10 +160,10 @@ change. What it is a proportion of did.
 
 Tell them apart before you investigate, because they lead to opposite
 conclusions. A memcg kill names the cgroup in the dump, and
-`memory.events` counts them:
+`memory.events.local` counts them:
 
 ```
-$ cat /sys/fs/cgroup/system.slice/app.service/memory.events
+$ cat /sys/fs/cgroup/system.slice/app.service/memory.events.local
 low 0
 high 4213
 max 981
@@ -171,9 +171,16 @@ oom 12
 oom_kill 12
 ```
 
-If `oom_kill` there is climbing, the machine was never full and the answer is a
-limit that is too low or a service that leaks. If it is flat and processes are
-dying anyway, the host is oversubscribed.
+If `oom` and `max` are climbing along with `oom_kill`, the cgroup hit its own
+limit, the machine was never full, and the answer is a limit that is too low or
+a service that leaks. `oom_kill` counts kills by any OOM killer, so if it rises
+while `oom` and `max` stay flat, the limit that was hit belongs to another
+cgroup or to the whole machine. The counters can also split across a hierarchy,
+because the cgroup whose limit fired and the cgroup the victim lived in are
+charged separately. When that matters, let the kernel's own line decide: the
+`oom-kill:` message names `constraint=` (`CONSTRAINT_MEMCG` for a cgroup limit,
+`CONSTRAINT_NONE` for a system-wide OOM), `oom_memcg=` (the cgroup whose limit
+was hit) and `task_memcg=` (the cgroup the victim was in).
 
 ## What memory.oom.group changes
 
@@ -222,7 +229,7 @@ grep -E "VmRSS|VmSwap|VmPTE" /proc/PID/status
 Three of the four terms, none of which is in `top`'s default columns.
 
 ```
-cat /sys/fs/cgroup/<path>/memory.events
+cat /sys/fs/cgroup/<path>/memory.events.local
 ```
 
 Which OOM you actually had.

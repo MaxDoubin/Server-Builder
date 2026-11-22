@@ -20,6 +20,7 @@
  *
  * Adding a route: add its entry to EXACT_ROUTES or PREFIX_ROUTES here at the
  * same time as the lazy() in App.tsx, or hovering it simply does nothing.
+ * Tools are the exception: the "/tools/" entry covers every one of them.
  *
  * That instruction was not enough on its own. Thirty-seven routes were added
  * after this file was written and none of them were registered, so hover
@@ -30,7 +31,8 @@
 
 import { useMemo } from "react";
 
-type ImportThunk = () => Promise<unknown>;
+/** Takes the hovered path, which only a perPath entry needs to read. */
+type ImportThunk = (path: string) => Promise<unknown>;
 
 interface RouteChunk {
   load: ImportThunk;
@@ -54,6 +56,13 @@ interface RouteChunk {
    * 800KB. Worth prefetching on a fast link, rude on a metered one.
    */
   heavy?: boolean;
+  /**
+   * True for a prefix whose paths are each a different chunk. Every tool page
+   * sits behind /tools/:slug and is its own chunk, so the key has to be the
+   * full path: one shared key would warm the first tool hovered and then
+   * ignore every other tool on the page.
+   */
+  perPath?: boolean;
 }
 
 /** Matched when the path is exactly this. */
@@ -157,111 +166,6 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/study-timer": { load: () => import("@/pages/cinematic/CinematicStudyTimer") },
   "/timeline": { load: () => import("@/pages/cinematic/CinematicTimeline") },
   "/tools": { load: () => import("@/pages/cinematic/CinematicTools") },
-  "/tools/base-converter": { load: () => import("@/pages/tools/BaseConverter") },
-  "/tools/chmod-calculator": { load: () => import("@/pages/tools/ChmodCalculator") },
-  "/tools/cidr-visualizer": { load: () => import("@/pages/tools/CidrVisualizer") },
-  "/tools/classical-ciphers": { load: () => import("@/pages/tools/ClassicalCiphers") },
-  "/tools/cron-explainer": { load: () => import("@/pages/tools/CronExplainer") },
-  "/tools/dns-records": { load: () => import("@/pages/tools/DnsRecords") },
-  "/tools/encoder-decoder": { load: () => import("@/pages/tools/EncoderDecoder") },
-  "/tools/hash-identifier": { load: () => import("@/pages/tools/HashIdentifier") },
-  "/tools/http-status-codes": { load: () => import("@/pages/tools/HttpStatusCodes") },
-  "/tools/jwt-decoder": { load: () => import("@/pages/tools/JwtDecoder") },
-  "/tools/mac-lookup": { load: () => import("@/pages/tools/MacLookup") },
-  "/tools/packet-headers": { load: () => import("@/pages/tools/PacketHeaders") },
-  "/tools/password-entropy": { load: () => import("@/pages/tools/PasswordEntropy") },
-  "/tools/port-reference": { load: () => import("@/pages/tools/PortReference") },
-  "/tools/rack-budget": { load: () => import("@/pages/tools/RackBudget") },
-  "/tools/regex-tester": { load: () => import("@/pages/tools/RegexTester") },
-  "/tools/subnet-calculator": { load: () => import("@/pages/tools/SubnetCalculator") },
-  "/tools/timestamp-converter": { load: () => import("@/pages/tools/TimestampConverter") },
-  "/tools/vlsm-practice": { load: () => import("@/pages/tools/VlsmPractice") },
-  "/tools/wireshark-filters": { load: () => import("@/pages/tools/WiresharkFilters") },
-  "/tools/data-uri-tool": { load: () => import("@/pages/tools/DataUriTool") },
-  "/tools/file-identifier": { load: () => import("@/pages/tools/FileIdentifier") },
-  "/tools/frequency-analysis": { load: () => import("@/pages/tools/FrequencyAnalysis") },
-  "/tools/hex-viewer": { load: () => import("@/pages/tools/HexViewer") },
-  "/tools/image-analyzer": { load: () => import("@/pages/tools/ImageAnalyzer") },
-  "/tools/magic-decoder": { load: () => import("@/pages/tools/MagicDecoder") },
-  "/tools/qr-reader": { load: () => import("@/pages/tools/QrReader") },
-  "/tools/rsa-tool": { load: () => import("@/pages/tools/RsaTool") },
-  "/tools/strings-extractor": { load: () => import("@/pages/tools/StringsExtractor") },
-  "/tools/transform-pipeline": { load: () => import("@/pages/tools/TransformPipeline") },
-  "/tools/unicode-inspector": { load: () => import("@/pages/tools/UnicodeInspector") },
-  "/tools/url-analyzer": { load: () => import("@/pages/tools/UrlAnalyzer") },
-  "/tools/vigenere-solver": { load: () => import("@/pages/tools/VigenereSolver") },
-  "/tools/xor-tool": { load: () => import("@/pages/tools/XorTool") },
-  "/tools/zip-inspector": { load: () => import("@/pages/tools/ZipInspector") },
-  "/tools/ip-address-classifier": { load: () => import("@/pages/tools/IpAddressClassifier") },
-  "/tools/ipv4-checksum-calculator": { load: () => import("@/pages/tools/Ipv4ChecksumCalculator") },
-  "/tools/reverse-dns-name": { load: () => import("@/pages/tools/ReverseDnsName") },
-  "/tools/tcp-flags-calculator": { load: () => import("@/pages/tools/TcpFlagsCalculator") },
-  "/tools/certificate-decoder": { load: () => import("@/pages/tools/CertificateDecoder") },
-  "/tools/csr-decoder": { load: () => import("@/pages/tools/CsrDecoder") },
-  "/tools/defang-refang": { load: () => import("@/pages/tools/DefangRefang") },
-  "/tools/dkim-record-analyzer": { load: () => import("@/pages/tools/DkimRecordAnalyzer") },
-  "/tools/email-header-analyzer": { load: () => import("@/pages/tools/EmailHeaderAnalyzer") },
-  "/tools/ioc-extractor": { load: () => import("@/pages/tools/IocExtractor") },
-  "/tools/jwt-encoder": { load: () => import("@/pages/tools/JwtEncoder") },
-  "/tools/cookie-analyzer": { load: () => import("@/pages/tools/CookieAnalyzer") },
-  "/tools/ssh-key-inspector": { load: () => import("@/pages/tools/SshKeyInspector") },
-  "/tools/ascii-table": { load: () => import("@/pages/tools/AsciiTable") },
-  "/tools/asn1-viewer": { load: () => import("@/pages/tools/Asn1Viewer") },
-  "/tools/morse-code-translator": { load: () => import("@/pages/tools/MorseCodeTranslator") },
-  "/tools/iops-calculator": { load: () => import("@/pages/tools/IopsCalculator") },
-  "/tools/poe-budget-calculator": { load: () => import("@/pages/tools/PoeBudgetCalculator") },
-  "/tools/storage-growth-forecast": { load: () => import("@/pages/tools/StorageGrowthForecast") },
-  "/tools/zfs-capacity-calculator": { load: () => import("@/pages/tools/ZfsCapacityCalculator") },
-  "/tools/firewall-rule-builder": { load: () => import("@/pages/tools/FirewallRuleBuilder") },
-  "/tools/sshd-config-auditor": { load: () => import("@/pages/tools/SshdConfigAuditor") },
-  "/tools/byte-unit-converter": { load: () => import("@/pages/tools/ByteUnitConverter") },
-  "/tools/umask-calculator": { load: () => import("@/pages/tools/UmaskCalculator") },
-  "/tools/ssh-config-builder": { load: () => import("@/pages/tools/SshConfigBuilder") },
-  "/tools/sudoers-explainer": { load: () => import("@/pages/tools/SudoersExplainer") },
-  "/tools/dhcp-option-121-encoder": { load: () => import("@/pages/tools/DhcpOption121Encoder") },
-  "/tools/tcpdump-filter-builder": { load: () => import("@/pages/tools/TcpdumpFilterBuilder") },
-  "/tools/hmac-generator": { load: () => import("@/pages/tools/HmacGenerator") },
-  "/tools/playfair-cipher": { load: () => import("@/pages/tools/PlayfairCipher") },
-  "/tools/rail-fence-cipher": { load: () => import("@/pages/tools/RailFenceCipher") },
-  "/tools/totp-generator": { load: () => import("@/pages/tools/TotpGenerator") },
-  "/tools/endianness-converter": { load: () => import("@/pages/tools/EndiannessConverter") },
-  "/tools/ieee754-inspector": { load: () => import("@/pages/tools/Ieee754Inspector") },
-  "/tools/raid-rebuild-risk": { load: () => import("@/pages/tools/RaidRebuildRisk") },
-  "/tools/ups-runtime-calculator": { load: () => import("@/pages/tools/UpsRuntimeCalculator") },
-  "/tools/access-log-analyzer": { load: () => import("@/pages/tools/AccessLogAnalyzer") },
-  "/tools/affine-cipher": { load: () => import("@/pages/tools/AffineCipher") },
-  "/tools/bacon-cipher": { load: () => import("@/pages/tools/BaconCipher") },
-  "/tools/csp-analyzer": { load: () => import("@/pages/tools/CspAnalyzer") },
-  "/tools/entropy-analyzer": { load: () => import("@/pages/tools/EntropyAnalyzer") },
-  "/tools/security-headers-analyzer": { load: () => import("@/pages/tools/SecurityHeadersAnalyzer") },
-  "/tools/asn-converter": { load: () => import("@/pages/tools/AsnConverter") },
-  "/tools/bandwidth-delay-product": { load: () => import("@/pages/tools/BandwidthDelayProduct") },
-  "/tools/bgp-community-decoder": { load: () => import("@/pages/tools/BgpCommunityDecoder") },
-  "/tools/ip-range-to-cidr": { load: () => import("@/pages/tools/IpRangeToCidr") },
-  "/tools/iperf3-command-builder": { load: () => import("@/pages/tools/Iperf3CommandBuilder") },
-  "/tools/ip-address-converter": { load: () => import("@/pages/tools/IpAddressConverter") },
-  "/tools/mtu-mss-calculator": { load: () => import("@/pages/tools/MtuMssCalculator") },
-  "/tools/multicast-mac-mapper": { load: () => import("@/pages/tools/MulticastMacMapper") },
-  "/tools/ospf-cost-calculator": { load: () => import("@/pages/tools/OspfCostCalculator") },
-  "/tools/propagation-delay-calculator": { load: () => import("@/pages/tools/PropagationDelayCalculator") },
-  "/tools/route-summarizer": { load: () => import("@/pages/tools/RouteSummarizer") },
-  "/tools/transfer-time-calculator": { load: () => import("@/pages/tools/TransferTimeCalculator") },
-  "/tools/vlan-tag-decoder": { load: () => import("@/pages/tools/VlanTagDecoder") },
-  "/tools/wifi-channel-reference": { load: () => import("@/pages/tools/WifiChannelReference") },
-  "/tools/wildcard-mask-calculator": { load: () => import("@/pages/tools/WildcardMaskCalculator") },
-  "/tools/cvss-calculator": { load: () => import("@/pages/tools/CvssCalculator") },
-  "/tools/dmarc-record-analyzer": { load: () => import("@/pages/tools/DmarcRecordAnalyzer") },
-  "/tools/file-hash-checker": { load: () => import("@/pages/tools/FileHashChecker") },
-  "/tools/nmap-command-builder": { load: () => import("@/pages/tools/NmapCommandBuilder") },
-  "/tools/ntlm-hash-generator": { load: () => import("@/pages/tools/NtlmHashGenerator") },
-  "/tools/password-generator": { load: () => import("@/pages/tools/PasswordGenerator") },
-  "/tools/spf-record-analyzer": { load: () => import("@/pages/tools/SpfRecordAnalyzer") },
-  "/tools/user-agent-parser": { load: () => import("@/pages/tools/UserAgentParser") },
-  "/tools/luhn-checker": { load: () => import("@/pages/tools/LuhnChecker") },
-  "/tools/snowflake-decoder": { load: () => import("@/pages/tools/SnowflakeDecoder") },
-  "/tools/uuid-tool": { load: () => import("@/pages/tools/UuidTool") },
-  "/tools/eui64-generator": { load: () => import("@/pages/tools/Eui64Generator") },
-  "/tools/ipv6-calculator": { load: () => import("@/pages/tools/Ipv6Calculator") },
   "/uses": { load: () => import("@/pages/cinematic/CinematicUses") },
   "/noc": { load: () => import("@/pages/noc-dashboard") },
   "/network": { load: () => import("@/pages/network-dashboard") },
@@ -294,6 +198,16 @@ const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/labs/": { load: () => import("@/pages/cinematic/CinematicLab") },
   "/scenarios/": { load: () => import("@/pages/cinematic/CinematicScenario") },
   "/racks/": { load: () => import("@/pages/cinematic/CinematicRackDetail") },
+  // Every tool, through the same lazy slug map App.tsx routes with, so a new
+  // tool needs no row here. The map is a small chunk; the page is the one
+  // the router will ask for, and an unknown slug warms the 404 page instead.
+  "/tools/": {
+    load: (path) =>
+      import("@/pages/tools/toolPages").then((m) =>
+        m.loadToolPage(path.slice("/tools/".length)),
+      ),
+    perPath: true,
+  },
 };
 
 /**
@@ -331,7 +245,7 @@ function resolveRoute(path: string): { key: string; chunk: RouteChunk } | null {
       if (leaf) return { key: `${bestKey}*/${last}`, chunk: leaf };
       return { key: `${bestKey}*/`, chunk: chunk.deeper };
     }
-    return { key: bestKey, chunk };
+    return { key: chunk.perPath ? path : bestKey, chunk };
   }
 
   return null;
@@ -376,7 +290,7 @@ export function prefetchRoute(href: string): void {
   if (!connectionAllowsPrefetch(Boolean(resolved.chunk.heavy))) return;
 
   requested.add(resolved.key);
-  void resolved.chunk.load().catch(() => {
+  void resolved.chunk.load(path).catch(() => {
     // A failed prefetch must stay invisible: the router will try the same
     // import again on navigation, with App.tsx's retry wrapper behind it.
     // Drop the key so a later hover can have another go.

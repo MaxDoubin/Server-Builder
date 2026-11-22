@@ -13,7 +13,7 @@ NTP measures the round-trip delay to the time server and uses statistical algori
 
 The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is `(T4 - T1) - (T3 - T2)` and offset is `((T2 - T1) + (T3 - T4)) / 2`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
 
-Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. If `chronyc tracking` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. `chronyc tracking` does not print 16 for the local machine: an unsynchronized chronyd shows `Stratum : 0`, `Reference ID : 00000000` and `Leap status : Not synchronised`. If you see that on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -50,7 +50,7 @@ chronyc tracking
 chronyc sources -v
 ```
 
-`makestep 1.0 3` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes days. `makestep 1.0 3` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
+`makestep 1.0 3` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes about half a day even at chronyd's default maximum slew rate of 83333 ppm (one twelfth). `makestep 1.0 3` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
 
 ## Network Devices
 

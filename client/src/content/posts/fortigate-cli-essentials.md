@@ -110,11 +110,11 @@ When the cluster is formed but behaving oddly, `diagnose sys ha checksum show` i
 
 Always run `diagnose debug disable` and `diagnose debug reset` when you are done debugging. Leaving debug enabled affects performance. And document any changes you make in the CLI, because the GUI does not always show CLI-only configurations clearly.
 
-Two more habits worth building. First, run `execute backup config tftp <filename> <server-ip>` before any risky change. FortiOS has no equivalent of the IOS `reload in 5` safety net, so if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via `execute revision list config` help, but only if the unit is still reachable.
+Two more habits worth building. First, run `execute backup config tftp <filename> <server-ip>` before any risky change. FortiOS has no `reload in 5`, but it has a similar safety net: under `config system global`, `set cfg-save revert` and `set cfg-revert-timeout 600`. Changes then last only until you run `execute cfg save`, and if the timeout passes without a save the unit reboots into the last saved configuration. Without it, if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via `execute revision list config` help, but only if the unit is still reachable.
 
 Second, if the CLI is producing `command parse error` on a command you know exists, check your scope. On a unit with VDOMs enabled, most `config system` settings live in the global scope and firewall objects live inside each VDOM. `config global` and `config vdom` then `edit <name>` move you between them, and the same command is genuinely invalid in the wrong place.
 
-Two operational numbers worth remembering: `get system performance status` reports CPU and memory alongside a 1, 10, 30, and 60 minute average, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
+Two operational numbers worth remembering: `get system performance status` reports current CPU and memory use, plus 1, 10, and 30 minute averages for network usage and sessions, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
 
 ## References
 
