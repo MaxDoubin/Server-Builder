@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import {
   BOOT_CASCADE_ENABLED,
   BOOT_DURATION,
@@ -34,27 +34,29 @@ type Props = {
   progressRef: { current: number };
   reducedMotion: boolean;
   tier: DeviceTier;
+  /** From useCanvasOnScreen. Leaving the screen earns a replay. */
+  onScreen: boolean;
   /** U positions with no gear in them at the start of the story. */
   absentUnits: ReadonlySet<number>;
 };
 
 /**
- * Drives the boot cascade: owns the one timeline in ./bootCascade.ts,
- * decides when it plays, and stops the render loop while the canvas is
- * not on screen.
+ * Drives the boot cascade: owns the one timeline in ./bootCascade.ts
+ * and decides when it plays.
  *
  * It plays once when the scene mounts, and again each time the visitor
  * comes back to the rack beat after having left it (scrolled well into
  * the story, or scrolled the canvas off screen). It never loops by itself.
  */
-export function BootCascade({ progressRef, reducedMotion, tier, absentUnits }: Props) {
+export function BootCascade({ progressRef, reducedMotion, tier, onScreen, absentUnits }: Props) {
   const enabled = BOOT_CASCADE_ENABLED && !reducedMotion;
-  const onScreen = useRef(true);
   const armed = useRef(false);
   const playing = useRef(false);
-  const motesRef = useRef<MoteHandle>(null);
+  const motesRef = useRef<MoteHandle | null>(null);
 
-  useOffscreenPause(onScreen, armed);
+  useEffect(() => {
+    if (!onScreen) armed.current = true;
+  }, [onScreen]);
 
   // Before the first frame, so the rack never shows one lit frame and then
   // drops to dark. Layout effects of the LEDs do not depend on this order:
@@ -76,7 +78,7 @@ export function BootCascade({ progressRef, reducedMotion, tier, absentUnits }: P
 
     if (!playing.current) {
       if (p > REARM_AT) armed.current = true;
-      if (armed.current && onScreen.current && p < RACK_BEAT_END) {
+      if (armed.current && p < RACK_BEAT_END) {
         armed.current = false;
         playing.current = true;
         start(-BOOT_FADE_DOWN);
@@ -112,27 +114,24 @@ function start(t: number) {
 }
 
 /**
- * Stops the render loop while the canvas is scrolled out of view or the
- * tab is hidden, and re-arms the cascade when it does. The home page scene
- * otherwise renders every frame for the life of the page, below the fold
- * included.
+ * Whether the scene's canvas is on screen in a visible tab. The scene
+ * feeds this to the Canvas `frameloop` prop so the render loop stops
+ * below the fold; it otherwise renders every frame for the life of the
+ * page.
+ *
+ * It has to be the prop, set from outside the Canvas. Calling
+ * `setFrameloop` from inside does not hold: the Canvas re-renders on
+ * every scroll (it re-measures itself) and re-applies its own prop.
  */
-function useOffscreenPause(
-  onScreen: React.MutableRefObject<boolean>,
-  armed: React.MutableRefObject<boolean>,
-) {
-  const canvas = useThree((s) => s.gl.domElement);
-  const setFrameloop = useThree((s) => s.setFrameloop);
+export function useCanvasOnScreen(canvasRef: RefObject<HTMLCanvasElement>) {
+  const [onScreen, setOnScreen] = useState(true);
 
   useEffect(() => {
-    if (!BOOT_CASCADE_ENABLED) return;
+    const canvas = canvasRef.current;
+    if (!BOOT_CASCADE_ENABLED || !canvas) return;
     let intersecting = true;
-    const apply = () => {
-      const visible = intersecting && document.visibilityState === "visible";
-      if (!visible && intersecting === false) armed.current = true;
-      onScreen.current = visible;
-      setFrameloop(visible ? "always" : "never");
-    };
+    const apply = () =>
+      setOnScreen(intersecting && document.visibilityState === "visible");
     const io = new IntersectionObserver((entries) => {
       intersecting = entries[entries.length - 1].isIntersecting;
       apply();
@@ -142,9 +141,10 @@ function useOffscreenPause(
     return () => {
       io.disconnect();
       document.removeEventListener("visibilitychange", apply);
-      setFrameloop("always");
     };
-  }, [canvas, setFrameloop, armed, onScreen]);
+  }, [canvasRef]);
+
+  return onScreen;
 }
 
 /* ------------------------------------------------------------------ */

@@ -18,7 +18,7 @@ import {
 } from "./rackConfig";
 import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
-import { BootCascade } from "./BootCascade";
+import { BootCascade, useCanvasOnScreen } from "./BootCascade";
 
 export type ContinuousProgressRef = { current: number };
 
@@ -649,9 +649,13 @@ export function ContinuousRackScene({
   const { dpr, effects, tier } = useDeviceTier();
   const reducedMotion = useReducedMotion();
   const insertions = useMemo(buildInsertions, []);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const onScreen = useCanvasOnScreen(canvasRef);
 
   return (
     <Canvas
+      ref={canvasRef}
+      frameloop={onScreen ? "always" : "never"}
       dpr={dpr}
       shadows={false}
       performance={{ min: 0.6, debounce: 200 }}
@@ -726,6 +730,7 @@ export function ContinuousRackScene({
         progressRef={progressRef}
         reducedMotion={reducedMotion}
         tier={tier}
+        onScreen={onScreen}
         absentUnits={INSTALL_TARGETS}
       />
 
