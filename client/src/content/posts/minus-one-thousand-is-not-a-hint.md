@@ -174,8 +174,11 @@ oom_kill 12
 If `oom` and `max` are climbing along with `oom_kill`, the cgroup hit its own
 limit, the machine was never full, and the answer is a limit that is too low or
 a service that leaks. `oom_kill` counts kills by any OOM killer, so if it rises
-while `oom` and `max` stay flat, a system OOM chose a victim in this cgroup and
-the host is oversubscribed.
+while `oom` and `max` stay flat, the limit that was hit belongs to something
+else. `memory.events` only rolls up from descendants, so a parent slice with its
+own `memory.max` shows the event in its own file and not in this one. Read the
+parents' files before you decide that a system OOM chose a victim here and the
+host is oversubscribed.
 
 ## What memory.oom.group changes
 
