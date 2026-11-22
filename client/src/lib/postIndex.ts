@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 337 of them. Regenerate with script/generatePostIndex.ts.
+ * 339 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -48,6 +48,26 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "palo-alto-application-based-firewall-policy",
+    title: "Palo Alto Application-Based Firewall Policy Explained",
+    date: "2026-11-21",
+    tags: ["firewall","networking","security","cybersecurity"],
+    excerpt: "How a Palo Alto firewall matches traffic: zones, rule order, App-ID, unknown apps, port-based vs application-based rules, plus User-ID and Content-ID.",
+    coverImage: "/images/blog/palo-alto-application-based-firewall-policy-photo.jpg",
+    coverCredit: {"author":"Jacek Rużyczka","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wall-Mount_6-Port_Cat_6A_Ethernet_Patchpanel.jpg"},
+    wordCount: 3185,
+  },
+  {
+    slug: "how-a-fortigate-evaluates-traffic",
+    title: "How a FortiGate Evaluates Traffic, Step by Step",
+    date: "2026-11-21",
+    tags: ["fortinet","firewall","networking","security"],
+    excerpt: "How a FortiGate matches policies, picks flow or proxy inspection, applies profiles, SSL inspection and NAT, per the FortiOS 7.6.8 documentation.",
+    coverImage: "/images/blog/how-a-fortigate-evaluates-traffic-photo.jpg",
+    coverCredit: {"author":"Inisheer","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:CERN-20060225-01.jpg"},
+    wordCount: 2932,
+  },
   {
     slug: "sase-explained",
     title: "SASE explained: an architecture, not a product",
@@ -3327,10 +3347,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 337;
+export const POST_COUNT = 339;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and thirty seven";
+export const POST_COUNT_SPELLED = "three hundred and thirty nine";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3339,10 +3359,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2991;
+export const CITATION_COUNT = 3040;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 209;
+export const ATTRIBUTION_URL_COUNT = 211;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3177;
+export const CHECKED_URL_COUNT = 3228;
