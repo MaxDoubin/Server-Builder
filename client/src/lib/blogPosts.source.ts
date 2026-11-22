@@ -65,6 +65,12 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "How a Palo Alto firewall matches traffic: zones, rule order, App-ID, unknown apps, port-based vs application-based rules, plus User-ID and Content-ID.",
     coverImage: "/images/blog/palo-alto-application-based-firewall-policy-photo.jpg",
+    coverCredit: {
+      author: "Jacek Rużyczka",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wall-Mount_6-Port_Cat_6A_Ethernet_Patchpanel.jpg",
+    },
     content: `## A firewall that asks what the traffic is, not only where it goes
 
 A traditional packet filter decides with addresses and port numbers. A Palo Alto Networks next-generation firewall (NGFW) adds a second question: which application is this session? The answer feeds the same rule list that matches on zones, addresses and users. This explainer covers zones, rule order, the default rules, App-ID (the application identification feature), the "unknown" application, and port-based versus application-based rules. It ends with User-ID (which maps network addresses to users) and Content-ID (which inspects allowed traffic).
