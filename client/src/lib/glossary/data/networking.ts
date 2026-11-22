@@ -154,6 +154,16 @@ export const NETWORKING: Term[] = [
     see: ["BPDU", "broadcast domain"],
   },
   {
+    term: "RSTP",
+    expansion: "Rapid Spanning Tree Protocol",
+    field: "protocols",
+    definition:
+      "The faster successor to STP, standardized as IEEE 802.1w and later folded into 802.1D-2004. Instead of waiting out timers, neighboring switches confirm with a proposal and agreement handshake that a link is safe to forward on, and the old timers stay as a fallback.",
+    confusion:
+      "The speed is conditional. Rapid transition happens on edge ports and point-to-point links, so a half-duplex or shared link, or a legacy STP bridge on the segment, brings the slow listening and learning behavior back for that port.",
+    see: ["STP", "BPDU"],
+  },
+  {
     term: "BPDU",
     expansion: "Bridge Protocol Data Unit",
     field: "protocols",
@@ -239,6 +249,16 @@ export const NETWORKING: Term[] = [
     confusion:
       "It routes within one network, where BGP routes between them. Reaching for BGP inside a small site, or for OSPF between two separate companies, is using the wrong half of the pair.",
     see: ["BGP"],
+  },
+  {
+    term: "DR",
+    expansion: "Designated router",
+    field: "protocols",
+    definition:
+      "The router OSPF elects on a broadcast or NBMA segment to become adjacent to every other router there and to originate the segment's network LSA. A backup designated router (BDR) is elected alongside it and takes over if the DR fails.",
+    confusion:
+      "Two routers that are neither DR nor BDR sit at 2-Way with each other, and that is the protocol working, not a stuck adjacency. The election also does not preempt: a router that joins later and finds a DR accepts it whatever its priority.",
+    see: ["OSPF"],
   },
   {
     term: "ACL",

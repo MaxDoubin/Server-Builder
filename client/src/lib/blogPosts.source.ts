@@ -58560,6 +58560,561 @@ A working order, cheapest check first:
 - [FreeBSD forums: Wireguard connection not established due to clock out of sync](https://forums.freebsd.org/threads/wireguard-connection-not-established-due-to-clock-out-of-sync.84824/post-563707)
 `,
   },
+  {
+    slug: "ospf-neighbor-states-hello-to-full",
+    title: "From Hello to Full: How OSPF Neighbors Sync Databases",
+    date: "2026-11-21",
+    tags: ["ospf", "routing", "networking", "troubleshooting", "cisco"],
+    excerpt:
+      "OSPF routers reach Full through Hello checks, DR election, a master and slave database exchange and flooding. Each stuck state maps to one of those steps.",
+    coverImage: "/images/blog/ospf-neighbor-states-hello-to-full-photo.jpg",
+    coverCredit: {
+      author: "www.heimnetzwerke.net",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Patch_cable_with_RJ45_connector.jpg",
+    },
+    content: `## Neighbors are not adjacencies
+
+Two Open Shortest Path First (OSPF) routers on the same link do not simply start trading routes. They move through neighbor states defined in RFC 2328 (Request for Comments 2328, the specification for OSPF version 2), and the climb has two halves. The first half runs on Hello packets: find a neighbor and confirm that both routers can hear each other. The second half is entered only by some neighbors: synchronize the two routers' link-state databases (LSDBs) so both hold the same map of the network.
+
+The existing post on [OSPF fundamentals](/blog/ospf-routing-protocol) covers configuration, timers and a short list of stuck states. This article follows the packets instead: what each one carries, which check can reject it, and how each step explains the state a show command prints. RFC 2328 is the source throughout. The only vendor material used is one Cisco troubleshooting page and the FRRouting (FRR) command reference.
+
+## The five packet types
+
+- **Type 1, Hello:** discovers neighbors, confirms two-way communication, and elects the designated router.
+- **Type 2, Database Description (DD):** summarizes the LSDB while an adjacency is built.
+- **Type 3, Link State Request (LSR):** asks for specific link-state advertisements (LSAs) the sender lacks.
+- **Type 4, Link State Update (LSU):** carries full LSAs and floods changes.
+- **Type 5, Link State Acknowledgment (LSAck):** confirms receipt of LSAs.
+
+An LSA is one unit of topology information, such as one router's description of its links. The LSDB is all the LSAs a router holds for an area. Per RFC 2328 section 8.2, every packet type except Hello must come from an active neighbor, and anything else is discarded.
+
+## Step one: Hello
+
+### What a Hello carries
+
+Beyond the standard OSPF header (router ID, area identifier, authentication type and data), the Hello format in appendix A.3.2 holds the sender's network mask, HelloInterval (seconds between Hellos), Options, router priority, RouterDeadInterval (seconds of silence before a neighbor is declared down), and its view of the designated router (DR) and backup designated router (BDR). The DR and BDR fields hold interface IP (Internet Protocol) addresses, not router IDs, and read 0.0.0.0 when unset. The last field is the neighbor list: router IDs heard within the last RouterDeadInterval. Options includes the E-bit, which describes how AS-external LSAs (routes learned from outside the OSPF domain) are flooded.
+
+
+### Checks that can reject a Hello
+
+Sections 8.2 and 10.5 describe two layers of checks. Failing any one drops the packet.
+
+| Setting | Carried in | Rule |
+|---|---|---|
+| Area ID | OSPF header | Must match the receiving interface's area. Except on point-to-point links, the source address must also be on the interface's subnet. |
+| Authentication | OSPF header | The type must match and the packet must authenticate. |
+| Network mask | Hello body | Must match, except on point-to-point and virtual links, where it is ignored. |
+| HelloInterval | Hello body | Must match. |
+| RouterDeadInterval | Hello body | Must match. |
+| E-bit | Hello options | Must agree with the area type: clear for a stub area, set otherwise. |
+
+Two consequences follow. First, the neighbor record is created only after these checks pass. A mismatch therefore normally leaves the other router absent from the neighbor table instead of parked in some low state, so it has to be found by comparing settings, not by reading the state column. Second, network type is not a Hello field. It is a per-interface setting, so a mismatch is not detected directly and shows up only through the fields that do differ. Check it on both ends separately.
+
+### Down, Init and 2-Way
+
+A neighbor record starts in **Down**. The first valid Hello moves it to **Init**. If that Hello already lists the receiver's own router ID, the 2-Way event follows at once, because section 10.5 runs the Hello and 2-Way events in sequence for a single packet. If it does not, the neighbor stays in Init: a Hello was seen, but two-way communication is not yet proven. The first Hello that does list the receiver moves the neighbor to **2-Way**. A later Hello that omits the receiver's ID drops it back to Init.
+
+**Attempt** exists only on nonbroadcast multi-access (NBMA) networks, where some configuration may be needed to find neighbors. A broadcast network such as Ethernet never uses it. From any state, silence for RouterDeadInterval or a link-down report forces the neighbor to Down.
+
+## Step two: deciding who becomes adjacent
+
+On a broadcast segment, 2-Way is also where a decision is made. Section 10.4 says routers on point-to-point links, point-to-multipoint networks and virtual links always become adjacent. On broadcast and NBMA networks, an adjacency forms only if the router itself is the DR or BDR, or the neighbor is. Otherwise the RFC says the conversation stops at 2-Way. That is the specified outcome, not an error.
+
+### How the DR and BDR are elected
+
+The election runs from Hello data, which is why 2-Way comes first: the pool is the calculating router plus its neighbors at 2-Way or higher. Section 9.4 outlines the steps:
+
+1. Routers with priority 0 are removed.
+2. The BDR is chosen first, from routers not declaring themselves DR. Those already declaring themselves BDR win, by highest priority and then highest router ID. If none are declaring, the same rule applies to everyone left.
+3. The DR is chosen from routers declaring themselves DR, by priority then router ID. If nobody declares, the new BDR is promoted.
+4. If the calculating router's own role changed, steps 2 and 3 repeat.
+
+The RFC describes this as hysteresis: no new BDR is chosen until the old backup has accepted its DR duties, which keeps failover orderly. Section 7.3 adds that a router whose interface comes up and finds an existing DR accepts it regardless of priority. The [earlier post](/blog/ospf-routing-protocol) covers the practical effect, that the election does not preempt.
+
+The DR originates the network LSA for the segment and is adjacent to every other router on it.
+
+### Why neighbors sit at 2-Way
+
+Two routers that are neither DR nor BDR (DROther routers) see each other as neighbors and stay at 2-Way. Each is Full with the DR and BDR, so a router needs only two adjacencies on the segment instead of one per peer.
+
+It is a fault only when the pairing makes no sense. A point-to-point neighbor at 2-Way is wrong, since such links always become adjacent. A segment where every router has priority 0 is another case: nobody is eligible, so no DR exists and, by section 10.4, the neighbors stay at 2-Way.
+
+## Step three: from ExStart to Full
+
+Once the answer is yes, the neighbor enters **ExStart**. The RFC calls conversations in ExStart or any higher state adjacencies.
+
+### ExStart: master and slave
+
+Both routers send empty DD packets with the init, more and master bits set, retransmitting every RxmtInterval (the configured retransmission interval). The goal is to pick a master and the first DD sequence number. The router with the higher router ID becomes master. The other becomes slave and adopts the master's sequence number.
+
+### Exchange: describing the database
+
+In **Exchange**, each router lists its LSDB as a series of DD packets. They carry LSA headers only. A header is 20 bytes and identifies an LSA and its current instance. The master sends a DD packet with a sequence number, the slave answers by echoing it, and the master moves to the next number. Only one DD packet may be outstanding, and only the master retransmits. The exchange ends when each side has sent and received a DD packet with the more bit off.
+
+As headers arrive, each router compares them with its own database. An LSA the neighbor has that the router lacks, or holds in a newer instance, goes onto a request list.
+
+The DD packet also carries the Interface MTU, the largest IP datagram the sending interface can send without fragmentation (MTU stands for maximum transmission unit). Hellos have no such field. That matters in the troubleshooting section.
+
+### Loading and Full
+
+When the exchange ends, a router with a non-empty request list enters **Loading** and starts (or continues) sending LSR packets. The RFC notes that requests may be interleaved with the DD packets still arriving, so LSRs can already be going out during Exchange. The neighbor answers with LSUs containing the full LSAs. At most one LSR should be outstanding at a time, and unanswered requests are retransmitted every RxmtInterval. When the list empties, the neighbor reaches **Full**. A router with nothing to request goes straight from Exchange to Full, as the RFC's example shows for the router with the up-to-date database. At Full the adjacency appears in the routers' LSAs.
+
+A simplified version of the RFC's example (section 10.10) for two routers on a broadcast segment. The RFC assumes RT2 is the DR, has the higher router ID, and holds a completely up-to-date database:
+
+\`\`\`
+RT1: Down                      RT2: Down
+RT1 -> RT2  Hello (no DR, no neighbors seen)
+                               RT2: Init
+RT2 -> RT1  Hello (DR = RT2, RT1 seen)
+RT1: ExStart
+RT1 -> RT2  DD  init, more, master set, empty
+RT2 -> RT1  DD  init, more, master set, empty   (RT2 has the higher router ID)
+RT1: Exchange (slave)
+RT1 -> RT2  DD  echoes sequence, more set
+RT2 -> RT1  DD  next sequence ...   (until more is off on both)
+                               RT2: Full (nothing to request)
+RT1: Loading
+RT1 -> RT2  LSR
+RT2 -> RT1  LSU
+RT1: Full
+\`\`\`
+
+| State | Meaning | Leaves when |
+|---|---|---|
+| Down | No recent information | A valid Hello arrives |
+| Attempt | NBMA only, contacting a configured neighbor | A Hello arrives |
+| Init | Hello seen, own ID not in it | Own ID appears in a Hello |
+| 2-Way | Bidirectional | Adjacency wanted (ExStart), else stays |
+| ExStart | Choosing master and sequence | Roles agreed |
+| Exchange | Swapping DD summaries | DD packets finished both ways |
+| Loading | Requesting missing LSAs | Request list empty |
+| Full | Databases synchronized | Steady state |
+
+## The database and flooding at a high level
+
+An LSA is identified by its LS (link-state) type, Link State ID and advertising router. When a router holds two copies, the RFC picks the newer one by sequence number first. With equal sequence numbers the larger checksum wins. After that, an instance at MaxAge is newer, and an instance whose age is smaller by more than 15 minutes (MaxAgeDiff) is newer. The same comparison runs during the database exchange and during flooding.
+
+RFC 2328 defines five LSA types: router LSAs (type 1, one per router, describing its links to the area), network LSAs (type 2, from the DR, listing a segment's routers), summary LSAs (types 3 and 4, from area border routers, describing inter-area destinations: type 3 for IP networks and type 4 for AS boundary routers), and AS-external LSAs (type 5, from AS boundary routers, describing destinations external to the autonomous system).
+
+Flooding spreads a change across adjacencies. An LSU moves each LSA one hop farther from its origin. For each LSA received, the router validates the checksum and compares it with its copy. A newer LSA is installed, flooded out some of the eligible interfaces and, under the acknowledgment rules, acknowledged. An identical copy can serve as an implied acknowledgment for an LSA the router was retransmitting. If the router's own copy is newer, it normally sends that copy back to the sender and does not acknowledge the older one.
+
+Each LSA is acknowledged separately, though many acknowledgments can share one LSAck packet. Until one arrives, the LSA stays on the adjacency's retransmission list and is resent, which makes flooding reliable. A neighbor below Exchange does not take part. Neighbors in Exchange and Loading do, which the RFC says makes synchronization finish in a predictable time. On broadcast segments, the DR multicasts updates to the AllSPFRouters address instead of repeating them over every adjacency. Other routers send their updates to the AllDRouters address, which only the DR and BDR accept. When an update arrives on a segment where the router is the BDR, the BDR leaves the flooding to the DR, though it ends up retransmitting if the DR fails (section 13.3).
+
+
+The constants in RFC appendix B set the cadence. A router re-originates its own LSAs at least every 30 minutes (LSRefreshTime) even if nothing changed. An LSA reaching one hour of age (MaxAge) is flooded to flush it and is no longer used for routing. A new instance of the same LSA is originated at most every 5 seconds, and instances arriving within 1 second of the installed one are discarded.
+
+## Why an adjacency sticks: inferences from the RFC
+
+The RFC does not list failure causes. Everything in this section applies its procedure to each state, so it is inference, not quoted finding. The one place vendor documentation backs it up is noted where it comes up.
+
+### Stuck in Init
+
+Hellos arrive from the neighbor, but its Hellos do not list this router. Either this router's Hellos are not reaching it, or it is rejecting them. Because the usual configuration mismatches (timers, mask, area, authentication) are checked by both sides, they tend to cause silence on both sides, not Init. Init points more often at a one-way path: an access control list (ACL) permitting OSPF in one direction only, a unidirectional link fault, or multicast filtered on one side. Check what the neighbor receives, not only what this router receives.
+
+### Stuck in 2-Way
+
+First decide whether it is expected. Two DROther routers at 2-Way is the protocol working. A point-to-point link at 2-Way is a fault. On a broadcast segment, check the DR and BDR fields and the priorities, since all-zero priorities leave every pair at 2-Way.
+
+### Stuck in ExStart or Exchange
+
+The usual cause is an MTU mismatch. Section 10.6 says a router rejects a DD packet whose Interface MTU is larger than the biggest IP datagram it can accept on that interface without fragmentation. Hellos carry no MTU, so the neighbor relationship forms and then stalls at the first DD packet. A larger-MTU router accepts DD packets from a smaller-MTU one but not the reverse, so the failure is one-directional.
+
+Applying the section 10.6 ExStart rules to unequal MTUs gives two outcomes. Call the lower-MTU router L and the higher-MTU router H. L rejects every DD packet from H. If L has the higher router ID, H accepts L's opening DD packet, becomes slave and moves to Exchange, but L rejects H's replies and stays in ExStart. If H has the higher router ID, neither side completes negotiation and both stay in ExStart. This is an application of the rules, not a scenario the RFC describes. Cisco's troubleshooting page works through a case that matches the first outcome: its Router 7 has the lower MTU (1450 against 1500) and the higher router ID, ends up in EXSTART, and its neighbor sits in EXCHANGE. Cisco attributes the problem to mismatched MTU settings on the neighboring interfaces, and the fix is to make the MTU equal on both ends. The post on [MTU and jumbo frames](/blog/mtu-and-jumbo-frames) covers MTU in more depth.
+
+MTU is not the only cause. Cisco's page lists others that stop the DD packets from getting through: unicast delivery that is broken (a wrong virtual circuit mapping, an access list that blocks the unicast packet, or NAT translating it), a path that carries only small packets, and two routers configured with the same router ID. Cisco notes that in ExStart the router sends a unicast packet to the neighbor, except on a point-to-point link, where it sends a multicast packet.
+
+A neighbor that keeps falling back from Exchange to ExStart has a different problem. The RFC returns a neighbor to ExStart on a SeqNumberMismatch event (DD packets out of sequence or with changed options) or a BadLSReq event (a request for an LSA the neighbor does not have).
+
+### Stuck in Loading
+
+The request list is not empty, so requests are going out and complete answers are not arriving. The RFC names no specific cause.
+
+## Reading it on a router
+
+On a Cisco IOS (Internetwork Operating System) router, \`show ip ospf neighbor\` lists each neighbor with its ID, priority, state, dead time, address and interface. FRR documents the same command and variants such as \`show ip ospf neighbor detail\`, but its reference page has no sample neighbor output, so that layout is not reproduced here. Cisco's MTU troubleshooting page prints the output below for its two routers, one in EXCHANGE and one in EXSTART (the interfaces reflect the older serial links in that document):
+
+\`\`\`
+router-6#show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+172.16.7.11      1   EXCHANGE/  -    00:00:36    172.16.7.11    Serial2.7
+
+router-7#show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.170.10.6      1   EXSTART/  -     00:00:33    10.170.10.6    Serial0.6
+\`\`\`
+
+No sample output for Init or 2-Way was available from a source read for this article, so those states are described in words. An Init neighbor shows the state Init, and a 2-Way neighbor shows 2-Way. In both cases watch whether the Dead Time column keeps counting down from the full value again. The RFC restarts a neighbor's inactivity timer on every Hello, so a timer that keeps refreshing means Hellos still arrive and the problem lies in what happens next. The [Cisco IOS fundamentals post](/blog/cisco-ios-fundamentals) covers the basic show commands.
+
+## Study notes
+
+- A neighbor is a router whose Hellos are seen. An adjacency is a neighbor in ExStart or higher.
+- Init means one-way: the neighbor's Hello does not list this router yet.
+- 2-Way is the normal resting state between two DROther routers.
+- Hello checks (mask, timers, area, authentication, E-bit) fail silently, so a mismatch usually leaves no neighbor entry.
+- Higher router ID wins master. Higher priority, then router ID, wins DR and BDR.
+- Full means the request list is empty, not merely that the exchange finished.
+- ExStart or Exchange that never completes: check the MTU on both ends first.
+
+## Sources
+
+- [RFC 2328: OSPF Version 2 (J. Moy, April 1998)](https://www.rfc-editor.org/rfc/rfc2328.txt)
+- [Cisco: Troubleshoot OSPF Neighbors Stuck in Exstart/Exchange State](https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13684-12.html)
+- [FRRouting documentation: OSPFv2](https://docs.frrouting.org/en/latest/ospfd.html)`,
+  },
+  {
+    slug: "rstp-convergence-handshake-edge-ports-mst",
+    title: "How RSTP Converges: Handshakes, Edge Ports, and MST",
+    date: "2026-11-21",
+    tags: ["networking", "switching", "cisco", "learning"],
+    excerpt:
+      "How RSTP replaces STP timers with a proposal and agreement handshake, what edge ports and link types change, and when MST beats per-VLAN spanning tree.",
+    coverImage: "/images/blog/rstp-convergence-handshake-edge-ports-mst-photo.jpg",
+    coverCredit: {
+      author: "Kevin Hadley",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Rack_railway_turnout_(SPB).JPG",
+    },
+    content: `## From timers to handshakes
+
+Spanning Tree Protocol (STP) keeps a switched network loop-free by blocking redundant links, but the original version is slow to react. A current Cisco Catalyst 9300 guide lists the default timers: hello time 2 seconds, forward delay 15 seconds, maximum age 20 seconds. Juniper's documentation says the original protocol took up to 50 seconds to respond to a topology change.
+
+The fix came in two steps from the Institute of Electrical and Electronics Engineers (IEEE). The 802.1w supplement defined Rapid Spanning Tree Protocol (RSTP), and IEEE's project page for it records that it was incorporated into 802.1D-2004. The 802.1s supplement defined Multiple Spanning Tree Protocol (MSTP, called MST in much vendor documentation), which IEEE describes as an addition to 802.1Q that lets virtual local area network (VLAN) bridges use multiple spanning trees.
+
+Two existing posts cover the foundations: the [spanning tree deep dive](/blog/spanning-tree-protocol-deep-dive) explains the bridge identifier (ID), root election, path cost and the bridge protocol data unit (BPDU), and [STP troubleshooting](/blog/stp-troubleshooting) covers storms and diagnosis. This article picks up where those stop. It walks through how RSTP converges step by step, then compares per-VLAN spanning tree with MST, and ends with the protections that defend the assumptions RSTP makes.
+
+## Why classic STP waits
+
+A port that has just come up cannot tell whether the switch on the other end has already blocked its own redundant ports. Classic STP handles this by waiting: the port passes through listening and learning, spending the forward delay in each (Cisco puts it at twice the forward delay, 2 x 15 seconds by default), before it forwards. RSTP replaces the wait with a conversation. Neighbors tell each other directly that it is safe to forward, and the timers remain as a fallback.
+
+## RSTP vocabulary in one table
+
+RSTP merges the 802.1D disabled, blocking and listening states into one discarding state, leaving three states: discarding, learning and forwarding. Cisco's RSTP document defines four port roles.
+
+| Role | What it means | Typical state |
+| --- | --- | --- |
+| Root | Receives the best BPDU on a switch | Forwarding |
+| Designated | Sends the best BPDU on its segment | Forwarding |
+| Alternate | Receives better BPDUs from another switch, so it is a standby path to the root | Discarding |
+| Backup | Receives better BPDUs from the same switch, so it is a redundant link to a segment this switch already serves | Discarding |
+
+RSTP BPDUs also differ on the wire. Cisco describes them as type 2, version 2, using the six flag bits that 802.1D left unused to encode port role and state and to carry the proposal and agreement bits used below. Every switch now sends its own BPDU each hello interval instead of relaying the root's, which matters for failure detection.
+
+## The proposal and agreement handshake
+
+Take a small example. SW1 is the root. A new cable joins SW1 to SW2. SW2 already has a link down to SW3 and a workstation on an edge port. (An edge port faces only an end host and is covered in the next section.)
+
+\`\`\`
+SW1 (root)                               SW2
+designated port, discarding
+        -------- proposal BPDU ------->  superior BPDU: this port becomes
+                                         the root port
+                                         sync: block non-edge designated
+                                         ports (the one toward SW3)
+        <------- agreement BPDU -------  root port forwarding, agreement sent
+designated port moves to forwarding
+(no timer involved)
+\`\`\`
+
+The steps, following Cisco's description:
+
+1. **Proposal.** A designated port in the discarding or learning state sets the proposal bit in its BPDUs. SW1's new port is exactly that.
+2. **New root port.** SW2 sees that the BPDU is better than anything it has and elects the receiving port as its root port.
+3. **Sync.** Before it can bless the new root port, SW2 must be sure that nothing behind it can form a loop. A port counts as already in sync if it is blocking or if it is an edge port. SW2's other non-edge designated ports are neither, so SW2 blocks them. The workstation on the edge port keeps working.
+4. **Agreement.** SW2 unblocks its root port and replies with a copy of the proposal BPDU with the agreement bit set instead of the proposal bit.
+5. **Forwarding.** SW1 receives the agreement and moves its designated port to forwarding. No timer is involved.
+
+The handshake then repeats downstream, which Cisco describes as well: the port that was left in a designated discarding state after the sync is in the same situation the root's port was in at step 1, so it proposes to its own neighbor. Here that is SW2's port toward SW3, and SW3 runs the same sync and answers. Cisco says the final topology is reached in the time the new BPDUs need to travel down the tree, with no timer involved.
+
+Two consequences follow from that description. A loop never forms during the process, because every port that could create one is blocked before the new path opens. And traffic through SW2's non-edge designated ports pauses until SW3 agrees. The result is a brief interruption, not a loop. One caveat from Cisco: its own enhancement to the sync lets a switch put only its former root port in discarding when it syncs, and Cisco says that applies in most common reconvergence cases, so the exact set of ports that pause depends on the implementation.
+
+If no agreement arrives, for example because the neighbor does not speak RSTP, Cisco says the port falls back to the traditional 802.1D listening and learning sequence and forwards slowly.
+
+## When a link fails
+
+For a failure, RSTP leans on the alternate port. Juniper's RSTP documentation says that when a point-to-point link fails, the alternate link can transition to the forwarding state. Cisco describes the same behavior: a bridge that loses its root port can put its best alternate port directly into forwarding, which Cisco compares to its proprietary UplinkFast feature.
+
+Failures that do not drop the link are detected through hellos. Because each switch sends BPDUs every hello time (2 seconds by default), a neighbor that stays silent for three consecutive hellos can have its information aged out immediately, without waiting for the 20-second maximum age. Juniper states the same bound as three hello BPDUs, or 6 seconds.
+
+## Edge ports and link type
+
+Two settings decide whether the handshake can be skipped or used at all.
+
+**Edge ports.** An edge port faces an end host, so no switch sits behind it that could form a loop. Cisco says edge ports (the equivalent of PortFast) go straight to forwarding without listening or learning, and that a link flap on one does not generate a topology change. The assumption is policed simply: if an edge port receives a BPDU, it loses edge status. Juniper's RSTP page agrees, noting that edge ports do not expect to receive BPDUs.
+
+**Link type.** Cisco's document derives link type from duplex: full duplex is treated as point-to-point, half duplex as shared, and either can be overridden by configuration. It then states the key limit: rapid transition to the forwarding state is possible only on edge ports and on point-to-point links. Cisco states the limit without giving a reason. A plausible reading, offered here as inference rather than as Cisco's explanation, is that the handshake is a two-party exchange, so on shared media an agreement from one bridge could not speak for the others. Juniper exposes the same idea as a link mode: p2p for a point-to-point link and shared for shared media. On Cisco's IOS XE operating system, this command forces point-to-point treatment:
+
+\`\`\`
+spanning-tree link-type point-to-point
+\`\`\`
+
+## Topology changes in RSTP
+
+When the network changes shape, switches must forget stale MAC (media access control) address entries, or frames keep flowing toward ports that no longer lead anywhere. RSTP narrows what counts as a change. According to Cisco, only non-edge ports that move to forwarding cause a topology change, and losing connectivity no longer does.
+
+On detecting a change, a switch starts a topology change (TC) While timer, set to twice the hello time, on its non-edge designated ports and root port, and flushes the MAC addresses learned on those ports. A switch that receives a TC clears learned addresses on all ports except the one the notice arrived on, starts its own timer and sends TC-flagged BPDUs. RSTP no longer uses the separate topology change notification (TCN) BPDU of 802.1D unless a legacy bridge needs one.
+
+Because an edge port that toggles does not generate a topology change, a host rebooting on one does not start this flush. Cisco notes that the approach can cause more temporary flooding, which is the cost of clearing stale entries quickly: frames for unknown destinations are flooded until the table refills. Counting fewer events as topology changes limits how often that happens.
+
+## When a legacy bridge joins
+
+RSTP is backward compatible. Juniper states that switches do not all have to run RSTP, and offers a force-version setting to make a bridge behave as classic 802.1D STP. Cisco describes the cost: each port has a three-second migration delay during which its mode is locked, then adapts to the type of the next BPDU received. If a legacy bridge is on the segment, the port drops to 802.1D mode and the fast convergence benefits are lost. If the legacy bridge is removed later, Cisco says that in this rare case the port can stay in STP mode, and user intervention is required to restart protocol detection. One old switch is therefore a quiet way to lose RSTP's benefits on the links that touch it.
+
+## Three assumptions, three protections
+
+RSTP works only if three things hold. Each has a feature that defends it, and each feature is described in Cisco's Catalyst 9300 guide on optional spanning tree features. Framing the features as defenses of assumptions is this article's own; the Behavior column follows Cisco's text.
+
+| Assumption | What breaks it | Feature | Behavior |
+| --- | --- | --- | --- |
+| Edge ports face only hosts | A switch or bridging device is plugged into an access port | PortFast with BPDU Guard | The port goes to the error-disabled state when a BPDU arrives |
+| The root stays where it was designed to be | A switch with a better bridge ID appears behind a port | Root Guard | The port goes to the root-inconsistent (blocked) state instead of accepting the new root |
+| BPDUs keep arriving on non-designated ports | A unidirectional link silences the neighbor without dropping the link | Loop Guard | Alternate or root ports are prevented from becoming designated ports |
+
+Two details are worth knowing. BPDU Guard enabled globally applies to ports in the PortFast operational state, while enabled on an interface it also works on a port that does not have PortFast enabled. And Cisco states that Root Guard and Loop Guard cannot both be enabled at the same time.
+
+BPDU Filter is a different tool and easy to confuse with BPDU Guard. The Cisco guide warns that enabling BPDU filtering on an interface is the same as disabling spanning tree on it, which removes the protection above.
+
+## Per-VLAN trees or MST
+
+Everything so far describes one spanning tree. With [VLANs](/blog/vlan-segmentation-guide), the question is how many trees to run.
+
+### Per-VLAN: PVST+ and Rapid PVST+
+
+Cisco's Per-VLAN Spanning Tree Plus (PVST+) runs one spanning tree instance per VLAN and is based on 802.1D. Rapid PVST+ runs the 802.1w behavior described above per VLAN and, according to the Catalyst 9300 guide, is the default mode on that platform. Each VLAN has its own bridge ID: a 4-bit priority plus a 12-bit extended system ID equal to the VLAN number, so priorities move in steps of 4096 with a default of 32768.
+
+The benefit is load balancing: each VLAN can have a different root, so different VLANs can use different uplinks. A Cisco best-practices guide for Catalyst 6500 and 4500 switches, updated in 2015, notes this and the cost, which is more BPDU processing for the central processing unit (CPU) as the VLAN count grows. The Catalyst 9300 guide caps spanning tree instances in these modes at 300 per device or stack.
+
+### MST: instances instead of VLANs
+
+MST maps many VLANs onto a small number of instances. Cisco's MST document gives the motivating case of 1,000 VLANs but only two real logical topologies: per-VLAN spanning tree would compute 1,000 trees, while MST computes two.
+
+Switches share an MST region only if three attributes match exactly: a name (32 bytes), a revision number (two bytes) and a table mapping each of the 4,096 possible VLANs to an instance. BPDUs carry a digest of the table along with the name and revision, not the table itself. A switch that receives a different digest knows the port sits on a region boundary.
+
+Instance 0 is the Internal Spanning Tree (IST), an RSTP instance that extends the Common Spanning Tree (CST) of 802.1Q into the region and represents the whole region to the outside as one bridge. The Multiple Spanning Tree Instances (MSTIs) exist only inside the region. A switch sends one BPDU containing the IST information plus one record per MSTI present on the port, rather than a separate BPDU for every instance.
+
+Instance limits depend on the platform and release. The older Cisco MST document, which still calls 802.1s pre-standard, describes its implementation as 16 instances (the IST plus 15 MSTIs), while the current Catalyst 9300 guide says the device supports up to 65 MST instances and places no limit on how many VLANs map to one instance.
+
+### Where the two meet
+
+MST switches detect PVST+ neighbors at region boundaries automatically, and the region replicates the IST BPDU on all VLANs to look like a PVST+ neighbor. Cisco recommends that the IST root have a higher priority (a numerically lower value) than any other bridge in the network, and warns that if the MST bridge is the root, it must be the root for all VLANs. A conflict puts the boundary port in root-inconsistent state, which keeps the topology loop-free but loses connectivity. Cisco also recommends avoiding mapping any VLANs onto instance 0.
+
+### Choosing
+
+| | Rapid PVST+ | MST |
+| --- | --- | --- |
+| Basis | 802.1w behavior per VLAN (Cisco's mode) | IEEE 802.1s, a supplement to 802.1Q |
+| Trees | One per VLAN | One per instance, with VLANs mapped to instances |
+| Root placement | Per VLAN | Per instance |
+| Neighbor requirements | None beyond normal RSTP | Name, revision and VLAN mapping must match |
+| Cost | More CPU work as VLANs multiply | Computation stays proportional to instances |
+
+The 2015 Cisco guide says a recommendation depends on hardware, software and the number of devices and VLANs. In general, it recommends Rapid PVST+ for new deployments when the number of logical ports stays within the platform guideline, because it gives fast convergence without extra configuration. It recommends MST for a design with VLANs everywhere and a large number of VLANs, where the logical port count can exceed that guideline. For a network with a few dozen VLANs, well inside platform limits, Rapid PVST+ is therefore the simpler default. MST earns its extra configuration discipline when the VLAN count makes per-VLAN trees expensive.
+
+## Limits and common mistakes
+
+**Assuming RSTP is fast everywhere.** Rapid transition needs edge ports or point-to-point links. A half-duplex link, a forced shared link type, or a neighbor that never answers with an agreement returns that segment to slow behavior.
+
+**Marking a switch port as an edge port.** Cisco says an edge port goes straight to forwarding and loses edge status only when it receives a BPDU. By inference from those two facts, a bridge mistakenly attached behind such a port is forwarding from the start, until its first BPDU arrives. Pairing the port with BPDU Guard shuts it down instead.
+
+**Treating an MST region as approximate.** A typo in the region name or a mismatched mapping splits the region in two, and the boundary behavior is rarely what was intended.
+
+**Mixing modes without a plan.** In a mixed MST and PVST+ network, Cisco states that the common spanning tree root must be inside the MST backbone, and that a PVST+ device cannot connect to multiple MST regions.
+
+## Study notes
+
+- Classic STP uses timers to decide when forwarding is safe. RSTP uses a handshake and keeps the timers as a fallback.
+- The handshake is proposal, sync, agreement, forwarding. Sync blocks non-edge designated ports so that no loop can form.
+- Rapid transition applies only on edge ports and point-to-point links. Duplex decides link type unless it is overridden.
+- Only non-edge ports moving to forwarding generate topology changes in RSTP.
+- Three missed hellos (6 seconds at the default) age out a silent neighbor, and a failed link promotes the alternate port.
+- BPDU Guard defends edge ports, Root Guard defends the root position, Loop Guard defends against unidirectional links.
+- Per-VLAN modes give load balancing at the cost of one tree per VLAN. MST trades configuration discipline for fewer trees.
+
+## Sources
+
+- [Cisco: Understand Rapid Spanning Tree Protocol (802.1w)](https://www.cisco.com/c/en/us/support/docs/lan-switching/spanning-tree-protocol/24062-146.html)
+- [Cisco: Understand the Multiple Spanning Tree Protocol (802.1s)](https://www.cisco.com/c/en/us/support/docs/lan-switching/spanning-tree-protocol/24248-147.html)
+- [Cisco: Layer 2 Configuration Guide, IOS XE 17.17.x (Catalyst 9300), Configuring Spanning Tree Protocol](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-17/configuration_guide/lyr2/b_1717_lyr2_9300_cg/configuring_spanning_tree_protocol.html)
+- [Cisco: Layer 2 Configuration Guide, IOS XE 17.16.x (Catalyst 9300), Configuring Optional Spanning-Tree Features](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-16/configuration_guide/lyr2/b_1716_lyr2_9300_cg/configuring_optional_spanning_tree_features.html)
+- [Cisco: Best Practices for Catalyst 6500/6000 Series and Catalyst 4500/4000 Series Switches Running Cisco IOS Software (updated 2015)](https://www.cisco.com/c/en/us/support/docs/switches/catalyst-6500-series-switches/24330-185.html)
+- [Juniper: Configuring RSTP (Junos OS documentation)](https://networkingdocs.hpe.com/documentation/us/en/software/junos/stp-l2/topics/topic-map/spanning-tree-configuring-rstp.html)
+- [IEEE 802.1: 802.1w, Rapid Reconfiguration of Spanning Tree](https://www.ieee802.org/1/pages/802.1w.html)
+- [IEEE 802.1: 802.1s, Multiple Spanning Trees](https://www.ieee802.org/1/pages/802.1s.html)`,
+  },
+  {
+    slug: "nist-csf-2-explained",
+    title: "NIST Cybersecurity Framework 2.0 Explained",
+    date: "2026-11-21",
+    tags: ["security", "cybersecurity", "learning", "operations"],
+    excerpt:
+      "The six CSF 2.0 Functions, the Core structure, Tiers and Profiles, what changed from 1.1, and how the CSF differs from SP 800-53 and ISO/IEC 27001.",
+    coverImage: "/images/blog/nist-csf-2-explained-photo.jpg",
+    coverCredit: {
+      author: "PattayaPatrol",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DFC_4040_Workers_in_safety_gear_assemble_a_large_steel_scaffold_against_a_clear_blue_sky.jpg",
+    },
+    content: `## A framework that describes outcomes, not instructions
+
+The NIST Cybersecurity Framework (CSF) is guidance from the National Institute of Standards and Technology (NIST), a U.S. federal agency, for describing and managing cybersecurity risk. Version 2.0 was published on February 26, 2024, as NIST Cybersecurity White Paper (CSWP) 29, with the digital object identifier (DOI) 10.6028/NIST.CSWP.29. NIST's own later blog calls it the first major update since the framework was created in 2014. The prior edition, version 1.1, is dated April 16, 2018, and says that version 1.0 was issued in February 2014.
+
+The abstract says it plainly: "The CSF does not prescribe how outcomes should be achieved." The CSF is a taxonomy, meaning a structured list, of high-level cybersecurity outcomes. It does not say which firewall to buy or how long a password must be. It names results, such as keeping an inventory of hardware, and leaves the method to the organization.
+
+That design choice explains why the CSF is often confused with control catalogs and certifiable standards, and why it is neither. This explainer covers the Functions, the Core structure, what changed from version 1.1, Tiers, Profiles, a hypothetical gap analysis, and the comparison with NIST Special Publication (SP) 800-53 and with ISO/IEC 27001, a standard from the International Organization for Standardization (ISO) and the International Electrotechnical Commission (IEC).
+
+The document defines three components: the **Core** (the hierarchy of outcomes), **Organizational Profiles** (an organization's current or target posture expressed in Core outcomes) and **Tiers** (how rigorous its risk governance and management practices are). NIST updates the PDF infrequently, on purpose. Faster-moving material lives online: Informative References (mappings from the Core to other standards and regulations), Implementation Examples, Quick Start Guides, Community Profiles and Profile templates.
+
+## The six Functions
+
+Each Function is named for a verb and has a two-letter code used in identifiers.
+
+- **Govern (GV).** The organization's cybersecurity risk management strategy, expectations and policy are established, communicated and monitored. It covers organizational context, strategy, supply chain risk management, roles, policy and oversight, and NIST calls it critical for tying cybersecurity into enterprise risk management (ERM), the organization-wide management of risks of all kinds.
+- **Identify (ID).** Current cybersecurity risks are understood: the assets (data, hardware, software, systems, facilities, services, people), the suppliers and the risks attached to them. It also covers finding improvement opportunities.
+- **Protect (PR).** Safeguards are used. Topics include identity management, authentication and access control, awareness and training, data security, platform security and infrastructure resilience.
+- **Detect (DE).** Possible attacks and compromises are found and analyzed.
+- **Respond (RS).** Actions are taken on a detected incident: management, analysis, mitigation, reporting and communication.
+- **Recover (RC).** Assets and operations affected by an incident are restored, with appropriate communication.
+
+Two details are easy to miss. The Functions are drawn as a wheel with Govern in the center, because Govern informs how the other five are carried out. And they are not steps. NIST says they should be addressed concurrently: Govern, Identify, Protect and Detect actions happen continuously, while Respond and Recover capabilities should be ready at all times and are used when an incident occurs.
+
+## Categories and Subcategories
+
+Each Function divides into Categories (related outcomes that together make up the Function), and each Category into Subcategories (more specific outcomes). Counting the Core in Appendix A of the final document gives 6 Functions, 22 Categories and 106 Subcategories:
+
+- Govern, 31 Subcategories in 6 Categories: Organizational Context; Risk Management Strategy; Roles, Responsibilities, and Authorities; Policy; Oversight; Cybersecurity Supply Chain Risk Management.
+- Identify, 21 in 3: Asset Management, Risk Assessment, Improvement.
+- Protect, 22 in 5: Identity Management, Authentication, and Access Control; Awareness and Training; Data Security; Platform Security; Technology Infrastructure Resilience.
+- Detect, 11 in 2: Continuous Monitoring, Adverse Event Analysis.
+- Respond, 13 in 4: Incident Management, Incident Analysis, Incident Response Reporting and Communication, Incident Mitigation.
+- Recover, 8 in 2: Incident Recovery Plan Execution, Incident Recovery Communication.
+
+The per-Function counts were tallied from the Appendix A text and sum to 106.
+
+An identifier such as PR.AA-05 has three parts: the Function (PR), the Category (AA, identity management, authentication and access control) and the Subcategory number. That Subcategory is about access permissions being defined in policy, managed, enforced and reviewed, using least privilege and separation of duties.
+
+The numbers have gaps on purpose. Data Security, for example, has Subcategories 01, 02, 10 and 11. NIST says the gaps mark version 1.1 Subcategories that were relocated. The order of the Core is also not a priority list: NIST states that order and size do not imply sequence or importance, and that the outcomes are not a checklist. The Core applies to all information and communications technology (ICT), including information technology (IT), the Internet of Things (IoT) and operational technology (OT), meaning systems that run physical processes. Cloud, mobile and artificial intelligence (AI) systems are named as covered environments.
+
+## What changed from version 1.1
+
+### The new Govern Function
+
+Version 1.1 had five Functions: Identify, Protect, Detect, Respond, Recover. Version 2.0 adds Govern. Counting identifiers in each document, version 1.1 had 5 Functions, 23 Categories and 108 Subcategories, and version 2.0 has 6, 22 and 106. The totals fell slightly even though a Function was added, which shows the Core was reorganized, not just extended.
+
+In version 1.1, Identify held Categories named Business Environment, Governance, Risk Management Strategy and Supply Chain Risk Management. In version 2.0, Identify has only Asset Management, Risk Assessment and Improvement, and the strategy, policy, oversight and supply chain topics appear under Govern. The match is by topic, not one to one. NIST's record page for the document mentions a spreadsheet overview of Core transition changes, so anyone translating an existing assessment should use NIST's mapping material and not this summary.
+
+Improvement also moved. Version 1.1 had improvement Categories under Respond and Recover (RS.IM and RC.IM). In version 2.0, Improvement is a Category under Identify (ID.IM), and NIST says it informs efforts under all six Functions.
+
+### Scope and name
+
+Version 1.1 was titled "Framework for Improving Critical Infrastructure Cybersecurity." It grew out of Executive Order 13636 (February 2013), and the Cybersecurity Enhancement Act of 2014 later gave NIST a role in developing voluntary frameworks for critical infrastructure owners and operators. Version 1.1 already described itself as applicable to any organization relying on technology and as a possible model for other sectors and communities. Version 2.0 drops that title, and its Note to Readers says so. It states that the CSF is for organizations of all sizes and sectors, including industry, government, academia and nonprofits, regardless of program maturity.
+
+So the change in scope is mainly in the stated audience and framing. Saying the framework was only for critical infrastructure before would overstate what version 1.1 said about itself.
+
+### Other differences visible in the documents
+
+- Version 1.1 printed Informative References in its Core table. Version 2.0 moves References and Implementation Examples online.
+- Version 1.1 used the term Framework Profile. Version 2.0 uses Organizational Profile and also describes Community Profiles.
+
+## Implementation Tiers
+
+The Tiers describe the rigor of an organization's cybersecurity risk governance and risk management practices. They are optional: an organization can choose to apply them to its Current and Target Profiles.
+
+1. **Partial.** Governance is ad hoc, and risk management happens irregularly, case by case.
+2. **Risk Informed.** Management approves risk management practices, but they may not be organization-wide policy. Information is shared informally.
+3. **Repeatable.** Practices are formally approved and expressed as policy. There is an organization-wide approach, and supplier risks are acted on formally.
+4. **Adaptive.** The organization adapts its practices based on lessons learned and predictive indicators, through continuous improvement.
+
+The document calls its table notional, meaning illustrative. NIST says the Tiers should complement an organization's own risk management methodology and not replace it. Higher is not always better: progression is encouraged when risks or mandates are greater, or when a cost-benefit analysis shows a feasible and cost-effective reduction in risk.
+
+## Organizational Profiles: Current and Target
+
+An Organizational Profile describes an organization's current and/or target cybersecurity posture in terms of Core outcomes. Every Profile includes one or both of two parts.
+
+- A **Current Profile** records the outcomes the organization is achieving or attempting to achieve and characterizes how, or to what extent, each is being achieved.
+- A **Target Profile** records the outcomes the organization has selected and prioritized, considering anticipated changes such as new requirements, new technology and threat intelligence trends.
+
+A Profile can have any scope. NIST's examples are an entire organization, a set of financial systems, or countering ransomware threats and handling ransomware incidents involving those systems. A **Community Profile** is a published baseline for a sector, technology or threat type, which an organization can use as the starting point for its own Target Profile.
+
+The document sketches five steps that can repeat as often as needed: scope the Profile; gather information (policies, risk priorities, business impact analysis registers, tools, roles); create the Profile; analyze the gaps between Current and Target and build a prioritized action plan, such as a risk register or a Plan of Action and Milestones (POA&M); then implement the plan and update the Profile. A Current Profile can also show partners or customers an organization's capabilities, and a Target Profile can state expectations to suppliers.
+
+## A hypothetical gap analysis
+
+The following example is invented for illustration. It does not describe any real organization, and the cells are not drawn from any NIST publication. Imagine a 30-person company that prepares invoices for clients, with a Profile scoped to customer billing data and the systems that handle it. The outcome wording is paraphrased from the Core.
+
+| Outcome | Current Profile | Target Profile | Gap and action |
+| --- | --- | --- | --- |
+| GV.RM-02, risk appetite and tolerance statements exist | None written; decided case by case | One-page statement, approved and reviewed yearly | Draft and approve it |
+| ID.AM-01, hardware inventories maintained | A spreadsheet listing servers only | All hardware touching billing data, reviewed quarterly | Add laptops and network gear, assign someone to keep it current |
+| PR.AA-05, permissions defined, reviewed, least privilege | One shared administrator login | Named accounts, access by role, reviewed twice a year | Retire the shared login, write a role list |
+| PR.DS-11, backups created, protected, maintained, tested | Nightly backups; no restore ever tried | Backups ordinary accounts cannot delete, restore tested twice a year | Schedule a first restore test |
+
+The action column becomes a prioritized plan. A reasonable ordering weighs the risk of each Current entry: an untested backup set and a shared administrator login would normally outrank a gap in a hardware inventory. That ordering is the organization's judgment, and a governance Tier could be recorded alongside, for instance Tier 1 now and Tier 2 as the target, again as an invented illustration.
+
+The layout is also illustrative, since the document requires only that a Current Profile characterize how or to what extent each outcome is achieved. The backup row connects to a separate post on [restore drills that matter](/blog/restore-drills-that-matter): a backup job that reports success has not proven that the data can be restored.
+
+## Framework, catalog and standard: how the CSF differs
+
+The CSF is often mentioned in the same breath as SP 800-53 and ISO/IEC 27001. They are different kinds of documents.
+
+| Question | NIST CSF 2.0 | NIST SP 800-53 Rev. 5 | ISO/IEC 27001:2022 |
+| --- | --- | --- | --- |
+| What it is | A framework: a taxonomy of outcomes | A catalog of security and privacy controls | A standard with requirements for an information security management system (ISMS) |
+| Structure | 6 Functions, 22 Categories, 106 Subcategories | 20 control families of base controls and enhancements | Requirements in Clauses 4 to 10, plus an Annex A list of controls |
+| Says how? | No; points to Informative References | Yes, at control level, with values the organization sets | Requires a risk-based process; control guidance is in ISO/IEC 27002 |
+
+### SP 800-53, the control catalog
+
+SP 800-53 Revision 5 (September 2020) is titled Security and Privacy Controls for Information Systems and Organizations. Its controls sit in 20 families, each with a two-letter identifier. Families contain base controls and control enhancements, which add functionality or specificity to a base control or increase its strength, for systems and environments that need greater protection.
+
+The level of detail differs sharply from the CSF. Control AC-2, Account Management, spells out items such as defining the account types allowed, assigning account managers, requiring approvals to create accounts, monitoring account use, and reviewing accounts at an organization-defined frequency. The CSF's PR.AA-05 states only the outcome. This pairing shows the difference in granularity and is not a published mapping.
+
+The CSF names SP 800-53 directly: one control may be one of many references needed for a single Subcategory, and the CSF can complement the NIST Risk Management Framework's approach to selecting and prioritizing those controls.
+
+### ISO/IEC 27001, the certifiable standard
+
+ISO/IEC 27001:2022 is the third edition, with a listed publication date of October 25, 2022. Its scope is requirements for establishing, implementing, maintaining and continually improving an ISMS, plus requirements for assessing and treating information security risks. The requirements are generic and apply to any organization, and excluding any requirement in Clauses 4 to 10 is not acceptable when claiming conformity.
+
+Annex A lists controls. The IEC webstore page for the standard confirms the edition and date above and quotes its scope. A certification body, DQS, reports that the 2022 edition lists 93 controls in four themes, down from 114 in the 2013 edition, derived from ISO/IEC 27002:2022. The full standard is sold, not free, so the Annex A figures rest on that secondary source and not on the ISO text, which was not read for this article. Certification bodies run initial and recertification audits against the standard, which is the practical meaning of being certified to it.
+
+The CSF connects to this standard: the version 1.1 Core listed ISO/IEC 27001:2013 controls among its Informative References. But the CSF is free and voluntary, and its 2.0 text describes no certification scheme. The 1.1 document even notes that a phrase like "compliance with the Framework" can be confusing.
+
+### A way to remember it
+
+The CSF asks what outcomes a program should achieve and where the gaps are. SP 800-53 asks which controls could deliver them. ISO/IEC 27001 asks whether a management system exists that can be audited against stated requirements. Real programs often use more than one. A separate post on [threat modeling in a homelab](/blog/threat-modeling-homelab) covers the related habit of asking what is worth protecting and what could go wrong.
+
+## Limits and common mistakes
+
+- **Treating outcomes as a checklist.** NIST says they are not, and that the order does not imply importance.
+- **Reading the Functions as phases.** They run concurrently, and Respond and Recover readiness has to exist before the incident.
+- **Climbing the Tiers as a goal.** Tiers are optional and NIST ties higher ones to risk, mandates and cost-benefit.
+- **Mixing version vocabulary.** Five Functions and Categories like ID.GV belong to version 1.1. Six Functions and GV identifiers belong to version 2.0.
+- **Expecting the CSF to stand alone.** NIST says to use it with other frameworks, standards, guidelines and practices.
+
+## Study notes
+
+- Six Functions in order: Govern, Identify, Protect, Detect, Respond, Recover. Govern sits at the center of the wheel.
+- Published February 26, 2024, as CSWP 29. Version 1.1 was April 16, 2018.
+- Version 2.0 has 6 Functions, 22 Categories and 106 Subcategories. Version 1.1 had 5, 23 and 108.
+- Identifier shape: Function letters, Category letters, then a number, for example RC.RP-03.
+- Tiers: Partial, Risk Informed, Repeatable, Adaptive. They are optional.
+- A Profile is Current, Target or both, and the gap between them drives a prioritized action plan.
+- The CSF is outcomes, SP 800-53 is controls, ISO/IEC 27001 is a certifiable management system standard.
+
+## Sources
+
+- [NIST CSWP 29: The NIST Cybersecurity Framework (CSF) 2.0 (February 26, 2024)](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf)
+- [NIST publication page for CSWP 29](https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20)
+- [NIST CSRC record for CSWP 29, with document history](https://csrc.nist.gov/pubs/cswp/29/the-nist-cybersecurity-framework-csf-20/final)
+- [NIST blog: Celebrating 1 Year of CSF 2.0](https://www.nist.gov/blogs/cybersecurity-insights/celebrating-1-year-csf-20)
+- [NIST Framework for Improving Critical Infrastructure Cybersecurity, Version 1.1 (April 16, 2018)](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.04162018.pdf)
+- [NIST SP 800-53 Revision 5: Security and Privacy Controls for Information Systems and Organizations](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf)
+- [NIST CSRC record for SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final)
+- [IEC Webstore: ISO/IEC 27001:2022 (scope, edition and publication date)](https://webstore.iec.ch/publication/79694)
+- [DQS: New ISO 27001:2022, key changes (Annex A counts and audits)](https://www.dqsglobal.com/blog/new-iso-27001-2022-key-changes)`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {

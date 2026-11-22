@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 343 of them. Regenerate with script/generatePostIndex.ts.
+ * 346 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -3422,13 +3422,43 @@ export const postIndex: PostMeta[] = [
     coverCredit: {"author":"RAIL P (RAIL.PHOTOGRAPHY)","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Raspberry_Pi_4_on_a_network_switch.jpg"},
     wordCount: 3459,
   },
+  {
+    slug: "ospf-neighbor-states-hello-to-full",
+    title: "From Hello to Full: How OSPF Neighbors Sync Databases",
+    date: "2026-11-21",
+    tags: ["ospf","routing","networking","troubleshooting","cisco"],
+    excerpt: "OSPF routers reach Full through Hello checks, DR election, a master and slave database exchange and flooding. Each stuck state maps to one of those steps.",
+    coverImage: "/images/blog/ospf-neighbor-states-hello-to-full-photo.jpg",
+    coverCredit: {"author":"www.heimnetzwerke.net","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Patch_cable_with_RJ45_connector.jpg"},
+    wordCount: 3070,
+  },
+  {
+    slug: "rstp-convergence-handshake-edge-ports-mst",
+    title: "How RSTP Converges: Handshakes, Edge Ports, and MST",
+    date: "2026-11-21",
+    tags: ["networking","switching","cisco","learning"],
+    excerpt: "How RSTP replaces STP timers with a proposal and agreement handshake, what edge ports and link types change, and when MST beats per-VLAN spanning tree.",
+    coverImage: "/images/blog/rstp-convergence-handshake-edge-ports-mst-photo.jpg",
+    coverCredit: {"author":"Kevin Hadley","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Rack_railway_turnout_(SPB).JPG"},
+    wordCount: 2975,
+  },
+  {
+    slug: "nist-csf-2-explained",
+    title: "NIST Cybersecurity Framework 2.0 Explained",
+    date: "2026-11-21",
+    tags: ["security","cybersecurity","learning","operations"],
+    excerpt: "The six CSF 2.0 Functions, the Core structure, Tiers and Profiles, what changed from 1.1, and how the CSF differs from SP 800-53 and ISO/IEC 27001.",
+    coverImage: "/images/blog/nist-csf-2-explained-photo.jpg",
+    coverCredit: {"author":"PattayaPatrol","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DFC_4040_Workers_in_safety_gear_assemble_a_large_steel_scaffold_against_a_clear_blue_sky.jpg"},
+    wordCount: 2790,
+  },
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 343;
+export const POST_COUNT = 346;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and forty three";
+export const POST_COUNT_SPELLED = "three hundred and forty six";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3437,10 +3467,10 @@ export const POST_COUNT_SPELLED = "three hundred and forty three";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 3096;
+export const CITATION_COUNT = 3115;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 215;
+export const ATTRIBUTION_URL_COUNT = 218;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3288;
+export const CHECKED_URL_COUNT = 3310;
