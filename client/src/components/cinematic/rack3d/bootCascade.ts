@@ -174,6 +174,16 @@ export function fanSpeed(lt: number) {
   return up * (1 - (1 - idle) * down);
 }
 
+/**
+ * 0..1, how fully the boot legend owns the power LED rather than the
+ * panel's idle look. The LED uses it to drop its idle shimmer: "solid
+ * amber" and "one flash per second" only mean something if nothing else
+ * is modulating the light.
+ */
+export function powerOverride(lt: number) {
+  return weight() * (1 - smooth(BOOT_T.READY, BOOT_T.READY + 0.5, lt));
+}
+
 const STANDBY_AMBER = { r: 1.0, g: 0.42, b: 0.02 };
 const POWER_GREEN = { r: 0.25, g: 1.0, b: 0.12 };
 
@@ -192,7 +202,7 @@ export function powerLed(lt: number, base: Color, out: Color) {
   const r = STANDBY_AMBER.r + (POWER_GREEN.r - STANDBY_AMBER.r) * toGreen;
   const g = STANDBY_AMBER.g + (POWER_GREEN.g - STANDBY_AMBER.g) * toGreen;
   const b = STANDBY_AMBER.b + (POWER_GREEN.b - STANDBY_AMBER.b) * toGreen;
-  const k = w * (1 - toBase);
+  const k = powerOverride(lt);
   out.setRGB(
     base.r + (r - base.r) * k,
     base.g + (g - base.g) * k,

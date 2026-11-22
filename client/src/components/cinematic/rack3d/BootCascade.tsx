@@ -54,8 +54,12 @@ export function BootCascade({ progressRef, reducedMotion, tier, onScreen, absent
   const playing = useRef(false);
   const motesRef = useRef<MoteHandle | null>(null);
 
+  // Leaving the screen earns a replay only if no run is in progress. A run
+  // that was merely paused (hidden tab, canvas scrolled away mid-boot) picks
+  // up where it stopped when the loop restarts; arming here as well would
+  // play the whole cascade a second time straight after it.
   useEffect(() => {
-    if (!onScreen) armed.current = true;
+    if (!onScreen && !playing.current) armed.current = true;
   }, [onScreen]);
 
   // Before the first frame, so the rack never shows one lit frame and then
@@ -207,7 +211,9 @@ const FRAG = /* glsl */ `
   varying float vAlpha;
   void main() {
     float d = length(vUv - 0.5) * 2.0;
-    float soft = smoothstep(1.0, 0.0, d);
+    // Edges in ascending order: smoothstep with edge0 >= edge1 is undefined
+    // in GLSL ES, and drivers differ on what they return for it.
+    float soft = 1.0 - smoothstep(0.0, 1.0, d);
     gl_FragColor = vec4(vec3(0.62, 0.88, 1.0), soft * soft * vAlpha * 0.55);
   }
 `;

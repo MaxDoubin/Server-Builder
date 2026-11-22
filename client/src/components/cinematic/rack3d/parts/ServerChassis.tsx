@@ -271,6 +271,7 @@ function ServerControlPanel({
       </group>
       <group position={[0.002, 0, FACE_Z + 0.001]}>
         <LedStrip
+          boot
           count={5}
           length={0.032}
           color={ACCENT_HEX[accent]}

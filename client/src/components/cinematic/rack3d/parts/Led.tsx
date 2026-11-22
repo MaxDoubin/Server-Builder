@@ -9,6 +9,7 @@ import {
   glowLevel,
   localTime,
   powerLed,
+  powerOverride,
   stripLevel,
   unitDelay,
 } from "../bootCascade";
@@ -73,7 +74,7 @@ export function Led({
 
     const t = clock.elapsedTime * 4 + seed * 6.28;
     const carrier = 0.58 + 0.42 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.3 + seed * 3.14));
-    const flicker = 0.86 + 0.14 * Math.sin(clock.elapsedTime * 11 + seed * 9.7);
+    let flicker = 0.86 + 0.14 * Math.sin(clock.elapsedTime * 11 + seed * 9.7);
     let active = blink ? carrier : 1;
     let gate = 1;
 
@@ -82,8 +83,13 @@ export function Led({
       if (boot === "power") {
         gate = powerLed(lt, base, colorScratch);
         mat.current.emissive.copy(colorScratch);
-        // The power LED is solid or flashing by the legend, never shimmering.
-        active = 1;
+        // The power LED is solid or flashing by the legend, never shimmering:
+        // both idle modulations (the slow blink and the 1.75 Hz flicker) are
+        // faded out while the legend owns it, and eased back in afterwards
+        // rather than switched, so there is no step when the boot ends.
+        const own = powerOverride(lt);
+        active += (1 - active) * own;
+        flicker += (1 - flicker) * own;
       } else {
         gate = boot === "drive" ? driveLevel(lt, seed) : activityLevel(lt, seed);
         colorScratch.copy(base);
