@@ -9,7 +9,7 @@ import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import { PacketFlow } from "./parts/PacketFlow";
-import { PauseWhenHidden } from "./PauseWhenHidden";
+import { useCanvasVisible } from "./useCanvasVisible";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -657,9 +657,15 @@ export function ContinuousRackScene({
   const { dpr, effects, tier } = useDeviceTier();
   const reducedMotion = useReducedMotion();
   const insertions = useMemo(buildInsertions, []);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const visible = useCanvasVisible(canvasRef);
 
   return (
     <Canvas
+      ref={canvasRef}
+      // Park the render loop while the canvas is scrolled away or the tab
+      // is hidden.
+      frameloop={visible ? "always" : "never"}
       dpr={dpr}
       shadows={false}
       performance={{ min: 0.6, debounce: 200 }}
@@ -734,7 +740,6 @@ export function ContinuousRackScene({
       </Suspense>
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
-      <PauseWhenHidden />
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />
