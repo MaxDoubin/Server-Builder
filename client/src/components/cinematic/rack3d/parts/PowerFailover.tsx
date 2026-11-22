@@ -215,7 +215,7 @@ const BOARD_FRAGMENT = /* glsl */ `
     acc.a = max(acc.a, m);
   }
 
-  // A conductor from a to b. Energized wires carry a slow travelling
+  // A conductor from a to b. Energized wires carry a slow traveling
   // brightness wave in the direction of power flow (a toward b).
   void wire(inout vec4 acc, vec2 p, vec2 a, vec2 b, float level, vec3 c, float aa) {
     float m = 1.0 - smoothstep(0.0045, 0.0045 + aa, sdSeg(p, a, b));
@@ -336,7 +336,7 @@ const FEED_VERTEX = /* glsl */ `
   varying float vDist;
   void main() {
     vSide = aSide;
-    // Meters travelled from the UPS output to this point of the run. A
+    // Meters traveled from the UPS output to this point of the run. A
     // negative length marks a run laid out against its local x axis.
     float along = aLen < 0.0 ? 0.5 - position.x : position.x + 0.5;
     vDist = aPath + along * abs(aLen);
@@ -877,7 +877,7 @@ function PowerFailoverScene({
                 display: "block",
                 marginTop: "2px",
                 color: "hsl(40 8% 72%)",
-                fontSize: "0.5625rem",
+                fontSize: "0.625rem",
                 letterSpacing: "0.2em",
               }}
             >
