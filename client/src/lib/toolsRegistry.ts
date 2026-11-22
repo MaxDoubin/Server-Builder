@@ -4,10 +4,14 @@
  * One entry per interactive utility. The registry is plain data with no
  * component imports, so the tools index page can list every tool, and the
  * router can build its routes, without pulling any tool's code into the
- * bundle. Each tool is lazily loaded by its own route.
+ * bundle. Every tool is served by the one /tools/:slug route, which loads
+ * the page through the lazy slug map in pages/tools/toolPages.ts.
  *
- * Adding a tool: add an entry here, add the lazy route in App.tsx, and add
- * the prerender entry in script/prerender.ts.
+ * Adding a tool: add an entry here, write its page as
+ * pages/tools/<SlugInPascalCase>.tsx exporting a component of that name (see
+ * lib/toolPageName.ts), and add its notes in lib/toolNotes.ts. The route,
+ * hover prefetch, prerendered page, sitemap and palette row all follow from
+ * this entry, and scripts-ci/check-palette.ts fails if the page is missing.
  */
 
 export type ToolCategory =

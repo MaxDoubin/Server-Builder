@@ -24,8 +24,9 @@
  * in the palette and the /tools index alike, and nothing else would say so.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { TOOLS } from "../client/src/lib/toolsRegistry";
+import { toolPageName } from "../client/src/lib/toolPageName";
 import { RACKS } from "../client/src/lib/racks";
 
 const APP = "client/src/App.tsx";
@@ -128,10 +129,28 @@ for (const href of named) {
   problems.push(`the palette offers ${href}, and no route in ${APP} answers it`);
 }
 
-/* A tool in the registry with no route is a row that goes nowhere. */
+/*
+  A tool in the registry with no page is a row that goes nowhere.
+
+  Every tool is served by the one /tools/:slug route, which finds the page
+  through toolPageName() and an import.meta.glob over pages/tools. The build
+  cannot see a missing file through a glob, and the route would quietly show
+  the 404 page, so the same convention is applied here instead: the page
+  file must exist and must export the component the router will ask for.
+*/
+const TOOL_PAGES = "client/src/pages/tools";
+const toolFamily = routeSet.has("/tools/:slug");
 for (const tool of TOOLS) {
-  if (!routeSet.has(`/tools/${tool.slug}`)) {
+  if (!toolFamily && !routeSet.has(`/tools/${tool.slug}`)) {
     problems.push(`the tools registry lists ${tool.slug}, and no route in ${APP} answers /tools/${tool.slug}`);
+    continue;
+  }
+  const name = toolPageName(tool.slug);
+  const file = `${TOOL_PAGES}/${name}.tsx`;
+  if (!existsSync(file)) {
+    problems.push(`the tools registry lists ${tool.slug}, and its page ${file} does not exist, so /tools/${tool.slug} would 404`);
+  } else if (!new RegExp(`^export (?:function|const) ${name}\\b`, "m").test(readFileSync(file, "utf8"))) {
+    problems.push(`${file} does not export ${name}, which the /tools/:slug route asks it for`);
   }
 }
 for (const rack of RACKS) {
