@@ -106,15 +106,21 @@ promise, read `Dirty` and `Writeback` next to it.
 
 ## The used column is a residue
 
-`free` computes used as total minus free minus buff/cache. Nothing tracks it
-and nothing chose it: it is what is left over after the cache, so it moves
-whenever the cache moves, which is constantly.
+`free` before procps-ng 4.0.1 computes used as total minus free minus
+buff/cache, which is the formula the output above adds up under. Nothing
+tracks it and nothing chose it: it is what is left over after the cache, so it
+moves whenever the cache moves, which is constantly.
 
 Two readings of the same server ten minutes apart, nothing deployed and no
 process started or stopped, and the used column goes from 2.6 GiB to 8.5 GiB.
 What happened is that something read a large file and displaced 6 GiB of cache.
 Not one byte of anonymous memory was allocated. It is the column people
 screenshot and it has the least meaning in the output.
+
+Since procps-ng 4.0.1, `free` computes used as total minus available instead.
+That follows the kernel's MemAvailable estimate rather than the raw cache size,
+so it is steadier, but it is still derived rather than a count of what programs
+hold.
 
 For what programs are actually holding:
 

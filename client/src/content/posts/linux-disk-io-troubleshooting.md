@@ -73,6 +73,7 @@ runtime=60
 time_based=1
 group_reporting=1
 filename=/mnt/data/fiotest
+size=4g
 
 [random-read-4k]
 rw=randread

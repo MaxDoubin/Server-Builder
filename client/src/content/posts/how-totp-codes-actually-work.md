@@ -93,8 +93,9 @@ back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 
 ```bash
-# What the server would accept with a window of one step either side
-oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+# What the server would accept with a window of one step either side:
+# -w only counts forward, so start one step early and print three codes
+oathtool --totp -b --now "2026-08-25 08:59:30 UTC" -w 2 JBSWY3DPEHPK3PXP
 ```
 
 The window is a real cost, not free tolerance. Every extra step you accept

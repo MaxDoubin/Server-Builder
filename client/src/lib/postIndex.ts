@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 337 of them. Regenerate with script/generatePostIndex.ts.
+ * 343 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -48,6 +48,66 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "vulnerability-prioritization-cvss-epss-trurisk",
+    title: "How Vulnerability Platforms Rank What to Fix",
+    date: "2026-11-21",
+    tags: ["security","cybersecurity","operations","tools"],
+    excerpt: "How scans detect flaws, how QIDs differ from CVEs, what CVSS v3.1 and v4.0 measure, and how EPSS, CISA KEV and Qualys TruRisk reorder the fix list.",
+    coverImage: "/images/blog/vulnerability-prioritization-cvss-epss-trurisk-photo.jpg",
+    coverCredit: {"author":"Shixart1985","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Close-up_of_the_key_with_house_keychain.jpg"},
+    wordCount: 3166,
+  },
+  {
+    slug: "opentelemetry-collector-pipelines",
+    title: "The OpenTelemetry Collector and Its Pipelines",
+    date: "2026-11-21",
+    tags: ["monitoring","networking","linux"],
+    excerpt: "How the OpenTelemetry Collector receives, processes and exports telemetry: components, per-signal pipelines, agent vs gateway, and processor order.",
+    coverImage: "/images/blog/opentelemetry-collector-pipelines-photo.jpg",
+    coverCredit: {"author":"Clem Rutter, Rochester, Kent","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Ashton_Canal_Bridge_of_pipes_5187.JPG"},
+    wordCount: 2863,
+  },
+  {
+    slug: "oci-tenancy-structure-explained",
+    title: "How an Oracle Cloud (OCI) Tenancy Is Structured",
+    date: "2026-11-21",
+    tags: ["networking","security","operations","learning"],
+    excerpt: "Tenancy, compartments, regions, IAM policy verbs, identity domains and the VCN in Oracle Cloud, pinned to Oracle's current public documentation.",
+    coverImage: "/images/blog/oci-tenancy-structure-explained-photo.jpg",
+    coverCredit: {"author":"Wilfredor","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apartment_building_facade_with_window_air_conditioners_in_Rio_de_Janeiro,_Brazil.jpg"},
+    wordCount: 2797,
+  },
+  {
+    slug: "siem-soar-edr-ndr-xdr-explained",
+    title: "SIEM, SOAR, EDR, NDR and XDR: what each one does",
+    date: "2026-11-21",
+    tags: ["security","cybersecurity","monitoring","operations"],
+    excerpt: "A neutral guide to SIEM, SOAR, EDR, NDR and XDR: what data each ingests, how detections are written, where automation should stop, and how they fail.",
+    coverImage: "/images/blog/siem-soar-edr-ndr-xdr-explained-photo.jpg",
+    coverCredit: {"author":"Tutkamestari","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Antenna_radar_L-band_TAR_Finland.JPG"},
+    wordCount: 2882,
+  },
+  {
+    slug: "databricks-deployment-structure-for-admins",
+    title: "How a Databricks Deployment Is Organized for Admins",
+    date: "2026-11-21",
+    tags: ["security","operations","learning"],
+    excerpt: "A neutral map of Databricks accounts, workspaces, planes, Unity Catalog, identities, privileges and compute policies, as read in November 2026.",
+    coverImage: "/images/blog/databricks-deployment-structure-for-admins-photo.jpg",
+    coverCredit: {"author":"OKJaguar","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Perry_Lake_Park_boathouse,_Perry,_OK.jpg"},
+    wordCount: 2778,
+  },
+  {
+    slug: "nutanix-cluster-architecture",
+    title: "How a Nutanix Hyperconverged Cluster Fits Together",
+    date: "2026-11-21",
+    tags: ["virtualization","storage","servers","high-availability"],
+    excerpt: "How Nutanix nodes, Controller VMs, AHV or ESXi, RF2/RF3 replication, data locality and Prism fit together, and what CVM and node failures do.",
+    coverImage: "/images/blog/nutanix-cluster-architecture-photo.jpg",
+    coverCredit: {"author":"I am R.","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Truck_day_2012_june_19_(38).jpg"},
+    wordCount: 2901,
+  },
   {
     slug: "sase-explained",
     title: "SASE explained: an architecture, not a product",
@@ -514,11 +574,12 @@ export const postIndex: PostMeta[] = [
     slug: "opencore-legacy-patcher-tahoe",
     title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["apple","tools","hardware","troubleshooting"],
     excerpt: "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
     coverImage: "/images/blog/opencore-legacy-patcher-tahoe.jpg",
     coverCredit: {"author":"Amada44","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Macbook_A1286.jpg"},
-    wordCount: 3203,
+    wordCount: 3247,
   },
   {
     slug: "fortigate-homelab-license",
@@ -840,10 +901,11 @@ export const postIndex: PostMeta[] = [
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
     coverImage: "/images/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not.jpg",
-    wordCount: 963,
+    wordCount: 995,
   },
   {
     slug: "too-many-open-files-and-which-of-the-four-limits-it-was",
@@ -876,10 +938,11 @@ export const postIndex: PostMeta[] = [
     slug: "tcp-retries2-is-not-a-count",
     title: "tcp_retries2 Is Not a Count",
     date: "2026-09-19",
+    updated: "2026-11-21",
     tags: ["networking","linux","troubleshooting","operations"],
     excerpt: "tcp(7) calls tcp_retries2 the maximum number of times a packet is retransmitted before giving up, and says the duration depends on the retransmission timeout. The kernel never counts a retransmission, and the duration does not depend on the path: retransmits_timed_out turns the number into a time budget modeled from TCP_RTO_MIN, so the default is 924.6 seconds on every Linux host. Measured on a real kernel, tcp_retries2 at 5 aborts after 13.25 seconds having sent 6 segments, one more than the sysctl names, and a slow path gets fewer attempts in the same time rather than more.",
     coverImage: "/images/blog/tcp-retries2-is-not-a-count.jpg",
-    wordCount: 1460,
+    wordCount: 1496,
   },
   {
     slug: "the-connection-refused-by-a-daemon-doing-nothing",
@@ -1075,10 +1138,11 @@ export const postIndex: PostMeta[] = [
     slug: "the-free-column-was-always-going-to-be-zero",
     title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
+    updated: "2026-11-21",
     tags: ["linux","operations","monitoring"],
     excerpt: "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
     coverImage: "/images/blog/the-free-column-was-always-going-to-be-zero.jpg",
-    wordCount: 1431,
+    wordCount: 1484,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -1129,10 +1193,11 @@ export const postIndex: PostMeta[] = [
     slug: "the-clock-is-the-last-thing-anybody-checks",
     title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["security","operations","networking"],
     excerpt: "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
     coverImage: "/images/blog/the-clock-is-the-last-thing-anybody-checks.jpg",
-    wordCount: 1774,
+    wordCount: 1815,
   },
   {
     slug: "the-request-arrived-the-reply-did-not",
@@ -1328,24 +1393,27 @@ export const postIndex: PostMeta[] = [
     slug: "netfilter-hook-order",
     title: "Netfilter Hooks And The Order Your Rules Really Run In",
     date: "2026-06-23",
+    updated: "2026-11-21",
     tags: ["linux","networking","security"],
     excerpt: "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
     coverImage: "/images/blog/netfilter-hook-order.jpg",
-    wordCount: 923,
+    wordCount: 984,
   },
   {
     slug: "oom-killer-and-swap-sizing",
     title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
+    updated: "2026-11-21",
     tags: ["linux","servers","operations"],
     excerpt: "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
     coverImage: "/images/blog/oom-killer-and-swap-sizing.jpg",
-    wordCount: 946,
+    wordCount: 1039,
   },
   {
     slug: "ebpf-observability-basics",
     title: "eBPF Is How I Ask The Kernel Questions",
     date: "2026-07-04",
+    updated: "2026-11-21",
     tags: ["linux","monitoring","tools"],
     excerpt: "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
     coverImage: "/images/blog/ebpf-observability-basics.jpg",
@@ -1482,7 +1550,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "HTTP caching is two separate mechanisms, freshness and validation. Most caching bugs come from configuring one and expecting the other.",
     coverImage: "/images/blog/http-caching-headers-etags.jpg",
     coverCredit: {"author":"dmitrybarsky","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/84816487@N00/2261404199"},
-    wordCount: 907,
+    wordCount: 913,
   },
   {
     slug: "luks-at-rest-encryption",
@@ -1574,11 +1642,12 @@ export const postIndex: PostMeta[] = [
     slug: "linux-disk-io-troubleshooting",
     title: "Troubleshooting Disk I/O on Linux Without Guessing",
     date: "2026-04-13",
+    updated: "2026-11-21",
     tags: ["linux","storage","operations"],
     excerpt: "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
     coverImage: "/images/blog/linux-disk-io-troubleshooting.jpg",
     coverCredit: {"author":"TJStamp","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/40246732@N00/6917858944"},
-    wordCount: 995,
+    wordCount: 996,
   },
   {
     slug: "gpu-utilization-metrics",
@@ -1777,11 +1846,12 @@ export const postIndex: PostMeta[] = [
     slug: "gpu-passthrough-proxmox",
     title: "GPU Passthrough on Proxmox Without the Guesswork",
     date: "2026-06-18",
+    updated: "2026-11-21",
     tags: ["virtualization","linux","homelab"],
     excerpt: "IOMMU groups, VFIO binding, and the handful of failure modes that eat an entire evening. How I reason through passthrough problems instead of copying forum posts.",
     coverImage: "/images/blog/gpu-passthrough-proxmox.jpg",
     coverCredit: {"author":"kaeru.my","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/57634952@N00/3222436402"},
-    wordCount: 965,
+    wordCount: 1001,
   },
   {
     slug: "inference-cost-per-request",
@@ -1823,10 +1893,11 @@ export const postIndex: PostMeta[] = [
     slug: "zfs-arc-l2arc-tuning",
     title: "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
     date: "2026-06-26",
+    updated: "2026-11-21",
     tags: ["storage","linux","servers"],
     excerpt: "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
     coverImage: "/images/blog/zfs-arc-l2arc-tuning.jpg",
-    wordCount: 1027,
+    wordCount: 1037,
   },
   {
     slug: "idempotence-and-config-drift",
@@ -2261,12 +2332,12 @@ export const postIndex: PostMeta[] = [
     slug: "zfs-on-enterprise-hardware",
     title: "Running ZFS on Dell Enterprise Hardware",
     date: "2026-02-08",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage","zfs","servers","homelab"],
     excerpt: "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
     coverImage: "/images/blog/zfs-on-enterprise-hardware.jpg",
     coverCredit: {"author":"Markus Then","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:ZFS_hardware_storage_29.jpg"},
-    wordCount: 1963,
+    wordCount: 1983,
   },
   {
     slug: "10gbe-networking-homelab",
@@ -2712,10 +2783,11 @@ export const postIndex: PostMeta[] = [
     slug: "container-orchestration-basics",
     title: "Container Orchestration: Docker and LXC in a Homelab",
     date: "2025-09-15",
+    updated: "2026-11-21",
     tags: ["virtualization","servers","homelab"],
     excerpt: "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
     coverImage: "/images/blog/container-orchestration-basics.jpg",
-    wordCount: 1548,
+    wordCount: 1567,
   },
   {
     slug: "bgp-for-network-engineers",
@@ -2743,12 +2815,12 @@ export const postIndex: PostMeta[] = [
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage","hardware","servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
     coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
     coverCredit: {"author":"Dmitry Nosachev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Intel_P3608_NVMe_flash_SSD,_PCI-E_add-in_card.jpg"},
-    wordCount: 1907,
+    wordCount: 1912,
   },
   {
     slug: "network-monitoring-system-build",
@@ -2795,7 +2867,7 @@ export const postIndex: PostMeta[] = [
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking","ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -2806,11 +2878,12 @@ export const postIndex: PostMeta[] = [
     slug: "cisco-ios-fundamentals",
     title: "Cisco IOS Fundamentals Every Network Engineer Should Know",
     date: "2026-03-02",
+    updated: "2026-11-21",
     tags: ["cisco","networking","routing"],
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
     coverCredit: {"author":"Robert","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_2800_series_router_(1).jpg"},
-    wordCount: 1745,
+    wordCount: 1749,
   },
   {
     slug: "storage-area-networks-explained",
@@ -2847,11 +2920,12 @@ export const postIndex: PostMeta[] = [
     slug: "power-over-ethernet-poe",
     title: "Power over Ethernet: How PoE Works in Enterprise Networks",
     date: "2026-03-07",
+    updated: "2026-11-21",
     tags: ["networking","hardware","switching"],
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
     coverImage: "/images/blog/power-over-ethernet-poe.jpg",
     coverCredit: {"author":"Phiarc","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:PowerDsine_3524G_24-Port_Gigabit_Ethernet_PoE_Midspan_Injector_with_top_cover_removed,_oblique_view.jpg"},
-    wordCount: 1650,
+    wordCount: 1642,
   },
   {
     slug: "server-memory-architecture",
@@ -2878,11 +2952,12 @@ export const postIndex: PostMeta[] = [
     slug: "iscsi-storage-protocol",
     title: "iSCSI Storage: How to Configure and Use It",
     date: "2026-03-10",
+    updated: "2026-11-21",
     tags: ["storage","networking","servers"],
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
     coverImage: "/images/blog/iscsi-storage-protocol.jpg",
     coverCredit: {"author":"KorP","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:NetApp_E5700.jpg"},
-    wordCount: 1785,
+    wordCount: 1811,
   },
   {
     slug: "dns-security-dnssec",
@@ -2950,21 +3025,23 @@ export const postIndex: PostMeta[] = [
     slug: "syslog-centralized-logging",
     title: "Centralized Logging with Syslog: A Practical Guide",
     date: "2026-03-19",
+    updated: "2026-11-21",
     tags: ["operations","monitoring","servers"],
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
     coverImage: "/images/blog/syslog-centralized-logging.jpg",
     coverCredit: {"author":"Klapi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Kibana_demo_screenshot.jpg"},
-    wordCount: 1434,
+    wordCount: 1469,
   },
   {
     slug: "container-networking-fundamentals",
     title: "Container Networking Fundamentals: How Pods and Containers Communicate",
     date: "2026-03-20",
+    updated: "2026-11-21",
     tags: ["networking","containers","kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
     coverCredit: {"author":"Dereckson","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png"},
-    wordCount: 1551,
+    wordCount: 1584,
   },
   {
     slug: "ssh-key-based-authentication",
@@ -3052,11 +3129,12 @@ export const postIndex: PostMeta[] = [
     slug: "bgp-route-filtering-security",
     title: "BGP Route Filtering and Security Best Practices",
     date: "2026-03-29",
+    updated: "2026-11-21",
     tags: ["networking","bgp","security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
     coverCredit: {"author":"Stefan Funke from Frankfurt, Germany","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DE-CIX_GERMANY_-_Switch_Rack_(6218137120).jpg"},
-    wordCount: 1504,
+    wordCount: 1526,
   },
   {
     slug: "secure-network-design-principles",
@@ -3084,12 +3162,12 @@ export const postIndex: PostMeta[] = [
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security","firewall","operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
     coverCredit: {"author":"ChrisDag","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/8558461@N08/5212583486"},
-    wordCount: 1640,
+    wordCount: 1643,
   },
   {
     slug: "qos-enterprise-networks",
@@ -3146,10 +3224,11 @@ export const postIndex: PostMeta[] = [
     slug: "how-totp-codes-actually-work",
     title: "How TOTP Codes Actually Work",
     date: "2026-08-24",
+    updated: "2026-11-21",
     tags: ["security","cybersecurity","operations"],
     excerpt: "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
     coverImage: "/images/blog/how-totp-codes-actually-work.jpg",
-    wordCount: 1341,
+    wordCount: 1355,
   },
   {
     slug: "init-scripts-to-systemd-units",
@@ -3340,10 +3419,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 337;
+export const POST_COUNT = 343;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and thirty seven";
+export const POST_COUNT_SPELLED = "three hundred and forty three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3352,10 +3431,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 2993;
+export const CITATION_COUNT = 3096;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 209;
+export const ATTRIBUTION_URL_COUNT = 215;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3179;
+export const CHECKED_URL_COUNT = 3288;
