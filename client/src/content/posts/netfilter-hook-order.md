@@ -72,7 +72,7 @@ Notice also that the nat hooks have `policy accept`. A nat chain is not a filter
 
 `ct state` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
 
-First, the `raw` priority exists so you can opt traffic out of tracking with `notrack` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking `nf_conntrack_count` against `nf_conntrack_max` is the first thing I do on a router that "randomly" refuses new connections.
+First, the `raw` priority exists so you can opt traffic out of tracking with `notrack` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource, and an idle established TCP entry is kept for five days by default (`nf_conntrack_tcp_timeout_established` is 432000 seconds) unless the connection closes cleanly. When it fills, new flows are dropped and the kernel logs a table full message. Checking `nf_conntrack_count` against `nf_conntrack_max` is the first thing I do on a router that "randomly" refuses new connections.
 
 Second, the `invalid` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
 
@@ -81,11 +81,12 @@ Second, the `invalid` state is not noise. It usually means the tracker saw a pac
 Two commands answer most questions. `nft monitor trace` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
 
 ```bash
-nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft add chain inet fw trace_chain '{ type filter hook prerouting priority -301; }'
+nft add rule inet fw trace_chain ip saddr 10.10.5.77 meta nftrace set 1
 nft monitor trace
 ```
 
-And counters tell you whether a rule is dead code:
+And counters tell you whether a rule is dead code, but only on rules that have one. nftables counts nothing by default, so add a `counter` statement to the rules you want to audit (`iifname "mgmt0" tcp dport 22 counter accept`) and let traffic run:
 
 ```bash
 nft --handle list ruleset | grep -n "counter packets 0"

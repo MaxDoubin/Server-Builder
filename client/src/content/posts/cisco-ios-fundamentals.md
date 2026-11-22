@@ -69,7 +69,7 @@ interface GigabitEthernet0/0
   no shutdown
 ```
 
-The `description` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in `show ip interface brief` output on modern IOS and in most monitoring tools.
+The `description` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in `show interfaces description` output and in most monitoring tools. `show ip interface brief` does not show it.
 
 Interface naming differs between platforms and it trips people up. On a router, `GigabitEthernet0/0` is slot/port. On a stackable switch, `GigabitEthernet1/0/1` is switch-number/module/port, so the leading `1` is the stack member, not the slot. Type the wrong form and IOS reports an invalid interface rather than telling you the naming scheme changed.
 

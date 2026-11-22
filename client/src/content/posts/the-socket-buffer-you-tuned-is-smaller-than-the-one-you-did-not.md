@@ -102,11 +102,14 @@ which one applies depends on nothing but whether a line of code exists.
 While we are here, they are three behaviors and not one limit with two
 warnings:
 
-- **Below the first**, the kernel does not do the global accounting at all.
-  A zero in `sockstat`'s `mem` column on a lightly loaded host means you are
-  under this mark, not that accounting is broken. Measured on a quiet box: 42
-  established connections, `TCP: ... mem 0`.
-- **Between the first and second**, it charges normally.
+- **Below the first**, TCP is not bothered about its memory use. The global
+  counter is still updated on every allocation; nothing throttles on it. A
+  zero in `sockstat`'s `mem` column on a lightly loaded host means almost no
+  socket buffer memory is charged at that moment, not that accounting is
+  broken. Measured on a quiet box: 42 established connections,
+  `TCP: ... mem 0`.
+- **Between the first and second**, nothing changes yet, except that TCP
+  already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
   socket buffers*. This is the interesting one, because it shows up as
   throughput falling on every connection at once and as an error nowhere.

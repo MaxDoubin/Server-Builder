@@ -4,10 +4,14 @@
  * One entry per interactive utility. The registry is plain data with no
  * component imports, so the tools index page can list every tool, and the
  * router can build its routes, without pulling any tool's code into the
- * bundle. Each tool is lazily loaded by its own route.
+ * bundle. Every tool is served by the one /tools/:slug route, which loads
+ * the page through the lazy slug map in pages/tools/toolPages.ts.
  *
- * Adding a tool: add an entry here, add the lazy route in App.tsx, and add
- * the prerender entry in script/prerender.ts.
+ * Adding a tool: add an entry here, write its page as
+ * pages/tools/<SlugInPascalCase>.tsx exporting a component of that name (see
+ * lib/toolPageName.ts), and add its notes in lib/toolNotes.ts. The route,
+ * hover prefetch, prerendered page, sitemap and palette row all follow from
+ * this entry, and scripts-ci/check-palette.ts fails if the page is missing.
  */
 
 export type ToolCategory =
@@ -892,6 +896,14 @@ export const TOOLS: ToolEntry[] = [
       "Translates text to Morse and back, prosigns included, and plays it as tone and light at adjustable speed with Farnsworth spacing. Runs in your browser.",
     category: "encoding",
     keywords: ["morse", "cw", "telegraph", "prosign", "sos", "farnsworth", "wpm", "ham radio", "decoder", "ctf"],
+  },
+  {
+    slug: "cidr-overlap-checker",
+    name: "CIDR overlap checker",
+    blurb:
+      "Paste IPv4 and IPv6 blocks to see which overlap, which sit inside which, and which blocks hold a given address. Runs in your browser.",
+    category: "networking",
+    keywords: ["cidr", "overlap", "subnet overlap", "containment", "vpc peering", "address plan", "ipv4", "ipv6", "longest prefix match", "route conflict"],
   },
 ];
 

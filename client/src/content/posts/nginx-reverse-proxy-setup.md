@@ -83,7 +83,7 @@ openssl x509 -req -in grafana.csr -CA ca.crt -CAkey ca.key \
   -extfile <(printf "subjectAltName=DNS:grafana.lab.internal")
 ```
 
-The 397 day figure is not arbitrary. Apple platforms reject TLS server certificates with a validity period longer than 398 days, so a lab certificate issued for ten years works in Firefox on your desktop and fails on every iPhone in the house. Ten years is fine for the CA itself, which is not subject to that limit.
+The 397 day figure is a habit worth keeping rather than a requirement here. Apple platforms reject publicly trusted TLS server certificates with a validity period longer than 398 days, but Apple says the rule does not affect certificates issued from user-added or administrator-added root CAs, so a lab CA's certificates are not subject to it. Short-lived leaves are still easier to rotate. Ten years is fine for the CA itself, which is not subject to that limit.
 
 One more nginx-specific detail: `ssl_certificate` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while `curl`, `openssl s_client`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
 
