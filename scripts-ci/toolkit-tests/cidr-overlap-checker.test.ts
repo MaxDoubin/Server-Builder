@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   MAX_ENTRIES,
+  MAX_HOLDING_LISTED,
   MAX_INPUT_CHARS,
   MAX_PAIRS_LISTED,
   analyze,
@@ -8,6 +9,7 @@ import {
   blocksHolding,
   formatCount,
   formatSize,
+  holdingSummary,
   parseBlock,
   parseBlocks,
   type Block,
@@ -414,6 +416,105 @@ t("lookup rejects what is not one address", () => {
   assert.match(msg("10.0.0.0/8"), /without a prefix length/);
   assert.match(msg(""), /Enter/);
   assert.match(msg("10.0.0.256"), /256/);
+});
+
+/* ---- lookup: the cap and ties -------------------------------------------- */
+
+t("the lookup lists at most the cap and still counts every block", () => {
+  assert.equal(MAX_HOLDING_LISTED, MAX_PAIRS_LISTED, "one ceiling for both lists");
+  const a = address("10.0.0.5");
+  // 5,000 copies of one block, every one of which holds the address.
+  const same = blocks(Array(MAX_ENTRIES).fill("10.0.0.0/24").join("\n"));
+  assert.equal(blocksHolding(same, a.family, a.value).length, MAX_ENTRIES, "the full list is still available");
+  const h = holdingSummary(same, a.family, a.value);
+  assert.equal(h.count, MAX_ENTRIES);
+  assert.equal(h.tied, MAX_ENTRIES);
+  assert.equal(h.longest, 24);
+  assert.equal(h.listed.length, MAX_HOLDING_LISTED);
+  assert.deepEqual(h.listed.map((b) => b.index), Array.from({ length: MAX_HOLDING_LISTED }, (_, i) => i + 1));
+  // Nested blocks that all hold it: the cap keeps the most specific ones.
+  const chain = blocks(Array.from({ length: MAX_ENTRIES }, (_, i) => `10.0.0.0/${8 + (i % 17)}`).join("\n"));
+  const c = holdingSummary(chain, a.family, a.value);
+  assert.equal(c.count, MAX_ENTRIES);
+  assert.equal(c.listed.length, MAX_HOLDING_LISTED);
+  assert.equal(c.longest, 24);
+  for (let i = 1; i < c.listed.length; i += 1) assert.ok(c.listed[i - 1].prefix >= c.listed[i].prefix);
+  // A smaller explicit limit, and a limit above the count.
+  assert.equal(holdingSummary(same, a.family, a.value, 3).listed.length, 3);
+  assert.equal(holdingSummary(same, a.family, a.value, 3).count, MAX_ENTRIES);
+  assert.equal(holdingSummary(same, a.family, a.value, 0).listed.length, 0);
+  assert.equal(holdingSummary(blocks("10.0.0.0/8\n10.0.0.0/24"), a.family, a.value, 50).listed.length, 2);
+});
+
+t("equal longest prefixes are tied, and one longest block is not", () => {
+  const a = address("10.0.0.5");
+  // The same block twice, once respelled, under a wider one.
+  const tie = holdingSummary(blocks("10.0.0.0/8\n10.0.0.0/24\n10.0.0.77/24"), a.family, a.value);
+  assert.equal(tie.count, 3);
+  assert.equal(tie.tied, 2);
+  assert.equal(tie.longest, 24);
+  assert.deepEqual(tie.listed.map((b) => b.prefix), [24, 24, 8]);
+  // Order in the list changes the order of the output but not the verdict.
+  const swapped = holdingSummary(blocks("10.0.0.0/24\n10.0.0.0/8\n10.0.0.77/24"), a.family, a.value);
+  assert.equal(swapped.tied, 2);
+  assert.equal(swapped.count, 3);
+  // Two different blocks of the same length cannot both hold one address, so
+  // a tie is always a repeat. Neighbors never tie.
+  const neighbors = holdingSummary(blocks("10.0.0.0/24\n10.0.1.0/24"), a.family, a.value);
+  assert.equal(neighbors.count, 1);
+  assert.equal(neighbors.tied, 1);
+  // One longest block over wider ones is not a tie, whatever the order.
+  for (const text of ["10.0.0.0/8\n10.0.0.0/16\n10.0.0.0/24", "10.0.0.0/24\n10.0.0.0/16\n10.0.0.0/8", "10.0.0.0/16\n10.0.0.0/24\n10.0.0.0/8"]) {
+    const h = holdingSummary(blocks(text), a.family, a.value);
+    assert.equal(h.tied, 1, text);
+    assert.equal(h.longest, 24);
+    assert.equal(h.listed[0].prefix, 24);
+  }
+  // Wide repeats under one longest block: the repeats are not tied with it.
+  const wide = holdingSummary(blocks("10.0.0.0/8\n10.0.0.0/8\n10.0.0.0/24"), a.family, a.value);
+  assert.equal(wide.tied, 1);
+  assert.equal(wide.count, 3);
+  // The same holds in IPv6, where the tie can be spelled many ways.
+  const v6 = address("2001:db8::1");
+  const t6 = holdingSummary(blocks("2001:db8::/32\n2001:0DB8::/32\n[2001:db8::]/32\n::/0"), v6.family, v6.value);
+  assert.equal(t6.count, 4);
+  assert.equal(t6.tied, 3);
+  assert.equal(t6.longest, 32);
+});
+
+t("nothing holds the address", () => {
+  const a = address("11.0.0.1");
+  const h = holdingSummary(blocks("10.0.0.0/8\n2001:db8::/32"), a.family, a.value);
+  assert.deepEqual(h, { count: 0, tied: 0, longest: null, listed: [] });
+  assert.deepEqual(holdingSummary([], a.family, a.value), { count: 0, tied: 0, longest: null, listed: [] });
+});
+
+t("the summary agrees with a plain range test over random lists", () => {
+  for (let round = 0; round < 300; round += 1) {
+    const list = blocks(randomList(1 + Math.floor(rand() * 30)));
+    for (let k = 0; k < 15; k += 1) {
+      const b = pick(list);
+      const max = (1n << BigInt(b.family === 4 ? 32 : 128)) - 1n;
+      let value = b.network + pick([0n, 1n, b.size - 1n, b.size / 2n]);
+      if (value > max) value = max;
+      const limit = pick([0, 1, 2, 5, 200]);
+      const h = holdingSummary(list, b.family, value, limit);
+      const want = list.filter((x) => x.family === b.family && x.network <= value && value <= x.last);
+      assert.equal(h.count, want.length, "exact count");
+      assert.equal(h.listed.length, Math.min(limit, want.length));
+      if (want.length === 0) {
+        assert.equal(h.tied, 0);
+        assert.equal(h.longest, null);
+        continue;
+      }
+      const longest = Math.max(...want.map((x) => x.prefix));
+      assert.equal(h.longest, longest);
+      assert.equal(h.tied, want.filter((x) => x.prefix === longest).length, "exact tie count");
+      // The listed prefix is the start of the full ordering, most specific first.
+      const full = blocksHolding(list, b.family, value);
+      assert.deepEqual(h.listed.map((x) => x.index), full.slice(0, limit).map((x) => x.index));
+    }
+  }
 });
 
 /* ---- fuzz --------------------------------------------------------------- */

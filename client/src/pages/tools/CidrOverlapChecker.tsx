@@ -17,9 +17,9 @@ import {
   MAX_INPUT_CHARS,
   analyze,
   blockText,
-  blocksHolding,
   formatCount,
   formatSize,
+  holdingSummary,
   parseBlocks,
   type Block,
   type Overlap,
@@ -98,7 +98,7 @@ export function CidrOverlapChecker() {
 
   const lookup = useMemo(() => parseIp(lookupDraft), [lookupDraft]);
   const holding = useMemo(
-    () => (lookup.ok ? blocksHolding(parsed.blocks, lookup.value.family, lookup.value.value) : []),
+    () => (lookup.ok ? holdingSummary(parsed.blocks, lookup.value.family, lookup.value.value) : null),
     [lookup, parsed],
   );
   const lookupEmpty = lookupDraft.trim() === "";
@@ -372,11 +372,13 @@ export function CidrOverlapChecker() {
                 : lookup.error
               : total === 0
                 ? "There are no valid blocks to look in yet."
-                : holding.length === 0
+                : holding === null || holding.count === 0
                   ? `No block holds ${formatIp(lookup.value.family, lookup.value.value)}.`
-                  : `${formatIp(lookup.value.family, lookup.value.value)} is in ${holding.length} ${pluralise(holding.length, "block")}. The first is the most specific, the one a longest prefix match would pick.`}
+                  : holding.tied === 1
+                    ? `${formatIp(lookup.value.family, lookup.value.value)} is in ${formatCount(BigInt(holding.count))} ${pluralise(holding.count, "block")}. The first is the most specific, the one a longest prefix match would pick.`
+                    : `${formatIp(lookup.value.family, lookup.value.value)} is in ${formatCount(BigInt(holding.count))} blocks. ${formatCount(BigInt(holding.tied))} of them are tied for most specific at /${holding.longest}: a longest prefix match cannot choose between them. Something other than the prefix does, such as metric, administrative distance or ECMP for routes, or rule order in a firewall.`}
           </p>
-          {holding.length > 0 ? (
+          {holding !== null && holding.count > 0 ? (
             <div className={`mt-4 ${SCROLLER}`} tabIndex={0} role="region" aria-label="Blocks that hold the address">
               <table className="w-full min-w-[480px] border-collapse text-left" data-testid="table-holding">
                 <thead>
@@ -393,13 +395,13 @@ export function CidrOverlapChecker() {
                   </tr>
                 </thead>
                 <tbody>
-                  {holding.map((b, i) => (
+                  {holding.listed.map((b) => (
                     <tr key={b.index} className="border-b border-[hsl(var(--brand-iron)/0.5)]">
                       <th scope="row" className={`${TD} font-normal`}>
                         {blockText(b)}
-                        {i === 0 ? (
+                        {b.prefix === holding.longest ? (
                           <span className="ml-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
-                            most specific
+                            {holding.tied === 1 ? "most specific" : "tied for most specific"}
                           </span>
                         ) : null}
                       </th>
@@ -412,6 +414,12 @@ export function CidrOverlapChecker() {
                 </tbody>
               </table>
             </div>
+          ) : null}
+          {holding !== null && holding.count > holding.listed.length ? (
+            <p data-testid="text-holding-capped" className="mt-3 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
+              Showing the first {formatCount(BigInt(holding.listed.length))} of {formatCount(BigInt(holding.count))}{" "}
+              blocks, most specific first. The count above includes all of them.
+            </p>
           ) : null}
         </ToolPanel>
 

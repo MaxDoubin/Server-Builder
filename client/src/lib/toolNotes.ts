@@ -3893,7 +3893,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { code: "10.1.0.0/16" },
       " route inside a ",
       { code: "10.0.0.0/8" },
-      " route is how one network gets sent somewhere else. The lookup below the result applies that rule: the first block listed for an address is the one a longest prefix match would choose.",
+      " route is how one network gets sent somewhere else. The lookup below the result applies that rule and lists the blocks that hold an address from most specific to least. If one block has the longest prefix it is the one a longest prefix match picks. If several share that length, because a block is listed twice or spelled two ways, they are reported as tied: the prefix cannot choose between them, and something else, such as metric or administrative distance, does.",
     ],
     [
       "A block written with bits set after its prefix, such as ",

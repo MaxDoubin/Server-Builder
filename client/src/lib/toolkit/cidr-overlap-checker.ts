@@ -32,6 +32,9 @@ export const MAX_ENTRIES = 5000;
 /** Overlapping pairs the result carries. The count is always exact. */
 export const MAX_PAIRS_LISTED = 200;
 
+/** Blocks the address lookup lists. Same ceiling as the pair list, and the count is always exact. */
+export const MAX_HOLDING_LISTED = MAX_PAIRS_LISTED;
+
 /** Problems and notes kept with their line numbers. The counts are exact. */
 export const MAX_MESSAGES = 20;
 
@@ -346,12 +349,44 @@ export function analyze(blocks: Block[], listLimit = MAX_PAIRS_LISTED): Analysis
 /* -------------------------------------------------------------- lookup */
 
 /**
- * The blocks that hold an address, most specific first. The first one is the
- * block a longest-prefix-match lookup would pick; with several identical
- * blocks at that length the earliest in the list comes first.
+ * The blocks that hold an address, longest prefix first. Blocks of equal
+ * prefix length come out in list order, which only makes the output
+ * repeatable: nothing about the order of the list decides between them.
  */
 export function blocksHolding(blocks: Block[], family: Family, value: bigint): Block[] {
   return blocks
     .filter((b) => b.family === family && value >= b.network && value <= b.last)
     .sort((a, b) => b.prefix - a.prefix || a.index - b.index);
+}
+
+export interface Holding {
+  /** How many blocks hold the address. Exact, however many are listed. */
+  count: number;
+  /**
+   * How many of them share the longest prefix length. When this is 1 the
+   * first listed block is the one a longest prefix match picks. When it is
+   * more, they are tied: the same block listed twice, or spelled two ways,
+   * and a longest prefix match cannot choose between them. Metric,
+   * administrative distance or equal-cost multipath does, none of which the
+   * list carries. Exact.
+   */
+  tied: number;
+  /** The longest prefix length among the blocks that hold it, or null if none do. */
+  longest: number | null;
+  /** The first `limit` blocks of blocksHolding, so a list of thousands of repeats stays small. */
+  listed: Block[];
+}
+
+export function holdingSummary(
+  blocks: Block[],
+  family: Family,
+  value: bigint,
+  limit = MAX_HOLDING_LISTED,
+): Holding {
+  const all = blocksHolding(blocks, family, value);
+  if (all.length === 0) return { count: 0, tied: 0, longest: null, listed: [] };
+  const longest = all[0].prefix;
+  let tied = 0;
+  while (tied < all.length && all[tied].prefix === longest) tied += 1;
+  return { count: all.length, tied, longest, listed: all.slice(0, limit) };
 }
