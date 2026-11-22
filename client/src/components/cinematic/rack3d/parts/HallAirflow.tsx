@@ -93,7 +93,7 @@ const STREAKS_BY_TIER: Record<DeviceTier, number> = {
  * Share of the streaks each row gets, nearest row first. The far rows sit
  * deep in the fog, so spending evenly would waste most of the budget there.
  */
-const ROW_SHARE = [0.4, 0.26, 0.2, 0.14];
+const ROW_SHARE = [0.5, 0.22, 0.17, 0.11];
 
 /** Small deterministic PRNG so the field is identical on every mount. */
 function mulberry32(seed: number) {
@@ -126,7 +126,7 @@ const VERTEX = /* glsl */ `
   const float HOT_AISLE_OFFSET = 0.19;
   const float RETURN_HEIGHT = 2.9;
   // How far back along its own path a streak's tail sits.
-  const float TAIL = 0.014;
+  const float TAIL = 0.02;
 
   // Position along the route for u in 0..1. Overlapping smoothsteps round
   // the two corners (floor to intake, exhaust to ceiling) without branches.
@@ -183,7 +183,7 @@ const VERTEX = /* glsl */ `
     // World-space thickness, floored at about a pixel and a half. A streak
     // thinner than a pixel shimmers as it crosses the pixel grid, so it is
     // held at the floor and dimmed by the same ratio instead.
-    float wanted = 0.011 * projectionMatrix[1][1] / headClip.w;
+    float wanted = 0.015 * projectionMatrix[1][1] / headClip.w;
     float width = max(wanted, 1.5 * uPixel);
     float thin = clamp(wanted / width, 0.0, 1.0);
 
@@ -371,12 +371,12 @@ function AirflowField({
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
     // Wait until the racks have mostly risen: air through a rack that is
     // not there yet would be the one wrong frame in the sequence.
-    const local = smoothstep(start + (end - start) * 0.45, end, p);
+    const local = smoothstep(start + (end - start) * 0.3, end, p);
     mesh.visible = local > 0.002;
     if (!mesh.visible) return;
 
     const u = material.uniforms;
-    u.uOpacity.value = local * 0.85;
+    u.uOpacity.value = local;
     // One device pixel in clip space, for the minimum streak width.
     u.uPixel.value = 2 / (size.height * viewport.dpr);
     if (!reducedMotion) u.uTime.value = clock.elapsedTime;
