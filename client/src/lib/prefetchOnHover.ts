@@ -208,6 +208,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/tools/ascii-table": { load: () => import("@/pages/tools/AsciiTable") },
   "/tools/asn1-viewer": { load: () => import("@/pages/tools/Asn1Viewer") },
   "/tools/morse-code-translator": { load: () => import("@/pages/tools/MorseCodeTranslator") },
+  "/tools/cidr-overlap-checker": { load: () => import("@/pages/tools/CidrOverlapChecker") },
   "/tools/iops-calculator": { load: () => import("@/pages/tools/IopsCalculator") },
   "/tools/poe-budget-calculator": { load: () => import("@/pages/tools/PoeBudgetCalculator") },
   "/tools/storage-growth-forecast": { load: () => import("@/pages/tools/StorageGrowthForecast") },

@@ -893,6 +893,14 @@ export const TOOLS: ToolEntry[] = [
     category: "encoding",
     keywords: ["morse", "cw", "telegraph", "prosign", "sos", "farnsworth", "wpm", "ham radio", "decoder", "ctf"],
   },
+  {
+    slug: "cidr-overlap-checker",
+    name: "CIDR overlap checker",
+    blurb:
+      "Paste IPv4 and IPv6 blocks to see which overlap, which sit inside which, and which blocks hold a given address. Runs in your browser.",
+    category: "networking",
+    keywords: ["cidr", "overlap", "subnet overlap", "containment", "vpc peering", "address plan", "ipv4", "ipv6", "longest prefix match", "route conflict"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

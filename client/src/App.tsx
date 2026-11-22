@@ -555,6 +555,9 @@ const Asn1Viewer = lazyWithRetry(() =>
 const MorseCodeTranslator = lazyWithRetry(() =>
   import("@/pages/tools/MorseCodeTranslator").then((m) => ({ default: m.MorseCodeTranslator })),
 );
+const CidrOverlapChecker = lazyWithRetry(() =>
+  import("@/pages/tools/CidrOverlapChecker").then((m) => ({ default: m.CidrOverlapChecker })),
+);
 const IopsCalculator = lazyWithRetry(() =>
   import("@/pages/tools/IopsCalculator").then((m) => ({ default: m.IopsCalculator })),
 );
@@ -1882,6 +1885,11 @@ function AnimatedRoutes() {
           <Route path="/tools/morse-code-translator">
             <Suspense fallback={<RouteLoading />}>
               <MorseCodeTranslator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/cidr-overlap-checker">
+            <Suspense fallback={<RouteLoading />}>
+              <CidrOverlapChecker />
             </Suspense>
           </Route>
           <Route path="/tools/iops-calculator">
