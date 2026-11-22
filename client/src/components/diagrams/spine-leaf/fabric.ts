@@ -112,6 +112,8 @@ const SPINE_GLOWS = [
 ];
 const DANGER = "rgb(255,92,98)";
 const CHASSIS = "#0c0e12";
+const ELEPHANT_LABEL = "large flow";
+const DOWN_LABEL = "link down";
 const DST_PORTS = [443, 80, 5432, 6379, 9092, 2049];
 
 /** Small seeded generator, so the still frame is the same on every visit. */
@@ -169,6 +171,9 @@ export function createFabric(ctx: CanvasRenderingContext2D, options: FabricOptio
   let height = 0;
   let dpr = 1;
   let font = "11px monospace";
+  let fontPx = 11;
+  let elephantLabelW = 0;
+  let downLabelW = 0;
   let spineY = 0;
   let leafY = 0;
   let spineW = 0;
@@ -342,6 +347,11 @@ export function createFabric(ctx: CanvasRenderingContext2D, options: FabricOptio
     height = h;
     dpr = ratio;
     font = fontSpec;
+    // Measured here, once, so the per-frame path never asks for metrics.
+    ctx.font = font;
+    fontPx = parseFloat(font) || 11;
+    elephantLabelW = ctx.measureText(ELEPHANT_LABEL).width;
+    downLabelW = ctx.measureText(DOWN_LABEL).width;
     const narrow = w < 520;
     spineY = h * (narrow ? 0.2 : 0.22);
     leafY = h * (narrow ? 0.86 : 0.84);
@@ -529,12 +539,20 @@ export function createFabric(ctx: CanvasRenderingContext2D, options: FabricOptio
       ctx.stroke();
     }
 
-    ctx.globalAlpha = downAmt;
-    ctx.fillStyle = DANGER;
+    label(DOWN_LABEL, downLabelW, mx + 16, my, DANGER, downAmt);
+  }
+
+  /** A caption on a dark plate, so links and packets behind do not cut it. */
+  function label(text: string, textW: number, x: number, y: number, color: string, alpha: number): void {
+    ctx.globalAlpha = alpha * 0.82;
+    ctx.fillStyle = CHASSIS;
+    ctx.fillRect(x - 5, y - fontPx * 0.85, textW + 10, fontPx * 1.7);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
     ctx.font = font;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText("link down", mx + 12, my);
+    ctx.fillText(text, x, y + 0.5);
   }
 
   function drawNodes(): void {
@@ -615,12 +633,8 @@ export function createFabric(ctx: CanvasRenderingContext2D, options: FabricOptio
     if (f.spine < 0) return;
     setPath(f.src, f.dst, f.spine, 0);
     pointAt(segLen[0] * 0.3);
-    ctx.globalAlpha = smooth((simT - f.switchedAt) / SWITCH_BLEND);
-    ctx.fillStyle = SPINE_COLORS[f.spine];
-    ctx.font = font;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText("large flow", outX + 10, outY);
+    const alpha = smooth((simT - f.switchedAt) / SWITCH_BLEND);
+    label(ELEPHANT_LABEL, elephantLabelW, outX + 14, outY, SPINE_COLORS[f.spine], alpha);
   }
 
   function begin(): void {

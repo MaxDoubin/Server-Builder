@@ -68,17 +68,17 @@ function describe(status: FabricStatus | null, still: boolean): string {
   if (status.phase === "down") {
     const extra =
       status.collateral > 0
-        ? ` ${status.collateral} of them were on links that never failed: removing a next hop resizes every hash region.`
+        ? ` ${status.collateral} of those ${status.collateral === 1 ? "was on a link" : "were on links"} that never failed: removing a next hop resizes every hash region.`
         : "";
     return (
       `Link ${leaf} to ${spine} is down. ${leaf} drops ${spine} from its next-hop set, and the other leaves stop using ${spine} to reach ${leaf}. ` +
-      `${status.moved} flows were hashed again onto the remaining spines.${extra}`
+      `Flows hashed again onto the remaining spines: ${status.moved}.${extra}`
     );
   }
   if (status.phase === "restored") {
     return (
       `Link restored. ${spine} is a next hop again, the hash regions return to where they were, ` +
-      `and ${status.moved} flows move back, the large one among them.`
+      `and ${status.moved} flows change spine a second time, the large one among them.`
     );
   }
   return (
