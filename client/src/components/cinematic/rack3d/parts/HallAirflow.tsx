@@ -295,11 +295,15 @@ function buildGeometry(
 function PauseWhenUnseen() {
   const canvas = useThree((s) => s.gl.domElement);
   const setFrameloop = useThree((s) => s.setFrameloop);
+  const frameloop = useThree((s) => s.frameloop);
+  const wanted = useRef<"always" | "never">("always");
 
   useEffect(() => {
     let onScreen = true;
-    const apply = () =>
-      setFrameloop(onScreen && !document.hidden ? "always" : "never");
+    const apply = () => {
+      wanted.current = onScreen && !document.hidden ? "always" : "never";
+      setFrameloop(wanted.current);
+    };
 
     const observer = new IntersectionObserver(([entry]) => {
       onScreen = entry.isIntersecting;
@@ -310,9 +314,18 @@ function PauseWhenUnseen() {
     return () => {
       observer.disconnect();
       document.removeEventListener("visibilitychange", apply);
+      wanted.current = "always";
       setFrameloop("always");
     };
   }, [canvas, setFrameloop]);
+
+  // <Canvas> measures itself on scroll, and every time it re-renders it puts
+  // the loop back to its own `frameloop` prop. Scrolling on past the section
+  // would therefore undo the pause a moment after it was set, so whenever the
+  // loop is found in the wrong state it is put back.
+  useEffect(() => {
+    if (frameloop !== wanted.current) setFrameloop(wanted.current);
+  }, [frameloop, setFrameloop]);
 
   return null;
 }
