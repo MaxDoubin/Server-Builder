@@ -15657,6 +15657,7 @@ each.
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
       "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
@@ -15765,11 +15766,14 @@ which one applies depends on nothing but whether a line of code exists.
 While we are here, they are three behaviors and not one limit with two
 warnings:
 
-- **Below the first**, the kernel does not do the global accounting at all.
-  A zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means you are
-  under this mark, not that accounting is broken. Measured on a quiet box: 42
-  established connections, \`TCP: ... mem 0\`.
-- **Between the first and second**, it charges normally.
+- **Below the first**, TCP is not bothered about its memory use. The global
+  counter is still updated on every allocation; nothing throttles on it. A
+  zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means almost no
+  socket buffer memory is charged at that moment, not that accounting is
+  broken. Measured on a quiet box: 42 established connections,
+  \`TCP: ... mem 0\`.
+- **Between the first and second**, nothing changes yet, except that TCP
+  already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
   socket buffers*. This is the interesting one, because it shows up as
   throughput falling on every connection at once and as an error nowhere.
@@ -23022,6 +23026,7 @@ device](/space).
     slug: "the-clock-is-the-last-thing-anybody-checks",
     title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["security", "operations", "networking"],
     excerpt:
       "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
@@ -23090,7 +23095,10 @@ part I got wrong in my own prose, which I will come back to.
 
 Across these cases, the checks that tolerate anything at all allow 300 seconds
 and 30 seconds. A certificate's notBefore and an RRSIG's inception allow
-nothing: the edge is an edge.
+nothing in the specifications: the edge is an edge. Validators can add their
+own slack, though. Unbound by default forgives 10% of a signature's lifetime,
+clamped between one hour and a day, so check the resolver's skew settings
+before reading a [DNSSEC](/blog/dns-security-dnssec) failure as a hard edge.
 
 \`\`\`
 Kerberos, default clockskew      300 s
@@ -26980,6 +26988,7 @@ One security note that applies to both. SNMPv1 and v2c send a community string i
     slug: "netfilter-hook-order",
     title: "Netfilter Hooks And The Order Your Rules Really Run In",
     date: "2026-06-23",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "security"],
     excerpt:
       "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
@@ -27058,7 +27067,7 @@ Notice also that the nat hooks have \`policy accept\`. A nat chain is not a filt
 
 \`ct state\` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
 
-First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
+First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource, and an idle established TCP entry is kept for five days by default (\`nf_conntrack_tcp_timeout_established\` is 432000 seconds) unless the connection closes cleanly. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
 
 Second, the \`invalid\` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
 
@@ -27067,11 +27076,12 @@ Second, the \`invalid\` state is not noise. It usually means the tracker saw a p
 Two commands answer most questions. \`nft monitor trace\` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
 
 \`\`\`bash
-nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft add chain inet fw trace_chain '{ type filter hook prerouting priority -301; }'
+nft add rule inet fw trace_chain ip saddr 10.10.5.77 meta nftrace set 1
 nft monitor trace
 \`\`\`
 
-And counters tell you whether a rule is dead code:
+And counters tell you whether a rule is dead code, but only on rules that have one. nftables counts nothing by default, so add a \`counter\` statement to the rules you want to audit (\`iifname "mgmt0" tcp dport 22 counter accept\`) and let traffic run:
 
 \`\`\`bash
 nft --handle list ruleset | grep -n "counter packets 0"
@@ -27175,6 +27185,7 @@ cat /proc/pressure/memory
     slug: "ebpf-observability-basics",
     title: "eBPF Is How I Ask The Kernel Questions",
     date: "2026-07-04",
+    updated: "2026-11-21",
     tags: ["linux", "monitoring", "tools"],
     excerpt:
       "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
@@ -27233,7 +27244,7 @@ tracepoint:sched:sched_switch
 {
   @off[args->prev_pid] = nsecs;
   if (@off[args->next_pid]) {
-    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    @us[args->next_comm] = hist((nsecs - @off[args->next_pid]) / 1000);
     delete(@off[args->next_pid]);
   }
 }
@@ -30283,6 +30294,7 @@ In my experience the culprit is almost always one forgotten port or one overly e
     slug: "linux-disk-io-troubleshooting",
     title: "Troubleshooting Disk I/O on Linux Without Guessing",
     date: "2026-04-13",
+    updated: "2026-11-21",
     tags: ["linux", "storage", "operations"],
     excerpt:
       "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
@@ -30368,6 +30380,7 @@ runtime=60
 time_based=1
 group_reporting=1
 filename=/mnt/data/fiotest
+size=4g
 
 [random-read-4k]
 rw=randread
@@ -34018,6 +34031,7 @@ just an unusually eloquent client.
     slug: "zfs-arc-l2arc-tuning",
     title: "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
     date: "2026-06-26",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "servers"],
     excerpt:
       "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
@@ -34077,8 +34091,9 @@ Which means a SLOG only helps synchronous writes. Ordinary asynchronous writes, 
 Where it genuinely helps: NFS exports with sync semantics, databases issuing sync commits, and virtual machine storage over iSCSI or NFS where the guest is flushing. Check whether your workload is even synchronous before shopping.
 
 \`\`\`bash
-# Are writes to this dataset synchronous at all?
-zpool iostat -v 1
+# Are applications asking for synchronous writes at all?
+# Run it twice; a climbing zil_commit_count means yes (Linux path)
+grep zil_commit_count /proc/spl/kstat/zfs/zil
 
 # Dataset sync policy: standard honors the application, always forces sync
 zfs get sync tank/vmstore
@@ -47799,7 +47814,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -47866,9 +47881,9 @@ Expected output on a working dual-stack segment:
 
 \`\`\`
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
-    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+    inet6 2001:db8:1234:1:a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
        valid_lft 86200sec preferred_lft 14200sec
-    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+    inet6 2001:db8:1234:1:1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
        valid_lft 86200sec preferred_lft 14200sec
     inet6 fe80::5054:ff:fe12:3456/64 scope link
        valid_lft forever preferred_lft forever
@@ -49987,6 +50002,7 @@ Three security properties are worth being blunt about.
     slug: "container-networking-fundamentals",
     title: "Container Networking Fundamentals: How Pods and Containers Communicate",
     date: "2026-03-20",
+    updated: "2026-11-21",
     tags: ["networking", "containers", "kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
@@ -50065,7 +50081,7 @@ Kubernetes Services provide stable IP addresses for groups of pods. Service IPs 
 
 Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
 
-A ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
+In kube-proxy's iptables and nftables modes, a ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. (IPVS mode is the exception: it binds every ClusterIP to a dummy interface, \`kube-ipvs0\`, so the node answers the ping, which proves nothing about the backends either.) Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
 
 kube-proxy's default \`iptables\` mode writes one chain per Service plus one per endpoint, and load balancing is a chain of statistically weighted jumps. Rule evaluation and, more importantly, full-table resync are roughly linear in the number of Services, so clusters with several thousand Services see multi-second sync times and slow endpoint convergence. IPVS mode replaces the linear chain with a hash table and stays flat as the Service count grows; the newer \`nftables\` mode does the same with maps. If your cluster is small, iptables mode is simpler and easier to read with \`iptables-save -t nat | grep <service-name>\`.
 
@@ -51177,6 +51193,7 @@ Finally, a stale target simply stops producing samples. Prometheus looks back a 
     slug: "bgp-route-filtering-security",
     title: "BGP Route Filtering and Security Best Practices",
     date: "2026-03-29",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
@@ -51215,7 +51232,7 @@ The \`ge\` and \`le\` keywords are where most people go wrong, so be precise abo
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS and Junos with no export policy both readvertise every active BGP route to an eBGP peer, while IOS XR, which behaves the way RFC 8212 now requires, advertises nothing to an eBGP peer until a policy is attached. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 
@@ -51603,7 +51620,7 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
@@ -51639,7 +51656,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 \`\`\`bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep -E 'action="?deny' /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
 There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
@@ -51649,8 +51666,8 @@ There is a caveat that took me a while to internalize. Denies tell you what did 
 Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
 
 \`\`\`bash
-grep 'action=deny' /var/log/fortigate/traffic.log \\
-  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \\
+grep -E 'action="?deny' /var/log/fortigate/traffic.log \\
+  | sed -nE 's/.*(srcip=[0-9.]+) .*(dstip=[0-9.]+).*/\\1 \\2/p' \\
   | sort -u \\
   | awk '{print $1}' \\
   | uniq -c \\
@@ -52556,6 +52573,7 @@ was answering correctly the entire time.
     slug: "how-totp-codes-actually-work",
     title: "How TOTP Codes Actually Work",
     date: "2026-08-24",
+    updated: "2026-11-21",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
       "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
@@ -52655,8 +52673,9 @@ back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 
 \`\`\`bash
-# What the server would accept with a window of one step either side
-oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+# What the server would accept with a window of one step either side:
+# -w only counts forward, so start one step early and print three codes
+oathtool --totp -b --now "2026-08-25 08:59:30 UTC" -w 2 JBSWY3DPEHPK3PXP
 \`\`\`
 
 The window is a real cost, not free tolerance. Every extra step you accept
