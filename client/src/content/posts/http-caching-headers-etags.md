@@ -18,7 +18,7 @@ per object, and people are surprised their cache "is not working."
 
 ## Cache-Control directives that matter
 
-The response directives worth knowing, from RFC 9111:
+The response directives worth knowing, from RFC 9111 and two extensions:
 
 - `max-age=N` seconds of freshness for any cache.
 - `s-maxage=N` overrides `max-age` for shared caches only. This is how you
@@ -31,8 +31,8 @@ The response directives worth knowing, from RFC 9111:
   sensitive responses, not as a general safety blanket.
 - `private` means a browser may cache it but a shared cache must not. Get this
   wrong on a personalized page and one user sees another user's data.
-- `immutable` promises the body will never change for this URL, so a client
-  should not revalidate even on a reload.
+- `immutable` from RFC 8246 promises the body will never change for this URL,
+  so a client should not revalidate even on a reload.
 - `stale-while-revalidate=N` from RFC 5861 lets a cache serve a stale copy
   immediately and refresh in the background. It smooths out the latency
   spike every time an object expires.

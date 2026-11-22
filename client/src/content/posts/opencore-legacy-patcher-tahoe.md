@@ -1,7 +1,7 @@
 
 ## The short answer
 
-OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
+OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, and later candidates through [3.0.0-rc.5](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.5) on October 28, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
 
 ## Does OpenCore Legacy Patcher support macOS Tahoe?
 
@@ -13,10 +13,12 @@ The documentation has not caught up. The [README](https://raw.githubusercontent.
 
 ## What is the latest OpenCore Legacy Patcher version?
 
-The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.2 pre-release. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
+The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.5 pre-release. The source analysis below is of rc.2. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
 
 | Version | Published | Status | macOS range in its source |
 | :--- | :--- | :--- | :--- |
+| 3.0.0-rc.5 | October 28, 2026 | Pre-release | Big Sur through Tahoe |
+| 3.0.0-rc.3 | October 8, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.2 | October 4, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.1 | October 4, 2026 | Pre-release | Tahoe only with a developer file |
 | 2.5.1 | September 19, 2026 | Latest stable | [Big Sur through Sequoia](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.5.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) |
