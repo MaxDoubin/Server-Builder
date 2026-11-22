@@ -2039,7 +2039,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","security","operations"],
     excerpt: "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
     coverImage: "/images/blog/systemd-service-hardening.jpg",
-    wordCount: 856,
+    wordCount: 877,
   },
   {
     slug: "sriov-and-device-passthrough",

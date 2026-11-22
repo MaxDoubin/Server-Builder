@@ -37880,7 +37880,7 @@ removes administrative calls, resource limit manipulation, and legacy interfaces
 nobody should be calling. By default a blocked call kills the process with
 \`SIGSYS\`, which shows up in the journal as the service dying on signal SYS. Add
 \`SystemCallErrorNumber=EPERM\` if you would rather the call fail with an error,
-and \`SystemCallLog=\` to log which calls are hit.
+and \`SystemCallLog=@privileged @resources @obsolete\` to log when the service makes one of the calls you removed. It needs a list: an empty \`SystemCallLog=\` resets the setting and logs nothing.
 
 **IPAddressDeny and IPAddressAllow.** A per service firewall implemented in the
 kernel filter layer. A web application that only needs to talk to a local
