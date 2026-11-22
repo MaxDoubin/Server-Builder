@@ -2841,7 +2841,7 @@ export const postIndex: PostMeta[] = [
     tags: ["fortinet","networking","firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
-    wordCount: 1644,
+    wordCount: 1676,
   },
   {
     slug: "power-over-ethernet-poe",

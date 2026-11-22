@@ -107,7 +107,7 @@ end
 - `manual` uses the first listed member, period. No SLA awareness.
 - `sla` (the GUI calls it Lowest Cost SLA) uses the lowest cost member that meets the SLA, taking members in the listed order when costs tie, and falls to the next when it does not. This is the classic active/backup behavior.
 - `priority` (Best Quality in the GUI) picks the member with the best measured value of the metric named by `set link-cost-factor`, such as latency, jitter, or packet loss.
-- `set load-balance enable` spreads sessions across members. Since FortiOS 7.4.1 it is a separate option used with `manual` or `sla` rather than a mode; with `sla` it balances only across the members that meet the SLA. Before 7.4.1 this was `set mode load-balance`, which the GUI called Maximize Bandwidth SLA.
+- `set load-balance enable` spreads sessions across members. Since FortiOS 7.4.1 it is a separate option used with `manual` or `sla` rather than a mode; with `sla` it balances across the members that meet the SLA, and when none of them do but their health checks are still alive, Fortinet's documentation for the earlier Maximize Bandwidth (SLA) mode says they tie and traffic is balanced across all of them. Before 7.4.1 this was `set mode load-balance`, which the GUI called Maximize Bandwidth SLA.
 
 Rules are evaluated top to bottom by sequence number and the first match wins, exactly like firewall policies. If a rule is never taking effect, check whether a broader rule above it is catching the traffic first. Traffic that matches no rule falls through to the implicit rule, which uses the global `load-balance-mode`, defaulting to `source-ip-based`.
 
