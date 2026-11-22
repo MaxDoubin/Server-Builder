@@ -219,11 +219,11 @@ const vertexShader = /* glsl */ `
       color += uFault * warn * (0.15 + 0.35 * warnPulse);
     } else {
       // Row marker beside the stripe being written, read or rebuilt.
-      float active = 0.0;
-      if (uWrite >= 0.0) active = abs(row - floor(uWrite)) < 0.5 ? 1.0 : 0.0;
-      if (uRead.x >= 0.0) active = abs(row - uRead.x) < 0.5 ? uRead.w : 0.0;
-      if (rebuilding) active = onRow ? 1.0 : 0.0;
-      color = mix(uData * 0.12, uParity, active);
+      float lit = 0.0;
+      if (uWrite >= 0.0) lit = abs(row - floor(uWrite)) < 0.5 ? 1.0 : 0.0;
+      if (uRead.x >= 0.0) lit = abs(row - uRead.x) < 0.5 ? uRead.w : 0.0;
+      if (rebuilding) lit = onRow ? 1.0 : 0.0;
+      color = mix(uData * 0.12, uParity, lit);
       alpha = uMap;
     }
 
@@ -522,7 +522,7 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
     // Reduced motion: hold the settled, whole-array frame. (The home page
     // does not mount the scene at all in that case; this covers a visitor
     // who flips the setting mid-visit, and any future host.)
-    if (!reducedMotion) seconds.current += Math.min(delta, 0.1);
+    if (!reducedMotion) seconds.current += Math.min(delta, 0.5);
     const t = reducedMotion ? CALM_STILL_SECONDS : seconds.current;
     const f = sampleRaid(t, frameState);
 
