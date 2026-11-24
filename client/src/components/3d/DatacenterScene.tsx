@@ -1150,7 +1150,8 @@ export function DatacenterScene({
       */}
       {showHUD && <HolographicHUD />}
 
-      {isUnlocked && (
+      {/* The flythrough clears the screen; this badge sat half under its letterbox bar. */}
+      {isUnlocked && cameraMode !== "flythrough" && (
         <div
           className="absolute top-4 left-4 pointer-events-none select-none bg-black/60 backdrop-blur-md rounded-md px-3 py-2 border border-cyan-500/30"
           data-ui="true"

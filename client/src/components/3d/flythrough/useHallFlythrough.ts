@@ -52,7 +52,7 @@ export interface HallFlythroughState {
   toggle: () => void;
   /** Called by the rig when the playhead reaches the end. */
   handleEnd: () => void;
-  /** Called by the slider: a drag away from the end clears the ended state. */
+  /** Called by the slider: a drag to the end ends the run, a drag away from it clears that. */
   handleSeek: (fraction: number) => void;
 }
 
@@ -100,7 +100,18 @@ export function useHallFlythrough(): HallFlythroughState {
 
   const handleSeek = useCallback((fraction: number) => {
     transportRef.current.seekTo = fraction;
-    if (fraction < 1) setEnded(false);
+    if (fraction < 1) {
+      setEnded(false);
+      return;
+    }
+    /*
+      Dragged to the closing frame. The rig only reports the end of a run
+      that is playing, so a paused drag to the end has to enter the ended
+      state here, or Play would start on the last frame and stop at once
+      instead of replaying.
+    */
+    setPlaying(false);
+    setEnded(true);
   }, []);
 
   /*
