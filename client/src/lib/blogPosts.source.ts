@@ -333,7 +333,7 @@ Proxy mode has controls for the cost of holding content: size limits that block 
 
 ## Step 3: security profiles
 
-A security profile is a named object that says what to look for, and it does nothing until a policy references it. Fortinet's Best Practices guide puts the split this way: policies control what traffic is allowed where, and profiles define what to look for in it. In the CLI, \`utm-status\` must be enabled before profile fields apply. This sketch uses field names from the 7.6.8 CLI reference and profile names from the guide. It shows where each piece attaches and is not a tested configuration. It allows only Hypertext Transfer Protocol Secure (HTTPS), and the interface names are placeholders.
+A security profile is a named object that says what to look for, and it does nothing until a policy references it. Fortinet's Best Practices guide puts the split this way: policies control what traffic is allowed where, and profiles define what to look for in it. In the CLI, \`utm-status\` must be enabled before profile fields apply. This sketch uses field names from the 7.6.8 CLI reference and profile names from the guide. It shows where each piece attaches and is not a tested configuration. Its service is HTTPS, and a service is matched by protocol and port, so the policy admits traffic on the ports the HTTPS service defines, not only traffic that is really Hypertext Transfer Protocol Secure (HTTPS). The application list \`default\` monitors all applications instead of blocking the ones that are not HTTPS, so another protocol on those ports can pass unless a profile blocks it. The interface names are placeholders.
 
 \`\`\`
 config firewall policy
