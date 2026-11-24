@@ -58,6 +58,405 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "palo-alto-application-based-firewall-policy",
+    title: "Palo Alto Application-Based Firewall Policy Explained",
+    date: "2026-11-21",
+    tags: ["firewall", "networking", "security", "cybersecurity"],
+    excerpt:
+      "How a Palo Alto firewall matches traffic: zones, rule order, App-ID, unknown apps, port-based vs application-based rules, plus User-ID and Content-ID.",
+    coverImage: "/images/blog/palo-alto-application-based-firewall-policy-photo.jpg",
+    coverCredit: {
+      author: "Jacek Rużyczka",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wall-Mount_6-Port_Cat_6A_Ethernet_Patchpanel.jpg",
+    },
+    content: `## A firewall that asks what the traffic is, not only where it goes
+
+A traditional packet filter decides with addresses and port numbers. A Palo Alto Networks next-generation firewall (NGFW) adds a second question: which application is this session? The answer feeds the same rule list that matches on zones, addresses and users. This explainer covers zones, rule order, the default rules, App-ID (the application identification feature), the "unknown" application, and port-based versus application-based rules. It ends with User-ID (which maps network addresses to users) and Content-ID (which inspects allowed traffic).
+
+It is a reading of public vendor documentation, not a configuration guide, and nothing here comes from running these firewalls. Where a point is reasoning from the documentation and not a statement in it, the text says so.
+
+## Which documentation this describes
+
+The release matters, because behavior changes between versions of PAN-OS, the operating system on Palo Alto Networks firewalls. The pages read fall into two groups.
+
+- The policy pages (Security Policy, Components of a Security Policy Rule, Policy Types, Application Override Policy) are from the PAN-OS 11.1 Administrator's Guide and carry the 11.1 label. The zone help pages sit under an 11-1 path.
+- The App-ID, User-ID and rule optimization pages come from the vendor's unified Next-Generation Firewall documentation (the App-ID overview showed an update date of November 18, 2026). Its release selector lists PAN-OS 12.2 down to 8.1, and the body text does not say which release it was written for. No single release number covers all of it.
+- The Content-ID passage rests on a single vendor tech brief in PDF form, with a 2016 copyright footer, described where it is used.
+
+A cross-product Network Security page, shared with the vendor's cloud-delivered service, carries the same rule table, and its wording matches the 11.1 page on the points used here. The list of rule actions below is taken from it. Each major section opens with a line naming which documentation it follows, and a real firewall calls for the pages of the release it runs.
+
+## Zones: where every match starts
+
+This section follows the PAN-OS 11.1 zone help pages and the Segment Your Network page from the unified documentation.
+
+### What a zone is
+
+A security zone is a logical grouping of physical and virtual interfaces. An interface must be assigned to a zone before it can process traffic. A zone can hold several interfaces of the same type, but an interface belongs to only one zone. The listed zone types are Tap, Virtual Wire, Layer 2, Layer 3, External and Tunnel.
+
+Zones are the first segmentation tool. The getting-started page notes that traffic can only flow between zones if a rule allows it, and calls this "your first line of defense". Finer zones mean finer control. Its example is a zone for customer data servers, reachable only by certain users or groups. The post on [VLAN segmentation](/blog/vlan-segmentation-guide) covers how segments are built.
+
+### Zones in a rule
+
+A security rule names a source zone and a destination zone, never interfaces, and the two zones must be the same type. A rule can connect one Layer 2 zone to another Layer 2 zone but not a Layer 2 zone to a Layer 3 zone.
+
+Two details cause confusion. The destination zone is the post-NAT zone, where NAT (network address translation) means rewriting addresses in packet headers. The rule's address fields, in contrast, use the original pre-NAT addresses. One rule therefore mixes two views of the same session.
+
+The firewall also acts only on traffic it sees. The getting-started page states that traffic must pass through the firewall to be managed and controlled. By inference, hosts on one network segment that talk directly never reach it, so no rule applies to them.
+
+## How a session meets a rule
+
+This section follows the PAN-OS 11.1 policy pages, plus the Network Security rules page for the action list.
+
+The unit of matching is the session. Every packet is matched against a session, and each session is matched against a security rule. After a match, the rule applies to both directions of the session, client to server and server to client, so replies need no mirror-image rule.
+
+According to the Components of a Security Policy Rule page, a rule can match on these attributes.
+
+| Field | What it matches | Note from the documentation |
+| --- | --- | --- |
+| Source and destination zone | Where the session enters and leaves | Destination zone is post-NAT |
+| Source and destination address | Internet Protocol (IP) addresses, ranges, objects, groups, countries | Pre-NAT addresses |
+| User | A user or group | Needs User-ID enabled on the zone |
+| Application | The App-ID identified for the session | Used to block unknown applications and control the rest |
+| URL category | Web site category by Uniform Resource Locator (URL) | Dynamic categories need a URL filtering license |
+| Service | Layer 4 port: a Transmission Control Protocol (TCP) or User Datagram Protocol (UDP) port number | any, a specific port, or application-default |
+
+The Network Security page lists the actions as allow, deny, drop and three reset variants (client, server or both). Deny enforces the default deny action defined for the application, drop silently discards, and a reset is sent only after a session has formed. Security profiles, the Content-ID side covered below, are evaluated only for rules whose action is allow.
+
+Security policy is one of several policy types, alongside NAT, quality of service, policy-based forwarding, decryption, application override, authentication and denial-of-service protection. Authentication policy is evaluated before security policy.
+
+## Rule order and the default rules
+
+This section follows the PAN-OS 11.1 Security Policy page.
+
+### First match wins
+
+The page says rules are evaluated left to right and from top to bottom. A packet is matched against the first rule that meets the criteria, and after that "subsequent rules are not evaluated". The same page draws the practical conclusion: specific rules must sit above general ones. A broad allow placed early shadows every narrower rule beneath it.
+
+Logging is a per-rule setting. A matching session produces a traffic log entry at the end of the session if logging is enabled for that rule, and a rule can also log at session start. The [firewall log analysis](/blog/firewall-log-analysis) post covers general habits for reading those logs.
+
+### The two default rules
+
+Traffic that matches no rule meets the default rules, shown at the bottom of the rulebase. They are predefined to allow all intrazone traffic (inside one zone) and deny all interzone traffic (between zones). They are read-only by default, but tags, the action, log settings and security profiles can be overridden.
+
+The first consequence matches the zone overview: "Traffic can flow freely within a zone but traffic cannot flow between different zones until you define a Security policy rule that allows it." A new zone pair is closed until a rule opens it. The second is inference. Because logging is per rule, whether the default deny leaves a trace in the traffic log depends on its log setting, one of the overridable fields.
+
+The post on [firewall policy design](/blog/firewall-policy-design) covers the same intra-zone question as a per-zone setting on another platform, a useful contrast.
+
+### Universal, intrazone and interzone rules
+
+Each rule has a type. Universal is the default and matches both interzone and intrazone traffic for the zones named. An interzone rule matches only traffic between the listed zones. An intrazone rule matches only traffic inside the listed source zones and cannot take a destination zone.
+
+The documentation's example shows how far a universal rule reaches. With source and destination zones A and B, it covers traffic inside A, inside B, from A to B and from B to A. If the intent was only to connect A and B, it also writes policy for traffic inside each zone.
+
+## App-ID: identifying the application
+
+This section follows the unified Next-Generation Firewall documentation (App-ID overview, unknown applications, application objects and dependencies), except where it names the PAN-OS 11.1 Application Override page.
+
+### What it claims to do
+
+The App-ID overview says it determines what an application is "irrespective of port, protocol, encryption (SSH or SSL) or any other evasive tactic used by the application". SSH is Secure Shell and SSL is Secure Sockets Layer, the older name this documentation still uses for encrypted web traffic. App-ID combines three kinds of classification: application signatures, application protocol decoding and heuristics. It is always enabled by default, and weekly application updates add signatures.
+
+### The order of operations
+
+The overview describes a sequence.
+
+1. Traffic is matched against policy to check whether it is allowed.
+2. Signatures are applied to allowed traffic to identify the application by its properties and transaction characteristics. The signature also shows whether the application is on its default port or a non-standard one.
+3. Allowed traffic is then scanned for threats and analyzed further to identify the application more granularly.
+4. If encryption is detected and a decryption rule applies, the session is decrypted and signatures are applied again to the decrypted flow.
+5. Decoders for known protocols look for applications tunneling inside them. The example is an instant messenger carried over HTTP (Hypertext Transfer Protocol).
+6. For particularly evasive applications, heuristics or behavioral analysis may decide the identity.
+7. Once the application is identified, the policy check determines the treatment: block, allow and scan for threats, inspect for unauthorized file transfer and data patterns, or shape with quality of service.
+
+Step 1 is easy to miss. The overview puts a policy match ahead of identification and describes identification as continuing afterward.
+
+### The identity can change inside a session
+
+Steps 3 to 6 suggest a session can be identified in stages, from a general application to a more specific one. The pages read for the sections above do not say what happens to rule matching when the identified application changes partway through a session, but a Palo Alto Networks training module does. The module is the Application Identification lesson of the Palo Alto Networks Academy App-ID course (copyright 2017-2021; its file name says PAN-OS 10.1, so it is older than the 11.1 pages used elsewhere in this article). It says that even after App-ID has identified an application, the firewall keeps watching for a shift to a new application, and that "if an application shift is detected, the firewall checks the Security policy again to determine what to do with the traffic." Its worked example is a session first identified as ssl and allowed by the first rule, which then shifts to office-on-demand. That application does not match the first rule, so the firewall moves on to the next rule and matches it there. A later page of the module, which holds that example, adds that when you write a policy to allow applications, you also allow the other applications they depend on. The practical reading is that a rule for the first, general application does not settle the session: the shifted application is matched against the rules again, so it can be allowed by a different rule or denied.
+
+The documentation does address dependencies. The Applications with Implicit Support page says a policy allowing a specific application must also allow the applications it depends on. In many cases the firewall works the dependencies out and allows them implicitly. Its table is dated by the page itself ("as of Content Update 595") and lists, for example, apt-get as implicitly supporting http; the date stamp suggests the table moves with content updates, so treat the example as a snapshot. For applications where the firewall cannot determine the dependencies in time, an explicit allow is required. The Resolve Application Dependencies workflow shows missing dependencies when a rule is created and as warnings at commit.
+
+### The "unknown" application
+
+The documentation says unknown traffic is classified as tcp, udp or non-syn-tcp in the ACC (the Application Command Center) and the traffic logs, and is typically a commercial application not yet in App-ID, an internal or custom application, or a potential threat. A normal application can also be reported as unknown for two reasons. With incomplete data, a handshake happened but no data packets arrived before the timeout. With insufficient data, a handshake and some data packets happened, but too few to identify the application.
+
+The same page speaks of unknown TCP and unknown UDP when it lists policy options, so the label shown in a given release's logs may be worded differently from the page's list; check your own logs rather than relying on this article for the exact strings. The listed options are to write policy for unknown TCP, unknown UDP or a combination of zones and addresses; to capture packets and ask the vendor for an App-ID; or to create a custom application with its own signature or timeout. The page's example is a custom application matched on a host header: the packets are first identified as web-browsing and then as the custom application, and because the parent application is web-browsing, it is still inspected at layer 7 (the application layer) and scanned for content and vulnerabilities.
+
+### Application Override, the escape hatch
+
+Application Override is a separate policy type (from the PAN-OS 11.1 pages) that makes the firewall handle matching sessions as a stateful layer 4 firewall would, bypassing layer 7 processing and threat inspection. The documentation says not to use it unless necessary and to prefer a custom application or custom service timeout so the traffic stays visible. It names two main use cases. One is a Session Initiation Protocol (SIP) application-level gateway (ALG) in Prisma Access, the vendor's cloud-delivered service, where ALG changes cannot be made in the cloud. The other is an environment where Server Message Block (SMB) file sharing performance is critically low and a response-inspection setting does not help enough.
+
+### Groups, filters and tags
+
+Application objects spare a rule from listing applications one by one. A group holds sanctioned applications to be treated alike. A filter groups applications dynamically by category, subcategory, technology, risk and characteristic, so a new matching application joins automatically. A filter can also use tags that the vendor delivers in dynamic content updates, so that new and updated App-IDs are picked up without editing the rule.
+
+## Port-based versus application-based rules
+
+This section follows the PAN-OS 11.1 rule components page and the unified documentation's rule optimization and migration pages.
+
+### The difference
+
+A port-based rule matches the port and says nothing about the application. The vendor's example is a rule allowing TCP 80 and TCP 443: it gives no control over which applications use those ports, and a general web rule allows thousands of applications. An application-based rule names the applications allowed and leaves the rest to later rules and the default deny.
+
+| Question | Port-based rule | Application-based rule |
+| --- | --- | --- |
+| What does the rule name? | Zones, addresses and ports, with no application configured | Applications, groups or filters |
+| What does an open port allow? | Any application that uses it | Only the named applications |
+| A new application appears on the same port | Allowed | Not allowed until a rule covers it (a filter that already matches it counts) |
+| How Policy Optimizer treats it | Listed as having no application specified, a candidate to convert | Checked for allowed applications that are never seen |
+
+### The Service field is the bridge
+
+Service takes any, a specific port, or application-default. With application-default, an application is allowed only on its standard ports and protocols, even though the firewall still checks all applications on all ports. For inbound allow rules the documentation says this prevents applications from running on unusual ports and protocols. Named applications plus application-default is how it says evasive applications on non-standard ports get blocked.
+
+By reasoning, not quotation, the reverse also holds: an application-based rule with service set to any allows that application on every port.
+
+### Migrating without breaking things
+
+The documentation treats port-based rules as an inheritance from older firewalls. Policy Optimizer is the built-in conversion workflow. It lists the applications seen on each port-based rule, flags over-provisioned application rules, and sorts rules for prioritization without changing their order. The pages recommend migrating a few rules at a time.
+
+The web and SSL use case is the most instructive. Cloning a port-based rule places the clone directly above the original, so the old rule stays as a safety net. Adding applications to the rule replaces the port-based rule, and the Match Usage shortcut allows every application the rule has seen, which the page warns could be dangerous, especially for web browsing. Once the clones cover everything needed, the original can go.
+
+One detail from the migration page: cloning or adding applications changes nothing else about the original rule, so a Service field that allowed any port must be changed to application-default on the new rule to restrict the applications to their default ports.
+
+## User-ID and Content-ID at a high level
+
+### User-ID
+
+This part follows the unified documentation's User-ID overview and the PAN-OS 11.1 zone help page.
+
+User-ID maps IP addresses to usernames so rules and logs can name people. The documentation lists visibility, policy control and forensics as uses. Mapping sources include an agent that watches server logs for login events, syslog messages from authenticating services, and an authentication portal for addresses still unmapped. Group membership comes from connecting directly to a directory server over Lightweight Directory Access Protocol (LDAP), or from an application programming interface (API) integration with the directory server.
+
+Two constraints affect policy. The user field in a rule requires User-ID enabled on the zone, a per-zone setting called Enable User Identification, and the documentation recommends enabling it on trusted zones only: with client probing on an untrusted zone, probes could leave the network and disclose the service account name, domain name and an encrypted password hash. And User-ID does not work where user source addresses are translated by NAT before the firewall maps them to usernames.
+
+### Content-ID
+
+This passage rests on one source, a vendor tech brief in PDF form whose footer carries a 2016 copyright notice. It is kept to what that brief says, attributed to it, and was not checked against the current product documentation, so details may have changed since.
+
+The brief describes Content-ID as combining a real-time threat prevention engine with a URL database and elements of application identification, to limit unauthorized data and file transfers and to detect and block exploits, malware and dangerous web surfing. It says traffic is scanned only once, regardless of which Content-ID features are enabled, and a figure caption in the brief says Content-ID is enabled on a per-rule basis using individual or group profiles. That fits the rule components page, which says security profiles are evaluated only for rules with an allow action. By reasoning, not quotation: the rule's zones, addresses, application and service decide what is let through, and the profiles then inspect what remains.
+
+## Limits and common mistakes
+
+- Treating a zone as a boundary inside itself. The default rule allows intrazone traffic.
+- Writing a universal rule when only interzone traffic was intended.
+- Allowing an application and forgetting its dependencies, or leaning on the implicit-support table, a dated snapshot.
+- Leaving a broad port-based rule above a new application-based rule, so the narrower rule never hits.
+- Allowing unknown traffic on a guess that it is an internal tool, when the documentation's own list includes potential threats.
+- Assuming behavior from one release applies to another.
+
+## Sources
+
+- [App-ID Overview](https://docs.paloaltonetworks.com/ngfw/administration/app-id/app-id-overview)
+- [Palo Alto Networks Academy: App-ID, Application Identification module (training PDF, 2017-2021, PAN-OS 10.1)](https://s3.amazonaws.com/assets.paloaltonetworksacademy.net/esm/EDU-210-10.1a-M08-AppID-1.pdf)
+- [Security Policy (PAN-OS 11.1)](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/policy/security-policy)
+- [Components of a Security Policy Rule (PAN-OS 11.1)](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/policy/security-policy/components-of-a-security-policy-rule)
+- [Security Policy Rules (Network Security)](https://docs.paloaltonetworks.com/network-security/security-policy/administration/security-rules)
+- [Policy Types (PAN-OS 11.1)](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/policy/policy-types)
+- [Application Override Policy (PAN-OS 11.1)](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/policy/application-override-policy)
+- [Security Zone Overview (PAN-OS 11.1 help)](https://docs.paloaltonetworks.com/ngfw/help/11-1/network/network-zones/security-zone-overview)
+- [Building Blocks of Security Zones (PAN-OS 11.1 help)](https://docs.paloaltonetworks.com/ngfw/help/11-1/network/network-zones/building-blocks-of-security-zones)
+- [Segment Your Network for a Reduced Attack Surface](https://docs.paloaltonetworks.com/ngfw/getting-started/initial-setup-configuration-ngfws/segment-your-network)
+- [Manage Custom or Unknown Applications](https://docs.paloaltonetworks.com/ngfw/administration/app-id/manage-custom-or-unknown-applications)
+- [Use Application Objects in Policy](https://docs.paloaltonetworks.com/ngfw/administration/app-id/use-application-objects-in-policy)
+- [Resolve Application Dependencies](https://docs.paloaltonetworks.com/ngfw/administration/app-id/use-application-objects-in-policy/resolve-application-dependencies)
+- [Applications with Implicit Support](https://docs.paloaltonetworks.com/ngfw/administration/app-id/applications-with-implicit-support)
+- [Streamlined App-ID Policy Rules](https://docs.paloaltonetworks.com/ngfw/administration/app-id/streamlined-app-id-policy-rules)
+- [Security Policy Rule Optimization](https://docs.paloaltonetworks.com/ngfw/administration/app-id/security-policy-rule-optimization)
+- [Migrate Port-Based to App-ID Based Security Policy Rules](https://docs.paloaltonetworks.com/ngfw/administration/app-id/security-policy-rule-optimization/migrate-port-based-to-app-id-based-security-policy-rules)
+- [Rule Cloning Migration Use Case: Web Browsing and SSL Traffic](https://docs.paloaltonetworks.com/ngfw/administration/app-id/security-policy-rule-optimization/rule-cloning-migration-use-case-web-browsing-and-ssl-traffic)
+- [User-ID Overview](https://docs.paloaltonetworks.com/ngfw/administration/user-id/user-id-overview)
+- [Palo Alto Networks Content-ID tech brief (PDF)](https://www.paloaltonetworks.com/content/dam/pan/en_US/assets/pdf/tech-briefs/techbrief-content-id.pdf)
+`,
+  },
+  {
+    slug: "how-a-fortigate-evaluates-traffic",
+    title: "How a FortiGate Evaluates Traffic, Step by Step",
+    date: "2026-11-21",
+    tags: ["fortinet", "firewall", "networking", "security"],
+    excerpt:
+      "How a FortiGate matches policies, picks flow or proxy inspection, applies profiles, SSL inspection and NAT, per the FortiOS 7.6.8 documentation.",
+    coverImage: "/images/blog/how-a-fortigate-evaluates-traffic-photo.jpg",
+    coverCredit: {
+      author: "Inisheer",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:CERN-20060225-01.jpg",
+    },
+    content: `## What this explains, and which release
+
+This explainer follows one new connection through a FortiGate, Fortinet's firewall product line, in the order Fortinet's public documentation describes it: policy match, inspection mode, security profiles, Secure Sockets Layer and Transport Layer Security (SSL/TLS) inspection, and network address translation (NAT). It ends with the Security Fabric, which this article reads as context around the policy engine and not a stage inside it (that reading is the article's own, not a Fortinet statement). It is a reading of documentation. No device was tested.
+
+Every behavior is pinned to FortiOS 7.6, the FortiGate operating system. The main source is the FortiOS 7.6.8 Administration Guide on docs.fortinet.com, the newest 7.6 release in the library's version list in November 2026. The list also showed 8.0.0 through 8.0.2, which were not read, so 8.0 is unchecked and behavior there may differ. The Best Practices pages cited carry a 7.6.0 header, defaults come from the 7.6.8 command-line interface (CLI) reference, and Fortinet Community tips, written for older releases, are labeled where used. Branch differences are in [FortiOS 7.6 vs 7.4](/blog/fortios-7-6-vs-7-4).
+
+## The short version
+
+A FortiGate is a stateful firewall. Traffic that starts a new connection is checked against the policy list in order, and the first policy that matches decides what happens. If none matches, the implicit deny drops it. Each session gets an entry in the session table, which the documentation says can show the number of the policy it matches, and that policy carries the remaining decisions: inspection mode, security profiles, SSL inspection and NAT. The session-table page describes the firewall as stateful, tracking sessions so that only packets consistent with the session state pass, which is why replies belong to an existing session.
+
+| Question | Decided by | Default for a new policy in 7.6.8 |
+|---|---|---|
+| Is the traffic allowed? | First matching policy, else the implicit deny | Action is deny |
+| How is content examined? | The policy's inspection mode | Flow-based |
+| What is looked for? | Security profiles attached to the policy | None attached |
+| Can encrypted content be read? | The policy's SSL inspection profile | no-inspection |
+| Is the source address rewritten? | The policy's NAT setting, or the central source NAT table | NAT off |
+
+## Step 1: matching a policy
+
+### What a policy matches on
+
+The Administration Guide lists seven match parameters: incoming interface, outgoing interface, source address, destination address, user identity, service and schedule. A service is a protocol and port definition. The guide contrasts it with application control, which examines packets to find the protocol actually in use. Traffic that matches no policy is denied.
+
+Direction follows whoever starts the conversation, and each direction in which sessions can start needs its own policy. By default, FortiOS does not run a reverse-path check on reply traffic that matches an allowed session by its Internet Protocol (IP) tuple, so a reply may return on a different interface. The 7.6.7 release notes describe a setting, \`src-check-reply\` under \`config system settings\`, that "functions like strict Reverse Path Forwarding checks for reply packets"; its \`disable\` option is marked as the default. This article did not test it, and with it enabled a reply on a different interface may be checked and dropped. The session-table page adds that checking for a policy match is where features such as NAT, scanning and traffic shaping can be applied.
+
+Routing matters before the match. The Policy match tool works only if the relevant route exists, and the sample trace in the packet-flow page prints the next-hop route lookup before the line that reports the matched policy. Software-defined wide area network (SD-WAN) rules are policy-routing options that pick a member link, so they sit on the routing side. [FortiGate SD-WAN configuration](/blog/fortigate-sdwan-configuration) covers that half.
+
+### First match wins
+
+Fortinet's Best Practices guide states it directly: "When traffic matches a policy, further policies are not processed." The graphical user interface (GUI) By Sequence view lists policies in the order they are checked, and the Interface Pair view groups the same policies by interface pair. A Policy match tool takes traffic parameters and highlights the matching policy, provided the route exists and the unit is not in transparent mode.
+
+A broad rule above a narrow one makes the narrow one unreachable, which [firewall policy design](/blog/firewall-policy-design) treats at length. The documented exception involves virtual IPs (VIPs), the objects used for destination NAT. The Best Practices page says policies that include a VIP, or that have \`match-vip\` enabled, have priority over other policies. Its example is a deny policy listed first and an accept policy that uses a VIP as its destination: traffic from the denied source to the VIP is not blocked until \`match-vip\` is enabled on the deny policy. The setting exists only on deny policies, and the page says that in FortiOS 7.2.4 and later it is enabled by default in new deny policies, so an older deny is worth checking.
+
+### The implicit deny
+
+When no policy matches, traffic is dropped, and the Best Practices guide says not to override the implicit deny. The 7.6.8 CLI reference lists \`fwpolicy-implicit-log\`, under \`config log setting\`, with a default of disable, so the drops are silent unless logging is turned on. A Fortinet Community tip written for FortiGate 5.6 to 6.4 says enabling it can generate a large volume of logs and suggests a narrower explicit deny below the allow rules. A 2022 tip adds that traffic aimed at the FortiGate itself and blocked by the implicit deny is logged as local traffic, not forward traffic. That boundary is the subject of [local-in policies and trusted hosts](/blog/fortigate-local-in-policy-trusted-hosts).
+
+## Step 2: inspection mode, flow or proxy
+
+Each policy has an inspection mode, set with \`inspection-mode\` in the CLI. In 7.6.8, flow-based is the default for new policies and the recommended mode unless proxy-specific features are needed. Fortinet's definition is that flow-based inspection "takes a snapshot of content packets and uses pattern matching to identify security threats in the content." Proxy-based inspection instead reconstructs the content passing through and inspects the reconstruction.
+
+- **Flow-based.** The whole file is not held. Packets are inspected one by one, but the last packet is held until the scan returns a verdict, so some buffering still happens. On a violation a reset packet goes to the receiver and the connection ends. Packets are otherwise unchanged.
+- **Proxy-based.** The whole file, message or page is held until inspection finishes. On a violation the payload is dropped and a replacement message is sent.
+
+Proxy mode has controls for the cost of holding content: size limits that block or ignore large files, and client comforting, which sends small portions of the payload during scanning so the receiving user does not time out. Features available only with proxy-based inspection include video filter, inline cloud access security broker (CASB), Internet Content Adaptation Protocol (ICAP), web application firewall (WAF), content disarm, SSL offloading, explicit web proxy and zero trust network access (ZTNA). The guide says most proxy features are not supported on models with 2 GB of memory or less.
+
+## Step 3: security profiles
+
+A security profile is a named object that says what to look for, and it does nothing until a policy references it. Fortinet's Best Practices guide puts the split this way: policies control what traffic is allowed where, and profiles define what to look for in it. In the CLI, \`utm-status\` must be enabled before profile fields apply. This sketch uses field names from the 7.6.8 CLI reference and profile names from the guide. It shows where each piece attaches and is not a tested configuration. Its service is HTTPS, and a service is matched by protocol and port, so the policy admits traffic on the ports the HTTPS service defines, not only traffic that is really Hypertext Transfer Protocol Secure (HTTPS). The application list \`default\` monitors all applications instead of blocking the ones that are not HTTPS, so another protocol on those ports can pass unless a profile blocks it. The interface names are placeholders.
+
+\`\`\`
+config firewall policy
+    edit 10
+        set srcintf "lan"
+        set dstintf "wan1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "HTTPS"
+        set inspection-mode flow
+        set utm-status enable
+        set ssl-ssh-profile "certificate-inspection"
+        set av-profile "default"
+        set webfilter-profile "default"
+        set ips-sensor "default"
+        set application-list "default"
+        set nat enable
+    next
+end
+\`\`\`
+
+The four main profile types, per the 7.6.8 pages:
+
+- **Antivirus.** Flow-based by default, with \`default\` and \`wifi-default\` preloaded. It needs a FortiGuard Antivirus subscription, and definitions download only if at least one policy with an antivirus profile is enabled.
+- **Web filter.** A content filter, a Uniform Resource Locator (URL) filter and FortiGuard categories, applied in the order URL filter, FortiGuard, content filter, script filter, then antivirus scanning. Preloaded: \`default\`, \`monitor-all\` and \`wifi-default\`.
+- **Intrusion prevention system (IPS).** A sensor is a set of signatures and filters that defines what the IPS engine scans. Predefined sensors include \`all_default\`, \`default\` and \`high_security\`. Definitions download only if a policy uses an IPS profile, and Fortinet recommends tuning a sensor to its environment.
+- **Application control.** Sensors choose an action for each recognized application, detected by IPS protocol decoders even on non-standard ports. Preloaded: \`default\` (which monitors all applications), \`wifi-default\` and \`block-high-risk\`. It needs a FortiGuard Application Control subscription.
+
+The guide also describes a policy-based next-generation firewall (NGFW) mode, which allows applications and URL categories directly in policies and supports only flow-mode profiles. This article covers the profile-based mode.
+
+## Step 4: SSL inspection
+
+A profile can only read what the FortiGate can see. Fortinet describes SSL inspection as what lets antivirus, web filtering and email filtering apply to encrypted traffic. Each policy names an SSL/SSH (Secure Shell) inspection profile. The guide lists the preloaded \`certificate-inspection\`, \`deep-inspection\` and \`no-inspection\`, which are read-only and can be cloned, plus an editable \`custom-deep-inspection\`. With no security profile enabled a policy uses \`no-inspection\`, and once any profile is enabled the guide says to change it.
+
+| Profile | What the FortiGate reads | Must clients trust the FortiGate's certificate authority (CA)? |
+|---|---|---|
+| \`no-inspection\` | Presumably nothing inside the TLS session (inferred from the name; the guide lists the profile without describing it) | Presumably no |
+| \`certificate-inspection\` | Headers up to the SSL/TLS layer, not the content | Only to avoid warnings on HTTPS block pages |
+| \`deep-inspection\` | The decrypted content | Yes |
+
+### Certificate inspection
+
+Fortinet positions certificate inspection for cases where scanning content is unwanted for privacy reasons but control over reachable sites is still wanted. The SSL/SSH profile has a setting that compares the Server Name Indication (SNI), the TLS extension in which a client names the server it wants (Request for Comments 6066), with the name fields of the certificate the server returns. One catch: when a web filter blocks an HTTPS page, the replacement page is served over HTTPS, and the guide says its certificate is signed by the FortiGate CA. Clients that do not trust that CA see a warning on the block page.
+
+### Deep inspection and why clients must trust a CA
+
+Deep inspection works by impersonation. The guide says the FortiGate poses as the recipient of the client's SSL session, decrypts the content, inspects it, then re-encrypts it and sends it to the real server. For its half of the conversation with the client, the FortiGate must present a certificate for the requested site that it signed itself, using a CA certificate from its own store. By default that is \`Fortinet_CA_SSL\`, and an uploaded CA can be chosen instead.
+
+A client accepts a server certificate only if it chains to a CA the client already trusts, which the post on [TLS certificates](/blog/ssl-tls-certificates-explained) walks through. Browsers do not ship with \`Fortinet_CA_SSL\`, so the guide says they show an untrusted-certificate warning for each re-signed certificate until the CA is imported. The documented fix is to download the CA from the profile and install it in the client's trusted root store, with Windows group policy suggested for an Active Directory domain. The guide also says, "Never import the Fortinet_CA_Untrusted certificate into your browser," and ties lingering warnings to that second certificate. The profile page describes one option for server certificates that fail validation as re-signing the certificate as trusted and another as keeping it untrusted, which suggests that Fortinet_CA_Untrusted signs for the second case. That is an inference: the guide does not say so.
+
+Two consequences follow, both reasoning from how certificate trust works, not claims from the guide. Clients that cannot be given the CA, such as unmanaged guest devices, are poor candidates for deep inspection. And a CA that clients trust can sign a certificate for any site, so its private key deserves the protection given to any internal root.
+
+Traffic can be exempted by address, by FortiGuard web category or through an allowlist of reputable websites. The profile page says Finance and Banking, Health and Wellness and Personal Privacy are added to the exemption list by default, as the categories most likely to include applications that require a specific certificate.
+
+## NAT in a policy
+
+NAT is configured on or beside the matching policy, and the guide splits it into source NAT (SNAT) and destination NAT (DNAT).
+
+- **Static SNAT.** Enabling NAT on a policy with the outgoing interface address rewrites the source to that address. The Static SNAT page counts 60,416 available port numbers for that one address, which it says can serve 60,416 internal addresses reaching the same service, defined as one protocol, destination address and destination port.
+- **Dynamic SNAT.** An IP pool supplies the translated address. The guide describes four Internet Protocol version 4 (IPv4) pool types: overload, one-to-one (no port translation), fixed port range and port block allocation.
+- **Central SNAT.** A separate rule table read from the top down until one matches, applied after a security policy. It is off by default, and when enabled the per-policy NAT option is skipped.
+- **DNAT.** A VIP maps an external address to an internal one and is chosen as the policy's destination. This is the VIP whose priority over ordinary policies was described under first match.
+
+One ordering question is left open on purpose. The Central SNAT page says its rules apply to traffic after a security policy, while the packet-flow page's sample trace prints the line that chooses the SNAT address and port before the line that reports the matched policy. The documentation does not reconcile the two, so this article makes no claim about the exact internal order. What the trace does show is that later packets of the same connection match the existing session and have SNAT applied, with no further policy line.
+
+## The Security Fabric
+
+Fortinet describes the Security Fabric as an architecture that "interconnects discrete security solutions into an integrated whole." The 7.6.8 guide names four visible parts: a topology view, security rating checks, fabric connectors for cloud and partner platforms, and automation that pairs an event trigger with actions.
+
+For the evaluation path, the visible link is address objects. The \`FABRIC_DEVICE\` dynamic address group, which represents Fortinet devices connected to the Fabric, can be used as an address in firewall policies, and its contents fill in dynamically. None of the Fabric pages read describes it changing the match order or the inspection path, so this article reads it as shared context around the policy engine and not a stage in the per-packet decision. That is the article's reading, not a Fortinet statement, and the Fabric pages were read only at an introductory level. One capacity note: models with 2 GB of memory, including the 40F, 50G and 60F series, can authorize up to five devices as a Fabric root.
+
+## Limits and common mistakes
+
+- **A deny that misses a VIP.** Without \`match-vip\`, a deny policy can be outranked by a later policy that uses a VIP as its destination.
+- **Policy changes and live sessions.** The default \`firewall-session-dirty\` setting, \`check-all\`, flags affected sessions for revalidation after a policy or routing change, and sessions that no longer conform are dropped. \`check-new\` applies changes to new sessions only.
+- **Same-interface forwarding.** Starting in 7.6.5, \`allow-traffic-redirect\` is disabled by default, and the guide says it is disabled after an upgrade even if it was enabled before. Traffic leaving through its arrival interface then needs an IPv4 policy or it meets the implicit deny.
+- **Port mapping differs by mode.** In deep inspection, protocol port mapping applies only to proxy-based inspection, and flow-based inspection scans all ports regardless.
+- **Tracing offloaded sessions.** Flow debugging does not work for traffic offloaded to Fortinet's NP6 or NP7 processors, and the guide suggests testing with ping-style Internet Control Message Protocol traffic or disabling offload.
+
+## Study notes
+
+- List the seven policy match parameters from memory, then add the two stages outside them: routing before the match and the session table after it.
+- Explain why a flow policy resets a connection while a proxy policy shows a replacement page.
+- Predict what a client sees under each SSL profile when the CA is not installed.
+
+## Sources
+
+- [FortiOS 7.6.8 Administration Guide: Firewall policy](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/656084/firewall-policy)
+- [Administration Guide: Inspection modes](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/721410/inspection-modes)
+- [Administration Guide: Flow mode inspection](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/659145/flow-mode-inspection-default-mode)
+- [Administration Guide: Proxy mode inspection](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/969330/proxy-mode-inspection)
+- [Administration Guide: Inspection mode feature comparison](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/922096/inspection-mode-feature-comparison)
+- [Administration Guide: Antivirus introduction](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/723287/antivirus-introduction)
+- [Administration Guide: Web filter introduction](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/155426/web-filter-introduction)
+- [Administration Guide: Intrusion prevention](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/565562/intrusion-prevention)
+- [Administration Guide: Application control](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/302748/application-control)
+- [Administration Guide: NGFW policy](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/243446/ngfw-policy)
+- [Administration Guide: SSL & SSH Inspection](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/929997/ssl-ssh-inspection)
+- [Administration Guide: Certificate inspection](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/505842/certificate-inspection)
+- [Administration Guide: Deep inspection](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/122078/deep-inspection)
+- [Administration Guide: Configuring an SSL/SSH inspection profile](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/709167/configuring-an-ssl-ssh-inspection-profile)
+- [Administration Guide: Static SNAT](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/898655/static-snat)
+- [Administration Guide: Dynamic SNAT](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/29961/dynamic-snat)
+- [Administration Guide: Central SNAT](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/421028/central-snat)
+- [Administration Guide: Destination NAT](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/728694/destination-nat)
+- [Administration Guide: Using a session table](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/562859/using-a-session-table)
+- [Administration Guide: Debugging the packet flow](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/54688/debugging-the-packet-flow)
+- [Administration Guide: SD-WAN implicit rule](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/216765/implicit-rule)
+- [Administration Guide: Fortinet Security Fabric](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/286973/fortinet-security-fabric)
+- [Administration Guide: Dynamic policy, Fabric devices](https://docs.fortinet.com/document/fortigate/7.6.8/administration-guide/146433/dynamic-policy-fabric-devices)
+- [Best Practices (7.6): Policies](https://docs.fortinet.com/document/fortigate/7.6.8/best-practices/862226/policies)
+- [Best Practices (7.6): Policy configuration changes](https://docs.fortinet.com/document/fortigate/7.6.8/best-practices/54033/policy-configuration-changes)
+- [CLI Reference 7.6.8: config firewall policy](https://docs.fortinet.com/document/fortigate/7.6.8/cli-reference/333889629/config-firewall-policy)
+- [CLI Reference 7.6.8: config log setting](https://docs.fortinet.com/document/fortigate/7.6.8/cli-reference/196223761/config-log-setting)
+- [FortiOS 7.6.7 Release Notes: New features or enhancements](https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/743723/new-features-or-enhancements)
+- [Fortinet Community: Implicit deny logs](https://community.fortinet.com/fortigate-3/technical-tip-implicit-deny-logs-96617)
+- [Fortinet Community: Unable to see implicit deny logs](https://community.fortinet.com/fortigate-3/troubleshooting-tip-unable-to-see-implicit-deny-logs-119638)
+- [RFC 6066: Server Name Indication](https://www.rfc-editor.org/rfc/rfc6066.txt)
+`,
+  },
+  {
     slug: "vulnerability-prioritization-cvss-epss-trurisk",
     title: "How Vulnerability Platforms Rank What to Fix",
     date: "2026-11-21",
