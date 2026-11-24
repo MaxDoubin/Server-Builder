@@ -105,7 +105,7 @@ media_errors                        : 0
 
 **M.2 drives throttle in server chassis.** A drive that starts at 6,000 MB/s and settles at 900 MB/s two minutes into a copy is not defective, it is hot. Watch `nvme smart-log` temperature during a sustained run, and if it is climbing into the drive's throttle range, the fix is airflow or a different form factor, not firmware.
 
-**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded `dd` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at `avgqu-sz` in `iostat -x 1` on the live system.
+**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded `dd` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at `aqu-sz` (`avgqu-sz` in older sysstat releases) in `iostat -x 1` on the live system.
 
 **Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
 

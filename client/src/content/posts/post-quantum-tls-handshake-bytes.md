@@ -53,10 +53,10 @@ flaw in it, if there is one, has had about two years to run. X25519 has had
 twenty.
 
 So a hybrid derives its secret from both, and an attacker has to break both to
-recover it. RFC 9954, published a month earlier as Informational, is the
-document that lays out that reasoning and the security properties a hybrid has
-to preserve. Reading them in the other order, 9954 then 10024, is the right
-way round: one is why, the other is exactly what.
+recover it. RFC 9954, published a month earlier as Informational, defines the
+general hybrid construction for TLS 1.3 and lays out that reasoning and the
+goals a hybrid has to meet. Reading them in the other order, 9954 then 10024,
+is the right way round: one is why and how, the other is exactly what.
 
 There is a second reason, less discussed and just as real. Harvest now, decrypt
 later is not a hypothetical for anything with a long confidentiality life. A
@@ -73,9 +73,10 @@ and the failure mode was not slowness, it was connections that did not
 complete at all. Middleboxes, load balancers and TLS-terminating proxies had
 been written on the assumption that a ClientHello arrives in one packet,
 because for twenty years it always had. Feed them one that spans two and some
-of them simply stop. Their measurements found breakage clustering around 10kB
-and 30kB, thresholds that correspond to nothing in the protocol and everything
-in somebody's buffer.
+of them simply stop. In a separate test of inflated certificate chains,
+Cloudflare found failures jumping when the chain grew by more than 10kB or
+30kB, thresholds that correspond to nothing in the protocol and everything in
+somebody's buffer.
 
 This is protocol ossification, and it is the most useful thing to take away
 from the whole exercise. Nothing in TLS ever said the ClientHello fitted in a
@@ -128,7 +129,7 @@ anything about cryptography.
 ## References
 
 - [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
-- [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
+- [RFC 9954: Hybrid Key Exchange in TLS 1.3](https://www.rfc-editor.org/rfc/rfc9954.html)
 - [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
 - [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters)
 - [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)

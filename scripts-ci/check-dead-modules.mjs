@@ -78,6 +78,37 @@ function resolve(from, spec) {
 }
 
 /**
+ * The files an import.meta.glob call reaches, as specifiers relative to the
+ * calling file. The /tools/:slug route finds every tool page through one, so
+ * without this all of them would read as dead. Only the shape in use is
+ * understood: patterns in one directory with a "*" in the file name, and
+ * "!" exclusions. Anything else fails loudly rather than guessing, because a
+ * pattern this walk misreads would hide dead files or invent live ones.
+ */
+function globTargets(from, args) {
+  const patterns = [...args.matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1]);
+  const include = patterns.filter((p) => !p.startsWith("!"));
+  const exclude = new Set(patterns.filter((p) => p.startsWith("!")).map((p) => p.slice(1)));
+  const out = [];
+  for (const pattern of include) {
+    const dir = path.posix.dirname(pattern);
+    const name = path.posix.basename(pattern);
+    if (!dir.startsWith(".") || dir.includes("*") || !name.includes("*")) {
+      console.error(`FAIL  ${from} has an import.meta.glob pattern this script cannot expand: ${pattern}`);
+      process.exit(1);
+    }
+    const match = new RegExp(`^${name.split("*").map((part) => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^/]*")}$`);
+    const abs = path.resolve(path.dirname(from), dir);
+    if (!existsSync(abs)) continue;
+    for (const entry of readdirSync(abs)) {
+      const spec = `${dir}/${entry}`;
+      if (match.test(entry) && !exclude.has(spec)) out.push(spec);
+    }
+  }
+  return out;
+}
+
+/**
  * Parsed on demand rather than only for FILES, because the walk leaves the
  * directory: client code imports server/storage.ts, and a module reached
  * only through that hop would otherwise look dead.
@@ -91,6 +122,9 @@ function importsOf(file) {
     ...[...src.matchAll(/^\s*import\s[^'"]*['"]([^'"]+)['"]/gm)].map((m) => m[1]),
     ...[...src.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]),
     ...[...src.matchAll(/^\s*export\s+[^'"]*from\s+['"]([^'"]+)['"]/gm)].map((m) => m[1]),
+    ...[...src.matchAll(/\bimport\.meta\.glob(?:<[^>]*>)?\(\s*(\[[^\]]*\]|['"][^'"]+['"])/g)].flatMap(
+      (m) => globTargets(file, m[1]),
+    ),
   ];
   const deps = specs.map((s) => resolve(file, s)).filter(Boolean);
   cache.set(file, deps);

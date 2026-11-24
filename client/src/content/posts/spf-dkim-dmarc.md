@@ -49,7 +49,7 @@ First, **alignment**. DMARC requires that the domain validated by SPF or DKIM ma
 Second, **policy and reporting**.
 
 ```dns
-_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r; pct=100"
+_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r"
 ```
 
 - `p=` is the policy: `none`, `quarantine`, or `reject`.
@@ -63,7 +63,7 @@ The order matters, and rushing it is how you drop legitimate mail from a system 
 1. **Publish SPF and DKIM first.** Sign everything, from every system that sends: the mail server, the ticketing system, the monitoring alerts, the thing in the closet that emails a nightly report.
 2. **Publish `p=none` with `rua=`.** This changes nothing about delivery. It asks the world to send you daily aggregate reports in XML listing every IP that sent mail claiming your domain, and whether it passed.
 3. **Read the reports for several weeks.** This is the entire value of the exercise. You will find senders you forgot about. Everybody does. Fix or authorize each legitimate one before you go further.
-4. **Move to `p=quarantine`,** optionally with `pct=` to ramp gradually.
+4. **Move to `p=quarantine`,** optionally with `t=y` first, which asks receivers to apply one level less than the stated policy while you watch the reports. RFC 9989 replaced the old `pct=` tag with `t=`. Receivers that still follow RFC 7489 ignore `t=` and apply the full policy, so expect some real quarantining even in test mode.
 5. **Move to `p=reject`** once the reports are clean.
 
 Then the forwarding problem. Legitimate forwarders and mailing lists break SPF and sometimes DKIM, and under `p=reject` that mail is refused. ARC exists to address this by letting intermediaries record the authentication results they saw, so a downstream receiver can choose to trust that chain. Support is uneven, so the practical answer is still to know which forwarding paths your users depend on before you enforce.
@@ -88,6 +88,7 @@ One last point, because it is the reason to do any of this: these records do not
 
 - [RFC 7208: Sender Policy Framework (SPF) for Authorizing Use of Domains in Email, Version 1](https://www.rfc-editor.org/rfc/rfc7208)
 - [RFC 6376: DomainKeys Identified Mail (DKIM) Signatures](https://www.rfc-editor.org/rfc/rfc6376)
+- [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989)
 - [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489)
 - [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617)
 - [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321)

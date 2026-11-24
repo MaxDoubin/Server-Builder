@@ -73,13 +73,13 @@ Each member interface needs its own `.network` file with `Bond=bond0` and no add
 
 The file to read when something is wrong is `/proc/net/bonding/bond0`. It prints the aggregator ID, the actor and partner state bytes, and the churn counters for every member. Two lines matter most. `Aggregator ID` should be identical for every member: if two members show different aggregator IDs, only one aggregator is active and the other members are silently idle. `Partner Mac Address` of 00:00:00:00:00:00 means no LACPDUs are being received at all, which points at the switch side or at a port that was never added to the channel group.
 
-Note that `Mode=802.3ad` is the only bonding mode that requires switch configuration. Round-robin (mode 0) needs none, which is why tutorials reach for it, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. `active-backup` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
+Note that `Mode=802.3ad` is the only bonding mode that negotiates with the switch, but it is not the only one that needs switch configuration: round-robin (mode 0), balance-xor and broadcast need the switch ports grouped into a static channel. Round-robin is the one tutorials reach for, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. `active-backup` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
 
 ## What LACP Cannot Do
 
 It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
 
-It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
+It cannot span two independent switches. A standard 802.1AX aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
 
 It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
 

@@ -63,6 +63,38 @@ for (const m of app.matchAll(/<Route path="([^"]+)" component=\{(\w+)\}/g)) {
   if (mod) routed.push({ path: m[1], module: mod });
 }
 
+/*
+  Tool pages share one route, /tools/:slug, which renders no lazy const of
+  its own: it asks the slug map in TOOL_MAP for the page. So the generic parse
+  above cannot see it, and without this block every tool would drop out of
+  the check unnoticed. Hover prefetch has to go through the same map, from a
+  "/tools/" prefix entry keyed per path (one shared key would warm only the
+  first tool hovered), or hovering a tool card warms nothing. The map itself
+  resolves every registry slug, which check-palette.ts proves page by page.
+*/
+const TOOL_MAP = "@/pages/tools/toolPages";
+const toolProblems = [];
+if (/<Route path="\/tools\/:slug"/.test(app)) {
+  if (!app.includes(`import("${TOOL_MAP}")`)) {
+    toolProblems.push(`App.tsx serves /tools/:slug but does not load ${TOOL_MAP}`);
+  }
+  const toolPrefix = prefetch.match(/"\/tools\/":\s*\{([\s\S]*?)\n\s*\},/);
+  if (!toolPrefix) {
+    toolProblems.push(`prefetchOnHover.ts has no "/tools/" entry in PREFIX_ROUTES`);
+  } else {
+    if (!toolPrefix[1].includes(`import("${TOOL_MAP}")`)) {
+      toolProblems.push(`the "/tools/" prefetch entry does not load ${TOOL_MAP}`);
+    }
+    if (!/\bloadToolPage\(/.test(toolPrefix[1])) {
+      toolProblems.push(`the "/tools/" prefetch entry does not ask the map for the hovered tool's page`);
+    }
+    if (!/\bperPath:\s*true\b/.test(toolPrefix[1])) {
+      toolProblems.push(`the "/tools/" prefetch entry is not keyed per path, so only the first tool hovered would warm`);
+    }
+  }
+  routed.push({ path: "/tools/:slug", module: TOOL_MAP });
+}
+
 const registered = new Set([...prefetch.matchAll(/import\("(@\/pages\/[^"]+)"\)/g)].map((m) => m[1]));
 
 const missing = routed.filter(
@@ -77,6 +109,12 @@ const stale = [...registered].filter((m) => !routedModules.has(m));
 if (routed.length === 0) {
   console.error("FAIL  parsed no routes out of App.tsx, so this check proved nothing.");
   console.error("      The route or lazy() syntax probably changed; fix this script.");
+  process.exit(1);
+}
+
+if (toolProblems.length) {
+  console.error(`FAIL  tool pages are not wired for hover prefetching:\n`);
+  for (const problem of toolProblems) console.error(`        ${problem}`);
   process.exit(1);
 }
 

@@ -108,7 +108,7 @@ The protocol underneath is ACME, standardized as RFC 8555. The CA gives your cli
 
 Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
 
-Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates has been 398 days since 2020, and it continues to move shorter.
+Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates was 398 days from 2020, dropped to 200 days for certificates issued from March 15, 2026, and is scheduled to fall to 100 days in March 2027 and 47 days in March 2029.
 
 ## Certificate management
 

@@ -71,7 +71,9 @@ runs.
 ## Recovering to a target
 
 Recovery is: put the base backup in place, tell the server where the archived
-segments are, tell it when to stop.
+segments are, tell it when to stop, and create an empty `recovery.signal` file
+in the data directory. Without that file PostgreSQL 12 and later start normally
+and ignore the recovery settings below.
 
 ```ini
 # postgresql.conf on the recovery instance

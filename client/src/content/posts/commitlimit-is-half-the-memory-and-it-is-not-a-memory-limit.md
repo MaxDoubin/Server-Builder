@@ -126,8 +126,9 @@ This is the part that makes mode 2 a bad answer to the question people ask it.
 
 The killer runs when physical memory is exhausted. Strict accounting governs
 *promises*, and the two come apart in at least three ways: reservations are
-counted rather than pages touched, page cache and shared pages are not in
-`Committed_AS` at all, and a ratio above 100 hands out more than exists.
+counted rather than pages touched, page cache and file-backed shared mappings
+are not in `Committed_AS` at all (anonymous shared memory is counted at its
+full size), and a ratio above 100 hands out more than exists.
 
 Mode 2 changes when an allocation is refused. It does not change what happens
 when the pages are finally written to.
