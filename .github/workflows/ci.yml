@@ -505,6 +505,15 @@ jobs:
       - name: Patch priority matches the published tree
         run: npx tsx scripts-ci/check-patch.ts
 
+      # The home page rack's power-on cascade. Three faults reached review
+      # that a hero-sized screenshot cannot show: an LED row left lit through
+      # the dark phases, a shader smoothstep with reversed edges (undefined
+      # in GLSL ES, fine on the software renderer), and a power LED that
+      # shimmered while claiming to be solid. All three are properties of the
+      # source and the pure curves, so they are held without a browser.
+      - name: Boot cascade is dark where it claims dark
+        run: npx tsx scripts-ci/check-boot-cascade.ts
+
       # Retries multiply and nobody writes the product. Exactly one option
       # per case has to match what the model computes, which catches both a
       # case whose arithmetic has drifted from its prose and two options that
