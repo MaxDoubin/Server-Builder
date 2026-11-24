@@ -187,6 +187,17 @@ export const TEARDOWN_PARTS: TeardownPart[] = [
 /** How many waves there are, for pacing the animation. */
 export const WAVE_COUNT = Math.max(...TEARDOWN_PARTS.map((p) => p.wave)) + 1;
 
+/** How much of the 0..1 timeline one wave takes to play out. */
+export const WAVE_SPAN = 1 / (WAVE_COUNT - (WAVE_COUNT - 1) / 3);
+
+/**
+ * How much later each wave starts than the one before it. Exported with
+ * the span because the callout shader in ExplodedCallouts evaluates the
+ * same curve on the GPU, and two copies of the pacing constants would
+ * drift apart the first time someone retimed the teardown.
+ */
+export const WAVE_STEP = WAVE_SPAN * (2 / 3);
+
 /**
  * How far through its own travel a part is, given overall progress.
  *
@@ -195,9 +206,7 @@ export const WAVE_COUNT = Math.max(...TEARDOWN_PARTS.map((p) => p.wave)) + 1;
  * order is still legible.
  */
 export function waveProgress(progress: number, wave: number): number {
-  const span = 1 / (WAVE_COUNT - (WAVE_COUNT - 1) / 3);
-  const start = wave * span * (2 / 3);
-  const t = (progress - start) / span;
+  const t = (progress - wave * WAVE_STEP) / WAVE_SPAN;
   if (t <= 0) return 0;
   if (t >= 1) return 1;
   // Smoothstep, so a part eases away and settles rather than snapping.
