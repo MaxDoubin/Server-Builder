@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame, useStore, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { RACK_DEPTH, RACK_FEET_HEIGHT, RACK_LAYOUT, U } from "../rackConfig";
 import {
@@ -260,10 +260,11 @@ const fragmentShader = /* glsl */ `
       // a stripe can be told apart without a third hue.
       vec2 q = abs(p * vec2(ASPECT, 1.0)) - vec2(ASPECT * 0.5 - 0.12, 0.38);
       float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - 0.12;
-      float aa = fwidth(d) + 0.001;
-      float inside = 1.0 - smoothstep(-aa, aa, d);
-      float border = inside * smoothstep(-0.14 - aa, -0.14 + aa, d);
-      float ring = inside * smoothstep(-0.26 - aa, -0.26 + aa, d);
+      // Fixed edge softness (about a pixel at the sizes this is drawn at):
+      // fwidth needs the derivatives extension on WebGL 1.
+      float inside = 1.0 - smoothstep(-0.05, 0.05, d);
+      float border = inside * smoothstep(-0.19, -0.09, d);
+      float ring = inside * smoothstep(-0.31, -0.21, d);
       float shape = mix(inside, ring, vRing);
       // Wipe from the left: vFill is how much of the chunk exists.
       float lit = clamp((vFill * 1.04 - 0.02 - vUv.x) / 0.04 + 0.5, 0.0, 1.0);
@@ -390,8 +391,6 @@ function LegendSwatch({ color, ring = false }: { color: string; ring?: boolean }
 function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } }) {
   const { tier, mobile } = useDeviceTier();
   const reducedMotion = useReducedMotion();
-  const gl = useThree((s) => s.gl);
-  const store = useStore();
 
   // No stripe map on low tier devices, nor on narrow screens: there the beat
   // copy is laid across the lower rack and the map would sit under the text.
@@ -467,10 +466,10 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
   const panelRef = useRef<THREE.Group>(null);
   const captionRef = useRef<HTMLDivElement>(null);
   const phaseTextRef = useRef<HTMLSpanElement>(null);
-  const shownPhase = useRef<RaidPhase | null>(null);
   const frameState = useMemo(createRaidFrame, []);
-  // Own clock, advanced by frame deltas: the canvas clock restarts from zero
-  // whenever the render loop is paused and resumed.
+  // Own clock, advanced by clamped frame deltas, so the loop resumes where it
+  // stopped after the render loop is paused (hidden tab, a host that stops
+  // the canvas offscreen) instead of jumping ahead.
   const seconds = useRef(0);
 
   // Layout effect: the instances must be placed before the first frame draws.
@@ -491,41 +490,6 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
     },
     [geometry, material, backing, frame],
   );
-
-  /*
-    Stop the render loop while the canvas is scrolled out of view or the tab
-    is hidden. The scene is pinned for four screens and then leaves the
-    viewport for the rest of the home page; nothing in it needs to keep
-    drawing there.
-
-    The store subscription is what makes it stick: <Canvas> measures itself
-    on every scroll and re-applies its own frameloop prop ("always") when it
-    re-renders, which would restart the loop while the visitor scrolls the
-    rest of the page. Each setFrameloop call also restarts r3f's clock, so
-    this only ever calls it on a real change.
-  */
-  useEffect(() => {
-    let onScreen = true;
-    const wanted = () => (onScreen && !document.hidden ? "always" : "never");
-    const apply = () => {
-      const state = store.getState();
-      if (state.frameloop !== wanted()) state.setFrameloop(wanted());
-    };
-    const observer = new IntersectionObserver((entries) => {
-      onScreen = entries[entries.length - 1].isIntersecting;
-      apply();
-    });
-    observer.observe(gl.domElement);
-    document.addEventListener("visibilitychange", apply);
-    const unsubscribe = store.subscribe(apply);
-    return () => {
-      unsubscribe();
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", apply);
-      const state = store.getState();
-      if (state.frameloop !== "always") state.setFrameloop("always");
-    };
-  }, [gl, store]);
 
   useFrame((_, delta) => {
     // Reduced motion: hold the settled, whole-array frame. (The home page
@@ -558,9 +522,11 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
     frame.opacity = 0.42 * map;
     if (panelRef.current) panelRef.current.visible = map > 0.002;
     if (captionRef.current) captionRef.current.style.opacity = String(map);
-    if (phaseTextRef.current && shownPhase.current !== f.phase) {
-      shownPhase.current = f.phase;
-      phaseTextRef.current.textContent = CAPTIONS[f.phase];
+    // Compared against the node itself, not a remembered phase: the caption
+    // element is recreated when the map is toggled by a tier change.
+    const caption = CAPTIONS[f.phase];
+    if (phaseTextRef.current && phaseTextRef.current.textContent !== caption) {
+      phaseTextRef.current.textContent = caption;
     }
   });
 
