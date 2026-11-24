@@ -24,6 +24,8 @@ import {
 import { DataCenterNetworkMesh } from "./NetworkTraffic";
 import { HolographicHUD } from "./HolographicHUD";
 import { CameraController, CinematicFlythrough } from "./CameraController";
+import { HallFlythrough } from "./flythrough/HallFlythrough";
+import type { FlythroughTransport } from "./flythrough/useHallFlythrough";
 import { generateProceduralRacks } from "./ProceduralRacks";
 import { PerformanceOverlay } from "./PerformanceOverlay";
 import type { Rack, Equipment, InstalledEquipment } from "@shared/schema";
@@ -43,7 +45,19 @@ interface DatacenterSceneProps {
   selectedRackId: string | null;
   isUnlocked: boolean;
   showEffects?: boolean;
-  cameraMode?: "orbit" | "auto" | "cinematic";
+  cameraMode?: "orbit" | "auto" | "cinematic" | "flythrough";
+  /**
+   * Playback state for the "flythrough" camera mode, the opt-in dolly down
+   * the aisle. Ignored by every other mode.
+   */
+  flythrough?: {
+    playing: boolean;
+    /** Reduced motion: one establishing frame, no camera movement. */
+    still: boolean;
+    runId: number;
+    transport: FlythroughTransport;
+    onEnd: () => void;
+  };
   showHUD?: boolean;
   showPerfOverlay?: boolean;
   rackScale?: number;
@@ -721,6 +735,7 @@ export function DatacenterScene({
   isUnlocked,
   showEffects = true,
   cameraMode = "orbit",
+  flythrough,
   showHUD = true,
   showPerfOverlay = false,
   rackScale = 1,
@@ -1044,6 +1059,19 @@ export function DatacenterScene({
           />
         )}
 
+        {cameraMode === "flythrough" && flythrough && !photoFraming && (
+          <HallFlythrough
+            cells={displayRacks}
+            playing={flythrough.playing}
+            still={flythrough.still}
+            runId={flythrough.runId}
+            transport={flythrough.transport}
+            onEnd={flythrough.onEnd}
+            effects={showEffects && !useLowEffects}
+            daylight={isDaylight || isLight}
+          />
+        )}
+
         <Suspense fallback={<LoadingFallback />}>
           <AdvancedLights
             performanceMode={useLowEffects || balancedMode}
@@ -1122,7 +1150,8 @@ export function DatacenterScene({
       */}
       {showHUD && <HolographicHUD />}
 
-      {isUnlocked && (
+      {/* The flythrough clears the screen; this badge sat half under its letterbox bar. */}
+      {isUnlocked && cameraMode !== "flythrough" && (
         <div
           className="absolute top-4 left-4 pointer-events-none select-none bg-black/60 backdrop-blur-md rounded-md px-3 py-2 border border-cyan-500/30"
           data-ui="true"

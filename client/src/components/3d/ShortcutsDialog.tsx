@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { HALL_FLYTHROUGH_ENABLED } from "./flythrough/useHallFlythrough";
 
 interface ShortcutGroup {
   title: string;
@@ -63,6 +64,18 @@ const GROUPS: ShortcutGroup[] = [
     ],
   },
 ];
+
+/**
+ * The keys HallFlythroughControls handles while the Cinematic button's
+ * flythrough is on screen. Listed only when that button exists.
+ */
+const FLYTHROUGH_GROUP: ShortcutGroup = {
+  title: "Hall flythrough",
+  items: [
+    { keys: ["Space"], description: "Play or pause the flythrough" },
+    { keys: ["Esc"], description: "Leave it and hand the camera back" },
+  ],
+};
 
 const FOCUSABLE =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -123,6 +136,11 @@ export function ShortcutsDialog({
 
   if (!open) return null;
 
+  const groups =
+    HALL_FLYTHROUGH_ENABLED && !compatibilityMode
+      ? [GROUPS[0], FLYTHROUGH_GROUP, ...GROUPS.slice(1)]
+      : GROUPS;
+
   return (
     <div className="absolute inset-0 z-[120] flex items-center justify-center p-4" data-ui="true">
       <div
@@ -165,7 +183,7 @@ export function ShortcutsDialog({
         </p>
 
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {GROUPS.map((group) => (
+          {groups.map((group) => (
             <section key={group.title}>
               <h3 className="text-[0.625rem] uppercase tracking-[0.24em] text-white/50">
                 {group.title}

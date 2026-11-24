@@ -12,6 +12,11 @@ import { LayoutManager } from "@/components/3d/LayoutManager";
 import { AchievementNotice, AchievementsPanel } from "@/components/3d/AchievementsPanel";
 import { ShortcutsDialog } from "@/components/3d/ShortcutsDialog";
 import { GuidedTour, hasSeenTour } from "@/components/3d/GuidedTour";
+import { HallFlythroughControls } from "@/components/3d/flythrough/HallFlythroughControls";
+import {
+  HALL_FLYTHROUGH_ENABLED,
+  useHallFlythrough,
+} from "@/components/3d/flythrough/useHallFlythrough";
 import { InstantShell } from "@/components/ui/instant-shell";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
@@ -36,7 +41,7 @@ import { useLocation } from "wouter";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import type { GameRenderProfile } from "@/lib/webgl-support";
 
-type CameraMode = "orbit" | "auto" | "cinematic";
+type CameraMode = "orbit" | "auto" | "cinematic" | "flythrough";
 type SessionMode = "build" | "explore";
 type DockTab = "cost" | "scenarios" | "layouts" | "awards";
 
@@ -117,6 +122,7 @@ export function DataCenter3D({
   const [photoBusy, setPhotoBusy] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const flythrough = useHallFlythrough();
   const [capacityAlert, setCapacityAlert] = useState<string | null>(null);
 
   const [fastRamp, setFastRamp] = useState(false);
@@ -574,16 +580,28 @@ export function DataCenter3D({
     return `Scenario in progress: ${parts.join(", ")}.`;
   }, [scenarioRun.overrides, scenarioRun.run, scenarioRun.scenario]);
 
+  /*
+    The hall flythrough is opt-in and outranks the other camera modes while
+    it runs. It is the one mode reduced motion does not send back to orbit,
+    because under reduced motion it does not move: it holds a still frame.
+    The compatibility profile has no button for it, so it cannot be active
+    there.
+  */
+  const flythroughActive =
+    HALL_FLYTHROUGH_ENABLED && flythrough.active && renderProfile !== "compatibility" && !introVisible;
   const sceneCameraMode: CameraMode =
     renderProfile === "compatibility"
       ? "orbit"
-      : prefersReducedMotion
-        ? "orbit"
-        : introVisible
-          ? "cinematic"
-          : cameraMode;
+      : flythroughActive
+        ? "flythrough"
+        : prefersReducedMotion
+          ? "orbit"
+          : introVisible
+            ? "cinematic"
+            : cameraMode;
   const showInstantShell = isLoading && racks.length === 0;
-  const chromeVisible = !introVisible && !photoMode;
+  // The flythrough clears the console off the screen, the way photo mode does.
+  const chromeVisible = !introVisible && !photoMode && !flythroughActive;
   const audioSupported = isAmbientAudioSupported();
 
   return (
@@ -619,8 +637,19 @@ export function DataCenter3D({
         selectedRackId={selectedRackId}
         isUnlocked={isUnlocked}
         cameraMode={sceneCameraMode}
+        flythrough={
+          flythroughActive
+            ? {
+                playing: flythrough.playing,
+                still: prefersReducedMotion,
+                runId: flythrough.runId,
+                transport: flythrough.transport,
+                onEnd: flythrough.handleEnd,
+              }
+            : undefined
+        }
         showEffects={introVisible ? renderProfile !== "compatibility" : effectiveEffects}
-        showHUD={introVisible || photoMode ? false : showHUD}
+        showHUD={introVisible || photoMode || flythroughActive ? false : showHUD}
         showPerfOverlay={showPerfOverlay && !photoMode}
         rackScale={rackScale}
         rackCount={rackCount}
@@ -746,6 +775,17 @@ export function DataCenter3D({
                   >
                     Explore Mode
                   </Button>
+                  {HALL_FLYTHROUGH_ENABLED && renderProfile !== "compatibility" && (
+                    <Button
+                      ref={flythrough.triggerRef}
+                      size="sm"
+                      variant="secondary"
+                      onClick={flythrough.start}
+                      className="bg-white/10 text-white hover:bg-white/20"
+                    >
+                      Cinematic
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="secondary"
@@ -975,6 +1015,10 @@ export function DataCenter3D({
           onFinish={() => setTourOpen(false)}
           onStepChange={handleTourStep}
         />
+      )}
+
+      {flythroughActive && (
+        <HallFlythroughControls flythrough={flythrough} still={prefersReducedMotion} />
       )}
 
       <ShortcutsDialog
