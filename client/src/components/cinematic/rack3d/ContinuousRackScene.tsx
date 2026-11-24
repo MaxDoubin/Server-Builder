@@ -63,9 +63,9 @@ const CAM_KEYS: Key[] = [
   // (unrackTimeline: out on its rails at 0.47, hero pose at 0.535, fully
   // exploded at 0.69), and frames it clear of the section copy, which sits
   // on the right while the server slides out and top center while it is apart.
-  { t: 0.47, pos: [-1.20, FOCUS_SLOT.u * U + 0.60, 2.20], look: [0.42, FOCUS_SLOT.u * U + 0.12, 0.55], fov: 34 },
-  { t: 0.535, pos: [-1.05, FOCUS_SLOT.u * U + 0.92, 2.30], look: [0.02, FOCUS_SLOT.u * U + 0.46, 0.68], fov: 34 },
-  { t: 0.69, pos: [-0.70, FOCUS_SLOT.u * U + 1.12, 2.55], look: [0.02, FOCUS_SLOT.u * U + 0.50, 0.62], fov: 36 },
+  { t: 0.47, pos: [-1.20, FOCUS_SLOT.u * U + 0.60, 2.25], look: [0.55, FOCUS_SLOT.u * U + 0.12, 0.55], fov: 34 },
+  { t: 0.535, pos: [-1.55, FOCUS_SLOT.u * U + 0.98, 2.95], look: [0.02, FOCUS_SLOT.u * U + 0.58, 0.62], fov: 34 },
+  { t: 0.69, pos: [-1.30, FOCUS_SLOT.u * U + 1.12, 3.30], look: [0.02, FOCUS_SLOT.u * U + 0.60, 0.58], fov: 36 },
   { t: 0.80, pos: [0.15, RACK_MID_Y * 0.72, 2.32], look: [0, RACK_MID_Y * 0.56, 0.06], fov: 34 },
   { t: 0.90, pos: [0.62, RACK_MID_Y * 0.92, 2.95], look: [0.02, RACK_MID_Y * 0.58, -0.02], fov: 36 },
   { t: 0.96, pos: [1.10, RACK_MID_Y + 0.62, 3.72], look: [0.04, RACK_MID_Y * 0.56, -0.12], fov: 38 },

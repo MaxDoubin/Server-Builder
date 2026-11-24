@@ -164,6 +164,17 @@ export function FocusUnrack({
       setWantModel(true);
     }
 
+    if (import.meta.env.DEV) {
+      // Development only: lets a capture script wait for the model and read
+      // the renderer's counters. Compiled out of the production bundle.
+      (window as unknown as Record<string, unknown>).__unrackDebug = () => ({
+        modelShown: modelShown.current,
+        pose: { ...pose },
+        render: { ...state.gl.info.render },
+        memory: { ...state.gl.info.memory },
+      });
+    }
+
     if (carriage.current) {
       carriage.current.position.set(0, slotY + pose.lift * LIFT_HEIGHT, pose.slide * SLIDE_DISTANCE);
     }

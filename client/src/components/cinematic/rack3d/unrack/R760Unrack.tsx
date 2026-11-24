@@ -116,9 +116,12 @@ export default function R760Unrack({
     const callouts = measureCallouts(scene, tracked);
 
     // Sit the machine in the slot: centered, on the slot floor, bezel at the
-    // rack face. Measured from the model so a rebuilt file still lands.
+    // rack face. Measured from the model so a rebuilt file still lands. Dell
+    // author the machine with its front toward -Z in the scene (the Main
+    // Assembly node is turned half a circle), and a rack faces +Z, so the
+    // group below turns it around and the offset is worked out to match.
     const box = new THREE.Box3().setFromObject(scene);
-    const offset = new THREE.Vector3(-(box.min.x + box.max.x) / 2, -height / 2 + 0.0015 - box.min.y, frontZ - box.max.z);
+    const offset = new THREE.Vector3((box.min.x + box.max.x) / 2, -height / 2 + 0.0015 - box.min.y, frontZ + box.min.z);
 
     return { scene, materials: Array.from(materials.values()), tracked, callouts, offset };
   }, [gltf, frontZ, height]);
@@ -138,7 +141,7 @@ export default function R760Unrack({
     const target = pmrem.fromScene(room, 0.04);
     for (const m of model.materials) {
       m.envMap = target.texture;
-      m.envMapIntensity = 0.5;
+      m.envMapIntensity = 0.3;
       m.needsUpdate = true;
     }
     // Build every shader before the first frame that draws them, off the
@@ -223,7 +226,7 @@ export default function R760Unrack({
   });
 
   return (
-    <group ref={groupRef} position={model.offset} visible={false}>
+    <group ref={groupRef} position={model.offset} rotation={[0, Math.PI, 0]} visible={false}>
       <primitive object={model.scene} />
       <ExplodedCallouts
         seeds={model.callouts.seeds}
