@@ -56,7 +56,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How a Palo Alto firewall matches traffic: zones, rule order, App-ID, unknown apps, port-based vs application-based rules, plus User-ID and Content-ID.",
     coverImage: "/images/blog/palo-alto-application-based-firewall-policy-photo.jpg",
     coverCredit: {"author":"Jacek Rużyczka","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wall-Mount_6-Port_Cat_6A_Ethernet_Patchpanel.jpg"},
-    wordCount: 3185,
+    wordCount: 3241,
   },
   {
     slug: "how-a-fortigate-evaluates-traffic",
