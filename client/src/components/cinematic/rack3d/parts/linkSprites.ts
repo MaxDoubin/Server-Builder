@@ -167,7 +167,7 @@ const FRAGMENT = /* glsl */ `
       float a = smoothstep(0.0, span, vTau);
       float g = smoothstep(uTimes.x, uTimes.x + span, vTau);
       float d = clamp(1.0 - length(c) * 2.0, 0.0, 1.0);
-      col = (uAmber * (a - g) * 0.7 + uGreen * g) * d * d * (vKind < 1.5 ? 0.3 : 0.16) * uSpill;
+      col = (uAmber * (a - g) * 0.7 + uGreen * g) * d * d * (vKind < 1.5 ? 0.3 : 0.09) * uSpill;
     } else if (vKind < 3.5) {
       float v = 1.0 - vUv.y;
       float laid = vTau / 0.5;
