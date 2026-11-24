@@ -44,6 +44,8 @@ const PITCH = 10;
 const ROW_Y = [2, 10];
 const BLOCK_COLS = 6;
 const BLOCK_GAP = 7;
+/* One 48 port faceplate at most. A wall of them across a wide footer is loud. */
+const MAX_COLS = 24;
 /* How far the soft halo reaches past the LED. A cell is the LED plus this. */
 const HALO = 2;
 
@@ -172,13 +174,13 @@ export default function PortLedStrip() {
       canvas.height = Math.round(canvas.clientHeight * scale);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
-      // As many whole columns as fit, flush right, halo included.
+      // As many whole columns as fit up to the cap, flush right, halo included.
       let cols = 0;
       let used = 0;
       for (;;) {
         const next =
           cols * PITCH + Math.floor(cols / BLOCK_COLS) * BLOCK_GAP + LED_W + 2 * HALO;
-        if (next > width) break;
+        if (next > width || cols === MAX_COLS) break;
         used = next;
         cols += 1;
       }
