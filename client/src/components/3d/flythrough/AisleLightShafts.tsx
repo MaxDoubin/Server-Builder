@@ -22,6 +22,8 @@ const BEAM_FLOOR_RADIUS = 1.5;
 const POOL_RADIUS = 1.9;
 /** Just above the floor tiles, so the pool never fights them for depth. */
 const POOL_HEIGHT = 0.04;
+/** Per second; the fade-in is about nine tenths done after a second and a half. */
+const FADE_IN_RATE = 1.6;
 
 const BEAM_VERTEX = /* glsl */ `
   varying vec3 vNormal;
@@ -108,8 +110,11 @@ interface AisleLightShaftsProps {
   intensity: number;
   /** Hold the beams still, for visitors who asked for reduced motion. */
   still: boolean;
-  /** Whether the flythrough is running; the breath stops with it, so a paused frame is still. */
-  playing: boolean;
+  /**
+   * The flythrough playhead, in seconds. The breath and the fade-in are both
+   * computed from it, so a paused or scrubbed frame looks the same every time.
+   */
+  playhead: { readonly current: number };
 }
 
 export function AisleLightShafts({
@@ -119,7 +124,7 @@ export function AisleLightShafts({
   count,
   intensity,
   still,
-  playing,
+  playhead,
 }: AisleLightShaftsProps) {
   const beamsRef = useRef<THREE.InstancedMesh>(null);
   const poolsRef = useRef<THREE.InstancedMesh>(null);
@@ -193,16 +198,17 @@ export function AisleLightShafts({
     pools.instanceMatrix.needsUpdate = true;
   }, [count, endX, startX, z]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (still) {
       assets.uIntensity.value = intensity;
       return;
     }
-    if (playing) assets.uTime.value += Math.min(delta, 0.1);
-    // Ease the beams up over about a second and a half rather than switching them on.
-    assets.uIntensity.value +=
-      (intensity - assets.uIntensity.value) *
-      (1 - Math.exp(-Math.min(delta, 0.1) * 1.6));
+    const seconds = playhead.current;
+    assets.uTime.value = seconds;
+    // The beams come up over the first second and a half of the run rather
+    // than switching on. A function of the playhead, not of elapsed frames.
+    assets.uIntensity.value =
+      intensity * (1 - Math.exp(-seconds * FADE_IN_RATE));
   });
 
   /*

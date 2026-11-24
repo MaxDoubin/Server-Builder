@@ -37,9 +37,9 @@ import {
 const MAX_FRAME_STEP = 1 / 15;
 
 /** How far ahead on the path, as a fraction of it, the rig samples to measure the turn. */
-const TURN_SAMPLE = 0.008;
+const TURN_SAMPLE = 0.02;
 /** Bank into turns: radians of roll per unit of turn, capped at about four degrees. */
-const ROLL_GAIN = 0.5;
+const ROLL_GAIN = 0.2;
 const MAX_ROLL = 0.07;
 
 /** Degrees the lens widens inside the aisle, which is what gives the dolly its sense of speed. */
@@ -98,7 +98,6 @@ export function HallFlythrough({
   );
 
   const time = useRef(0);
-  const roll = useRef(0);
   const endReported = useRef(false);
   const lastStep = useRef(-1);
   const look = useRef(new THREE.Vector3());
@@ -200,8 +199,10 @@ export function HallFlythrough({
     /*
       Bank into the turn. Two short steps ahead on the path give two headings;
       the vertical part of their cross product is the sine of the angle
-      between them, positive for a left turn. Smoothed, because a Catmull-Rom
-      spline is continuous in direction but not in curvature at a waypoint.
+      between them, positive for a left turn. The steps are long (two percent
+      of the path each) because a Catmull-Rom spline is continuous in
+      direction but not in curvature at a waypoint, and a long baseline
+      spreads that jump out without any smoothing over time.
     */
     let turn = 0;
     if (!still) {
@@ -217,15 +218,11 @@ export function HallFlythrough({
       const scale = Math.hypot(ax, az) * Math.hypot(bx, bz);
       if (scale > 1e-6) turn = (az * bx - ax * bz) / scale;
     }
-    const wantedRoll = THREE.MathUtils.clamp(
-      turn * ROLL_GAIN,
-      -MAX_ROLL,
-      MAX_ROLL,
+    // Straight from the playhead, with no memory of earlier frames, so a held
+    // frame holds and the same playhead always gives the same horizon.
+    camera.rotateZ(
+      THREE.MathUtils.clamp(turn * ROLL_GAIN, -MAX_ROLL, MAX_ROLL),
     );
-    roll.current +=
-      (wantedRoll - roll.current) * (1 - Math.exp(-Math.min(delta, 0.1) * 3));
-    if (still) roll.current = 0;
-    camera.rotateZ(roll.current);
 
     const inside = still ? 0 : aisleWeight(path, u);
     if (camera instanceof THREE.PerspectiveCamera) {
@@ -274,7 +271,7 @@ export function HallFlythrough({
       count={beamCount}
       intensity={daylight ? 0.12 : 0.34}
       still={still}
-      playing={playing}
+      playhead={time}
     />
   );
 }
