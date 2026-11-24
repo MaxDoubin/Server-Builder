@@ -86,7 +86,45 @@ export function TeardownModel({
   const { gl } = useThree();
   const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => configureGltf(loader as GLTFLoader, gl));
 
-  const scene = useMemo(() => gltf.scene.clone(true), [gltf]);
+  /*
+    A private copy of the scene, and private copies of its materials.
+
+    Object3D.clone copies the nodes but hands every mesh the same material
+    objects as the original, and the original is the loader's cache. The
+    selection effect below writes opacity, transparency and depth writes
+    straight onto those materials, so with shared ones a part picked here
+    stayed dimmed in the cache: the home page's unrack beat loads the same
+    file, cloned what it was given, and inherited a machine that was mostly
+    16 percent opaque with depth writes off. Each page now owns the
+    materials it changes and the cache stays as Dell authored it.
+  */
+  const { scene, materials } = useMemo(() => {
+    const copy = gltf.scene.clone(true);
+    const own = new Map<THREE.Material, THREE.Material>();
+    const mine = (m: THREE.Material) => {
+      let c = own.get(m);
+      if (!c) {
+        c = m.clone();
+        own.set(m, c);
+      }
+      return c;
+    };
+    copy.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(mine) : mine(mesh.material);
+    });
+    return { scene: copy, materials: Array.from(own.values()) };
+  }, [gltf]);
+
+  // The copies are this component's to free. Their textures are not: those
+  // still belong to the cached model.
+  useEffect(
+    () => () => {
+      for (const m of materials) m.dispose();
+    },
+    [materials],
+  );
 
   /*
     Match each assembly to its entry in the teardown table once, on load.

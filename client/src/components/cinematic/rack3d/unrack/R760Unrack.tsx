@@ -264,7 +264,17 @@ export default function R760Unrack({
       dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step * RETREAT_RATE)));
       const k = dissolve.current;
       // Development only, for the capture script. Compiled out of production.
-      if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__unrackDissolve = k;
+      if (import.meta.env.DEV) {
+        const w = window as unknown as Record<string, unknown>;
+        w.__unrackDissolve = k;
+        w.__unrackMaterials = () => ({
+          count: model.materials.length,
+          minOpacity: Math.min(...model.materials.map((m) => m.opacity)),
+          minBaseOpacity: Math.min(...model.materials.map((m) => m.userData.baseOpacity as number)),
+          blended: model.materials.filter((m) => m.transparent).length,
+          depthWriteOff: model.materials.filter((m) => !m.depthWrite).length,
+        });
+      }
       for (const m of model.materials) m.opacity = (m.userData.baseOpacity as number) * k;
       if (k >= 1) {
         shown.current = true;
