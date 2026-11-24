@@ -76,6 +76,9 @@ export default function R760Unrack({
   const gl = useThree((s) => s.gl);
   const rootScene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera);
+  // The section copy is laid out differently on a portrait screen (a taller
+  // block, further down), so the names keep clear of a different area there.
+  const portrait = useThree((s) => s.size.width < s.size.height);
   const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => configureGltf(loader as GLTFLoader, gl));
 
   /*
@@ -226,6 +229,8 @@ export default function R760Unrack({
       const step = Math.min(delta, 0.05) / DISSOLVE_SECONDS;
       dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step)));
       const k = dissolve.current;
+      // Development only, for the capture script. Compiled out of production.
+      if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__unrackDissolve = k;
       for (const m of model.materials) m.opacity = (m.userData.baseOpacity as number) * k;
       if (k >= 1) {
         shown.current = true;
@@ -257,10 +262,10 @@ export default function R760Unrack({
         progressRef={explodeRef}
         selected={null}
         isCalledOut={calledOut}
-        lean={0.25}
-        topInset={0.42}
-        stagger={0.9}
-        across={acrossHero}
+        lean={portrait ? 0.15 : 0.25}
+        topInset={portrait ? 0.48 : 0.42}
+        stagger={portrait ? 0.45 : 0.9}
+        across={portrait ? undefined : acrossHero}
       />
     </group>
   );
