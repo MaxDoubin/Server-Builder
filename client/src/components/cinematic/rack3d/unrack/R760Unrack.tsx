@@ -24,7 +24,17 @@ import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "
 import { isCalledOut, measureCallouts } from "@/components/teardown/explodedView";
 import { ExplodedCallouts } from "@/components/teardown/ExplodedCallouts";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
-import type { UnrackPose } from "./unrackTimeline";
+import type { CalloutSeed } from "@/components/teardown/explodedView";
+import { EXPLODE_LIFT_SCALE, type UnrackPose } from "./unrackTimeline";
+
+/**
+ * Left to right as this scene's wide-screen hero camera sees the machine,
+ * which is very nearly back to front along the model's own depth axis. The
+ * callout layer staggers neighboring names by this order.
+ */
+function acrossHero(s: CalloutSeed): number {
+  return -(s.home.z + s.travel.z) - 0.12 * (s.home.x + s.travel.x);
+}
 
 interface Tracked {
   node: THREE.Object3D;
@@ -40,6 +50,8 @@ interface Tracked {
  * saved for every frame of the page that is not this beat.
  */
 const SEEN_WHEN_RACKED = new Set(["Front bezel", "Bezel key", "System cover", "Drive carriers", "Left control panel", "Right control panel"]);
+
+const LIFT_SCALE = new THREE.Vector3(1, EXPLODE_LIFT_SCALE, 1);
 
 /** Seconds the model takes to dissolve in over the procedural chassis. */
 const DISSOLVE_SECONDS = 0.7;
@@ -108,7 +120,10 @@ export default function R760Unrack({
       tracked.push({
         node: child,
         home: child.position.clone(),
-        offset: new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.distance),
+        // Vertical travel is flattened here; the assembly root is only ever
+        // turned about its vertical axis, so "up" means the same thing in a
+        // part's own space as it does on screen.
+        offset: new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.distance).multiply(LIFT_SCALE),
         part,
       });
     }
@@ -194,14 +209,22 @@ export default function R760Unrack({
       panel. If the download lands mid beat the procedural server finishes
       the beat and the model takes over after it is back in its slot, so
       the two are never exchanged while either is the subject of the shot.
+
+      The dissolve only advances while the server is home. If the reader
+      scrolls into the beat part way through it, it runs backward instead
+      and the model fades back out over the procedural chassis, which never
+      stopped being drawn underneath. The hand-over can therefore only
+      complete in the rack, and tries again the next time the server is home.
     */
     if (!shown.current) {
-      if (dissolve.current <= 0 && !(compiled.current && racked)) {
+      const rising = compiled.current && racked;
+      if (!rising && dissolve.current <= 0) {
         if (groupRef.current) groupRef.current.visible = false;
         return;
       }
       if (groupRef.current) groupRef.current.visible = true;
-      dissolve.current = Math.min(1, dissolve.current + Math.min(delta, 0.05) / DISSOLVE_SECONDS);
+      const step = Math.min(delta, 0.05) / DISSOLVE_SECONDS;
+      dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step)));
       const k = dissolve.current;
       for (const m of model.materials) m.opacity = (m.userData.baseOpacity as number) * k;
       if (k >= 1) {
@@ -234,6 +257,10 @@ export default function R760Unrack({
         progressRef={explodeRef}
         selected={null}
         isCalledOut={calledOut}
+        lean={0.25}
+        topInset={0.42}
+        stagger={0.9}
+        across={acrossHero}
       />
     </group>
   );

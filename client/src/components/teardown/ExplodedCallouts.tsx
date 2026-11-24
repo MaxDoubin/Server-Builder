@@ -54,6 +54,9 @@ uniform float uStep;
 uniform float uSelected;
 uniform vec2 uResolution;
 uniform vec3 uCenter;
+uniform float uLean;
+uniform float uTopInset;
+uniform float uStagger;
 
 attribute vec3 aTravel;
 attribute vec4 aMeta; // wave, index, then two values that differ per program
@@ -96,12 +99,14 @@ void leader(vec4 anchorClip, out vec2 anchorPx, out vec2 endPx, out float side) 
   // crosses the middle of the screen, where a plain normalize would flip.
   away /= max(length(away), 40.0);
   // Lean every leader upward: names read better above their part.
-  vec2 dir = normalize(away + vec2(0.0001, 0.55));
+  vec2 dir = normalize(away + vec2(0.0001, uLean));
   side = clamp(dir.x * 4.0, -1.0, 1.0);
   float halfW = aLook.y * 0.5;
-  vec2 mid = anchorPx + dir * aLook.x + vec2(side * halfW, 0.0);
+  // The stagger term lifts longer leaders straight up as well as outward,
+  // so names still land on separate rows when the leaders run sideways.
+  vec2 mid = anchorPx + dir * aLook.x + vec2(side * halfW, (aLook.x - 40.0) * uStagger);
   // Keep the whole label on the canvas.
-  mid = clamp(mid, vec2(halfW + 6.0, 10.0), uResolution - vec2(halfW + 6.0, 30.0));
+  mid = clamp(mid, vec2(halfW + 6.0, 10.0), uResolution - vec2(halfW + 6.0, max(30.0, uTopInset * uResolution.y)));
   endPx = mid - vec2(side * halfW, 0.0);
 }
 `;
@@ -250,6 +255,11 @@ function sharedAttributes(seeds: readonly CalloutSeed[], per: number) {
   return { home, travel, meta: new Float32Array(n * 4), look: new Float32Array(n * 3) };
 }
 
+/** Left to right as the /teardown page's opening camera sees the machine. */
+function defaultAcross(s: CalloutSeed): number {
+  return (s.home.x + s.travel.x) * 0.8 - (s.home.z + s.travel.z) * 0.6;
+}
+
 /** Line vertices per part: 2 for the center line, 2 leader, 2 shelf. */
 const LINE_VERTS = 6;
 /** [kind, along] for each of those six. */
@@ -263,6 +273,10 @@ export function ExplodedCallouts({
   progressRef,
   selected,
   isCalledOut,
+  lean = 0.55,
+  topInset = 0,
+  stagger = 0,
+  across = defaultAcross,
 }: {
   seeds: readonly CalloutSeed[];
   center: THREE.Vector3;
@@ -270,6 +284,17 @@ export function ExplodedCallouts({
   selected: string | null;
   /** Whether a part is named without being picked. */
   isCalledOut: (label: string) => boolean;
+  /** How strongly every leader is bent upward. Names read best above a part. */
+  lean?: number;
+  /** Fraction of the canvas height, from the top, that names must stay out of. */
+  topInset?: number;
+  /** Extra rise per pixel of leader length, for callers that use a low lean. */
+  stagger?: number;
+  /**
+   * Where a part ends up from left to right as the camera sees it. Must be a
+   * stable function: the layer is rebuilt when it changes.
+   */
+  across?: (seed: CalloutSeed) => number;
 }) {
   const layer = useMemo(() => {
     const rows = Math.ceil(seeds.length / ATLAS_COLS);
@@ -288,6 +313,9 @@ export function ExplodedCallouts({
       uSelected: { value: -1 },
       uResolution: { value: new THREE.Vector2(1, 1) },
       uCenter: { value: center },
+      uLean: { value: lean },
+      uTopInset: { value: topInset },
+      uStagger: { value: stagger },
       uLine: { value: new THREE.Color("#aeb8c8") },
       uAccent: { value: new THREE.Color(SIGNAL) },
       uAtlas: { value: atlas },
@@ -349,7 +377,6 @@ export function ExplodedCallouts({
       from left to right (as the opening camera sees them) and stepping the
       length by more than a label's height puts neighbors on separate rows.
     */
-    const across = (s: CalloutSeed) => (s.home.x + s.travel.x) * 0.8 - (s.home.z + s.travel.z) * 0.6;
     const named = seeds.filter((s) => isCalledOut(s.label)).sort((a, b) => across(a) - across(b));
     const reaches = seeds.map((s, i) => 40 + ((named.indexOf(s) + 1 || i) % 4) * 26);
 
@@ -384,7 +411,7 @@ export function ExplodedCallouts({
     };
 
     return { lines, labels, uniforms, layout, dispose };
-  }, [seeds, center, isCalledOut]);
+  }, [seeds, center, isCalledOut, lean, topInset, stagger, across]);
 
   useEffect(() => {
     let live = true;

@@ -16,6 +16,10 @@
  * the server flew back into the rack while still in pieces.
  */
 
+function clamp01(x: number): number {
+  return x < 0 ? 0 : x > 1 ? 1 : x;
+}
+
 /** THE SWITCH for the Dell R760 model. False keeps the procedural chassis. */
 export const UNRACK_GLTF_ENABLED = true;
 
@@ -36,9 +40,45 @@ export const UNRACK_WINDOWS = {
 export const SLIDE_DISTANCE = 0.74;
 /** How far it is lifted clear of the rails for the hero pose, in meters. */
 export const LIFT_HEIGHT = 0.2;
-/** Hero pose turn toward the camera and tilt of the top toward it, radians. */
-export const HERO_YAW = -0.38;
+/**
+ * Hero pose turn, radians. On a wide screen the machine is turned side on to
+ * the camera, so its long axis runs across the frame and the exploded view
+ * can be large without growing up into the headline. On a portrait screen it
+ * is turned front on instead, because there the width is what is scarce.
+ */
+export const HERO_YAW_WIDE = 0.55;
+export const HERO_YAW_NARROW = -0.38;
+/** Tilt of the top toward the camera in the hero pose, radians. */
 export const HERO_PITCH = 0.1;
+/**
+ * Scale on the vertical part of every assembly's travel. The teardown page
+ * has the whole canvas; here the section headline owns the top third, and a
+ * flatter stack is what lets the machine itself be drawn larger.
+ */
+export const EXPLODE_LIFT_SCALE = 0.75;
+
+/** 0 on a landscape screen, 1 on a phone held upright. */
+export function narrowness(aspect: number): number {
+  return clamp01((1 - aspect) / 0.4);
+}
+
+/**
+ * How the camera is adjusted on a portrait screen while the server is out on
+ * its rails. The section copy sits over the lower half of a phone screen
+ * during that beat, so the camera backs off and aims low, which carries the
+ * server up into the clear space above the copy. Zero outside the pull beat
+ * and zero on a landscape screen.
+ *
+ * Returns the weight of the adjustment; the rig scales its own offsets by it.
+ */
+export function narrowPullWeight(p: number, aspect: number): number {
+  const w = UNRACK_WINDOWS;
+  return narrowness(aspect) * smootherstep(w.slideOut[0], 0.43, p) * (1 - smootherstep(0.49, w.lift[1], p));
+}
+/** Extra camera distance, as a fraction, and how far the aim moves, meters. */
+export const NARROW_PULL_DOLLY = 0.9;
+export const NARROW_PULL_LOOK_DROP = 0.85;
+export const NARROW_PULL_LOOK_LEFT = 0.4;
 
 export interface UnrackPose {
   /** 0 racked, 1 fully out on the rails. */
@@ -47,10 +87,6 @@ export interface UnrackPose {
   lift: number;
   /** 0 assembled, 1 fully exploded. */
   explode: number;
-}
-
-function clamp01(x: number): number {
-  return x < 0 ? 0 : x > 1 ? 1 : x;
 }
 
 /** Quintic ease with zero velocity and zero acceleration at both ends. */

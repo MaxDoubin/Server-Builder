@@ -6,6 +6,7 @@ import { ServerChassis } from "./parts/ServerChassis";
 import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { FocusUnrack } from "./unrack/FocusUnrack";
+import { NARROW_PULL_DOLLY, NARROW_PULL_LOOK_DROP, NARROW_PULL_LOOK_LEFT, narrowPullWeight } from "./unrack/unrackTimeline";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import {
   RACK_FEET_HEIGHT,
@@ -64,8 +65,8 @@ const CAM_KEYS: Key[] = [
   // exploded at 0.69), and frames it clear of the section copy, which sits
   // on the right while the server slides out and top center while it is apart.
   { t: 0.47, pos: [-1.20, FOCUS_SLOT.u * U + 0.60, 2.25], look: [0.55, FOCUS_SLOT.u * U + 0.12, 0.55], fov: 34 },
-  { t: 0.535, pos: [-1.55, FOCUS_SLOT.u * U + 0.98, 2.95], look: [0.02, FOCUS_SLOT.u * U + 0.58, 0.62], fov: 34 },
-  { t: 0.69, pos: [-1.30, FOCUS_SLOT.u * U + 1.12, 3.30], look: [0.02, FOCUS_SLOT.u * U + 0.60, 0.58], fov: 36 },
+  { t: 0.535, pos: [-1.75, FOCUS_SLOT.u * U + 0.95, 2.15], look: [0.22, FOCUS_SLOT.u * U + 0.52, 0.72], fov: 34 },
+  { t: 0.69, pos: [-1.90, FOCUS_SLOT.u * U + 1.10, 2.25], look: [0.00, FOCUS_SLOT.u * U + 0.56, 0.74], fov: 36 },
   { t: 0.80, pos: [0.15, RACK_MID_Y * 0.72, 2.32], look: [0, RACK_MID_Y * 0.56, 0.06], fov: 34 },
   { t: 0.90, pos: [0.62, RACK_MID_Y * 0.92, 2.95], look: [0.02, RACK_MID_Y * 0.58, -0.02], fov: 36 },
   { t: 0.96, pos: [1.10, RACK_MID_Y + 0.62, 3.72], look: [0.04, RACK_MID_Y * 0.56, -0.12], fov: 38 },
@@ -101,6 +102,7 @@ function sampleKey(t: number): Key {
 
 const tmpPos = new THREE.Vector3();
 const tmpLook = new THREE.Vector3();
+const tmpDolly = new THREE.Vector3();
 
 function CameraRig({
   progressRef,
@@ -125,6 +127,14 @@ function CameraRig({
 
     tmpPos.set(k.pos[0] + sway, k.pos[1] + swayY, k.pos[2]);
     tmpLook.set(k.look[0], k.look[1], k.look[2]);
+
+    // Portrait screens only, pull beat only: see narrowPullWeight.
+    const narrow = narrowPullWeight(p, camera.aspect);
+    if (narrow > 0) {
+      tmpPos.addScaledVector(tmpDolly.subVectors(tmpPos, tmpLook), narrow * NARROW_PULL_DOLLY);
+      tmpLook.y -= narrow * NARROW_PULL_LOOK_DROP;
+      tmpLook.x -= narrow * NARROW_PULL_LOOK_LEFT;
+    }
 
     camera.position.lerp(tmpPos, 0.15);
     lookRef.current.lerp(tmpLook, 0.18);

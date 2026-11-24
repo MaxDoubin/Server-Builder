@@ -20,11 +20,13 @@ import { RACK_DEPTH, RACK_FEET_HEIGHT, RACK_INNER_WIDTH, U, type GearSlot } from
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
 import {
   HERO_PITCH,
-  HERO_YAW,
+  HERO_YAW_NARROW,
+  HERO_YAW_WIDE,
   LIFT_HEIGHT,
   SLIDE_DISTANCE,
   UNRACK_GLTF_ENABLED,
   UNRACK_PRELOAD_AT,
+  narrowness,
   sampleUnrack,
   type UnrackPose,
 } from "./unrackTimeline";
@@ -166,7 +168,9 @@ export function FocusUnrack({
 
     if (import.meta.env.DEV) {
       // Development only: lets a capture script wait for the model and read
-      // the renderer's counters. Compiled out of the production bundle.
+      // the renderer's counters, which outlive the canvas so they can be read
+      // again after it unmounts. Compiled out of the production bundle.
+      (window as unknown as Record<string, unknown>).__unrackInfo = state.gl.info;
       (window as unknown as Record<string, unknown>).__unrackDebug = () => ({
         modelShown: modelShown.current,
         pose: { ...pose },
@@ -179,14 +183,16 @@ export function FocusUnrack({
       carriage.current.position.set(0, slotY + pose.lift * LIFT_HEIGHT, pose.slide * SLIDE_DISTANCE);
     }
     if (hero.current) {
-      hero.current.rotation.set(pose.lift * HERO_PITCH, pose.lift * HERO_YAW, 0);
+      const aspect = state.size.width / state.size.height;
+      const yaw = HERO_YAW_WIDE + (HERO_YAW_NARROW - HERO_YAW_WIDE) * narrowness(aspect);
+      hero.current.rotation.set(pose.lift * HERO_PITCH, pose.lift * yaw, 0);
       /*
         On a portrait screen the camera's keys are too close for a machine
         nearly a meter deep, so the hero pose is shown smaller there. The
         scale rides the lift, so it reads as the server settling into the
         frame rather than as a resize.
       */
-      const fit = Math.max(0.5, Math.min(1, state.size.width / state.size.height / 1.2));
+      const fit = Math.max(0.5, Math.min(1, aspect / 1.2));
       hero.current.scale.setScalar(1 + (fit - 1) * pose.lift);
     }
 
