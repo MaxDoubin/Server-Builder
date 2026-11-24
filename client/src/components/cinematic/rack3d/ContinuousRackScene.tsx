@@ -6,7 +6,7 @@ import { ServerChassis } from "./parts/ServerChassis";
 import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { FocusUnrack } from "./unrack/FocusUnrack";
-import { NARROW_PULL_DOLLY, NARROW_PULL_LOOK_DROP, NARROW_PULL_LOOK_LEFT, narrowPullWeight } from "./unrack/unrackTimeline";
+import { NARROW_PULL_DOLLY, NARROW_PULL_LOOK_DROP, NARROW_PULL_LOOK_LEFT, narrowDollyWeight, narrowPullWeight } from "./unrack/unrackTimeline";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import {
   RACK_FEET_HEIGHT,
@@ -128,12 +128,13 @@ function CameraRig({
     tmpPos.set(k.pos[0] + sway, k.pos[1] + swayY, k.pos[2]);
     tmpLook.set(k.look[0], k.look[1], k.look[2]);
 
-    // Portrait screens only, pull beat only: see narrowPullWeight.
-    const narrow = narrowPullWeight(p, camera.aspect);
-    if (narrow > 0) {
-      tmpPos.addScaledVector(tmpDolly.subVectors(tmpPos, tmpLook), narrow * NARROW_PULL_DOLLY);
-      tmpLook.y -= narrow * NARROW_PULL_LOOK_DROP;
-      tmpLook.x -= narrow * NARROW_PULL_LOOK_LEFT;
+    // Portrait screens only: see narrowPullWeight and narrowDollyWeight.
+    const dolly = narrowDollyWeight(p, camera.aspect);
+    if (dolly > 0) {
+      const aim = narrowPullWeight(p, camera.aspect);
+      tmpPos.addScaledVector(tmpDolly.subVectors(tmpPos, tmpLook), dolly * NARROW_PULL_DOLLY);
+      tmpLook.y -= aim * NARROW_PULL_LOOK_DROP;
+      tmpLook.x -= aim * NARROW_PULL_LOOK_LEFT;
     }
 
     camera.position.lerp(tmpPos, 0.15);

@@ -53,6 +53,14 @@ const SEEN_WHEN_RACKED = new Set(["Front bezel", "Bezel key", "System cover", "D
 
 const LIFT_SCALE = new THREE.Vector3(1, EXPLODE_LIFT_SCALE, 1);
 
+/**
+ * The names a portrait screen has room for. The cover and the memory sit
+ * directly over the processors as a phone sees the machine, and the copy
+ * leaves one row for names above it, so three names there print over each
+ * other. The processors keep theirs.
+ */
+const PORTRAIT_CALLOUTS = new Set(["Drive carriers", "Cooling fans", "Processors and heatsinks", "Power supplies"]);
+
 /** Seconds the model takes to dissolve in over the procedural chassis. */
 const DISSOLVE_SECONDS = 0.7;
 
@@ -200,7 +208,10 @@ export default function R760Unrack({
 
   // Fewer names than /teardown shows: this is a beat in a scroll, not a
   // page to study, and the section's own copy shares the screen.
-  const calledOut = useCallback((label: string) => isCalledOut(label, tier === "high" ? "mid" : "low"), [tier]);
+  const calledOut = useCallback(
+    (label: string) => (portrait ? PORTRAIT_CALLOUTS.has(label) : isCalledOut(label, tier === "high" ? "mid" : "low")),
+    [tier, portrait],
+  );
 
   useFrame((_, delta) => {
     const pose = poseRef.current;
@@ -226,7 +237,10 @@ export default function R760Unrack({
         return;
       }
       if (groupRef.current) groupRef.current.visible = true;
-      const step = Math.min(delta, 0.05) / DISSOLVE_SECONDS;
+      // Development only: a capture script can stretch the fade, because a
+      // software renderer cannot screenshot fast enough to catch 0.7 s.
+      const seconds = (import.meta.env.DEV && (window as unknown as { __unrackDissolveSeconds?: number }).__unrackDissolveSeconds) || DISSOLVE_SECONDS;
+      const step = Math.min(delta, 0.05) / seconds;
       dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step)));
       const k = dissolve.current;
       // Development only, for the capture script. Compiled out of production.

@@ -73,7 +73,20 @@ export function narrowness(aspect: number): number {
  */
 export function narrowPullWeight(p: number, aspect: number): number {
   const w = UNRACK_WINDOWS;
-  return narrowness(aspect) * smootherstep(w.slideOut[0], 0.43, p) * (1 - smootherstep(0.49, w.lift[1], p));
+  // Held until the pull beat's copy has finished fading (0.54 to 0.60 in
+  // SystemsAct), so the server never passes behind text that is still there.
+  return narrowness(aspect) * smootherstep(w.slideOut[0], 0.43, p) * (1 - smootherstep(0.54, 0.6, p));
+}
+
+/**
+ * The weight of the extra camera distance alone. It covers the pull beat and
+ * also the way home, where a phone would otherwise crop the chassis as it is
+ * lowered onto the rails and slid in.
+ */
+export function narrowDollyWeight(p: number, aspect: number): number {
+  const w = UNRACK_WINDOWS;
+  const home = narrowness(aspect) * smootherstep(0.745, w.lower[1], p) * (1 - smootherstep(0.845, 0.89, p));
+  return Math.max(narrowPullWeight(p, aspect), home);
 }
 /** Extra camera distance, as a fraction, and how far the aim moves, meters. */
 export const NARROW_PULL_DOLLY = 0.9;

@@ -75,6 +75,9 @@ const INTERNALS_SIZE: [number, number, number] = [RACK_INNER_WIDTH, 2 * U - 0.00
 /** Their part offsets were authored for a wider canvas; scale them to fit. */
 const INTERNALS_TRAVEL = 0.5;
 
+/** Peak intensity of the fallback work light. */
+const WORK_LIGHT = 2.4;
+
 const RAIL_X = RACK_INNER_WIDTH / 2 - 0.012;
 const RAIL_LENGTH = 0.8;
 const RAIL_STEEL = new THREE.MeshStandardMaterial({ color: "#7d848e", metalness: 0.55, roughness: 0.42 });
@@ -145,6 +148,7 @@ export function FocusUnrack({
   const closedChassis = useRef<THREE.Group>(null);
   const internals = useRef<THREE.Group>(null);
   const labelRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const workLight = useRef<THREE.PointLight>(null);
 
   /*
     The model is asked for once, the first time the reader gets within reach
@@ -196,6 +200,10 @@ export function FocusUnrack({
       hero.current.scale.setScalar(1 + (fit - 1) * pose.lift);
     }
 
+    // Fades up as the server leaves the rack, so it adds nothing to the rack
+    // itself. See the note on the light below.
+    if (workLight.current) workLight.current.intensity = WORK_LIGHT * pose.slide;
+
     const useProcedural = !modelShown.current;
     if (procedural.current) procedural.current.visible = useProcedural;
     if (!useProcedural) return;
@@ -221,6 +229,16 @@ export function FocusUnrack({
       <group position={[0, slotY, 0]}>
         <Rails poseRef={poseRef} />
       </group>
+      {/*
+        The procedural parts are painted near black and a low tier device
+        gets none of the scene's accent lights, so pulled clear of the rack
+        they all but vanished. One work light, only on devices that keep the
+        procedural server for good, rides with it. Where the R760 model is
+        allowed this is never mounted: that model brings its own reflections.
+      */}
+      {modelAllowed ? null : (
+        <pointLight ref={workLight} position={[-0.7, slotY + 0.85, SLIDE_DISTANCE + 0.75]} intensity={0} distance={3.2} color="#dfe8ff" />
+      )}
       <group ref={carriage} position={[0, slotY, 0]}>
         <group ref={hero}>
           <group ref={procedural}>
