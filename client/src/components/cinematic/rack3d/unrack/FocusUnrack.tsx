@@ -76,7 +76,7 @@ const INTERNALS_SIZE: [number, number, number] = [RACK_INNER_WIDTH, 2 * U - 0.00
 const INTERNALS_TRAVEL = 0.5;
 
 /** Peak intensity of the fallback work light. */
-const WORK_LIGHT = 2.4;
+const WORK_LIGHT = 30;
 
 const RAIL_X = RACK_INNER_WIDTH / 2 - 0.012;
 const RAIL_LENGTH = 0.8;

@@ -51,6 +51,20 @@ interface Tracked {
  */
 const SEEN_WHEN_RACKED = new Set(["Front bezel", "Bezel key", "System cover", "Drive carriers", "Left control panel", "Right control panel"]);
 
+/**
+ * The front panel alone. If the reader scrolls into the beat while the
+ * hand-over dissolve is part way, the model backs out again, and all of it
+ * that is still drawn while it does is this. Left whole, its half-dissolved
+ * lid would speckle the top of the procedural chassis as that slid out.
+ */
+const FRONT_PANEL = new Set(["Front bezel", "Bezel key", "Left control panel", "Right control panel"]);
+
+/** How much faster the dissolve backs out than it comes in. */
+const RETREAT_RATE = 4;
+
+/** Which assemblies are drawn: see the three sets of rules where it is applied. */
+type Drawn = "racked" | "retreat" | "all";
+
 const LIFT_SCALE = new THREE.Vector3(1, EXPLODE_LIFT_SCALE, 1);
 
 /**
@@ -123,9 +137,13 @@ export default function R760Unrack({
 
     const root = findAssemblyRoot(scene);
     const tracked: Tracked[] = [];
+    let chassis: THREE.Object3D | null = null;
     for (const child of root.children) {
       const name = authoredName(child).toLowerCase();
-      if (name.includes(CHASSIS_MATCH)) continue;
+      if (name.includes(CHASSIS_MATCH)) {
+        chassis = child;
+        continue;
+      }
       const part = TEARDOWN_PARTS.find((p) => name.includes(p.match.toLowerCase()));
       if (!part) continue;
       tracked.push({
@@ -146,10 +164,18 @@ export default function R760Unrack({
     // author the machine with its front toward -Z in the scene (the Main
     // Assembly node is turned half a circle), and a rack faces +Z, so the
     // group below turns it around and the offset is worked out to match.
+    //
+    // Depth is taken from the bezel itself, not from the whole model. Other
+    // parts reach further forward than the bezel's face, and aligning on
+    // them left the bezel behind the procedural chassis's front panel: the
+    // hand-over dissolve then ran entirely out of sight and the model
+    // appeared in one frame when the procedural chassis was hidden.
     const box = new THREE.Box3().setFromObject(scene);
-    const offset = new THREE.Vector3((box.min.x + box.max.x) / 2, -height / 2 + 0.0015 - box.min.y, frontZ + box.min.z);
+    const bezel = tracked.find((t) => t.part.label === "Front bezel");
+    const front = bezel ? new THREE.Box3().setFromObject(bezel.node).min.z : box.min.z;
+    const offset = new THREE.Vector3((box.min.x + box.max.x) / 2, -height / 2 + 0.0015 - box.min.y, frontZ + front);
 
-    return { scene, materials: Array.from(materials.values()), tracked, callouts, offset };
+    return { scene, materials: Array.from(materials.values()), tracked, chassis: chassis as THREE.Object3D | null, callouts, offset };
   }, [gltf, frontZ, height]);
 
   const compiled = useRef(false);
@@ -202,7 +228,7 @@ export default function R760Unrack({
   const dissolve = useRef(0);
   const shown = useRef(false);
   const lastExplode = useRef(-1);
-  const lastRacked = useRef<boolean | null>(null);
+  const lastDrawn = useRef<Drawn | null>(null);
   const explodeRef = useRef(0);
   const groupRef = useRef<THREE.Group>(null);
 
@@ -241,7 +267,7 @@ export default function R760Unrack({
       // software renderer cannot screenshot fast enough to catch 0.7 s.
       const seconds = (import.meta.env.DEV && (window as unknown as { __unrackDissolveSeconds?: number }).__unrackDissolveSeconds) || DISSOLVE_SECONDS;
       const step = Math.min(delta, 0.05) / seconds;
-      dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step)));
+      dissolve.current = Math.max(0, Math.min(1, dissolve.current + (rising ? step : -step * RETREAT_RATE)));
       const k = dissolve.current;
       // Development only, for the capture script. Compiled out of production.
       if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__unrackDissolve = k;
@@ -252,9 +278,15 @@ export default function R760Unrack({
       }
     }
 
-    if (racked !== lastRacked.current) {
-      lastRacked.current = racked;
-      for (const t of model.tracked) t.node.visible = !racked || SEEN_WHEN_RACKED.has(t.part.label);
+    // Racked: only what can be seen from the front of a closed machine.
+    // Backing out of an unfinished hand-over: only the front panel.
+    // Otherwise, once the model is the server: everything.
+    const drawn: Drawn = racked ? "racked" : shown.current ? "all" : "retreat";
+    if (drawn !== lastDrawn.current) {
+      lastDrawn.current = drawn;
+      const set = drawn === "racked" ? SEEN_WHEN_RACKED : drawn === "retreat" ? FRONT_PANEL : null;
+      for (const t of model.tracked) t.node.visible = !set || set.has(t.part.label);
+      if (model.chassis) model.chassis.visible = drawn !== "retreat";
     }
 
     const q = pose.explode;
