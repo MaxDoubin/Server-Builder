@@ -4,19 +4,25 @@
  * sampled here into shader uniforms, and the captions quote the same phases,
  * so the picture and the words cannot drift apart.
  *
- * What is modeled, and where it comes from:
+ * What is modeled, and where it comes from. Every reference is to the Linux
+ * md driver, drivers/md/raid5.c at v6.6, which is the one primary source
+ * this was checked against line by line; the same definitions appear in the
+ * SNIA dictionary and the SNIA Common RAID Disk Data Format, which were not
+ * re-read for this.
  *
  *  - A RAID 6 stripe holds N - 2 data chunks and two parity chunks, P and Q,
- *    and the array survives any two member drives failing at once (SNIA
- *    Dictionary, "RAID Level 6"; SNIA Common RAID Disk Data Format, primary
- *    RAID level 06).
+ *    and the array survives any two member drives failing at once
+ *    (setup_conf(): "if (conf->level == 6) conf->max_degraded = 2").
  *  - The parity chunks are distributed: their position moves from stripe to
- *    stripe. The rotation used here is the "left symmetric" layout, which is
- *    the Linux md default and DDF's "rotating parity N with data
- *    continuation": P steps one drive to the left per stripe, Q sits on the
- *    next drive (wrapping), and data continues after Q. See
- *    raid5_compute_sector() in drivers/md/raid5.c, case 6,
- *    ALGORITHM_LEFT_SYMMETRIC.
+ *    stripe. The rotation used here is md's default "left symmetric" layout:
+ *    P steps one drive to the left per stripe, Q sits on the next drive
+ *    (wrapping), and data continues after Q. See raid5_compute_sector(),
+ *    case 6, ALGORITHM_LEFT_SYMMETRIC:
+ *      pd_idx = raid_disks - 1 - (stripe % raid_disks);
+ *      qd_idx = (pd_idx + 1) % raid_disks;
+ *      dd_idx = (pd_idx + 2 + dd_idx) % raid_disks;
+ *    Other implementations rotate differently; the two-parity rule is the
+ *    same everywhere.
  *  - A full-stripe write writes every data chunk plus freshly computed P and
  *    Q. A healthy read touches data chunks only; parity is not read.
  *  - After one drive fails the array keeps running in a degraded state and
