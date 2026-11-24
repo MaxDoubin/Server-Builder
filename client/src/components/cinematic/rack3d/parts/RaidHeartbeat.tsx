@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useStore, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { RACK_DEPTH, RACK_FEET_HEIGHT, RACK_LAYOUT, U } from "../rackConfig";
 import {
@@ -26,7 +26,8 @@ import { useReducedMotion } from "@/lib/motion/useReducedMotion";
  *   - the shelf's own bay LEDs (always on, every device tier), and
  *   - a floating stripe map (drives across, stripes down) that makes the
  *     parity rotation and the rebuild readable. It only shows while the
- *     camera is on the lower rack, and not at all on low tier devices.
+ *     camera is on the lower rack, and not at all on low tier devices or
+ *     narrow (phone) screens.
  *
  * The switch. Set `enabled` to false to remove the effect entirely, or
  * `stripeMap` to false to keep only the LEDs. `window` is the slice of the
@@ -214,7 +215,7 @@ const vertexShader = /* glsl */ `
     } else if (kind < 3.5) {
       // Soft spill of light on the drive carrier.
       float act = max(max(wr, rd), rbRead);
-      color = uData * act * 0.34;
+      color = uData * act * 0.26;
       color += uParity * (rbWrite * 0.4 + hb * 0.1);
       color += uFault * warn * (0.15 + 0.35 * warnPulse);
     } else {
@@ -387,12 +388,14 @@ function LegendSwatch({ color, ring = false }: { color: string; ring?: boolean }
 }
 
 function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } }) {
-  const { tier } = useDeviceTier();
+  const { tier, mobile } = useDeviceTier();
   const reducedMotion = useReducedMotion();
   const gl = useThree((s) => s.gl);
-  const setFrameloop = useThree((s) => s.setFrameloop);
+  const store = useStore();
 
-  const withMap = RAID_HEARTBEAT.stripeMap && tier !== "low";
+  // No stripe map on low tier devices, nor on narrow screens: there the beat
+  // copy is laid across the lower rack and the map would sit under the text.
+  const withMap = RAID_HEARTBEAT.stripeMap && tier !== "low" && !mobile;
   const shelfY = SHELF ? RACK_FEET_HEIGHT + (SHELF.u - 1 + SHELF.size / 2) * U : 0;
   const shelfHalf = SHELF ? (SHELF.size * U) / 2 : 0;
 
@@ -493,17 +496,20 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
     Stop the render loop while the canvas is scrolled out of view or the tab
     is hidden. The scene is pinned for four screens and then leaves the
     viewport for the rest of the home page; nothing in it needs to keep
-    drawing there. Only flips on a real change, because r3f restarts its
-    clock on every setFrameloop call.
+    drawing there.
+
+    The store subscription is what makes it stick: <Canvas> measures itself
+    on every scroll and re-applies its own frameloop prop ("always") when it
+    re-renders, which would restart the loop while the visitor scrolls the
+    rest of the page. Each setFrameloop call also restarts r3f's clock, so
+    this only ever calls it on a real change.
   */
   useEffect(() => {
     let onScreen = true;
-    let running = true;
+    const wanted = () => (onScreen && !document.hidden ? "always" : "never");
     const apply = () => {
-      const next = onScreen && !document.hidden;
-      if (next === running) return;
-      running = next;
-      setFrameloop(next ? "always" : "never");
+      const state = store.getState();
+      if (state.frameloop !== wanted()) state.setFrameloop(wanted());
     };
     const observer = new IntersectionObserver((entries) => {
       onScreen = entries[entries.length - 1].isIntersecting;
@@ -511,12 +517,15 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
     });
     observer.observe(gl.domElement);
     document.addEventListener("visibilitychange", apply);
+    const unsubscribe = store.subscribe(apply);
     return () => {
+      unsubscribe();
       observer.disconnect();
       document.removeEventListener("visibilitychange", apply);
-      if (!running) setFrameloop("always");
+      const state = store.getState();
+      if (state.frameloop !== "always") state.setFrameloop("always");
     };
-  }, [gl, setFrameloop]);
+  }, [gl, store]);
 
   useFrame((_, delta) => {
     // Reduced motion: hold the settled, whole-array frame. (The home page
@@ -576,7 +585,7 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
           </mesh>
           <Html
             position={[-PANEL_W / 2, PANEL_H / 2 + 0.008, 0]}
-            distanceFactor={0.85}
+            distanceFactor={1.7}
             style={{ pointerEvents: "none" }}
             wrapperClass="cinematic-label"
           >
@@ -591,7 +600,7 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
               style={{
                 opacity: 0,
                 transform: "translateY(-100%)",
-                width: "330px",
+                width: "250px",
                 fontFamily: "'Space Grotesk', monospace",
                 fontSize: "0.625rem",
                 lineHeight: 1.5,
@@ -614,16 +623,17 @@ function RaidHeartbeatField({ progressRef }: { progressRef: { current: number } 
                 RAID 6 · {MEMBER_COUNT} drives + hot spare
               </div>
               <span ref={phaseTextRef} style={{ display: "block", minHeight: "3em" }} />
-              <div style={{ color: "hsl(40 8% 72%)", display: "flex", gap: "12px" }}>
+              <div style={{ color: "hsl(40 8% 72%)", display: "flex", gap: "11px", whiteSpace: "nowrap" }}>
                 <span>
                   <LegendSwatch color="#64e6ff" />
                   data
                 </span>
                 <span>
-                  <LegendSwatch color="#c7f000" />P parity
+                  <LegendSwatch color="#c7f000" />
+                  parity P
                 </span>
                 <span>
-                  <LegendSwatch color="#c7f000" ring />Q parity
+                  <LegendSwatch color="#c7f000" ring />Q
                 </span>
                 <span>
                   <LegendSwatch color="#ff9a1f" ring />
