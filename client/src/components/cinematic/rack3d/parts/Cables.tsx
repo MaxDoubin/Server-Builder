@@ -127,6 +127,55 @@ function OverheadTray() {
   );
 }
 
+/** One patch cable's path, for effects that follow the cables. */
+export interface CableRunPath {
+  /** The cable's center line, from its switch end to its device end. */
+  curve: THREE.CatmullRomCurve3;
+  /** Which switch height the run starts from. */
+  from: "u14" | "u15" | "u30" | "u35";
+  /** Rack side the run is dressed down: -1 left post, 1 right post. */
+  side: -1 | 1;
+}
+
+/**
+ * The center lines of the sixteen patch cables `Cables` draws.
+ *
+ * Additive and read-only: nothing in `Cables` calls this. It restates the
+ * run table and the control points of `CableTube` so an overlay (the link
+ * bring-up draw-on) can follow the same paths without the tubes above
+ * having to change. If a run or a control point changes in `Cables` or
+ * `CableTube`, change it here too.
+ */
+export function cableRunPaths(): CableRunPath[] {
+  const laneBase = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
+  const frontZ = RACK_DEPTH / 2 - 0.015;
+  const backZ = -RACK_DEPTH / 2 + 0.12;
+  const targets = [3, 4, 7, 9, 10, 12, 17, 18, 21, 22, 32, 33, 34, 38, 39, 40];
+
+  return targets.map((targetU, lane) => {
+    const toY = RACK_FEET_HEIGHT + targetU * U + U * 0.35;
+    const side: -1 | 1 = targetU <= 9 || targetU === 17 || targetU === 18 ? -1 : 1;
+    const laneX = side * (laneBase + lane * 0.0018 * 0.55);
+    const from: CableRunPath["from"] =
+      targetU >= 35 ? "u35" : targetU >= 30 ? "u30" : targetU >= 16 && targetU <= 22 ? "u15" : "u14";
+    const fromY = RACK_FEET_HEIGHT + Number(from.slice(1)) * U + U * 0.5;
+
+    const hi = Math.max(fromY, toY) + U * 0.15;
+    const lo = Math.min(fromY, toY) - U * 0.15;
+    const goingDown = fromY > toY;
+    const points = [
+      new THREE.Vector3(laneX, fromY, frontZ),
+      new THREE.Vector3(laneX + 0.003, fromY - U * 0.3, frontZ - 0.015),
+      new THREE.Vector3(laneX + 0.006, goingDown ? hi : lo, backZ + 0.02),
+      new THREE.Vector3(laneX + 0.006, (fromY + toY) / 2, backZ + 0.02),
+      new THREE.Vector3(laneX + 0.006, goingDown ? lo : hi, backZ + 0.02),
+      new THREE.Vector3(laneX + 0.003, toY - U * 0.3, frontZ - 0.015),
+      new THREE.Vector3(laneX, toY, frontZ),
+    ];
+    return { curve: new THREE.CatmullRomCurve3(points, false, "centripetal", 0.5), from, side };
+  });
+}
+
 function HorizontalBrushPanel({ x, y, z }: { x: number; y: number; z: number }) {
   return (
     <group position={[x, y, z]}>

@@ -8,6 +8,8 @@ import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
+import { LINK_BRINGUP_ENABLED, LinkBringUp } from "./parts/LinkBringUp";
+import { useVisibleFrameloop } from "./parts/useVisibleFrameloop";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -645,12 +647,15 @@ export function ContinuousRackScene({
 }: {
   progressRef: ContinuousProgressRef;
 }) {
-  const { dpr, effects, tier } = useDeviceTier();
+  const { dpr, effects, tier, mobile } = useDeviceTier();
   const reducedMotion = useReducedMotion();
   const insertions = useMemo(buildInsertions, []);
+  const [canvasRef, frameloop] = useVisibleFrameloop();
 
   return (
     <Canvas
+      ref={canvasRef}
+      frameloop={frameloop}
       dpr={dpr}
       shadows={false}
       performance={{ min: 0.6, debounce: 200 }}
@@ -717,6 +722,14 @@ export function ContinuousRackScene({
         ))}
         <FocusServer progressRef={progressRef} />
         <HallContents progressRef={progressRef} tier={tier} />
+        {LINK_BRINGUP_ENABLED && (
+          <LinkBringUp
+            progressRef={progressRef}
+            tier={tier}
+            mobile={mobile}
+            reducedMotion={reducedMotion}
+          />
+        )}
       </Suspense>
 
       <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
