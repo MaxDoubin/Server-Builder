@@ -66,7 +66,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How a FortiGate matches policies, picks flow or proxy inspection, applies profiles, SSL inspection and NAT, per the FortiOS 7.6.8 documentation.",
     coverImage: "/images/blog/how-a-fortigate-evaluates-traffic-photo.jpg",
     coverCredit: {"author":"Inisheer","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:CERN-20060225-01.jpg"},
-    wordCount: 2932,
+    wordCount: 2995,
   },
   {
     slug: "vulnerability-prioritization-cvss-epss-trurisk",
@@ -3487,10 +3487,10 @@ export const POST_COUNT_SPELLED = "three hundred and forty eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 3164;
+export const CITATION_COUNT = 3165;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 220;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3361;
+export const CHECKED_URL_COUNT = 3362;

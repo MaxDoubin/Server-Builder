@@ -22,7 +22,7 @@ A FortiGate is a stateful firewall. Traffic that starts a new connection is chec
 
 The Administration Guide lists seven match parameters: incoming interface, outgoing interface, source address, destination address, user identity, service and schedule. A service is a protocol and port definition. The guide contrasts it with application control, which examines packets to find the protocol actually in use. Traffic that matches no policy is denied.
 
-Direction follows whoever starts the conversation, and each direction in which sessions can start needs its own policy. FortiOS does not run a reverse-path check on reply traffic that matches an allowed session by its Internet Protocol (IP) tuple, so a reply may return on a different interface. The session-table page adds that checking for a policy match is where features such as NAT, scanning and traffic shaping can be applied.
+Direction follows whoever starts the conversation, and each direction in which sessions can start needs its own policy. By default, FortiOS does not run a reverse-path check on reply traffic that matches an allowed session by its Internet Protocol (IP) tuple, so a reply may return on a different interface. The 7.6.7 release notes describe a setting, `src-check-reply` under `config system settings`, that "functions like strict Reverse Path Forwarding checks for reply packets"; its `disable` option is marked as the default. This article did not test it, and with it enabled a reply on a different interface may be checked and dropped. The session-table page adds that checking for a policy match is where features such as NAT, scanning and traffic shaping can be applied.
 
 Routing matters before the match. The Policy match tool works only if the relevant route exists, and the sample trace in the packet-flow page prints the next-hop route lookup before the line that reports the matched policy. Software-defined wide area network (SD-WAN) rules are policy-routing options that pick a member link, so they sit on the routing side. [FortiGate SD-WAN configuration](/blog/fortigate-sdwan-configuration) covers that half.
 
@@ -164,6 +164,7 @@ For the evaluation path, the visible link is address objects. The `FABRIC_DEVICE
 - [Best Practices (7.6): Policy configuration changes](https://docs.fortinet.com/document/fortigate/7.6.8/best-practices/54033/policy-configuration-changes)
 - [CLI Reference 7.6.8: config firewall policy](https://docs.fortinet.com/document/fortigate/7.6.8/cli-reference/333889629/config-firewall-policy)
 - [CLI Reference 7.6.8: config log setting](https://docs.fortinet.com/document/fortigate/7.6.8/cli-reference/196223761/config-log-setting)
+- [FortiOS 7.6.7 Release Notes: New features or enhancements](https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/743723/new-features-or-enhancements)
 - [Fortinet Community: Implicit deny logs](https://community.fortinet.com/fortigate-3/technical-tip-implicit-deny-logs-96617)
 - [Fortinet Community: Unable to see implicit deny logs](https://community.fortinet.com/fortigate-3/troubleshooting-tip-unable-to-see-implicit-deny-logs-119638)
 - [RFC 6066: Server Name Indication](https://www.rfc-editor.org/rfc/rfc6066.txt)
