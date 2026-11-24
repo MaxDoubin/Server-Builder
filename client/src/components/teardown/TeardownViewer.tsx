@@ -18,6 +18,7 @@ import { StudioEnvironment } from "@/components/racks/StudioEnvironment";
 import * as THREE from "three";
 import { TeardownModel } from "./TeardownScene";
 import { EXPLODED_VIEW_ENABLED } from "./explodedView";
+import { TEARDOWN_VIEW } from "./teardownParts";
 
 function Rig() {
   /*
@@ -42,7 +43,7 @@ function Rig() {
       maxDistance={3.2}
       minPolarAngle={0.15}
       maxPolarAngle={Math.PI / 2.05}
-      target={[0, 0.02, 0]}
+      target={[...TEARDOWN_VIEW.target]}
       autoRotate={false}
       dampingFactor={0.08}
     />
@@ -99,7 +100,7 @@ export function TeardownViewer({
       <Canvas
         frameloop={onScreen ? "always" : "never"}
         dpr={[1, 1.75]}
-        camera={{ fov: 30, position: [0.98, 0.58, 1.32], near: 0.01, far: 40 }}
+        camera={{ fov: TEARDOWN_VIEW.fov, position: [...TEARDOWN_VIEW.position], near: 0.01, far: 40 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
         onPointerMissed={() => onSelect(null)}
       >

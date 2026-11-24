@@ -16,6 +16,8 @@
  * the server flew back into the rack while still in pieces.
  */
 
+import { TEARDOWN_VIEW } from "@/components/teardown/teardownParts";
+
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
 }
@@ -41,21 +43,64 @@ export const SLIDE_DISTANCE = 0.74;
 /** How far it is lifted clear of the rails for the hero pose, in meters. */
 export const LIFT_HEIGHT = 0.2;
 /**
- * Hero pose turn, radians. On a wide screen the machine is turned side on to
- * the camera, so its long axis runs across the frame and the exploded view
- * can be large without growing up into the headline. On a portrait screen it
- * is turned front on instead, because there the width is what is scarce.
+ * How far the machine turns as it lifts, radians. The exploded view is the
+ * teardown page's, seen from where that page sees it: behind the machine and
+ * to one side, looking down across the power supplies. A racked server faces
+ * the room, so it has to come round to show that side to a camera that is
+ * standing in front of the rack. This is the smallest turn that does it
+ * while leaving the camera on the reader's side of the rack.
  */
-export const HERO_YAW_WIDE = 0.55;
-export const HERO_YAW_NARROW = -0.38;
-/** Tilt of the top toward the camera in the hero pose, radians. */
-export const HERO_PITCH = 0.1;
+export const HERO_YAW = 1.4;
+
 /**
- * Scale on the vertical part of every assembly's travel. The teardown page
- * has the whole canvas; here the section headline owns the top third, and a
- * flatter stack is what lets the machine itself be drawn larger.
+ * The home page stands further back than the teardown does, by this factor.
+ * The teardown has its whole canvas; here the section headline owns the top
+ * of the screen, so the same view is drawn smaller and lower instead of
+ * being restaged to fit.
  */
-export const EXPLODE_LIFT_SCALE = 0.75;
+const HERO_VIEW_DISTANCE = 1.9;
+/** How far above and beside the machine the camera aims, meters: this is
+ * what puts the drawing under the headline and clear of the copy. */
+const HERO_AIM_RISE = 0.33;
+const HERO_AIM_SIDE = 0.15;
+
+export interface CameraKey {
+  pos: [number, number, number];
+  look: [number, number, number];
+  fov: number;
+}
+
+/**
+ * The camera for the whole exploded view, derived from the teardown's own.
+ *
+ * The teardown's camera offset is carried into this scene through the same
+ * two turns the model goes through (half a circle to face the rack, then the
+ * hero yaw), so the direction the machine is seen from is the teardown's by
+ * construction and stays so if either page is retuned. It does not move
+ * while the machine comes apart, because the teardown's does not.
+ */
+export function heroCameraKey(slotY: number): CameraKey {
+  const [px, py, pz] = TEARDOWN_VIEW.position;
+  const [tx, ty, tz] = TEARDOWN_VIEW.target;
+  // Half a circle about the vertical: the model is turned to face the rack.
+  const dx = -(px - tx);
+  const dy = py - ty;
+  const dz = -(pz - tz);
+  const c = Math.cos(HERO_YAW);
+  const sn = Math.sin(HERO_YAW);
+  const cx = 0;
+  const cy = slotY + LIFT_HEIGHT + ty;
+  const cz = SLIDE_DISTANCE;
+  return {
+    pos: [
+      cx + (dx * c + dz * sn) * HERO_VIEW_DISTANCE,
+      cy + dy * HERO_VIEW_DISTANCE,
+      cz + (-dx * sn + dz * c) * HERO_VIEW_DISTANCE,
+    ],
+    look: [cx + HERO_AIM_SIDE, cy + HERO_AIM_RISE, cz],
+    fov: TEARDOWN_VIEW.fov,
+  };
+}
 
 /** 0 on a landscape screen, 1 on a phone held upright. */
 export function narrowness(aspect: number): number {

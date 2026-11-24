@@ -6,7 +6,7 @@ import { ServerChassis } from "./parts/ServerChassis";
 import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { FocusUnrack } from "./unrack/FocusUnrack";
-import { NARROW_PULL_DOLLY, NARROW_PULL_LOOK_DROP, NARROW_PULL_LOOK_LEFT, narrowDollyWeight, narrowPullWeight } from "./unrack/unrackTimeline";
+import { NARROW_PULL_DOLLY, NARROW_PULL_LOOK_DROP, NARROW_PULL_LOOK_LEFT, heroCameraKey, narrowDollyWeight, narrowPullWeight } from "./unrack/unrackTimeline";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import {
   RACK_FEET_HEIGHT,
@@ -54,6 +54,9 @@ type Key = {
 
 const RACK_MID_Y = RACK_TOTAL_HEIGHT * 0.5;
 
+// The exploded view is looked at from where the teardown page looks at it.
+const HERO_KEY = heroCameraKey(RACK_FEET_HEIGHT + (FOCUS_SLOT.u - 1 + FOCUS_SLOT.size / 2) * U);
+
 const CAM_KEYS: Key[] = [
   { t: 0.00, pos: [-0.55, RACK_MID_Y + 0.18, 2.85], look: [0, RACK_MID_Y + 0.05, 0], fov: 32 },
   { t: 0.10, pos: [0.40, RACK_MID_Y + 0.10, 2.70], look: [0, RACK_MID_Y + 0.05, 0], fov: 32 },
@@ -65,8 +68,8 @@ const CAM_KEYS: Key[] = [
   // exploded at 0.69), and frames it clear of the section copy, which sits
   // on the right while the server slides out and top center while it is apart.
   { t: 0.47, pos: [-1.20, FOCUS_SLOT.u * U + 0.60, 2.25], look: [0.55, FOCUS_SLOT.u * U + 0.12, 0.55], fov: 34 },
-  { t: 0.535, pos: [-1.75, FOCUS_SLOT.u * U + 0.95, 2.15], look: [0.22, FOCUS_SLOT.u * U + 0.52, 0.72], fov: 34 },
-  { t: 0.69, pos: [-1.90, FOCUS_SLOT.u * U + 1.10, 2.25], look: [0.00, FOCUS_SLOT.u * U + 0.56, 0.74], fov: 36 },
+  { t: 0.535, ...HERO_KEY },
+  { t: 0.69, ...HERO_KEY },
   { t: 0.80, pos: [0.15, RACK_MID_Y * 0.72, 2.32], look: [0, RACK_MID_Y * 0.56, 0.06], fov: 34 },
   { t: 0.90, pos: [0.62, RACK_MID_Y * 0.92, 2.95], look: [0.02, RACK_MID_Y * 0.58, -0.02], fov: 36 },
   { t: 0.96, pos: [1.10, RACK_MID_Y + 0.62, 3.72], look: [0.04, RACK_MID_Y * 0.56, -0.12], fov: 38 },

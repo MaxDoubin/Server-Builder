@@ -106,7 +106,12 @@ void leader(vec4 anchorClip, out vec2 anchorPx, out vec2 endPx, out float side) 
   // so names still land on separate rows when the leaders run sideways.
   vec2 mid = anchorPx + dir * aLook.x + vec2(side * halfW, (aLook.x - 40.0) * uStagger);
   // Keep the whole label on the canvas.
-  mid = clamp(mid, vec2(halfW + 6.0, 10.0), uResolution - vec2(halfW + 6.0, max(30.0, uTopInset * uResolution.y)));
+  // With a top inset, each leader length gets its own ceiling a row below
+  // the next longer one. Names pushed down out of the inset then keep the
+  // rows the stagger gave them, where one shared ceiling would stack them
+  // all on a single line.
+  float ceiling = max(30.0, uTopInset * uResolution.y) + step(0.0001, uTopInset) * (118.0 - aLook.x) * 0.9;
+  mid = clamp(mid, vec2(halfW + 6.0, 10.0), uResolution - vec2(halfW + 6.0, ceiling));
   endPx = mid - vec2(side * halfW, 0.0);
 }
 `;

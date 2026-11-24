@@ -19,14 +19,11 @@ import { ServerInternals, INTERNAL_LABELS } from "../parts/ServerInternals";
 import { RACK_DEPTH, RACK_FEET_HEIGHT, RACK_INNER_WIDTH, U, type GearSlot } from "../rackConfig";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
 import {
-  HERO_PITCH,
-  HERO_YAW_NARROW,
-  HERO_YAW_WIDE,
+  HERO_YAW,
   LIFT_HEIGHT,
   SLIDE_DISTANCE,
   UNRACK_GLTF_ENABLED,
   UNRACK_PRELOAD_AT,
-  narrowness,
   sampleUnrack,
   type UnrackPose,
 } from "./unrackTimeline";
@@ -188,8 +185,7 @@ export function FocusUnrack({
     }
     if (hero.current) {
       const aspect = state.size.width / state.size.height;
-      const yaw = HERO_YAW_WIDE + (HERO_YAW_NARROW - HERO_YAW_WIDE) * narrowness(aspect);
-      hero.current.rotation.set(pose.lift * HERO_PITCH, pose.lift * yaw, 0);
+      hero.current.rotation.set(0, pose.lift * HERO_YAW, 0);
       /*
         On a portrait screen the camera's keys are too close for a machine
         nearly a meter deep, so the hero pose is shown smaller there. The

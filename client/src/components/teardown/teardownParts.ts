@@ -184,6 +184,18 @@ export const TEARDOWN_PARTS: TeardownPart[] = [
   },
 ];
 
+/**
+ * Where the teardown is looked at from, relative to the middle of the
+ * machine, in the space the model is drawn in. The viewer opens here, and
+ * the home page's exploded view borrows the same numbers so that it shows
+ * the same drawing from the same side rather than a second staging of it.
+ */
+export const TEARDOWN_VIEW = {
+  position: [0.98, 0.58, 1.32],
+  target: [0, 0.02, 0],
+  fov: 30,
+} as const;
+
 /** How many waves there are, for pacing the animation. */
 export const WAVE_COUNT = Math.max(...TEARDOWN_PARTS.map((p) => p.wave)) + 1;
 

@@ -24,17 +24,7 @@ import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "
 import { isCalledOut, measureCallouts } from "@/components/teardown/explodedView";
 import { ExplodedCallouts } from "@/components/teardown/ExplodedCallouts";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
-import type { CalloutSeed } from "@/components/teardown/explodedView";
-import { EXPLODE_LIFT_SCALE, type UnrackPose } from "./unrackTimeline";
-
-/**
- * Left to right as this scene's wide-screen hero camera sees the machine,
- * which is very nearly back to front along the model's own depth axis. The
- * callout layer staggers neighboring names by this order.
- */
-function acrossHero(s: CalloutSeed): number {
-  return -(s.home.z + s.travel.z) - 0.12 * (s.home.x + s.travel.x);
-}
+import type { UnrackPose } from "./unrackTimeline";
 
 interface Tracked {
   node: THREE.Object3D;
@@ -65,7 +55,13 @@ const RETREAT_RATE = 4;
 /** Which assemblies are drawn: see the three sets of rules where it is applied. */
 type Drawn = "racked" | "retreat" | "all";
 
-const LIFT_SCALE = new THREE.Vector3(1, EXPLODE_LIFT_SCALE, 1);
+/**
+ * How strongly the model's metal mirrors its studio. Racked, it is turned
+ * down so the machine sits in the rack's own dim light; lifted out, it is
+ * the teardown page's value, so the exploded view has that page's look.
+ */
+const REFLECTION_RACKED = 0.3;
+const REFLECTION_HERO = 1;
 
 /**
  * The names a portrait screen has room for. The cover and the memory sit
@@ -149,10 +145,7 @@ export default function R760Unrack({
       tracked.push({
         node: child,
         home: child.position.clone(),
-        // Vertical travel is flattened here; the assembly root is only ever
-        // turned about its vertical axis, so "up" means the same thing in a
-        // part's own space as it does on screen.
-        offset: new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.distance).multiply(LIFT_SCALE),
+        offset: new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.distance),
         part,
       });
     }
@@ -193,7 +186,7 @@ export default function R760Unrack({
     const target = pmrem.fromScene(room, 0.04);
     for (const m of model.materials) {
       m.envMap = target.texture;
-      m.envMapIntensity = 0.3;
+      m.envMapIntensity = REFLECTION_RACKED;
       m.needsUpdate = true;
     }
     // Build every shader before the first frame that draws them, off the
@@ -228,14 +221,15 @@ export default function R760Unrack({
   const dissolve = useRef(0);
   const shown = useRef(false);
   const lastExplode = useRef(-1);
+  const lastReflection = useRef(REFLECTION_RACKED);
   const lastDrawn = useRef<Drawn | null>(null);
   const explodeRef = useRef(0);
   const groupRef = useRef<THREE.Group>(null);
 
-  // Fewer names than /teardown shows: this is a beat in a scroll, not a
-  // page to study, and the section's own copy shares the screen.
+  // A landscape screen names exactly the parts /teardown names on the same
+  // class of device. A portrait one has room for fewer: see PORTRAIT_CALLOUTS.
   const calledOut = useCallback(
-    (label: string) => (portrait ? PORTRAIT_CALLOUTS.has(label) : isCalledOut(label, tier === "high" ? "mid" : "low")),
+    (label: string) => (portrait ? PORTRAIT_CALLOUTS.has(label) : isCalledOut(label, tier)),
     [tier, portrait],
   );
 
@@ -289,6 +283,13 @@ export default function R760Unrack({
       if (model.chassis) model.chassis.visible = drawn !== "retreat";
     }
 
+    // Only written when it has moved: 185 materials is not a per-frame job.
+    const reflection = REFLECTION_RACKED + (REFLECTION_HERO - REFLECTION_RACKED) * pose.lift;
+    if (Math.abs(reflection - lastReflection.current) > 0.004) {
+      lastReflection.current = reflection;
+      for (const m of model.materials) m.envMapIntensity = reflection;
+    }
+
     const q = pose.explode;
     explodeRef.current = q;
     if (q === lastExplode.current) return;
@@ -308,10 +309,9 @@ export default function R760Unrack({
         progressRef={explodeRef}
         selected={null}
         isCalledOut={calledOut}
-        lean={portrait ? 0.15 : 0.25}
+        lean={portrait ? 0.15 : undefined}
         topInset={portrait ? 0.48 : 0.42}
-        stagger={portrait ? 0.45 : 0.9}
-        across={portrait ? undefined : acrossHero}
+        stagger={portrait ? 0.45 : undefined}
       />
     </group>
   );
