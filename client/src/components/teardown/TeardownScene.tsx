@@ -47,7 +47,7 @@ interface Tracked {
  * Main Assembly. Walking to it by name means a rebuild that renames or adds
  * a wrapper fails loudly here rather than silently producing an empty page.
  */
-function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
+export function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
   let found: THREE.Object3D | null = null;
   scene.traverse((o) => {
     if (!found && /^Main Assembly\b/i.test(authoredName(o))) found = o;
@@ -66,7 +66,7 @@ function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
  * space or a dot in it: the drives, the memory, the processors, the power
  * supplies. Nothing throws. The parts simply never move.
  */
-function authoredName(o: THREE.Object3D): string {
+export function authoredName(o: THREE.Object3D): string {
   const authored = (o.userData as { name?: unknown }).name;
   return typeof authored === "string" ? authored : o.name;
 }

@@ -28,6 +28,12 @@ export interface ServerInternalsProps {
    * does no work at all while it plays.
    */
   explodeRef?: { current: number };
+  /**
+   * Scale on every part's exploded offset. The offsets were authored for a
+   * free-floating model; a caller that draws the internals at true chassis
+   * size next to a rack wants the same order with a shorter reach.
+   */
+  travel?: number;
   /** Emit labels that the 2D overlay can target. */
   onLayout?: (layout: InternalPartLayout[]) => void;
 }
@@ -93,6 +99,7 @@ const ZERO_REF = { current: 0 };
 export function ServerInternals({
   size = [0.56, 0.12, 0.78],
   explodeRef = ZERO_REF,
+  travel = 1,
 }: ServerInternalsProps) {
   const [w, h, d] = size;
 
@@ -119,7 +126,7 @@ export function ServerInternals({
       const stage = STAGES[key];
       // Each part separates only inside its own window, so the teardown
       // reads as a sequence rather than everything drifting at once.
-      const local = stage ? smoothstep(stage[0], stage[1], t) : t;
+      const local = (stage ? smoothstep(stage[0], stage[1], t) : t) * travel;
       group.position.set(
         base.x + off[0] * local,
         base.y + off[1] * local,

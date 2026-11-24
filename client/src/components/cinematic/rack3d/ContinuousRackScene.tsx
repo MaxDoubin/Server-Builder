@@ -1,12 +1,11 @@
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import { RackFrame } from "./parts/RackFrame";
 import { ServerChassis } from "./parts/ServerChassis";
 import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
-import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
+import { FocusUnrack } from "./unrack/FocusUnrack";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import {
   RACK_FEET_HEIGHT,
@@ -60,10 +59,13 @@ const CAM_KEYS: Key[] = [
   { t: 0.18, pos: [1.10, RACK_MID_Y + 0.05, 2.40], look: [0, RACK_MID_Y * 0.92, 0], fov: 33 },
   { t: 0.28, pos: [1.25, RACK_MID_Y * 0.62, 2.20], look: [0, RACK_MID_Y * 0.55, 0], fov: 34 },
   { t: 0.36, pos: [1.05, RACK_MID_Y * 0.48, 2.10], look: [0, RACK_MID_Y * 0.50, 0], fov: 34 },
-  { t: 0.44, pos: [-0.40, FOCUS_SLOT.u * U + 0.20, 2.20], look: [0, FOCUS_SLOT.u * U + 0.10, 0.30], fov: 34 },
-  { t: 0.54, pos: [-0.95, FOCUS_SLOT.u * U + 0.18, 2.00], look: [0, FOCUS_SLOT.u * U + 0.05, 0.65], fov: 34 },
-  { t: 0.62, pos: [-1.20, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
-  { t: 0.70, pos: [1.10, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
+  // Unrack beat. The camera comes to rest exactly where the server does
+  // (unrackTimeline: out on its rails at 0.47, hero pose at 0.535, fully
+  // exploded at 0.69), and frames it clear of the section copy, which sits
+  // on the right while the server slides out and top center while it is apart.
+  { t: 0.47, pos: [-1.20, FOCUS_SLOT.u * U + 0.60, 2.20], look: [0.42, FOCUS_SLOT.u * U + 0.12, 0.55], fov: 34 },
+  { t: 0.535, pos: [-1.05, FOCUS_SLOT.u * U + 0.92, 2.30], look: [0.02, FOCUS_SLOT.u * U + 0.46, 0.68], fov: 34 },
+  { t: 0.69, pos: [-0.70, FOCUS_SLOT.u * U + 1.12, 2.55], look: [0.02, FOCUS_SLOT.u * U + 0.50, 0.62], fov: 36 },
   { t: 0.80, pos: [0.15, RACK_MID_Y * 0.72, 2.32], look: [0, RACK_MID_Y * 0.56, 0.06], fov: 34 },
   { t: 0.90, pos: [0.62, RACK_MID_Y * 0.92, 2.95], look: [0.02, RACK_MID_Y * 0.58, -0.02], fov: 36 },
   { t: 0.96, pos: [1.10, RACK_MID_Y + 0.62, 3.72], look: [0.04, RACK_MID_Y * 0.56, -0.12], fov: 38 },
@@ -222,183 +224,6 @@ function SlidingServer({
     </group>
   );
 }
-
-/**
- * When each internal caption is on screen, as [fadeInStart, fadeInEnd,
- * fadeOutStart, fadeOutEnd] in explode progress. These trail the STAGES
- * windows in ServerInternals so a caption appears just as its part finishes
- * pulling clear of the chassis.
- */
-const LABEL_WINDOWS: Record<string, [number, number, number, number]> = {
-  lid:       [0.06, 0.11, 0.20, 0.26],
-  driveCage: [0.10, 0.15, 0.24, 0.30],
-  chassis:   [0.18, 0.23, 0.32, 0.38],
-  heatsinkA: [0.26, 0.31, 0.40, 0.46],
-  ramBankA:  [0.42, 0.47, 0.55, 0.61],
-  fanWall:   [0.60, 0.65, 0.72, 0.78],
-  psuA:      [0.76, 0.81, 0.86, 0.92],
-  gpu:       [0.82, 0.87, 0.94, 1.00],
-};
-
-const PULL_START = 0.38;
-const PULL_END = 0.52;
-const EXPLODE_START = 0.54;
-const EXPLODE_END = 0.70;
-const REASSEMBLE_END = 0.82;
-
-function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
-  const slidGroup = useRef<THREE.Group>(null);
-  const chassisGroup = useRef<THREE.Group>(null);
-  const internalsGroup = useRef<THREE.Group>(null);
-  const innerRef = useRef<THREE.Group>(null);
-  const labelRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const targetY = RACK_FEET_HEIGHT + (FOCUS_SLOT.u - 1 + FOCUS_SLOT.size / 2) * U;
-  const explodeRef = useRef(0);
-
-  useFrame(() => {
-    const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const out = smoothstep(PULL_START, PULL_END, p);
-    const back = smoothstep(EXPLODE_END, REASSEMBLE_END, p);
-
-    const slideZ = THREE.MathUtils.lerp(0, 0.95, out) * (1 - back);
-
-    if (slidGroup.current) {
-      slidGroup.current.position.set(0, targetY, slideZ);
-    }
-
-    if (innerRef.current) {
-      const orbitP = smoothstep(EXPLODE_START + 0.02, EXPLODE_END - 0.04, p);
-      innerRef.current.rotation.y = THREE.MathUtils.lerp(
-        0,
-        -Math.PI * 0.18,
-        orbitP * (1 - back),
-      );
-    }
-
-    const explodeP =
-      smoothstep(EXPLODE_START, EXPLODE_END, p) * (1 - back);
-    explodeRef.current = explodeP;
-
-    // Hand over from the solid chassis to the internals at the very start of
-    // the explode, while the two still look identical. Swapping later (the
-    // old threshold was 0.05, by which point the lid had already traveled
-    // half its distance) made the closed chassis pop away mid-motion.
-    const showInternals = explodeP >= 0.004;
-    if (chassisGroup.current) {
-      chassisGroup.current.visible = !showInternals;
-    }
-    if (internalsGroup.current) {
-      internalsGroup.current.visible = showInternals;
-    }
-
-    // Every caption used to fade in together at explodeP > 0.25, so eight of
-    // them stacked on top of each other and on the section copy. Each one now
-    // rides its own part's separation window: it arrives as that part pulls
-    // clear and leaves before the next part's caption lands.
-    INTERNAL_LABELS.forEach((l) => {
-      const el = labelRefs.current[l.id];
-      if (!el) return;
-      const win = LABEL_WINDOWS[l.id];
-      if (!win) {
-        el.style.opacity = "0";
-        return;
-      }
-      const inP = smoothstep(win[0], win[1], explodeP);
-      const outP = smoothstep(win[2], win[3], explodeP);
-      el.style.opacity = String(inP * (1 - outP));
-    });
-  });
-
-  return (
-    <group ref={slidGroup} position={[0, targetY, 0]}>
-      <group ref={innerRef}>
-        <group ref={chassisGroup}>
-          <ServerChassis
-            kind={FOCUS_SLOT.kind}
-            sizeU={FOCUS_SLOT.size}
-            accent={FOCUS_SLOT.accent}
-            label={FOCUS_SLOT.label}
-            seed={42}
-          />
-        </group>
-        <group ref={internalsGroup} visible={false}>
-          <group scale={[0.34, 0.46, 0.34]}>
-            <ServerInternals explodeRef={explodeRef} />
-            {INTERNAL_LABELS.map((l) => (
-            <Html
-              key={l.id}
-              position={l.anchor}
-              distanceFactor={0.85}
-              style={{ pointerEvents: "none" }}
-              wrapperClass="cinematic-label"
-            >
-              {/*
-                Captions for the exploded view, faded in and out by scroll
-                position. opacity:0 hides them from eyes only, so all eight
-                sat in the accessibility tree at once and a screen reader
-                read the whole parts list out of the middle of the page
-                whatever the scene was showing. They caption a WebGL
-                animation and carry nothing a reader can act on.
-              */}
-              <div
-                aria-hidden
-                ref={(el) => {
-                  labelRefs.current[l.id] = el;
-                }}
-                style={{
-                  opacity: 0,
-                  transition: "opacity 0.32s linear",
-                  transform: "translate(12px, -50%)",
-                  whiteSpace: "nowrap",
-                  fontFamily: "'Space Grotesk', monospace",
-                  fontSize: "0.625rem",
-                  letterSpacing: "0.22em",
-                  textTransform: "uppercase",
-                  color: "hsl(40 16% 92%)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "3px 9px",
-                  background: "hsl(220 40% 4% / 0.78)",
-                  border: "1px solid hsl(72 100% 50% / 0.22)",
-                  borderRadius: "2px",
-                  backdropFilter: "blur(4px)",
-                }}
-              >
-                <span
-                  style={{
-                    height: "1px",
-                    width: "22px",
-                    background: "hsl(72 100% 50% / 0.85)",
-                    boxShadow: "0 0 6px hsl(72 100% 50%)",
-                  }}
-                />
-                <span>
-                  <span style={{ color: "hsl(72 100% 50%)", fontWeight: 600 }}>{l.label}</span>
-                  {l.sublabel ? (
-                    <span
-                      style={{
-                        display: "block",
-                        color: "hsl(40 8% 72%)",
-                        marginTop: "2px",
-                        fontSize: "0.625rem",
-                        letterSpacing: "0.2em",
-                      }}
-                    >
-                      {l.sublabel}
-                    </span>
-                  ) : null}
-                </span>
-              </div>
-            </Html>
-            ))}
-          </group>
-        </group>
-      </group>
-    </group>
-  );
-}
-
 
 const HALL_START = 0.90;
 const HALL_END = 0.995;
@@ -715,7 +540,7 @@ export function ContinuousRackScene({
             seed={200 + i}
           />
         ))}
-        <FocusServer progressRef={progressRef} />
+        <FocusUnrack slot={FOCUS_SLOT} progressRef={progressRef} tier={tier} reducedMotion={reducedMotion} />
         <HallContents progressRef={progressRef} tier={tier} />
       </Suspense>
 
