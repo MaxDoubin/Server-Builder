@@ -233,7 +233,10 @@ const BOARD_FRAGMENT = /* glsl */ `
 
   void main() {
     vec2 p = (vUv - 0.5) * uSize;
-    float aa = fwidth(p.x) * 1.25;
+    // Floored so no smoothstep below ever gets two equal edges, which GLSL
+    // leaves undefined. fwidth is core in WebGL 2, the only context this
+    // board is built for (see the capability check in PowerFailover).
+    float aa = max(fwidth(p.x) * 1.25, 0.00002);
     float W = uSize.x;
     float H = uSize.y;
 
@@ -580,7 +583,11 @@ export function PowerFailover({
 
   useOffscreenPause();
 
-  if (!mounted) return null;
+  // WebGL 1 fallback contexts get no failover overlay: the board shader
+  // needs screen-space derivatives, which are only core in WebGL 2. Nothing
+  // is built at all there (no geometry, texture or material), so the hall
+  // simply shows without it instead of logging a shader compile error.
+  if (!mounted || !gl.capabilities.isWebGL2) return null;
   return (
     <PowerFailoverScene
       placements={placements}
