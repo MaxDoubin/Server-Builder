@@ -56,7 +56,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How a Palo Alto firewall matches traffic: zones, rule order, App-ID, unknown apps, port-based vs application-based rules, plus User-ID and Content-ID.",
     coverImage: "/images/blog/palo-alto-application-based-firewall-policy-photo.jpg",
     coverCredit: {"author":"Jacek Rużyczka","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wall-Mount_6-Port_Cat_6A_Ethernet_Patchpanel.jpg"},
-    wordCount: 3241,
+    wordCount: 3426,
   },
   {
     slug: "how-a-fortigate-evaluates-traffic",
@@ -3487,10 +3487,10 @@ export const POST_COUNT_SPELLED = "three hundred and forty eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 3165;
+export const CITATION_COUNT = 3166;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 220;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 3362;
+export const CHECKED_URL_COUNT = 3363;
