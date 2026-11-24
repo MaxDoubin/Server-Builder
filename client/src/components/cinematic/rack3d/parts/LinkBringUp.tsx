@@ -12,6 +12,7 @@ import {
   WAVE,
   buildLinkBringUpLayout,
 } from "./linkBringUpLayout";
+import { buildSpriteGeometry, createSpriteMaterial } from "./linkSprites";
 import { ACCENT_HEX } from "../rackConfig";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
 
@@ -22,7 +23,9 @@ import type { DeviceTier } from "@/lib/motion/useDeviceTier";
  * into a real port with a plug that seats, and the port's LED then walks
  * through a link bring-up: dark while the cable is in but the link is down,
  * amber while the two ends negotiate, solid green once the link is up, and
- * a slow green blink once traffic flows.
+ * a slow green blink once traffic flows. The cable shows the same story:
+ * pulses run along it both ways while the ends train, and once the link is
+ * up it glows end to end. `HallLinkWave` then repeats this across the hall.
  *
  * What is and is not literal here. The order (no link, negotiation, link,
  * activity) is how an Ethernet port comes up: on twisted pair the two ends
@@ -39,11 +42,24 @@ import type { DeviceTier } from "@/lib/motion/useDeviceTier";
 export const LINK_BRINGUP_ENABLED = true;
 
 /** Scroll position (0..1 of the systems act) where the sequence plays. */
-const PLAY_FROM = 0.74;
+/**
+ * Scroll position (0..1 of the systems act) where the sequence plays. The
+ * act's headline sits across the switches until it fades between 0.80 and
+ * 0.86, so the sequence waits for it: the first port lights about two
+ * seconds after this, on a clear rack.
+ */
+const PLAY_FROM = 0.83;
 /** Scrolling back above this rewinds it, so coming back replays it. */
-const REWIND_BELOW = 0.7;
-/** The hall beat brings its own copy in here; the caption leaves first. */
-const CAPTION_OUT: [number, number] = [0.865, 0.895];
+const REWIND_BELOW = 0.76;
+/**
+ * The hall beat brings its own copy in at 0.90. On a phone that copy and
+ * the caption share the bottom of the screen, so the caption leaves first;
+ * on a desktop it sits clear at the side and can stay a little longer.
+ */
+const CAPTION_OUT_MOBILE: [number, number] = [0.875, 0.9];
+const CAPTION_OUT_DESKTOP: [number, number] = [0.9, 0.93];
+/** Once the hall starts to rise the rack finishes at this multiple of speed. */
+const HALL_HURRY: [number, number] = [0.9, 0.94];
 
 const LED_OFF = "#07090b";
 
@@ -70,7 +86,12 @@ const TUBE_VERTEX = /* glsl */ `
 
 const TUBE_FRAGMENT = /* glsl */ `
   uniform float uT;
+  uniform float uClock;
+  uniform float uBlink;
+  uniform vec3 uTimes;
   uniform vec3 uHead;
+  uniform vec3 uAmber;
+  uniform vec3 uGreen;
   varying float vU;
   varying vec3 vRun;
   varying vec3 vColor;
@@ -87,6 +108,23 @@ const TUBE_FRAGMENT = /* glsl */ `
     float head = exp(-behind / 0.035) * (1.0 - settle);
     float light = 0.42 + 0.58 * max(dot(normalize(vNormal), normalize(vec3(0.35, 0.5, 0.8))), 0.0);
     vec3 col = vColor * light * (1.0 + 0.6 * (1.0 - settle)) + uHead * head * 1.6;
+
+    // The link this cable carries. uTimes.x is the wait from the cable's
+    // arrival to the first amber, uTimes.y the time spent training.
+    float tau = uT - vRun.x - vRun.y - uTimes.x;
+    float training = smoothstep(0.0, 0.15, tau);
+    float up = smoothstep(uTimes.y, uTimes.y + 0.3, tau);
+    float m = vU * vRun.z;
+    // Dots travel, so no point of the cable is switched on and off: a
+    // 5 cm train at 6 cm a second passes any one point about once a second.
+    float a = 0.5 + 0.5 * sin(6.2832 * (m / 0.05 - tau * 1.2));
+    float b = 0.5 + 0.5 * sin(6.2832 * (m / 0.05 + tau * 1.2));
+    float pulses = pow(a, 6.0) + pow(b, 6.0);
+    float flow = 0.5 + 0.5 * sin(6.2832 * (m / 0.16 - uClock * 0.5 + vRun.x));
+    float traffic = uBlink * pow(flow, 8.0);
+    col += uAmber * training * (1.0 - up) * (0.1 + 0.75 * pulses);
+    // Up: the jacket takes a steady glow from end to end.
+    col = mix(col, col * 0.55 + uGreen * 0.5, up) + uGreen * up * traffic * 0.7;
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -132,8 +170,9 @@ const PLUG_FRAGMENT = /* glsl */ `
 `;
 
 /**
- * The LED's state as a pure function of time since its plug seated.
- * Returns the color; `glow` is how much light it is putting out.
+ * The LED's color as a pure function of time since its plug seated. The
+ * halo over it (linkSprites) runs the same curve with the same phase, so
+ * body and glow dip together.
  */
 const LED_GLSL = /* glsl */ `
   ${ARRIVAL_GLSL}
@@ -144,7 +183,7 @@ const LED_GLSL = /* glsl */ `
   uniform vec3 uOff;
   uniform vec3 uAmber;
   uniform vec3 uGreen;
-  vec3 ledColor(vec3 at, out float glow) {
+  vec3 ledColor(vec3 at) {
     float t = uT - arrival(at) - uSeat;
     float lit = smoothstep(uTimes.x, uTimes.x + 0.12, t);
     float up = smoothstep(uTimes.x + uTimes.y, uTimes.x + uTimes.y + 0.18, t);
@@ -154,7 +193,6 @@ const LED_GLSL = /* glsl */ `
     // sign about three times a second, so at most 1.5 dips a second.
     float wave = sin(6.2832 * (1.2 * uClock + phase)) * sin(6.2832 * (0.31 * uClock + phase * 1.7));
     float level = mix(1.0, mix(0.38, 1.0, smoothstep(-0.25, 0.25, wave)), busy);
-    glow = lit * level;
     return mix(uOff, mix(uAmber, uGreen, up) * level, lit);
   }
 `;
@@ -163,8 +201,7 @@ const LED_VERTEX = /* glsl */ `
   ${LED_GLSL}
   varying vec3 vColor;
   void main() {
-    float glow;
-    vColor = ledColor(instanceMatrix[3].xyz, glow);
+    vColor = ledColor(instanceMatrix[3].xyz);
     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
   }
 `;
@@ -173,32 +210,6 @@ const LED_FRAGMENT = /* glsl */ `
   varying vec3 vColor;
   void main() {
     gl_FragColor = vec4(vColor, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
-const HALO_VERTEX = /* glsl */ `
-  ${LED_GLSL}
-  varying vec3 vColor;
-  varying vec2 vUv;
-  varying float vFront;
-  void main() {
-    float glow;
-    vColor = ledColor(instanceMatrix[3].xyz, glow) * glow;
-    vUv = uv;
-    // Only the face that looks out of the rack carries the glow.
-    vFront = step(0.5, normal.z);
-    gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
-  }
-`;
-
-const HALO_FRAGMENT = /* glsl */ `
-  varying vec3 vColor;
-  varying vec2 vUv;
-  varying float vFront;
-  void main() {
-    float d = clamp(1.0 - length(vUv - 0.5) * 2.0, 0.0, 1.0);
-    gl_FragColor = vec4(vColor * d * d * 0.7 * vFront, 1.0);
     #include <colorspace_fragment>
   }
 `;
@@ -335,7 +346,15 @@ export function LinkBringUp({
       uClock,
       uBlink,
       tubes: new THREE.ShaderMaterial({
-        uniforms: { uT, uHead: { value: new THREE.Color("#eaffb0") } },
+        uniforms: {
+          uT,
+          uClock,
+          uBlink,
+          uTimes: { value: new THREE.Vector3(SEAT_SECONDS + DARK_SECONDS, NEGOTIATE_SECONDS, 0) },
+          uHead: { value: new THREE.Color("#eaffb0") },
+          uAmber: led.uAmber,
+          uGreen: led.uGreen,
+        },
         vertexShader: TUBE_VERTEX,
         fragmentShader: TUBE_FRAGMENT,
       }),
@@ -355,36 +374,47 @@ export function LinkBringUp({
         vertexShader: LED_VERTEX,
         fragmentShader: LED_FRAGMENT,
       }),
-      halos: new THREE.ShaderMaterial({
-        uniforms: led,
-        vertexShader: HALO_VERTEX,
-        fragmentShader: HALO_FRAGMENT,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
+      // Same clock, different shader family: fed by hand each frame.
+      sprites: createSpriteMaterial({
+        negotiate: NEGOTIATE_SECONDS,
+        idle: IDLE_SECONDS,
+        // A phone shows the rack a third the width a desktop does.
+        ledScale: mobile ? 1.5 : 1,
       }),
     };
-  }, []);
+  }, [mobile]);
 
   useEffect(() => {
-    const { tubes, plugs, originPlugs, leds, halos } = materials;
-    return () => [tubes, plugs, originPlugs, leds, halos].forEach((m) => m.dispose());
+    const { tubes, plugs, originPlugs, leds, sprites } = materials;
+    return () => [tubes, plugs, originPlugs, leds, sprites].forEach((m) => m.dispose());
   }, [materials]);
   useEffect(() => () => layout.tubes.dispose(), [layout]);
+  const spriteGeometry = useMemo(() => buildSpriteGeometry(layout.sprites), [layout]);
+  useEffect(() => () => spriteGeometry.dispose(), [spriteGeometry]);
 
   // Reduced motion gets the finished state as a still: everything patched,
   // every link up, nothing blinking. (The home page serves its static
   // fallback before this scene loads at all; this covers any other caller.)
   useEffect(() => {
     materials.uBlink.value = reducedMotion ? 0 : 1;
-    if (reducedMotion) materials.uT.value = layout.endSeconds;
+    materials.sprites.uniforms.uBlink.value = materials.uBlink.value;
+    if (reducedMotion) {
+      materials.uT.value = layout.endSeconds;
+      materials.sprites.uniforms.uT.value = layout.endSeconds;
+    }
   }, [reducedMotion, materials, layout]);
+
+  const captionOut = mobile ? CAPTION_OUT_MOBILE : CAPTION_OUT_DESKTOP;
+  // Port LEDs are drawn larger than life (a real one is about 2 mm) so the
+  // three states can be told apart from across the room and on a phone.
+  const ledSize: [number, number, number] = mobile ? [0.0115, 0.0052, 0.0016] : [0.0098, 0.0042, 0.0016];
 
   useFrame((_, delta) => {
     if (reducedMotion) return;
     const s = timeline.current;
     const p = progressRef.current ?? 0;
-    const dt = Math.min(delta, 0.1);
+    // The hall is rising: wrap up here so the wave can leave a lit rack.
+    const dt = Math.min(delta, 0.1) * (1 + 1.5 * smooth(HALL_HURRY[0], HALL_HURRY[1], p));
 
     if (p >= PLAY_FROM) s.playing = true;
     else if (p < REWIND_BELOW) s.playing = false;
@@ -398,13 +428,15 @@ export function LinkBringUp({
         : s.t;
     // 100 s is a whole number of cycles of both blink sines, so the wrap
     // is seamless and the float never loses precision.
-    s.clock = (s.clock + dt) % 100;
+    s.clock = (s.clock + Math.min(delta, 0.1)) % 100;
     materials.uT.value = s.t;
     materials.uClock.value = s.clock;
+    materials.sprites.uniforms.uT.value = s.t;
+    materials.sprites.uniforms.uClock.value = s.clock;
 
     // Touch the DOM only when the rounded value actually changes.
     const caption =
-      Math.round(smooth(0.4, 1.2, s.t) * (1 - smooth(CAPTION_OUT[0], CAPTION_OUT[1], p)) * 50) / 50;
+      Math.round(smooth(0.4, 1.2, s.t) * (1 - smooth(captionOut[0], captionOut[1], p)) * 50) / 50;
     if (caption !== s.caption && legendRef.current) {
       s.caption = caption;
       legendRef.current.style.opacity = String(caption);
@@ -420,13 +452,8 @@ export function LinkBringUp({
         size={[0.0075, 0.0055, 0.012]}
         material={materials.originPlugs}
       />
-      <InstancedBoxes positions={layout.leds} size={[0.0042, 0.0024, 0.0012]} material={materials.leds} />
-      <InstancedBoxes
-        positions={layout.halos}
-        size={[0.026, 0.026, 0.0002]}
-        material={materials.halos}
-        renderOrder={2}
-      />
+      <InstancedBoxes positions={layout.leds} size={ledSize} material={materials.leds} />
+      <mesh geometry={spriteGeometry} material={materials.sprites} frustumCulled={false} renderOrder={2} />
       {!reducedMotion && <Legend innerRef={legendRef} mobile={mobile} />}
     </group>
   );

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { cableRunPaths } from "./Cables";
+import { SPRITE, type LinkSprite } from "./linkSprites";
 import { RACK_DEPTH, RACK_FEET_HEIGHT, RACK_INNER_WIDTH, U } from "../rackConfig";
 import type { DeviceTier } from "@/lib/motion/useDeviceTier";
 
@@ -28,13 +29,13 @@ const FACE_Z = RACK_DEPTH / 2 - 0.001;
  */
 export const WAVE = {
   /** Arrival time at the lowest, leftmost port. */
-  base: 2.0,
+  base: 1.3,
   y0: RACK_FEET_HEIGHT + 14 * U,
   /** Seconds of delay per meter of height. */
-  perMeterY: 2.4,
+  perMeterY: 1.7,
   x0: -RACK_INNER_WIDTH / 2,
   /** Seconds of delay per meter of width. */
-  perMeterX: 2.5,
+  perMeterX: 2.0,
 } as const;
 
 /** The plug's push into the port once its cable arrives. */
@@ -217,7 +218,11 @@ export interface LinkBringUpLayout {
   plugs: Array<[number, number, number]>;
   originPlugs: Array<[number, number, number]>;
   leds: Array<[number, number, number]>;
-  halos: Array<[number, number, number]>;
+  /**
+   * The light the links give off: a halo per LED, the spill each switch
+   * throws on its own faceplate, and what reaches the floor.
+   */
+  sprites: LinkSprite[];
   /** When the last port has gone green and started passing traffic. */
   endSeconds: number;
 }
@@ -235,7 +240,9 @@ export function buildLinkBringUpLayout(tier: DeviceTier): LinkBringUpLayout {
   const plugs: Array<[number, number, number]> = [];
   const originPlugs: Array<[number, number, number]> = [];
   const leds: Array<[number, number, number]> = [];
-  const halos: Array<[number, number, number]> = [];
+  const sprites: LinkSprite[] = [];
+  // When an LED first shows amber, counted from its cable's arrival.
+  const lightDelay = SEAT_SECONDS + DARK_SECONDS;
   let endSeconds = 0;
 
   for (const r of runs) {
@@ -274,7 +281,13 @@ export function buildLinkBringUpLayout(tier: DeviceTier): LinkBringUpLayout {
     if (r.origin) originPlugs.push([r.origin.x, r.origin.y, r.origin.z + 0.003]);
     if (r.port.led !== null) {
       leds.push([r.port.x, r.port.y + r.port.led, r.port.z + 0.0012]);
-      halos.push([r.port.x, r.port.y + r.port.led, r.port.z + 0.004]);
+      sprites.push({
+        kind: SPRITE.led,
+        at: [r.port.x, r.port.y + r.port.led, r.port.z + 0.0045],
+        size: [0.05, 0.05],
+        arrive: arrive + lightDelay,
+        param: 1,
+      });
     }
     endSeconds = Math.max(endSeconds, arrive);
   }
@@ -288,12 +301,32 @@ export function buildLinkBringUpLayout(tier: DeviceTier): LinkBringUpLayout {
   tubes.setIndex(index);
   tubes.computeBoundingSphere();
 
+  // Each switch washes its own faceplate as its ports come up, left to
+  // right like the ports themselves, and the floor takes the sum.
+  for (const [u, sizeU] of [[15, 1], [30, 2], [35, 1]]) {
+    const y = slotCenterY(u, sizeU);
+    sprites.push({
+      kind: SPRITE.glow,
+      at: [-0.03, y, FACE_Z + 0.007],
+      size: [0.62, 0.2 + sizeU * 0.04],
+      arrive: arrivalAt(-0.2, y) + lightDelay,
+      param: WAVE.perMeterX * 0.34,
+    });
+  }
+  sprites.push({
+    kind: SPRITE.floor,
+    at: [0, 0.006, RACK_DEPTH / 2 + 0.38],
+    size: [1.0, 0.9],
+    arrive: WAVE.base + lightDelay,
+    param: endSeconds - WAVE.base,
+  });
+
   return {
     tubes,
     plugs,
     originPlugs,
     leds,
-    halos,
+    sprites,
     endSeconds:
       endSeconds + SEAT_SECONDS + DARK_SECONDS + NEGOTIATE_SECONDS + IDLE_SECONDS + 0.4,
   };

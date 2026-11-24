@@ -9,6 +9,7 @@ import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import { LINK_BRINGUP_ENABLED, LinkBringUp } from "./parts/LinkBringUp";
+import { HallLinkWave } from "./parts/HallLinkWave";
 import { useVisibleFrameloop } from "./parts/useVisibleFrameloop";
 import {
   RACK_FEET_HEIGHT,
@@ -613,6 +614,15 @@ function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRe
         start={HALL_START}
         end={HALL_END}
       />
+      {LINK_BRINGUP_ENABLED && (
+        <HallLinkWave
+          placements={racks}
+          progressRef={progressRef}
+          start={HALL_START}
+          end={HALL_END}
+          tier={tier}
+        />
+      )}
     </group>
   );
 }
