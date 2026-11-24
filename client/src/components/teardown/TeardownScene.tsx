@@ -18,12 +18,15 @@
  * thing snaps back together by setting progress to zero.
  */
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { configureGltf } from "../racks/gltfLoaders";
+import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "./teardownParts";
+import { EXPLODED_VIEW_ENABLED, isCalledOut, measureCallouts } from "./explodedView";
+import { ExplodedCallouts } from "./ExplodedCallouts";
 
 export const MODEL_URL = "/models/vendor/dell/poweredge-r760.glb";
 
@@ -44,12 +47,28 @@ interface Tracked {
  * Main Assembly. Walking to it by name means a rebuild that renames or adds
  * a wrapper fails loudly here rather than silently producing an empty page.
  */
-function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
+export function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
   let found: THREE.Object3D | null = null;
   scene.traverse((o) => {
-    if (!found && /^Main Assembly$/i.test(o.name)) found = o;
+    if (!found && /^Main Assembly\b/i.test(authoredName(o))) found = o;
   });
   return found ?? scene;
+}
+
+/**
+ * The name Dell gave a node, not the one three.js left it with.
+ *
+ * GLTFLoader rewrites every node name so it is safe to use in an animation
+ * track: spaces become underscores and dots are dropped, and the original
+ * goes to userData.name. So "R760_ 2.5 HDD" arrives as "R760__25_HDD" and
+ * "Main Assembly (1)" as "Main_Assembly_(1)", and matching the table
+ * against `name` quietly misses the wrapper and every part whose name has a
+ * space or a dot in it: the drives, the memory, the processors, the power
+ * supplies. Nothing throws. The parts simply never move.
+ */
+export function authoredName(o: THREE.Object3D): string {
+  const authored = (o.userData as { name?: unknown }).name;
+  return typeof authored === "string" ? authored : o.name;
 }
 
 export function TeardownModel({
@@ -67,7 +86,45 @@ export function TeardownModel({
   const { gl } = useThree();
   const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => configureGltf(loader as GLTFLoader, gl));
 
-  const scene = useMemo(() => gltf.scene.clone(true), [gltf]);
+  /*
+    A private copy of the scene, and private copies of its materials.
+
+    Object3D.clone copies the nodes but hands every mesh the same material
+    objects as the original, and the original is the loader's cache. The
+    selection effect below writes opacity, transparency and depth writes
+    straight onto those materials, so with shared ones a part picked here
+    stayed dimmed in the cache: the home page's unrack beat loads the same
+    file, cloned what it was given, and inherited a machine that was mostly
+    16 percent opaque with depth writes off. Each page now owns the
+    materials it changes and the cache stays as Dell authored it.
+  */
+  const { scene, materials } = useMemo(() => {
+    const copy = gltf.scene.clone(true);
+    const own = new Map<THREE.Material, THREE.Material>();
+    const mine = (m: THREE.Material) => {
+      let c = own.get(m);
+      if (!c) {
+        c = m.clone();
+        own.set(m, c);
+      }
+      return c;
+    };
+    copy.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(mine) : mine(mesh.material);
+    });
+    return { scene: copy, materials: Array.from(own.values()) };
+  }, [gltf]);
+
+  // The copies are this component's to free. Their textures are not: those
+  // still belong to the cached model.
+  useEffect(
+    () => () => {
+      for (const m of materials) m.dispose();
+    },
+    [materials],
+  );
 
   /*
     Match each assembly to its entry in the teardown table once, on load.
@@ -80,7 +137,7 @@ export function TeardownModel({
     const root = findAssemblyRoot(scene);
     const out: Tracked[] = [];
     for (const child of root.children) {
-      const name = child.name.toLowerCase();
+      const name = authoredName(child).toLowerCase();
       if (name.includes(CHASSIS_MATCH)) continue;
       const part = TEARDOWN_PARTS.find((p) => name.includes(p.match.toLowerCase()));
       if (!part) continue;
@@ -131,6 +188,17 @@ export function TeardownModel({
     });
   }, [scene, tracked, selected]);
 
+  /*
+    What the callout layer needs to know about each part, measured once.
+    Skipped entirely when the layer is switched off.
+  */
+  const callouts = useMemo(
+    () => (EXPLODED_VIEW_ENABLED ? measureCallouts(scene, tracked) : null),
+    [scene, tracked],
+  );
+  const { tier } = useDeviceTier();
+  const calledOut = useCallback((label: string) => isCalledOut(label, tier), [tier]);
+
   useFrame(() => {
     const p = progressRef.current;
     for (const t of tracked) {
@@ -157,5 +225,18 @@ export function TeardownModel({
     onSelect?.(null);
   };
 
-  return <primitive object={scene} onClick={onClick} />;
+  return (
+    <>
+      <primitive object={scene} onClick={onClick} />
+      {callouts ? (
+        <ExplodedCallouts
+          seeds={callouts.seeds}
+          center={callouts.center}
+          progressRef={progressRef}
+          selected={selected ?? null}
+          isCalledOut={calledOut}
+        />
+      ) : null}
+    </>
+  );
 }

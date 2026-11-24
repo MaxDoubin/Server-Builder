@@ -184,8 +184,31 @@ export const TEARDOWN_PARTS: TeardownPart[] = [
   },
 ];
 
+/**
+ * Where the teardown is looked at from, relative to the middle of the
+ * machine, in the space the model is drawn in. The viewer opens here, and
+ * the home page's exploded view borrows the same numbers so that it shows
+ * the same drawing from the same side rather than a second staging of it.
+ */
+export const TEARDOWN_VIEW = {
+  position: [0.98, 0.58, 1.32],
+  target: [0, 0.02, 0],
+  fov: 30,
+} as const;
+
 /** How many waves there are, for pacing the animation. */
 export const WAVE_COUNT = Math.max(...TEARDOWN_PARTS.map((p) => p.wave)) + 1;
+
+/** How much of the 0..1 timeline one wave takes to play out. */
+export const WAVE_SPAN = 1 / (WAVE_COUNT - (WAVE_COUNT - 1) / 3);
+
+/**
+ * How much later each wave starts than the one before it. Exported with
+ * the span because the callout shader in ExplodedCallouts evaluates the
+ * same curve on the GPU, and two copies of the pacing constants would
+ * drift apart the first time someone retimed the teardown.
+ */
+export const WAVE_STEP = WAVE_SPAN * (2 / 3);
 
 /**
  * How far through its own travel a part is, given overall progress.
@@ -195,9 +218,7 @@ export const WAVE_COUNT = Math.max(...TEARDOWN_PARTS.map((p) => p.wave)) + 1;
  * order is still legible.
  */
 export function waveProgress(progress: number, wave: number): number {
-  const span = 1 / (WAVE_COUNT - (WAVE_COUNT - 1) / 3);
-  const start = wave * span * (2 / 3);
-  const t = (progress - start) / span;
+  const t = (progress - wave * WAVE_STEP) / WAVE_SPAN;
   if (t <= 0) return 0;
   if (t >= 1) return 1;
   // Smoothstep, so a part eases away and settles rather than snapping.
