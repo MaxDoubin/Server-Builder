@@ -8,6 +8,7 @@ import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
 import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
+import { HallAirflow, HALL_AIRFLOW_ENABLED } from "./parts/HallAirflow";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -611,6 +612,15 @@ function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRe
         start={HALL_START}
         end={HALL_END}
       />
+      {HALL_AIRFLOW_ENABLED && (
+        <HallAirflow
+          placements={racks}
+          tier={tier}
+          progressRef={progressRef}
+          start={HALL_START}
+          end={HALL_END}
+        />
+      )}
     </group>
   );
 }
