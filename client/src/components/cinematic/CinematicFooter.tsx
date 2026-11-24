@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { PRESS } from "@/lib/pressConfig";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { Suspense, lazy, useRef, type ComponentType } from "react";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 import {
   ScrollReveal,
@@ -15,6 +15,22 @@ import {
   FloatingParticles,
   useClampedInView,
 } from "@/lib/framer-animations";
+
+/*
+  The port LED strip in the bottom bar: one switch for the whole thing. Set
+  it to false and the strip, its placeholder and its chunk all drop out of
+  the build.
+
+  It is lazy because this footer is in the entry bundle of every page and
+  the strip is decoration: the canvas code arrives as its own small chunk
+  the first time a footer scrolls into view. A chunk that fails to load
+  resolves to nothing rather than to the error screen, which is the right
+  size of failure for an ornament.
+*/
+const SHOW_PORT_LED_STRIP = true;
+const PortLedStrip = lazy<ComponentType>(() =>
+  import("./PortLedStrip").catch(() => ({ default: () => null })),
+);
 
 const footerLinkVariants = {
   hidden: { opacity: 0, x: -16 },
@@ -246,6 +262,16 @@ export function CinematicFooter() {
           >
             © {year} Max Doubin
           </motion.span>
+          {SHOW_PORT_LED_STRIP && (
+            // The box holds its height before the chunk lands, so nothing shifts.
+            <div aria-hidden className="ml-6 h-4 min-w-0 flex-1">
+              {isInView && (
+                <Suspense fallback={null}>
+                  <PortLedStrip />
+                </Suspense>
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
     </footer>
