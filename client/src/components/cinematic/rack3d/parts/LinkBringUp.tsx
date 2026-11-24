@@ -58,8 +58,14 @@ const REWIND_BELOW = 0.76;
  */
 const CAPTION_OUT_MOBILE: [number, number] = [0.875, 0.9];
 const CAPTION_OUT_DESKTOP: [number, number] = [0.9, 0.93];
-/** Once the hall starts to rise the rack finishes at this multiple of speed. */
-const HALL_HURRY: [number, number] = [0.9, 0.94];
+/**
+ * Scroll also pushes the sequence along: across this range the scroll
+ * position sets a floor under the timeline that reaches its end, so a
+ * visitor who never stops still sees every port come up, and the hall wave
+ * (which sets off around 0.93) always leaves from a rack that is lit. The
+ * clock runs on top, so stopping anywhere lets it finish by itself.
+ */
+const SCRUB: [number, number] = [PLAY_FROM, 0.93];
 
 const LED_OFF = "#07090b";
 
@@ -413,8 +419,7 @@ export function LinkBringUp({
     if (reducedMotion) return;
     const s = timeline.current;
     const p = progressRef.current ?? 0;
-    // The hall is rising: wrap up here so the wave can leave a lit rack.
-    const dt = Math.min(delta, 0.1) * (1 + 1.5 * smooth(HALL_HURRY[0], HALL_HURRY[1], p));
+    const dt = Math.min(delta, 0.1);
 
     if (p >= PLAY_FROM) s.playing = true;
     else if (p < REWIND_BELOW) s.playing = false;
@@ -426,9 +431,13 @@ export function LinkBringUp({
       : p < REWIND_BELOW
         ? Math.max(0, s.t - dt * 4)
         : s.t;
+    if (s.playing) {
+      const scrub = Math.max(0, Math.min(1, (p - SCRUB[0]) / (SCRUB[1] - SCRUB[0])));
+      s.t = Math.max(s.t, scrub * layout.endSeconds);
+    }
     // 100 s is a whole number of cycles of both blink sines, so the wrap
     // is seamless and the float never loses precision.
-    s.clock = (s.clock + Math.min(delta, 0.1)) % 100;
+    s.clock = (s.clock + dt) % 100;
     materials.uT.value = s.t;
     materials.uClock.value = s.clock;
     materials.sprites.uniforms.uT.value = s.t;

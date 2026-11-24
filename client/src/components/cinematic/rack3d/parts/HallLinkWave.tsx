@@ -29,7 +29,19 @@ import { useReducedMotion } from "@/lib/motion/useReducedMotion";
  * The colors and the pace are illustrative, as the hero caption says.
  */
 
-/** Scroll position at which the wave sets off (the near racks are up). */
+/**
+ * How the wave is paced. Left to a wall clock alone it needed seconds the
+ * visitor does not have: the hall only finishes rising in the last few
+ * percent of the pinned scroll, and anyone who keeps scrolling would see
+ * the first moments and nothing more. So scroll carries it. Between
+ * SCRUB[0] and SCRUB[1] the scroll position sets a floor under the
+ * timeline that reaches STORY_SECONDS, by which point every rack the
+ * camera can see has gone dark, amber, green. The clock still runs on top
+ * from PLAY_FROM, so a visitor who stops mid-way watches it finish
+ * instead of a frozen frame. The floor only ever pushes time forward.
+ */
+const SCRUB: [number, number] = [0.925, 0.99];
+/** From here the near racks are up and the clock may run by itself. */
 const PLAY_FROM = 0.95;
 /** Below this the hall is gone, so the wave is reset for the next visit. */
 const RESET_BELOW = 0.89;
@@ -37,14 +49,25 @@ const RESET_BELOW = 0.89;
 /** Seconds before the first neighbor rack is reached. */
 const LEAD_SECONDS = 0.25;
 /** The front's pace along a row and from one row back to the next. */
-const SECONDS_PER_METER_X = 0.55;
-const SECONDS_PER_METER_Z = 0.3;
-const NEGOTIATE_SECONDS = 0.9;
+const SECONDS_PER_METER_X = 0.32;
+const SECONDS_PER_METER_Z = 0.2;
+const NEGOTIATE_SECONDS = 0.7;
 const IDLE_SECONDS = 0.8;
 /** An uplink is run down the rack before its ports can train. */
 const DROP_SECONDS = 0.5;
-const ROW_STAGGER = 0.22;
-const RIPPLE_SECONDS = 0.45;
+const ROW_STAGGER = 0.18;
+const RIPPLE_SECONDS = 0.4;
+/** The front row is on camera out to about this far from the hero rack. */
+const STORY_REACH_METERS = 3.3;
+/** When a rack that far out has every port green. */
+const STORY_SECONDS =
+  LEAD_SECONDS +
+  STORY_REACH_METERS * SECONDS_PER_METER_X +
+  DROP_SECONDS +
+  ROW_STAGGER * 2 +
+  RIPPLE_SECONDS +
+  NEGOTIATE_SECONDS +
+  0.3;
 
 const slotY = (u: number, sizeU: number) => RACK_FEET_HEIGHT + (u - 1 + sizeU / 2) * U;
 /** The switches every rack in RACK_LAYOUT carries, top first. */
@@ -218,6 +241,8 @@ export function HallLinkWave({
     }
     const dt = Math.min(delta, 0.1);
     if (s.playing) s.t = Math.min(endSeconds, s.t + dt);
+    const scrub = Math.max(0, Math.min(1, (p - SCRUB[0]) / (SCRUB[1] - SCRUB[0])));
+    s.t = Math.max(s.t, scrub * STORY_SECONDS);
     // 100 s is a whole number of cycles of every blink and traffic term.
     s.clock = (s.clock + dt) % 100;
     u.uBlink.value = 1;

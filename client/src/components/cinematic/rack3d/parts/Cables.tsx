@@ -210,7 +210,14 @@ function RearTrunkBundle({ x, color, height }: { x: number; color: string; heigh
   );
 }
 
-export function Cables() {
+export function Cables({ runs: showRuns = true }: {
+  /**
+   * False leaves the patch cables out and keeps the cable management
+   * hardware. The link bring-up draws the same sixteen runs on itself, so
+   * with both present its cables would appear over cables already there.
+   */
+  runs?: boolean;
+} = {}) {
   const rightLaneX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
   const leftLaneX = -(RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004);
 
@@ -256,7 +263,7 @@ export function Cables() {
       <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY15} z={backZ + 0.02} />
       <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY35} z={backZ + 0.02} />
 
-      {runs.map((run, i) => {
+      {showRuns && runs.map((run, i) => {
         const targetY = RACK_FEET_HEIGHT + run.targetU * U + U * 0.35;
         const useLeft = run.targetU <= 9 || run.targetU === 17 || run.targetU === 18;
         const baseX = useLeft ? leftLaneX : rightLaneX;

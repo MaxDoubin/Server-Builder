@@ -613,6 +613,7 @@ function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRe
         progressRef={progressRef}
         start={HALL_START}
         end={HALL_END}
+        liveLinkLeds={!LINK_BRINGUP_ENABLED}
       />
       {LINK_BRINGUP_ENABLED && (
         <HallLinkWave
@@ -647,7 +648,7 @@ function HeroRack() {
       })}
       <PDU side="right" />
       <PDU side="left" />
-      <Cables />
+      <Cables runs={!LINK_BRINGUP_ENABLED} />
     </group>
   );
 }

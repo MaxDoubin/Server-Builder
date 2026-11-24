@@ -115,7 +115,7 @@ const VERTEX = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     // No light from a rack that is still below the floor, and the scene's
     // fog (4 m to 18 m) by hand, since a ShaderMaterial does not get it.
-    vFade = smoothstep(0.3, 0.85, rise) * (1.0 - smoothstep(4.0, 18.0, -mv.z) * 0.85);
+    vFade = smoothstep(0.12, 0.6, rise) * (1.0 - smoothstep(4.0, 18.0, -mv.z) * 0.85);
     gl_Position = projectionMatrix * mv;
   }
 `;

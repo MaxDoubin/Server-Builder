@@ -139,11 +139,18 @@ export function HallRacks({
   progressRef,
   start,
   end,
+  liveLinkLeds = true,
 }: {
   placements: HallRackPlacement[];
   progressRef: { current: number };
   start: number;
   end: number;
+  /**
+   * False hides the always-blinking cyan link LEDs. The link bring-up
+   * wave owns link state while it is enabled: a rack it shows as dark or
+   * still negotiating must not also show a live link.
+   */
+  liveLinkLeds?: boolean;
 }) {
   const cabinetRef = useRef<THREE.InstancedMesh>(null);
   const plinthRef = useRef<THREE.InstancedMesh>(null);
@@ -236,6 +243,7 @@ export function HallRacks({
     ]) {
       mesh.visible = visible;
     }
+    links.visible = visible && liveLinkLeds;
     if (!visible) return;
 
     // ---- one-time per-instance coloring -------------------------------
@@ -357,7 +365,7 @@ export function HallRacks({
         if (!lit) {
           scratch.color.set("#0a0d11");
           status.setColorAt(i, scratch.color);
-          links.setColorAt(i, scratch.color);
+          if (liveLinkLeds) links.setColorAt(i, scratch.color);
           activity.setColorAt(i, scratch.color.set("#0c1016"));
           continue;
         }
@@ -380,6 +388,7 @@ export function HallRacks({
           .lerp(scratch.accent, (0.055 + 0.03 * beat) * reveal);
         activity.setColorAt(i, scratch.color);
 
+        if (!liveLinkLeds) continue;
         const linkBeat = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * 8.3 + phase * 2.2));
         scratch.accent.set(ACCENT_HEX.cyan);
         scratch.dim.copy(scratch.accent).multiplyScalar(0.12);
