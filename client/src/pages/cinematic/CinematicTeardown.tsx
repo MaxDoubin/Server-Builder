@@ -4,6 +4,9 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { TEARDOWN_PARTS } from "@/components/teardown/teardownParts";
 import { LoadProgress } from "@/components/racks/LoadProgress";
+import { EXPLODED_VIEW_ENABLED } from "@/components/teardown/explodedView";
+import { useScrollScrub } from "@/components/teardown/useScrollScrub";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 /*
   The viewer pulls in three.js, so it is loaded only when this page is, and
@@ -67,6 +70,17 @@ export function CinematicTeardown() {
     return () => cancelAnimationFrame(raf);
   }, [playing, set]);
 
+  /*
+    Scrolling the page opens and closes the machine too. Not for a reader
+    who has asked for reduced motion: movement tied to the scroll wheel is
+    exactly the kind they asked not to get, and the slider still gives them
+    every frame of it on their own terms.
+  */
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const nudge = useCallback((delta: number) => set(progressRef.current + delta), [set]);
+  useScrollScrub(viewerRef, EXPLODED_VIEW_ENABLED && !reducedMotion, nudge);
+
   const active = TEARDOWN_PARTS.find((p) => p.label === selected);
 
   return (
@@ -89,11 +103,28 @@ export function CinematicTeardown() {
               rear drive cage are the parts that do not fit in a 1U at all, and they are the
               ones worth watching come out. Drag the slider, or press play, and pick any part to
               read what it does.
+              {EXPLODED_VIEW_ENABLED
+                ? " Scrolling the page past the model works the slider too, in both directions."
+                : null}
             </p>
           </header>
 
           <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-            <div className="relative overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
+            {/*
+              Pinned beside the long parts list on a screen with room for
+              it, so the model stays in view for as long as scrolling is
+              driving it. Only when the viewport is tall enough to hold the
+              whole card: a pinned card taller than the screen would put
+              its own transport bar permanently out of reach.
+            */}
+            <div
+              ref={viewerRef}
+              className={`relative overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))] ${
+                EXPLODED_VIEW_ENABLED
+                  ? "[@media(min-width:1024px)_and_(min-height:840px)]:sticky [@media(min-width:1024px)_and_(min-height:840px)]:top-20 [@media(min-width:1024px)_and_(min-height:840px)]:self-start"
+                  : ""
+              }`}
+            >
               <div className="relative aspect-[16/10] w-full">
                 <Suspense
                   fallback={
