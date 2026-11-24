@@ -124,6 +124,7 @@ const FRAGMENT = /* glsl */ `
   uniform float uClock;
   uniform float uBlink;
   uniform float uKx;
+  uniform float uSpill;
   uniform vec2 uTimes;
   uniform vec3 uAmber;
   uniform vec3 uGreen;
@@ -166,7 +167,7 @@ const FRAGMENT = /* glsl */ `
       float a = smoothstep(0.0, span, vTau);
       float g = smoothstep(uTimes.x, uTimes.x + span, vTau);
       float d = clamp(1.0 - length(c) * 2.0, 0.0, 1.0);
-      col = (uAmber * (a - g) * 0.7 + uGreen * g) * d * d * (vKind < 1.5 ? 0.3 : 0.16);
+      col = (uAmber * (a - g) * 0.7 + uGreen * g) * d * d * (vKind < 1.5 ? 0.3 : 0.16) * uSpill;
     } else if (vKind < 3.5) {
       float v = 1.0 - vUv.y;
       float laid = vTau / 0.5;
@@ -186,7 +187,7 @@ const FRAGMENT = /* glsl */ `
       float head = exp(-max(tau, 0.0) * 2.2) * lit;
       float traffic = uBlink * dots(abs(vX) / 0.9 - uClock * 0.4);
       float edge = clamp(1.0 - abs(c.y) * 2.0, 0.0, 1.0);
-      col = (mix(uAmber * 0.35, uGreen * (0.26 + 0.5 * traffic), up) * lit + vec3(1.0, 0.86, 0.5) * head * 0.8) * edge;
+      col = (mix(uAmber * 0.35, uGreen * (0.18 + 0.42 * traffic), up) * lit + vec3(1.0, 0.86, 0.5) * head * 0.6) * edge;
     }
     gl_FragColor = vec4(col * vFade, 1.0);
     #include <colorspace_fragment>
@@ -203,6 +204,8 @@ export interface LinkSpriteTiming {
   /** Scroll positions between which the hall racks rise; omit for the hero. */
   rise?: [number, number];
   ledScale?: number;
+  /** Scales the soft faceplate and floor light; a hall of it adds up fast. */
+  spill?: number;
 }
 
 export function createSpriteMaterial(timing: LinkSpriteTiming) {
@@ -216,6 +219,7 @@ export function createSpriteMaterial(timing: LinkSpriteTiming) {
       uRise: { value: new THREE.Vector2(...(timing.rise ?? [0, 0.5])) },
       uKx: { value: timing.perMeter ?? 0 },
       uLedScale: { value: timing.ledScale ?? 1 },
+      uSpill: { value: timing.spill ?? 1 },
       uTimes: { value: new THREE.Vector2(timing.negotiate, timing.idle) },
       uAmber: { value: new THREE.Color(ACCENT_HEX.amber) },
       uGreen: { value: new THREE.Color(ACCENT_HEX.signal) },

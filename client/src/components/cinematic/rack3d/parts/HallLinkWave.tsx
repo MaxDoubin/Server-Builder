@@ -111,7 +111,7 @@ function buildSprites(placements: HallRackPlacement[], tier: DeviceTier) {
         sprites.push({
           kind: SPRITE.led,
           at: [PORT_SPAN / 2 - f * PORT_SPAN, y, FRONT_Z],
-          size: [0.036, 0.036],
+          size: [0.03, 0.03],
           arrive: rowArrive + f * RIPPLE_SECONDS,
           param: 1,
           phase: hash(r * 37 + i * 13 + c),
@@ -122,7 +122,7 @@ function buildSprites(placements: HallRackPlacement[], tier: DeviceTier) {
         sprites.push({
           kind: SPRITE.glow,
           at: [0, y, FRONT_Z + 0.002],
-          size: [RACK_INNER_WIDTH + 0.12, 0.22],
+          size: [RACK_INNER_WIDTH + 0.1, 0.15],
           arrive: rowArrive,
           param: RIPPLE_SECONDS,
           rack,
@@ -133,7 +133,8 @@ function buildSprites(placements: HallRackPlacement[], tier: DeviceTier) {
       sprites.push({
         kind: SPRITE.floor,
         at: [0, 0.006, RACK_DEPTH / 2 + 0.36],
-        size: [0.72, 0.86],
+        // Wider than a rack, so a row's worth merges into one band.
+        size: [1.5, 0.8],
         arrive: arrive + DROP_SECONDS,
         param: ROW_STAGGER * 2 + RIPPLE_SECONDS,
         rack,
@@ -145,7 +146,7 @@ function buildSprites(placements: HallRackPlacement[], tier: DeviceTier) {
     sprites.push({
       kind: SPRITE.trunk,
       at: [0, TRUNK_Y, row.facing * (RACK_DEPTH / 2 - 0.02)],
-      size: [row.reach * 2 + 0.5, 0.022],
+      size: [row.reach * 2 + 0.5, 0.014],
       arrive: Math.abs(z) * SECONDS_PER_METER_Z,
       param: 0,
       rack: [0, z, row.facing, row.delay],
@@ -187,6 +188,7 @@ export function HallLinkWave({
         idle: IDLE_SECONDS,
         perMeter: SECONDS_PER_METER_X,
         rise: [start, end],
+        spill: 0.5,
       }),
     [start, end],
   );
