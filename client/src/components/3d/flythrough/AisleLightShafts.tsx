@@ -50,13 +50,13 @@ const BEAM_FRAGMENT = /* glsl */ `
   varying float vHeight;
   varying float vPhase;
   void main() {
-    float dist = length(vToCamera);
+    float dist = max(length(vToCamera), 0.0001);
     // Brightest where the cone faces the eye and nothing at its silhouette,
     // which is what a volume of lit haze does and a hard cone does not.
     float facing = abs(dot(normalize(vNormal), vToCamera / dist));
     float body = pow(smoothstep(0.0, 0.9, facing), 1.6);
     // Strong at the fixture, thinning toward the floor.
-    float fall = pow(vHeight, 1.5) * smoothstep(1.0, 0.94, vHeight) + 0.06;
+    float fall = pow(vHeight, 1.5) * (1.0 - smoothstep(0.94, 1.0, vHeight)) + 0.06;
     // Fade out as the camera passes through the wall of the cone, and with
     // distance so far beams do not stack into a white band (the material
     // ignores scene fog, so this stands in for it).
@@ -108,9 +108,19 @@ interface AisleLightShaftsProps {
   intensity: number;
   /** Hold the beams still, for visitors who asked for reduced motion. */
   still: boolean;
+  /** Whether the flythrough is running; the breath stops with it, so a paused frame is still. */
+  playing: boolean;
 }
 
-export function AisleLightShafts({ z, startX, endX, count, intensity, still }: AisleLightShaftsProps) {
+export function AisleLightShafts({
+  z,
+  startX,
+  endX,
+  count,
+  intensity,
+  still,
+  playing,
+}: AisleLightShaftsProps) {
   const beamsRef = useRef<THREE.InstancedMesh>(null);
   const poolsRef = useRef<THREE.InstancedMesh>(null);
 
@@ -188,10 +198,11 @@ export function AisleLightShafts({ z, startX, endX, count, intensity, still }: A
       assets.uIntensity.value = intensity;
       return;
     }
-    assets.uTime.value += Math.min(delta, 0.1);
+    if (playing) assets.uTime.value += Math.min(delta, 0.1);
     // Ease the beams up over about a second and a half rather than switching them on.
     assets.uIntensity.value +=
-      (intensity - assets.uIntensity.value) * (1 - Math.exp(-Math.min(delta, 0.1) * 1.6));
+      (intensity - assets.uIntensity.value) *
+      (1 - Math.exp(-Math.min(delta, 0.1) * 1.6));
   });
 
   /*

@@ -28,7 +28,10 @@ import {
   findAisle,
   type GridCell,
 } from "./hallFlythroughPath";
-import { FLYTHROUGH_STEPS, type FlythroughTransport } from "./useHallFlythrough";
+import {
+  FLYTHROUGH_STEPS,
+  type FlythroughTransport,
+} from "./useHallFlythrough";
 
 /** Longest step the playhead takes in one frame, so a stall does not become a jump cut. */
 const MAX_FRAME_STEP = 1 / 15;
@@ -116,7 +119,11 @@ export function HallFlythrough({
   useLayoutEffect(() => {
     const lens = camera instanceof THREE.PerspectiveCamera ? camera : null;
     const fog = scene.fog instanceof THREE.Fog ? scene.fog : null;
-    base.current = { fov: lens?.fov ?? 50, fogNear: fog?.near ?? 0, fogFar: fog?.far ?? 0 };
+    base.current = {
+      fov: lens?.fov ?? 50,
+      fogNear: fog?.near ?? 0,
+      fogFar: fog?.far ?? 0,
+    };
     const saved = base.current;
     return () => {
       if (lens) {
@@ -199,7 +206,10 @@ export function HallFlythrough({
     let turn = 0;
     if (!still) {
       path.position.getPointAt(Math.min(1, u + TURN_SAMPLE), ahead.current);
-      path.position.getPointAt(Math.min(1, u + TURN_SAMPLE * 2), further.current);
+      path.position.getPointAt(
+        Math.min(1, u + TURN_SAMPLE * 2),
+        further.current,
+      );
       const ax = ahead.current.x - camera.position.x;
       const az = ahead.current.z - camera.position.z;
       const bx = further.current.x - ahead.current.x;
@@ -207,8 +217,13 @@ export function HallFlythrough({
       const scale = Math.hypot(ax, az) * Math.hypot(bx, bz);
       if (scale > 1e-6) turn = (az * bx - ax * bz) / scale;
     }
-    const wantedRoll = THREE.MathUtils.clamp(turn * ROLL_GAIN, -MAX_ROLL, MAX_ROLL);
-    roll.current += (wantedRoll - roll.current) * (1 - Math.exp(-Math.min(delta, 0.1) * 3));
+    const wantedRoll = THREE.MathUtils.clamp(
+      turn * ROLL_GAIN,
+      -MAX_ROLL,
+      MAX_ROLL,
+    );
+    roll.current +=
+      (wantedRoll - roll.current) * (1 - Math.exp(-Math.min(delta, 0.1) * 3));
     if (still) roll.current = 0;
     camera.rotateZ(roll.current);
 
@@ -221,8 +236,16 @@ export function HallFlythrough({
       }
     }
     if (scene.fog instanceof THREE.Fog) {
-      scene.fog.near = THREE.MathUtils.lerp(base.current.fogNear, AISLE_FOG_NEAR, inside);
-      scene.fog.far = THREE.MathUtils.lerp(base.current.fogFar, AISLE_FOG_FAR, inside);
+      scene.fog.near = THREE.MathUtils.lerp(
+        base.current.fogNear,
+        AISLE_FOG_NEAR,
+        inside,
+      );
+      scene.fog.far = THREE.MathUtils.lerp(
+        base.current.fogFar,
+        AISLE_FOG_FAR,
+        inside,
+      );
     }
 
     // Move the scrub thumb, but only when it would land on a different step.
@@ -233,9 +256,14 @@ export function HallFlythrough({
     }
   });
 
-  const beamCount = effects
-    ? Math.min(BEAM_CAP[tier], Math.max(2, Math.round((endX - startX) / BEAM_SPACING)))
-    : 0;
+  // The beams are instanced, which WebGL 1 only has as an extension: skip them there.
+  const beamCount =
+    effects && gl.capabilities.isWebGL2
+      ? Math.min(
+          BEAM_CAP[tier],
+          Math.max(2, Math.round((endX - startX) / BEAM_SPACING)),
+        )
+      : 0;
 
   if (beamCount === 0) return null;
   return (
@@ -246,6 +274,7 @@ export function HallFlythrough({
       count={beamCount}
       intensity={daylight ? 0.12 : 0.34}
       still={still}
+      playing={playing}
     />
   );
 }

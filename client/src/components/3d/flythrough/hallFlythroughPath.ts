@@ -53,7 +53,8 @@ export function findAisle(cells: readonly GridCell[]): Aisle {
   let maxRow = 0;
   const rows = new Map<number, { min: number; max: number }>();
   for (const cell of cells) {
-    if (!Number.isFinite(cell.positionX) || !Number.isFinite(cell.positionY)) continue;
+    if (!Number.isFinite(cell.positionX) || !Number.isFinite(cell.positionY))
+      continue;
     maxCol = Math.max(maxCol, cell.positionX);
     maxRow = Math.max(maxRow, cell.positionY);
     const row = rows.get(cell.positionY);
@@ -83,7 +84,10 @@ export function findAisle(cells: readonly GridCell[]): Aisle {
     if (overlap < 0) continue;
     const z = worldZ(rowIndex + 0.5);
     const offCenter = Math.abs(z);
-    if (overlap > bestOverlap || (overlap === bestOverlap && offCenter < bestOffCenter)) {
+    if (
+      overlap > bestOverlap ||
+      (overlap === bestOverlap && offCenter < bestOffCenter)
+    ) {
       bestOverlap = overlap;
       bestOffCenter = offCenter;
       best = { z, startX: worldX(from), endX: worldX(to), flanked: true };
@@ -167,7 +171,7 @@ export function buildFlythroughPath(aisle: Aisle): FlythroughPath {
     Where the camera looks at each of those positions. Inside the aisle the
     target leads the camera by about seven meters and drifts toward one row
     and then the other, so the view glances along the cabinet faces. After
-    the exit it swings out to the side and then back over the hall, which
+    the exit it turns to look along the ends of the rows and then back over the hall, which
     turns the camera through a half circle without ever passing through it.
   */
   const targets = [
@@ -177,7 +181,7 @@ export function buildFlythroughPath(aisle: Aisle): FlythroughPath {
     v(at(0.25) + 7, 1.5, z - 1.1),
     v(at(0.5) + 7, 1.6, z + 1.1),
     v(x1 + 3, 1.7, z),
-    v(x1 + 6, 2.4, z - 6),
+    v(x1 + 1.5, 2.2, z - 7),
     v(x1 - 4, 1.8, z - 2),
     v(mid, 1.2, z),
   ];
@@ -200,7 +204,11 @@ export function buildFlythroughPath(aisle: Aisle): FlythroughPath {
     target,
     aisleIn: fractionAt(MOUTH_INDEX),
     aisleOut: fractionAt(EXIT_INDEX),
-    duration: THREE.MathUtils.clamp(total / DOLLY_SPEED, MIN_DURATION, MAX_DURATION),
+    duration: THREE.MathUtils.clamp(
+      total / DOLLY_SPEED,
+      MIN_DURATION,
+      MAX_DURATION,
+    ),
     stillAt: fractionAt(1) * 0.55,
   };
 }
@@ -229,7 +237,16 @@ export function easeFlight(t: number): number {
 export function aisleWeight(path: FlythroughPath, u: number): number {
   const shoulder = 0.06;
   return (
-    THREE.MathUtils.smoothstep(u, path.aisleIn - shoulder, path.aisleIn + shoulder) *
-    (1 - THREE.MathUtils.smoothstep(u, path.aisleOut - shoulder, path.aisleOut + shoulder))
+    THREE.MathUtils.smoothstep(
+      u,
+      path.aisleIn - shoulder,
+      path.aisleIn + shoulder,
+    ) *
+    (1 -
+      THREE.MathUtils.smoothstep(
+        u,
+        path.aisleOut - shoulder,
+        path.aisleOut + shoulder,
+      ))
   );
 }

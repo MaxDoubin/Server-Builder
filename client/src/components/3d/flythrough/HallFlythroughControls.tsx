@@ -15,10 +15,14 @@
  */
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { FLYTHROUGH_STEPS, type HallFlythroughState } from "./useHallFlythrough";
+import {
+  FLYTHROUGH_STEPS,
+  type HallFlythroughState,
+} from "./useHallFlythrough";
 
 /** Space on these already means something; the shortcut must not also fire. */
-const SPACE_OWNERS = "button, a, select, textarea, input:not([type='range']), [contenteditable='true']";
+const SPACE_OWNERS =
+  "button, a, select, textarea, input:not([type='range']), [contenteditable='true']";
 
 interface HallFlythroughControlsProps {
   flythrough: HallFlythroughState;
@@ -26,7 +30,10 @@ interface HallFlythroughControlsProps {
   still: boolean;
 }
 
-export function HallFlythroughControls({ flythrough, still }: HallFlythroughControlsProps) {
+export function HallFlythroughControls({
+  flythrough,
+  still,
+}: HallFlythroughControlsProps) {
   const { playing, ended, transport, toggle, stop, handleSeek } = flythrough;
   const firstControl = useRef<HTMLButtonElement>(null);
 
@@ -85,7 +92,11 @@ export function HallFlythroughControls({ flythrough, still }: HallFlythroughCont
             <div className="text-[0.625rem] uppercase tracking-[0.3em] text-cyan-300/80">
               Hall flythrough
             </div>
-            <p className="text-xs text-white/70" role="status" aria-live="polite">
+            <p
+              className="text-xs text-white/70"
+              role="status"
+              aria-live="polite"
+            >
               {status}
             </p>
           </div>
@@ -131,7 +142,9 @@ export function HallFlythroughControls({ flythrough, still }: HallFlythroughCont
               step={1}
               defaultValue={0}
               aria-label="Flythrough position"
-              onChange={(event) => handleSeek(event.currentTarget.valueAsNumber / FLYTHROUGH_STEPS)}
+              onChange={(event) =>
+                handleSeek(event.currentTarget.valueAsNumber / FLYTHROUGH_STEPS)
+              }
             />
             <p className="mt-1 text-[0.625rem] text-white/50">
               Space plays and pauses. Escape exits. Drag the bar to scrub.

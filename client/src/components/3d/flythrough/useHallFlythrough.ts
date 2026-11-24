@@ -6,7 +6,14 @@
  * disappears from the control dock; nothing else on the page changes, and the
  * camera rig, the light shafts and the controls are never mounted.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 
 export const HALL_FLYTHROUGH_ENABLED = true;
 
@@ -54,7 +61,10 @@ export function useHallFlythrough(): HallFlythroughState {
   const [playing, setPlaying] = useState(false);
   const [ended, setEnded] = useState(false);
   const [runId, setRunId] = useState(0);
-  const transportRef = useRef<FlythroughTransport>({ seekTo: null, slider: null });
+  const transportRef = useRef<FlythroughTransport>({
+    seekTo: null,
+    slider: null,
+  });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasActive = useRef(false);
 
