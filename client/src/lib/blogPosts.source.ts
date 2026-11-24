@@ -58,6 +58,1272 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "vulnerability-prioritization-cvss-epss-trurisk",
+    title: "How Vulnerability Platforms Rank What to Fix",
+    date: "2026-11-21",
+    tags: ["security", "cybersecurity", "operations", "tools"],
+    excerpt:
+      "How scans detect flaws, how QIDs differ from CVEs, what CVSS v3.1 and v4.0 measure, and how EPSS, CISA KEV and Qualys TruRisk reorder the fix list.",
+    coverImage: "/images/blog/vulnerability-prioritization-cvss-epss-trurisk-photo.jpg",
+    coverCredit: {
+      author: "Shixart1985",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Close-up_of_the_key_with_house_keychain.jpg",
+    },
+    content: `## The ranking problem
+
+A vulnerability management platform does two jobs that are easy to blur together. The first is detection: finding out which known flaws are present on which machines. The second is prioritization: deciding which of those findings deserve attention first, because almost no team can fix everything at once.
+
+This explainer walks through the pipeline from scan to ranked list. It uses vendor-neutral standards for the general parts: the Common Vulnerability Scoring System (CVSS) specifications published by FIRST (the Forum of Incident Response and Security Teams), the Exploit Prediction Scoring System (EPSS), also run by FIRST, and the Known Exploited Vulnerabilities (KEV) catalog published by the Cybersecurity and Infrastructure Security Agency (CISA). For a concrete example of how a commercial platform combines these inputs, it uses Qualys' public documentation, and only what that documentation states. Nothing here is based on running the product. Qualys publishes separate documentation sets for Vulnerability Management (VM), Vulnerability Management, Detection and Response (VMDR) and Enterprise TruRisk Management (ETM), and their pages do not all describe the scoring the same way, so each Qualys statement below names the page it comes from. Formulas and weights are taken from those pages as they read in November 2026, and vendors revise them.
+
+## What a scan actually detects
+
+A vulnerability scan compares what it can learn about a system against a database of known flaws. How much it can learn depends on how it looks.
+
+### Unauthenticated network scans
+
+An unauthenticated (remote) scan works from the outside, like an attacker on the network would. It probes listening services, reads banners and protocol responses, and infers software versions from what comes back. This shows what the network exposes, which is useful, but it is inference. A banner can be wrong, a backported patch can leave the version string unchanged, and anything not listening on the network (a local library, a browser, a kernel module) is invisible.
+
+The same probing logic is covered in more depth in the post on [Nmap scanning techniques](/blog/nmap-scanning-techniques), which makes the same point: the output is an interpretation of replies, not a direct reading of the host.
+
+### Authenticated scans
+
+An authenticated scan, which Qualys calls trusted scanning, gives the scanner credentials so it can log in and read installed package lists, registry keys, file versions and configuration settings directly. Qualys' documentation on host authentication says authenticated scans give the most accurate results with fewer false positives, that authentication is optional but recommended for vulnerability scans, and that it is required for compliance scans. Its knowledgebase also tags each detection with a discovery method (authenticated, remote, or both), which tells you whether a given check can even run without credentials.
+
+The trade-off is the credential itself. A scan account with broad read access is a valuable target, so it needs the same care as any privileged account.
+
+### Agent-based assessment
+
+An agent is software installed on each host that collects system and configuration data locally and sends it to the platform. Qualys' Cloud Agent overview describes it as lightweight software installed on assets and endpoints that collects system data and identifies vulnerabilities, sending data over outbound HTTPS (Hypertext Transfer Protocol Secure) so that scheduled scans and firewall changes are not needed. The same page says the agent works offline and syncs automatically. An agent sees roughly what an authenticated scan sees, because it reads the host from the inside.
+
+What an agent does not show by itself is the network view: whether a vulnerable service is actually reachable from where an attacker would sit. The two methods complement each other: agents give the inside-out inventory, network scans give the outside-in exposure.
+
+### Confirmed, potential and informational findings
+
+Scanners rarely give a clean yes or no. Qualys' severity levels page sorts knowledgebase results into three kinds. Vulnerabilities are design flaws or misconfigurations that leave a host open to attack. Potential vulnerabilities are ones that cannot be fully verified. Information Gathered entries are visible information about the host and its network, not flaws. The same page notes that authenticated scanning lets the service verify the existence of some potential vulnerabilities, so credentials can turn some unverified findings into confirmed ones. It also says a detection made by an authenticated scan or an agent is not automatically categorized as confirmed.
+
+## QID versus CVE
+
+A CVE (Common Vulnerabilities and Exposures) identifier names a publicly disclosed vulnerability, such as CVE-2023-20867. It is vendor-neutral: EPSS scores every published CVE, and the CISA KEV catalog requires a CVE ID before a flaw can be listed.
+
+A QID is different. Qualys' VM/VMDR glossary defines it as the unique Qualys ID number assigned to the vulnerability. In practice a QID is a detection: Qualys' own pages refer to it as a detection signature, the check that decides whether a host is affected. The mapping is not one to one. Qualys' page on measuring the likelihood of exploitation states that each QID may map to one or more CVEs, and its own worked example is a single QID linked to two CVEs.
+
+So counting QIDs and counting CVEs can give different totals for the same estate. When comparing data across tools or with public feeds, the CVE is the common key.
+
+## How CVSS base scores are built
+
+CVSS is the scoring system most people meet first. FIRST publishes the specifications for both version 3.1 and version 4.0, and this section covers each in turn.
+
+### CVSS v3.1
+
+The v3.1 specification organizes metrics into three groups. The Base group covers intrinsic properties that stay constant over time and across environments. The Temporal group covers properties that change over time but not across environments. The Environmental group covers properties specific to one user's environment.
+
+The Base metrics split into two halves:
+
+- Exploitability: Attack Vector (network, adjacent, local or physical), Attack Complexity, Privileges Required and User Interaction.
+- Impact: Confidentiality, Integrity and Availability.
+
+A Scope metric records whether exploiting the flaw affects resources beyond the vulnerable component's own security scope. The metrics combine into a score from 0.0 to 10.0, and the specification maps scores to qualitative ratings: None (0.0), Low (0.1 to 3.9), Medium (4.0 to 6.9), High (7.0 to 8.9) and Critical (9.0 to 10.0). The specification describes its outputs as numerical scores indicating severity relative to other vulnerabilities.
+
+### CVSS v4.0
+
+Version 4.0 keeps the same idea and changes the structure. It has four metric groups: Base, Threat, Environmental and Supplemental. Comparing the two specifications, the Threat group takes over the time-varying role the Temporal group has in v3.1 (the v4.0 text does not mention Temporal at all). Supplemental metrics add context but do not change the score.
+
+The Base exploitability metrics gain one new entry, Attack Requirements, which captures deployment and execution conditions of the vulnerable system that must be present for an attack to work. The impact metrics are split into two sets: Confidentiality, Integrity and Availability for the vulnerable system, and the same three for any subsequent system affected downstream. This replaces the v3.1 Scope metric.
+
+The Threat group's main metric is Exploit Maturity, with values Attacked, Proof-of-Concept, Unreported, or Not Defined. Version 4.0 also asks that scores be labeled by which groups were used: CVSS-B for base only, CVSS-BT for base plus threat, CVSS-BE for base plus environmental, and CVSS-BTE for all three. The specification describes the Base score as reflecting a vulnerability's severity and encourages consumers to enrich it with threat and environmental metrics to produce a more complete input to their own risk assessment.
+
+### What base scores leave out
+
+The specifications are clear about what the Base score is: a severity measure of the vulnerability itself. It says nothing about:
+
+- Whether anyone is exploiting the flaw right now. That belongs to Threat (or Temporal) metrics, which most published scores omit.
+- Whether the affected software runs anywhere in your environment, or whether it is reachable.
+- How important the affected machine is. A domain controller and a test virtual machine get the same base score for the same flaw.
+- Compensating controls, such as a disabled service or a firewall rule.
+
+A score built from base metrics alone is, in v4.0 terms, a CVSS-B score, and the label is a reminder that threat and environment were never considered.
+
+## Why exploit likelihood changes priority
+
+Severity tells you how bad a flaw would be if exploited. Two other data sources speak to whether it is likely to be exploited.
+
+### EPSS
+
+EPSS has a special interest group at FIRST that discusses its implementation, use cases and direction, and FIRST's FAQ says the daily scores are generated by Empirical Security. It estimates the probability that a vulnerability will be exploited in the wild within the next 30 days, producing a value between 0 and 1 for every publicly disclosed CVE and updating it daily.
+
+The EPSS FAQ is direct that EPSS is not a complete risk score. It supplies only the threat likelihood part: it does not estimate impact and does not know what assets an organization runs. FIRST also warns against a tempting shortcut. Multiplying an EPSS probability by a CVSS score does not produce a meaningful combined risk number, because EPSS is a calibrated probability while CVSS is an ordinal ranking. FIRST's guidance on using EPSS treats the choice of threshold as a local decision, a trade-off between how many exploited flaws a team catches and how much remediation work it takes on.
+
+### The CISA KEV catalog
+
+The KEV catalog is a list of vulnerabilities with evidence of exploitation in the wild. CISA lists three conditions for adding an entry: the vulnerability has a CVE ID, there is reliable evidence it has been actively exploited, and there is a clear remediation action such as a vendor update. CISA describes the catalog as an input to vulnerability prioritization.
+
+KEV is a binary signal (listed or not) based on observed exploitation, while EPSS is a forecast. They answer different questions and work well together. A flaw on the KEV list has already been used by attackers, whatever its CVSS score says.
+
+### A worked contrast
+
+Qualys' VM documentation on measuring the likelihood of exploitation uses a good example. It says CVE-2023-20867 has a CVSS score of 3.9, which falls in the Low band, and that the CVE appears in the KEV catalog, is linked to an active malware campaign and is being exploited by multiple threat actors. A team patching strictly from Critical down would leave it near the bottom of the queue, while an attacker would treat it as a working tool.
+
+## How Qualys TruRisk combines factors
+
+TruRisk is Qualys' name for its prioritization scoring. Its public documentation describes the score in layers, from a single CVE up to a whole asset. The layer names, ranges and formulas below come from three pages: the VM page "Measure the Likelihood of Vulnerability Exploitation" (layers 1 and 2), the VMDR page "Calculate TruRisk Score" (layers 2 to 4) and the VM page "Updated TruRisk Formula and TruRisk Calculation" (layer 4). The VMDR page adds that the score is calculated by the ETM service when an ETM subscription is enabled and by the Host Detection Service otherwise. The documentation describes more than one formula generation, so the details here are a snapshot, not a specification.
+
+### Layer 1: QVS, per CVE
+
+The Qualys Vulnerability Score (QVS) is a per-CVE score that starts from CVSS and adds threat signals. The VM page lists the factors as the CVSS base score, EPSS, CISA KEV status, threat actors, malware, exploit code maturity, exploit type and real-time threat indicators, and trending in the wild.
+
+Its weighting description, in the page's own terms, is this: if a CVE is on the KEV list or tied to known malware or threat actors, it gets a higher weight, "more than 90%", with the remaining 10 percent applied to exploit maturity, EPSS and trending. If no such threat attribute is present, 65 percent of the score comes from the CVSS base score and the other 35 percent is distributed across exploit maturity, EPSS, the trending feed and other threat intelligence. For a CVE that the National Vulnerability Database has not yet processed, the same page describes a different split, 20 percent of the available CVSS data and 80 percent real-time threat indicators. Weights like these are version-specific, so they are better read as an illustration of the idea than as constants.
+
+### Layer 2: QDS, per QID
+
+The Qualys Detection Score (QDS) is the per-detection score, on a range of 1 to 100. Because a QID can map to several CVEs, the VM page says QDS takes the highest QVS among the QID's CVEs. Its example is a QID whose two CVEs have QVS values of 75 and 30, giving a QDS of 75. The VMDR page says QDS also accounts for compensating or mitigating controls that lower the risk for a vulnerability on an asset; its example is Remote Desktop Protocol (RDP) being disabled.
+
+Both pages give four QDS bands: Critical (90 to 100), High (70 to 89), Medium (40 to 69) and Low (1 to 39). Both also say Qualys recommends prioritizing vulnerabilities with a QDS of 70 or higher.
+
+### Layer 3: asset criticality
+
+The VMDR page says the Asset Criticality Score (ACS) is calculated from tags assigned to the asset, and that when an asset has several tags the highest score is used. The updated-formula page gives the range as 1 to 5. This is the step that brings business context into the number, and it is the part no public data source can supply.
+
+### Layer 4: the asset TruRisk score
+
+The asset-level TruRisk score is capped at 1000. The VMDR page gives the original formula as ACS multiplied by a sum over the four severity bands. Each band contributes a weighting factor, times the band's average QDS, times the number of detections in the band raised to the power 1/100. That is arithmetic worth noticing: a band with 1,000 detections is multiplied by only about 1.07 for the count, so the average QDS and the weights dominate. The page says the weighting factors are auto-assigned and gives no numeric values for them. For an external asset, it says the whole score is multiplied by 1.2, and it lists a separate formula for externally exposed unmanaged assets.
+
+The updated-formula page, which says the new formula is currently implemented only for newly scanned assets, builds the score around the single highest QDS on the asset, adjusted by a band multiplier (1.3 for QDS 90 to 100, 1.1 for 70 to 89, 1.0 for 0 to 69), plus the count of detections in each band times a band weight. In its formula for unmanaged assets, ACS is also multiplied by an External factor, which is 1.2 for an externally facing asset and 1 otherwise. The page's managed-asset formula has no such factor.
+
+The pattern outlasts the exact numbers: severity is the starting point, exploitation evidence moves it sharply, compensating controls pull it down, and asset importance and internet exposure scale the result. That is close to what CVSS v4.0 asks consumers to do with Threat and Environmental metrics.
+
+## Limits and common mistakes
+
+### Patching by severity alone
+
+Sorting by base score and working down is simple, but it ignores exploitation data and business context, as the CVE-2023-20867 example shows. Base scores are a severity input, not a queue.
+
+### Treating a scan as proof of exposure
+
+A finding means the scanner matched a condition. It does not prove the vulnerable code is reachable, enabled, or exploitable in that configuration. An unauthenticated finding is an inference from a banner. An agent finding proves the package is installed, not that the service is exposed. Exposure needs a second look: network path, configuration, and compensating controls.
+
+### False positives and false negatives
+
+Version-string matching misses vendor backports and flags patched systems. Potential vulnerabilities are, by definition, unverified. Authenticated scanning reduces both problems, according to Qualys' own documentation, but does not remove them. False negatives are quieter and arguably worse: a host the scanner could not log in to, or a check that does not exist yet, produces no finding at all. A clean report can mean "nothing found," not "nothing there."
+
+### Scan windows and coverage gaps
+
+A scheduled network scan only sees the hosts that are powered on and reachable during the scan. Laptops off the network, short-lived cloud instances and hosts behind unscanned network segments drop out. Results also age: a scan from last month says nothing about a flaw disclosed yesterday. Agents narrow the gap for the hosts that have them, but an agent cannot report from a machine it is not installed on. Asset inventory comes before vulnerability management; a ranking of findings on known hosts says nothing about unknown ones.
+
+### Trusting one composite number
+
+A vendor score like TruRisk bundles assumptions about weights and data sources. It is a strong default, but it should be understood, not obeyed. Knowing the inputs lets a team spot when the score is wrong for their environment, for instance when a critical server was never given a criticality tag that reflects its role. Planning which assets matter most is the same exercise covered in [threat modeling a homelab](/blog/threat-modeling-homelab), applied at larger scale.
+
+## Study notes
+
+- Detection and prioritization are separate steps. Know which one a question is asking about.
+- Unauthenticated scans infer from network responses; authenticated scans and agents read the host directly and produce fewer false positives.
+- A CVE is the public, vendor-neutral identifier. A QID is a Qualys detection, which may map to one or more CVEs, or to none.
+- CVSS v3.1 groups: Base, Temporal, Environmental. CVSS v4.0 groups: Base, Threat, Environmental, Supplemental. v4.0 adds Attack Requirements and splits impact into vulnerable and subsequent systems.
+- The CVSS Base score measures severity, not risk. v4.0 labels (CVSS-B, BT, BE, BTE) show which groups were used.
+- EPSS is a probability of exploitation within the next 30 days for publicly disclosed CVEs, updated daily. Do not multiply it by CVSS.
+- KEV entries need a CVE ID, reliable evidence of active exploitation and a clear remediation action.
+- TruRisk layers: QVS per CVE, QDS (1 to 100) per QID, ACS (1 to 5) per asset, asset score (capped at 1000) with an external exposure multiplier.
+- A scan finding is not proof of exposure, and a clean scan is not proof of safety.
+
+## Sources
+
+- [FIRST: CVSS v3.1 Specification Document](https://www.first.org/cvss/v3.1/specification-document)
+- [FIRST: CVSS v4.0 Specification Document](https://www.first.org/cvss/v4.0/specification-document)
+- [FIRST: Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/)
+- [FIRST: EPSS Frequently Asked Questions](https://www.first.org/epss/faq)
+- [FIRST: Using EPSS](https://www.first.org/epss/using-epss)
+- [CISA: Known Exploited Vulnerabilities Catalog](https://www.cisa.gov/known-exploited-vulnerabilities)
+- [Qualys documentation: Why Use Host Authentication?](https://docs.qualys.com/en/vm/latest/authentication/authentication_lp.htm)
+- [Qualys documentation: About Qualys Cloud Agent](https://docs.qualys.com/en/ca/latest/about_qualys_ca.htm)
+- [Qualys documentation: VM/VMDR Glossary](https://docs.qualys.com/en/vm/latest/knowledgebase/glossary.htm)
+- [Qualys documentation: Severity Levels](https://docs.qualys.com/en/vm/latest/knowledgebase/severity_levels.htm)
+- [Qualys documentation: Measuring the Likelihood of Vulnerability Exploitation](https://docs.qualys.com/en/vm/latest/mergedProjects/risk_score/risk_score/measuring_likelihood_of_vulnerability_exploitation.htm)
+- [Qualys documentation: Calculating TruRisk Score (VMDR)](https://docs.qualys.com/en/vmdr/latest/threat/calculating_asset_risk_score.htm)
+- [Qualys documentation: Updated TruRisk Formula and TruRisk Calculation](https://docs.qualys.com/en/vm/latest/mergedProjects/prioritize_your_vulnerabilities/threat/updated_trurisk_formula.htm)
+`,
+  },
+  {
+    slug: "opentelemetry-collector-pipelines",
+    title: "The OpenTelemetry Collector and Its Pipelines",
+    date: "2026-11-21",
+    tags: ["monitoring", "networking", "linux"],
+    excerpt:
+      "How the OpenTelemetry Collector receives, processes and exports telemetry: components, per-signal pipelines, agent vs gateway, and processor order.",
+    coverImage: "/images/blog/opentelemetry-collector-pipelines-photo.jpg",
+    coverCredit: {
+      author: "Clem Rutter, Rochester, Kent",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Ashton_Canal_Bridge_of_pipes_5187.JPG",
+    },
+    content: `## A program in the middle of the telemetry path
+
+Instrumented software produces traces, metrics, and logs, and something has to carry them to a backend. The simplest option is for each application to send directly. The OpenTelemetry Collector is the other option: a separate program that sits in the middle, accepts telemetry, works on it, and forwards it.
+
+The OpenTelemetry documentation describes the Collector as a vendor-agnostic way to receive, process, and export telemetry data. In practice that means one process can accept data in several formats (OpenTelemetry's own protocol, Jaeger, [Prometheus](/blog/prometheus-server-monitoring), and others), clean or reshape it, and send it to one or more open source or commercial backends. The documentation adds that this removes the need to run and maintain several separate agents or collectors.
+
+This article covers the Collector's building blocks, pipelines, deployment patterns, processor ordering, default ports, and distributions, and ends with a small configuration checked against Collector version 0.165.0.
+
+Traces and context propagation are covered in [Distributed tracing explained](/blog/distributed-tracing-explained), and in-process instrumentation in [What an APM agent actually measures](/blog/what-an-apm-agent-actually-measures) (APM: application performance monitoring). This article starts after the telemetry has left the process.
+
+## When a Collector is worth running
+
+The Collector is optional. The project's own introduction says that for trying OpenTelemetry out, or in development and small environments, sending data directly to a backend is a reasonable way to get value quickly. In general, though, the documentation recommends running a Collector alongside services, because the service can hand off its data quickly while the Collector takes care of retries, batching, encryption, or filtering out sensitive fields.
+
+The OpenTelemetry Protocol (OTLP) exporters in the language software development kits (SDKs) assume a local Collector endpoint by default, so a Collector on the same host can start receiving without application changes.
+
+## The five kinds of component
+
+A Collector configuration file, written in YAML (YAML Ain't Markup Language), is built from components. The documentation groups them into four classes that touch telemetry inside pipelines, plus extensions that do not.
+
+### Receivers
+
+Receivers get data into the Collector. They can be push based (an application sends to a listening port) or pull based (the Collector scrapes or reads a source). The most common is the \`otlp\` receiver, which accepts OTLP over gRPC (an open source remote procedure call framework) and over HTTP (Hypertext Transfer Protocol). Other receivers read log files, scrape Prometheus endpoints, collect host metrics, or accept Jaeger and Zipkin formats. Every Collector configuration needs at least one receiver.
+
+### Processors
+
+Processors sit between receivers and exporters and change the data on its way through: filtering, dropping, renaming, sampling, adding attributes, or grouping data into batches. They are optional. The order in which processors are listed in a pipeline is the order in which they run, which turns out to matter a great deal (see the section on ordering below).
+
+### Exporters
+
+Exporters send data out of the Collector to a backend, a file, another Collector, or the console. As with receivers, there must be at least one. Most exporters need at least a destination and security settings such as Transport Layer Security (TLS) certificates or authentication.
+
+### Connectors
+
+A connector joins two pipelines. It acts as an exporter at the end of one pipeline and as a receiver at the start of another. The documentation's example is counting span events: a processor can filter spans inside a traces pipeline, but it cannot turn them into metrics for a metrics pipeline. A connector such as \`count\` can consume traces in one pipeline and emit metrics into another. Connectors can also replicate or route data. None are configured by default.
+
+### Extensions
+
+Extensions add capabilities that do not handle telemetry directly, such as health monitoring, service discovery, or authentication. The \`health_check\` extension, for example, publishes an HTTP status endpoint.
+
+## Configuring a component does not turn it on
+
+A central rule of Collector configuration is that defining a component and enabling it are separate steps. The top-level \`receivers\`, \`processors\`, \`exporters\`, \`connectors\`, and \`extensions\` sections only describe components and their settings. Nothing runs until the component is referenced in the \`service\` section.
+
+The documentation repeats this for every component class: if it is configured but not referenced under \`service\`, it is not enabled.
+
+### The service section
+
+The \`service\` section has three subsections:
+
+- \`extensions\`: a list of the extensions to start.
+- \`pipelines\`: the data paths, described next.
+- \`telemetry\`: settings for the Collector's own logs and metrics about itself.
+
+### One pipeline per signal
+
+Each entry under \`pipelines\` has a signal type as its key: \`traces\`, \`metrics\`, or \`logs\`. Each pipeline lists its \`receivers\`, its \`processors\` (in order), and its \`exporters\`. A pipeline only carries one signal type, so a Collector that handles all three signals normally declares three pipelines.
+
+Components are referenced by an identifier in the form \`type[/name]\`. The \`otlp\` receiver could appear twice in one file as \`otlp\` and \`otlp/2\`, each with its own settings, as long as the identifiers are unique. Pipelines use the same syntax, so a configuration can hold \`traces\` and \`traces/2\` side by side.
+
+The same receiver, processor, or exporter may appear in more than one pipeline. The documentation notes one subtlety: when a processor is referenced in several pipelines, each pipeline gets its own separate instance of that processor. A receiver shared by several pipelines, on the other hand, fans the same data out to all of them.
+
+## OTLP over gRPC and HTTP
+
+OTLP is OpenTelemetry's own wire protocol for all signals. The OTLP specification says the default network port for OTLP/gRPC is 4317 and the default network port for OTLP/HTTP is 4318.
+
+The Collector's \`otlp\` receiver supports both transports. Each is enabled by listing it under \`protocols\`, and a transport left out of the list is disabled. In version 0.165.0 the receiver's documentation gives the defaults as \`localhost:4317\` for gRPC and \`localhost:4318\` for HTTP. Over HTTP, data is posted to a path per signal, which defaults to \`/v1/traces\`, \`/v1/metrics\`, and \`/v1/logs\`, and the receiver also accepts OTLP's JSON (JavaScript Object Notation) encoding.
+
+The \`localhost\` default is deliberate. The configuration documentation notes that its own example configurations use the unspecified address \`0.0.0.0\` only as a convenience, that the Collector itself defaults to \`localhost\`, and that binding to \`localhost\` is generally preferable when all clients are local. It links to the project's guidance on safeguards against denial of service attacks for the reasoning. When senders run on other hosts or in other containers, a \`localhost\` bind cannot reach them, so a wider address is needed, and controlling who can reach the port becomes the operator's job.
+
+## Agent and gateway deployment patterns
+
+The Collector is a single binary; deployments differ in where it runs and what sends to it.
+
+### Agent pattern
+
+In the agent pattern, a Collector runs alongside the application or on the same host, for example as a sidecar container or as a Kubernetes DaemonSet (one copy per node). Applications instrumented with an SDK send OTLP to that nearby Collector, and the Collector forwards to one or more backends. The documentation lists its advantages as being straightforward to start with and giving a clear one-to-one mapping between an application and its Collector. The disadvantages it lists are limited scalability for teams and infrastructure, and inflexibility for complex or changing deployments.
+
+An agent on the host is also a natural place to run host-level receivers, such as the file log and host metrics receivers.
+
+### Gateway pattern
+
+In the gateway pattern, applications or other Collectors send to a single OTLP endpoint provided by one or more Collector instances running as a standalone service. The documentation says such an endpoint is typically provided per cluster, per data center, or per region. A standard load balancer can spread traffic across the gateway instances.
+
+Some processing needs related data to arrive at the same instance. Tail sampling is the standard example: a decision about a whole trace can only be made where all of its spans are collected (the tail sampling trade-offs are discussed in [Distributed tracing explained](/blog/distributed-tracing-explained)). For that case the documentation describes a two-tier setup. The first tier runs the load-balancing exporter, which can route by trace identifier, and the second tier runs the processors that need complete traces.
+
+### Combining them
+
+The patterns are not exclusive. The agent documentation lists other Collectors (using the OTLP exporter) as a source of data, and the gateway documentation lists applications or other Collectors, so an agent tier can forward to a gateway tier. Each added tier is one more network hop and one more service to operate.
+
+## The memory limiter and batch processors
+
+The processor overview in the core Collector repository lists two processors, \`memory_limiter\` and \`batch\`, and gives both a fixed place in its recommended order. Their position in the pipeline is part of how they work.
+
+### What memory_limiter does
+
+The memory limiter exists to prevent the Collector from running out of memory. It checks memory usage periodically and works with two thresholds:
+
+- The hard limit is set by \`limit_mib\` (or \`limit_percentage\` of available memory in a container).
+- The soft limit equals the hard limit minus \`spike_limit_mib\`. The documentation suggests about 20 percent of the hard limit as a starting value for the spike allowance.
+
+When usage passes the soft limit, the processor starts refusing data by returning an error to the component before it in the pipeline. That error is marked as temporary, and receivers are expected to retry and may push back on their own senders. When usage passes the hard limit, it also forces garbage collection (GC). Normal operation resumes once usage falls below the soft limit.
+
+The documentation is candid about the limits of this approach. Incoming data can use memory before the limiter gets a chance to reject it, especially with receivers other than OTLP. Data is lost if the component in front of the limiter does not retry after a refusal. The processor is described as a safeguard, not a substitute for sizing the Collector properly. The documentation also recommends setting the Go runtime's \`GOMEMLIMIT\` environment variable to 80 percent of the Collector's hard memory limit in addition to configuring the processor.
+
+### What batch does
+
+The batch processor groups spans, metric data points, or log records into batches before they move on. According to its documentation, batching compresses better and reduces the number of outgoing connections. A batch is sent when it reaches \`send_batch_size\` items (default 8192) or when \`timeout\` expires (default 200 milliseconds), whichever comes first. \`send_batch_max_size\` puts an upper bound on batch size and splits larger batches.
+
+### Why the order matters
+
+The core processor documentation gives a recommended order and the reason for each position:
+
+| Position | Processor | Reason given in the documentation |
+|---|---|---|
+| 1 | \`memory_limiter\` | Must be first so it can shed load before later processors build up data that cannot be flushed |
+| 2 | Sampling or filtering processors | Drop unwanted data early so it is not processed further |
+| 3 | Processors that read request context (for example \`k8sattributes\`) | Must run before batching, because batching clears the request context |
+| 4 | Transform or enrichment processors | Only enrich data that will actually be exported |
+| 5 | \`batch\` | Batch after filtering and transformation, so discarded or still-changing data is not batched |
+
+Putting \`memory_limiter\` first is what makes its backpressure useful. The memory limiter documentation says the first position ensures backpressure can be sent to the receivers and reduces the chance of dropped data. By the same logic, a limiter placed after \`batch\` would only act once the batch processor had already accepted and buffered the data.
+
+Putting \`batch\` late is about not wasting work. Batching spans that a sampler then throws away spends memory and processing time on data that never leaves. The context rule is less obvious: a batch combines data from many incoming requests, so per-request information is no longer attached afterward.
+
+### The batching story is changing
+
+Batching is also available inside exporters, through the exporter helper's \`sending_queue\` setting with a \`batch\` block. In version 0.165.0 it is off by default and enabled with \`batch: {}\`. The core processor documentation now says to prefer an exporter's own batching where available, and the agent pattern examples on opentelemetry.io use it.
+
+The core repository's changelog shows the direction. Version 0.158.0 added a queue and batch processor (named \`queuebatch\` at the time, renamed \`queue_batch\` in 0.162.0) described as a replacement for the legacy batch processor, built on the same queue and batch logic as exporters. Version 0.165.0 promoted it to beta for traces, metrics, and logs, and added a startup warning when a pipeline combines the batch processor with exporter batching. The batch processor is still present and still listed at beta stability in 0.165.0, so existing configurations keep working, but new configurations should pick one batching mechanism per pipeline, not both.
+
+## Distributions: core, contrib, and others
+
+A distribution is a particular set of components compiled into one binary. The project's releases repository currently lists six distributions: \`otelcol\` (core), \`otelcol-contrib\`, \`otelcol-k8s\`, \`otelcol-otlp\`, \`otelcol-prometheus\`, and \`otelcol-ebpf-profiler\`. (The last one relates to extended Berkeley Packet Filter profiling, introduced in [eBPF observability basics](/blog/ebpf-observability-basics).)
+
+### Core
+
+The core distribution contains the components from the main Collector repository plus a small selection of contrib components tied to open source projects, such as the file log, host metrics, Prometheus, Jaeger, Kafka, and Zipkin receivers, the health check and pprof extensions, and processors such as \`filter\`, \`transform\`, and \`attributes\`. Its README describes it as a "classic" distribution that no longer accepts new components from outside the core repository.
+
+### Contrib
+
+The contrib distribution includes all the components from both the core and contrib repositories, including vendor-supported ones. Its README recommends it as a good starting point for trying configurations, and recommends limiting a production Collector to only the components an environment needs, both to shrink the binary and to reduce the attack surface. The tool for building such a reduced binary is the OpenTelemetry Collector Builder (\`ocb\`).
+
+The practical consequence for configuration: a component name only works if the running distribution includes it. A configuration copied from contrib documentation can fail on a core binary because the component simply is not compiled in.
+
+## A small, valid configuration
+
+The configuration below targets Collector version 0.165.0 and uses only components included in the core \`otelcol\` distribution of that version. Each key and default was checked by reading that version's component READMEs, the memory limiter's configuration source file, the changelog, and the core distribution's manifest. The file was not run through the \`otelcol\` binary, so the \`validate\` command shown after it is the way to confirm it on a real install. The endpoint \`gateway.example.com\` is a placeholder, and the memory figures are illustrative rather than recommendations.
+
+\`\`\`yaml
+extensions:
+  health_check:
+    endpoint: localhost:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: localhost:4317
+      http:
+        endpoint: localhost:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 400
+    spike_limit_mib: 80
+  batch:
+    send_batch_size: 8192
+    timeout: 200ms
+
+exporters:
+  debug:
+    verbosity: basic
+  otlp_grpc:
+    endpoint: gateway.example.com:4317
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_grpc, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_grpc, debug]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]
+\`\`\`
+
+Notes on the example:
+
+- **Exporter names changed in 0.144.0.** The gRPC OTLP exporter is now \`otlp_grpc\` and the HTTP one is \`otlp_http\`. The old names \`otlp\` and \`otlphttp\` still load as deprecated aliases in 0.165.0, and the \`otlp_http\` README says the alias will be removed in a future version. Older tutorials use the old names. The receiver is still called \`otlp\`.
+- **TLS is on by default for the OTLP exporter.** The exporter documentation says it requires TLS by default. Sending to a plaintext endpoint needs \`tls: insecure: true\`, which is only appropriate on a trusted network.
+- **\`check_interval\` is not optional in practice.** Its documented default is \`0s\`, but the memory limiter's validation code (\`config.go\`) rejects any value that is not greater than zero, and the README recommends 1 second. One of \`limit_mib\` or \`limit_percentage\` must also be set.
+- **The logs pipeline exports only to \`debug\`.** Each pipeline chooses its own exporters, which is the main reason to keep pipelines separate per signal.
+
+The documentation describes a \`validate\` command for checking a file before starting the Collector:
+
+\`\`\`bash
+otelcol validate --config=config.yaml
+\`\`\`
+
+## Limits and common mistakes
+
+- **Defined but not wired in.** A component configured at the top level but missing from \`service\` silently does nothing.
+- **Processor order reversed.** \`batch\` before \`memory_limiter\`, or a sampler after \`batch\`, works but defeats the purpose of both.
+- **Two batching layers.** Combining the batch processor with exporter batching batches the same data twice. Version 0.165.0 warns about it at startup.
+- **Relying on the limiter alone.** The memory limiter refuses data; it does not size the Collector. Refused data is lost if the sender does not retry.
+
+## Sources
+
+- https://opentelemetry.io/docs/collector/
+- https://opentelemetry.io/docs/collector/configuration/
+- https://opentelemetry.io/docs/collector/deploy/agent/
+- https://opentelemetry.io/docs/collector/deploy/gateway/
+- https://opentelemetry.io/docs/collector/distributions/
+- https://opentelemetry.io/docs/specs/otlp/
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/processor/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/processor/batchprocessor/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/processor/memorylimiterprocessor/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/processor/queuebatchprocessor/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/receiver/otlpreceiver/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/exporter/otlpexporter/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/exporter/otlphttpexporter/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/exporter/debugexporter/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/exporter/exporterhelper/README.md
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/internal/memorylimiter/config.go
+- https://github.com/open-telemetry/opentelemetry-collector/blob/v0.165.0/CHANGELOG.md
+- https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.165.0/extension/healthcheckextension/README.md
+- https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/README.md
+- https://github.com/open-telemetry/opentelemetry-collector-releases/blob/v0.165.0/distributions/otelcol/manifest.yaml
+- https://github.com/open-telemetry/opentelemetry-collector-releases/blob/v0.165.0/distributions/otelcol/README.md
+- https://github.com/open-telemetry/opentelemetry-collector-releases/blob/v0.165.0/distributions/otelcol-contrib/README.md
+`,
+  },
+  {
+    slug: "oci-tenancy-structure-explained",
+    title: "How an Oracle Cloud (OCI) Tenancy Is Structured",
+    date: "2026-11-21",
+    tags: ["networking", "security", "operations", "learning"],
+    excerpt:
+      "Tenancy, compartments, regions, IAM policy verbs, identity domains and the VCN in Oracle Cloud, pinned to Oracle's current public documentation.",
+    coverImage: "/images/blog/oci-tenancy-structure-explained-photo.jpg",
+    coverCredit: {
+      author: "Wilfredor",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apartment_building_facade_with_window_air_conditioners_in_Rio_de_Janeiro,_Brazil.jpg",
+    },
+    content: `## One account, four layers
+
+Oracle Cloud Infrastructure (OCI) is Oracle's public cloud. Everything a customer builds in it sits inside four nested structures: an account boundary (the tenancy), a logical hierarchy for organizing and securing resources (compartments), a physical layout (regions, availability domains and fault domains), and a network (the virtual cloud network). Identity and Access Management (IAM) decides who may touch what in all of them.
+
+This explainer walks through each layer in the order a new tenancy presents them, and pins each statement to Oracle's public documentation as it read in November 2026. The text points out where two Oracle pages disagree. It is a reading of the documentation, not a report from a production tenancy.
+
+## The tenancy and the root compartment
+
+A tenancy is the account that Oracle provisions for a customer. Oracle's setup guide says that when a tenancy is provisioned a root compartment is created with it, and that the tenancy and the root compartment are the same thing. The guide compares it to the root folder of a file system.
+
+Two facts about a tenancy are fixed at sign-up.
+
+- **The home region.** Oracle creates the tenancy in one region, the home region, and the region documentation says it cannot be changed afterward. IAM resources are defined there. They are available in every other region the tenancy subscribes to, but edits are made in the home region and then propagated, which the documentation says can take up to several minutes.
+- **The realm.** Regions are grouped into realms. A tenancy exists in one realm and can reach only the regions in that realm. In the commercial table, 44 of the 45 regions carry the realm key OC1, and the Serbia Central (Jovanovac) region carries OC20.
+
+Subscribing to another region is a tenancy-level action, and the same page states that it cannot be reversed.
+
+Each tenancy starts with a group named Administrators and a policy that gives that group access to everything. The group and the policy cannot be deleted, and the group must always contain at least one user.
+
+## Compartments
+
+A compartment is a logical container for resources, not a network boundary or a physical location. Its two jobs are organization (the Console lists resources by compartment) and access control (policies name a compartment as their scope).
+
+The points that matter most, from Oracle's compartment documentation:
+
+- **Compartments span regions.** A compartment exists in every region the tenancy is subscribed to.
+- **They nest.** Compartments can be created inside other compartments, to a maximum of six levels. The documented maximum is 6,000 compartments per tenancy.
+- **Permissions flow downward.** A compartment inherits access permissions from the compartments above it. A policy that grants a group rights in a parent compartment also applies in the children.
+- **Every resource names a compartment at creation.** The compartment is a required input. Most resources can be moved later, and a whole compartment can be moved to a new parent with its contents.
+- **A new compartment is closed by default.** Until at least one policy is written for it, only administrators and users with tenancy-level permissions can reach it.
+- **Deleted compartments linger.** The documentation lists a 90-day retention period for deleted compartments.
+
+Oracle's setup guide recommends creating a sandbox compartment where users can experiment, while permissions on the root compartment stay tight, and suggests a dedicated administrators group for each project compartment.
+
+## Regions, availability domains and fault domains
+
+The physical layout has three levels.
+
+A **region** is a localized geographic area. An **availability domain** is one or more data centers inside a region. A **fault domain** is a grouping of hardware inside an availability domain. Each availability domain contains three fault domains, and Oracle describes their purpose as anti-affinity: instances in different fault domains do not share physical hardware, so a hardware failure in one does not affect the others.
+
+### Most regions have one availability domain
+
+This detail is easy to miss. On Oracle's regions page as read in November 2026, the table of commercial-realm regions had 45 rows, and only five of them listed three availability domains:
+
+| Region | Identifier | Availability domains |
+|---|---|---|
+| Germany Central (Frankfurt) | eu-frankfurt-1 | 3 |
+| UK South (London) | uk-london-1 | 3 |
+| US East (Ashburn) | us-ashburn-1 | 3 |
+| US Midwest (Chicago) | us-chicago-1 | 3 |
+| US West (Phoenix) | us-phoenix-1 | 3 |
+
+The other 40 listed one. The page explains that Oracle chose to launch regions in new geographies with a single availability domain in order to expand quickly. In those regions, fault domains are the only in-region separation available. The row count changes as Oracle adds regions, so treat 45 as a snapshot.
+
+### Availability domain names are per tenancy
+
+Oracle randomizes availability domains by tenancy to balance capacity. The data center that one tenancy sees as PHX-AD-1 may be a different one from another tenancy's PHX-AD-1. Names carry a tenancy-specific prefix for that reason, so two organizations cannot assume that matching names mean the same building.
+
+### What is scoped to what
+
+The regions page gives a rule of thumb: IAM resources are cross-region, database systems, compute instances and block volumes are specific to an availability domain, and nearly everything else is regional. A virtual cloud network is regional. A subnet can be either, as covered below.
+
+## IAM policies
+
+### The statement
+
+Access in OCI is granted by policy statements written in a fixed, readable form:
+
+\`\`\`
+Allow <subject> to <verb> <resource> in <location>
+Allow <subject> to <verb> <resource> in <location> where <conditions>
+\`\`\`
+
+The subject is usually a group. The location is either a compartment or the word \`tenancy\`. Three examples from Oracle's own documentation:
+
+\`\`\`
+Allow group NetworkAdmins to manage virtual-network-family in tenancy
+Allow group Auditors to inspect all-resources in tenancy
+Allow group ProjectA_Admins to manage all-resources in compartment ProjectA
+\`\`\`
+
+Names such as \`virtual-network-family\` and \`all-resources\` cover a set of related resource types with one word. Oracle's examples also use other subjects, including \`service\`, \`any-group\` and \`any-user\`.
+
+In a tenancy that uses identity domains (next section), the group is written with its domain name in front, as in \`Allow group <identity_domain_name>/<group_name> to ...\`. The syntax page says the prefix is needed unless the group is in the default identity domain.
+
+A policy is attached to a compartment or to the tenancy. Oracle's common policies page notes that where a policy is placed decides whether the administrators of individual compartments control its statements.
+
+### The four verbs
+
+The verbs are cumulative, from least access to most. Oracle's verbs page also names the kind of user each is meant for.
+
+| Verb | Intended user | What it covers |
+|---|---|---|
+| \`inspect\` | Third-party auditors | Listing resources, without confidential information or user-specified metadata |
+| \`read\` | Internal auditors | \`inspect\`, plus getting user-specified metadata and the resource itself |
+| \`use\` | Day-to-day users | \`read\`, plus working with existing resources; generally not creating or deleting them |
+| \`manage\` | Administrators | All permissions for the resource |
+
+The verbs page lists exceptions that matter for a least-privilege design.
+
+- \`inspect\` is not always harmless. Listing policies returns the contents of the policies, and the list operations for networking resource types return full contents, such as the rules in a security list and the routes in a route table.
+- \`use\` normally includes updating a resource, but not where an update has the same effect as a create. Updating a policy, a security list, a route table or a set of Dynamic Host Configuration Protocol (DHCP) options requires \`manage\`. So does attaching a dynamic routing gateway to a network and peering two networks.
+
+### Deny statements now exist
+
+Policy statements used to be allow-only, with no way to write an explicit denial. A release note dated November 20, 2025 introduced deny policies as an opt-in feature.
+
+According to the current deny policies page:
+
+- The feature is off by default, and only members of the default administrator group in the default domain can enable it.
+- Enabling it is permanent. It cannot be turned off afterward.
+- Deny statements take precedence over allow statements.
+- Members of the default administrator group in the default domain are always exempt.
+- The verb hierarchy runs the other way. Denying \`manage\` blocks management actions but leaves \`read\` alone if another policy grants it. Denying \`inspect\` blocks everything on that resource type.
+
+At the time of writing, Oracle's policy syntax page still said that policies only allow access and cannot deny it. The two pages have not been reconciled. The older sentence still fits a tenancy where the feature has never been enabled.
+
+## Identity domains and the older Identity Cloud Service
+
+An identity domain is the container that holds users, groups, sign-on settings, federation and application integrations. Oracle's documentation says each tenancy includes a Default identity domain in the root compartment, that this domain cannot be deactivated or deleted, and that it contains the initial administrator user and the Administrators group. Being an administrator of any other domain gives full control of that domain only, not of the tenancy.
+
+Domains come in types with different features and limits: Free, Oracle Apps, Oracle Apps Premium, Premium, External User and External Active User. The Free type is provisioned with a tenancy, with documented limits of 2,000 users and 250 groups.
+
+Identity domains replaced two older arrangements, which is why the documentation still splits into parallel sets:
+
+- **IAM without identity domains.** The original OCI model, with users and groups defined directly in the tenancy. Oracle keeps a separate set of pages for tenancies that have not been updated.
+- **Oracle Identity Cloud Service (IDCS).** A separate identity product with its own admin console. Its instances, which Oracle calls stripes, are migrated into IAM as identity domains.
+
+Oracle's getting-started page gives a simple test. If the Console navigation menu shows Domains under Identity & Security, the tenancy has been updated. If signing in lands on the IDCS admin console, the stripes have not been migrated yet.
+
+Tutorials written for either older model may not match a current tenancy, and the cleanup is still in progress: the IAM release notes for 2026 include a March entry announcing that managing IDCS federated resources in the OCI Console is being deprecated, and a May entry about retiring a legacy local user.
+
+## The virtual cloud network
+
+A virtual cloud network (VCN) is the private, software-defined network a tenancy creates to hold its resources. It lives in a single region. It covers one or more Classless Inter-Domain Routing (CIDR) blocks, each between /16 and /30 in size, and Oracle recommends the private ranges from Request for Comments (RFC) 1918. The blocks must not overlap each other or any connected network. For the arithmetic behind those prefix lengths, see the [practical subnetting guide](/blog/subnetting-practical-guide).
+
+A new VCN comes with three default components that cannot be deleted: a default route table, a default security list and a default set of DHCP options.
+
+### Subnets
+
+A subnet is a contiguous slice of the VCN's address space that does not overlap any other subnet. Two choices are made when it is created.
+
+- **Regional or specific to one availability domain.** Subnets were originally tied to one availability domain. They can now be regional, spanning all of them, and Oracle recommends regional subnets.
+- **Public or private.** In a private subnet, the virtual network interface cards (VNICs) cannot have public IPv4 addresses.
+
+Oracle reserves three addresses in each subnet: the first two and the last one. In 192.168.0.0/24 those are the network address, the default gateway at .1 and the broadcast address.
+
+### Route tables
+
+Route tables in a VCN exist to send traffic out of it. Traffic between subnets inside the same VCN is handled by implicit local routing and needs no rule. Each rule pairs a destination CIDR with a target, and the documented targets are a dynamic routing gateway, an internet gateway, a NAT gateway, a service gateway, a local peering gateway, or a private IP address. Overlapping rules are resolved by longest prefix match. Traffic bound for a destination outside the VCN that matches no rule is dropped.
+
+Each subnet uses exactly one route table. The documentation also describes per-resource routing, which associates a route table with a single VNIC or IP address so that workloads in one subnet can be routed differently.
+
+### Security lists and network security groups
+
+OCI has two ways to attach firewall rules to resources.
+
+| | Security list | Network security group (NSG) |
+|---|---|---|
+| Applies to | All VNICs in every subnet that uses the list | Only the VNICs added to the group |
+| Rule source or destination | A CIDR block | A CIDR block or another NSG |
+| Documented limit | Five security lists per subnet | Five NSGs per VNIC |
+| Default | Every VCN has a default security list | A VNIC joins an NSG only when added |
+
+Both use the same rule model. Rules only allow traffic, and without any rule no traffic is allowed in or out of a VNIC. Rules are stateful by default, meaning connection tracking permits the replies. A stateless rule needs a matching rule in the other direction for the reply.
+
+When a VNIC is covered by both mechanisms, the effective rule set is the union. A packet is allowed if any rule in any associated security list or any of the VNIC's groups allows it. A broad security list therefore defeats a narrow NSG on the same VNIC.
+
+Oracle recommends NSGs over security lists, because they separate the subnet layout from application security requirements, and states that it prioritizes NSGs when implementing future enhancements. General rule-writing principles are covered in [firewall policy design](/blog/firewall-policy-design).
+
+### Gateways
+
+A VCN has no path to anywhere until a gateway is added and a route rule points at it.
+
+- **Internet gateway.** An optional virtual router for direct internet access. In Oracle's example, instances behind it are given public IP addresses so they can also receive inbound connections.
+- **NAT gateway.** Network address translation (NAT) lets resources without public IP addresses start connections to the internet and receive the replies, while connections started from the internet are not accepted.
+- **Service gateway.** A private path from the VCN to supported Oracle services, such as Object Storage, in the Oracle Services Network. Oracle states that this traffic stays on its own network and never crosses the internet. It is regional, reaching only services in the same region as the VCN, and one per VCN is enough.
+- **Dynamic routing gateway (DRG).** A virtual router for private traffic between a VCN and other networks: on-premises sites over Site-to-Site VPN (a virtual private network built from Internet Protocol Security, or IPsec, tunnels) or FastConnect virtual circuits, other VCNs in the same region, and gateways in other regions or tenancies through remote peering connections.
+
+A fifth type, the local peering gateway, connects two VCNs in the same region.
+
+The DRG is the component that changed most. Oracle's DRG page says gateways created before spring 2021 run legacy software: no programmable route tables, attachment to a single VCN, and no transit routing. The page gives the cutoff as April 2021 in one note and May 17, 2021 in another. An upgraded DRG can attach many VCNs (each VCN attaches to only one DRG) and has its own route tables. Upgrading is one-way. A release note dated October 1, 2026 adds NAT for IPv4 addresses on the DRG. For background on IPsec, see [WireGuard versus IPsec tunnels](/blog/wireguard-vs-ipsec-tunnels).
+
+## Limits and common mistakes
+
+- **Treating a compartment as a network boundary.** A compartment controls who can manage a resource. It does nothing to packets.
+- **Granting \`inspect\` as a safe read-only role.** For policies and networking resources it exposes full contents.
+- **Enabling deny policies as an experiment.** The documentation says it cannot be undone.
+- **Following pre-domain tutorials.** Check for Domains in the Console before trusting a guide's menus.
+
+## Sources
+
+- [Oracle: Regions and Availability Domains](https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm)
+- [Oracle: Managing Regions (home region and subscriptions)](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/managingregions.htm)
+- [Oracle: Setting Up Your Tenancy](https://docs.oracle.com/en-us/iaas/Content/GSG/Concepts/settinguptenancy.htm)
+- [Oracle: Working with Compartments](https://docs.oracle.com/en-us/iaas/Content/Identity/compartments/Working_with_Compartments.htm)
+- [Oracle: Policy Syntax](https://docs.oracle.com/en-us/iaas/Content/Identity/policysyntax/policy-syntax.htm)
+- [Oracle: Verbs](https://docs.oracle.com/en-us/iaas/Content/Identity/policieshow/Verbs.htm)
+- [Oracle: Common Policies](https://docs.oracle.com/en-us/iaas/Content/Identity/Concepts/commonpolicies.htm)
+- [Oracle: Deny Policies](https://docs.oracle.com/en-us/iaas/Content/Identity/policysyntax/denypolicies.htm)
+- [Oracle: IAM with Identity Domains (overview)](https://docs.oracle.com/en-us/iaas/Content/Identity/home.htm)
+- [Oracle: Do You Have Access to Identity Domains?](https://docs.oracle.com/en-us/iaas/Content/Identity/getstarted/identity-domains.htm)
+- [Oracle: The Default Identity Domain](https://docs.oracle.com/en-us/iaas/Content/Identity/domains/the_default_domain.htm)
+- [Oracle: IAM Identity Domain Types](https://docs.oracle.com/en-us/iaas/Content/Identity/sku/overview.htm)
+- [Oracle: IAM release notes](https://docs.oracle.com/en-us/iaas/releasenotes/services/identity/)
+- [Oracle: Networking Overview](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm)
+- [Oracle: VCN Route Tables](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingroutetables.htm)
+- [Oracle: Security Rules](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm)
+- [Oracle: NAT Gateway](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/NATgateway.htm)
+- [Oracle: Access to Oracle Services: Service Gateway](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/servicegateway.htm)
+- [Oracle: Dynamic Routing Gateways](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDRGs.htm)
+- [Oracle: Networking release notes](https://docs.oracle.com/en-us/iaas/releasenotes/services/networking/)
+`,
+  },
+  {
+    slug: "siem-soar-edr-ndr-xdr-explained",
+    title: "SIEM, SOAR, EDR, NDR and XDR: what each one does",
+    date: "2026-11-21",
+    tags: ["security", "cybersecurity", "monitoring", "operations"],
+    excerpt:
+      "A neutral guide to SIEM, SOAR, EDR, NDR and XDR: what data each ingests, how detections are written, where automation should stop, and how they fail.",
+    coverImage: "/images/blog/siem-soar-edr-ndr-xdr-explained-photo.jpg",
+    coverCredit: {
+      author: "Tutkamestari",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Antenna_radar_L-band_TAR_Finland.JPG",
+    },
+    content: `## Five acronyms, three kinds of data
+
+Security operations job postings tend to list the same set of tools: a security information and event management (SIEM) platform, security orchestration, automation, and response (SOAR), endpoint detection and response (EDR), network detection and response (NDR), and extended detection and response (XDR). They are often presented as five competing products. They are better understood as answers to three separate questions:
+
+- What happened, according to the logs that systems already write? That is the SIEM's territory.
+- What happened on this particular computer, process by process? That is EDR.
+- What crossed the wire, and between whom? That is NDR.
+
+SOAR automates what analysts do with the answers. XDR is a label for products that merge several detection layers into one. This post covers each, the data it ingests, how detections are written, and how these systems fail.
+
+## SIEM: centralized logs plus correlation
+
+The National Institute of Standards and Technology (NIST) glossary defines a SIEM in one line, taken from NIST Special Publication (SP) 800-92: a program that provides centralized logging capabilities for a variety of log types. SP 800-92, the *Guide to Computer Security Log Management*, dates from September 2006, and its section on SIEM software is still one of the clearest neutral descriptions available. A revision, SP 800-92 Rev. 1 (*Cybersecurity Log Management Planning Guide*), was released as an initial public draft in October 2023 and was still listed as a draft when this was written.
+
+According to SP 800-92, a SIEM has one or more log servers that analyze logs and one or more database servers that store them. It collects logs in one of two ways:
+
+- **Agentless.** The SIEM server pulls logs from each host after authenticating to it, or the hosts push logs to the server. Filtering and normalization happen on the server.
+- **Agent-based.** A small program on each host filters, aggregates and normalizes one type of log, then forwards it in near real time.
+
+The tradeoff the guide describes is practical. Agentless collection means nothing to install and maintain on every machine, but without filtering at the host, far more data crosses the network, and the server may need credentials for every host it reads from.
+
+Once logs arrive, the SIEM does two things that a plain log archive does not. The first is **normalization**: converting each field to one consistent representation, so that a timestamp written as a twelve-hour clock with a named time zone in one product and a twenty-four-hour clock with a numeric offset in another become the same field. The second is **correlation**, which SP 800-92 defines as finding relationships between two or more log entries. The most common form is rule-based correlation, matching entries on values such as timestamps, IP addresses and event types; statistical methods are another option. When automated correlation succeeds, the result is usually a new event that brings the pieces together and may raise an alert.
+
+SP 800-92 also notes older names for parts of this market: security event management (SEM), focused on incident response, and security information management (SIM), focused on auditing.
+
+### What a SIEM ingests
+
+Almost anything that writes a log: operating systems, firewalls, authentication services, web and email servers, cloud audit trails, and, as SP 800-92 points out, even physical security devices such as badge readers. Most of that arrives as text over syslog or through vendor application programming interfaces (APIs). For the transport side, see [the syslog and centralized logging post](/blog/syslog-centralized-logging); for reading the results by hand, see [log analysis methodology](/blog/log-analysis-methodology).
+
+The key limit is that this kind of platform only knows what something else chose to log. If a workstation never records which process opened a network connection, there is nothing to correlate on.
+
+## EDR: telemetry from inside the host
+
+The term is usually credited to Gartner analyst Anton Chuvakin, who in 2013 named the category endpoint threat detection and response (ETDR). His original blog post on Gartner's site could not be retrieved for this article, but a Kaspersky white paper quotes his definition: tools primarily focused on detecting and investigating suspicious activities (and traces of) other problems on hosts and endpoints. The word "threat" was later dropped.
+
+The difference from a SIEM is the source of the data. An EDR product runs a sensor on each endpoint that records low-level activity directly, rather than relying on whatever the operating system or applications happened to log. The kinds of activity that matter are visible in MITRE ATT&CK's data source catalog, which lists, among others, Process (DS0009), Command (DS0017), File (DS0022), Logon Session (DS0028) and Network Traffic (DS0029). An EDR sensor collects host-side versions of these: which process started which child process, with what command line, which files it wrote, and which connections it opened.
+
+The "response" half matters as much as detection. EDR agents can typically isolate a host from the network or stop a process, which is why they appear in incident response guidance. NIST SP 800-61 Rev. 3 (April 2025) suggests organizations consider configuring security technologies to automatically perform some containment actions, giving as examples quarantining malware and moving a compromised endpoint to an isolated remediation network.
+
+The limit is coverage. EDR sees only machines where its agent runs. Network appliances, printers, many Internet of Things (IoT) devices, unmanaged laptops and plenty of servers cannot or do not run one.
+
+## NDR: watching the network itself
+
+NDR products analyze network traffic rather than host activity. In 2019 Gartner called this market network traffic analysis (NTA). In its 2020 Market Guide for Network Detection and Response, as quoted by Cisco, Gartner said it had renamed the market that year because the new term more accurately reflected what the products do. The guide itself could not be read directly for this article.
+
+The data is network metadata, and sometimes full packets. Open-source tools show what that metadata looks like. Zeek, a widely used network monitor, turns traffic into structured logs such as conn.log for connections, dns.log, http.log and ssl.log for Transport Layer Security (TLS) sessions. Each record captures who talked to whom, when, for how long, over which protocol, and protocol details such as the DNS query or the certificate presented. SP 800-61 Rev. 3 lists the same territory when it says monitoring should include wired and wireless networks, network flows, and network services such as DNS and the Border Gateway Protocol (BGP).
+
+Detection here is largely behavioral: unusual volumes, new destinations, periodic "beaconing" to the same external host, or lateral connections between internal machines that do not normally talk. NDR's strength is that it needs no agent and sees every device on a monitored segment, including the ones EDR cannot cover. Its weakness is encryption. When traffic is encrypted, the sensor sees the handshake and metadata, not the content.
+
+## How detections are actually written
+
+Across all three detection layers there are roughly three approaches, and most products mix them.
+
+**Rules and signatures.** A rule says "if a log entry matches these fields, alert." Sigma is a useful example because it is vendor-neutral: its documentation describes Sigma rules as YAML files containing the information needed to detect odd, bad or malicious behavior in log files, usually within the context of a SIEM. A Sigma rule is converted into the query language of whatever SIEM is in use. Rules are precise and explainable, but they only catch what someone anticipated.
+
+**Correlation.** Correlation joins events that are harmless alone. A single failed login means little; many failures across many accounts followed by one success from the same source is a pattern. SP 800-92's description of rule-based correlation, matching on timestamps, addresses and event types across sources, is exactly this. SP 800-61 Rev. 3 recommends using event correlation technology, naming SIEM and SOAR as examples, to gather related data captured by multiple sources, and using cyber threat intelligence (CTI) to help.
+
+**Behavioral and statistical detection.** Instead of a fixed pattern, the system learns a baseline and flags deviations: a user logging in at an unusual hour, a process that has never made outbound connections suddenly doing so. This catches novel activity but produces more ambiguous alerts that need human judgment.
+
+A practical way to organize detections is by adversary behavior. MITRE ATT&CK maps techniques to the data needed to see them, which is why home lab guides often pair ATT&CK with simulated attacks (the [SOC home lab build](/blog/soc-home-lab-build) does this). One current detail: ATT&CK's data source pages now carry a notice that data sources were deprecated in the v18 release in October 2025, with the pages kept for reference. Study material written before then may describe the older structure.
+
+## SOAR: automating the response workflow
+
+SOAR does not detect much on its own. It takes alerts from the SIEM and other tools and runs workflows on them. Carnegie Mellon's Software Engineering Institute (SEI), in a March 2021 blog post, quotes Gartner's definition: technologies that let organizations collect inputs monitored by the security operations team, with SIEM alerts as the example, and define incident analysis and response procedures in a digital workflow format. The SEI post says Gartner coined the term in 2015 and describes SOAR as combining security orchestration and automation, security incident response platforms, and threat intelligence platforms.
+
+The core object is the **playbook**. SP 800-61 Rev. 3 describes playbooks as actionable steps or tasks for people to perform in various scenarios. In a SOAR platform, many of those steps become automated actions. A typical phishing playbook might:
+
+1. Pull the reported email's headers, links and attachments.
+2. Look up the sender domain, URLs and file hashes against threat intelligence sources.
+3. Search mail logs for other recipients of the same message.
+4. Open a case with everything attached and assign it a priority.
+5. Offer an analyst buttons to delete the message from all mailboxes or block the sender.
+
+Steps 1 to 4 are enrichment: gathering facts no analyst should have to copy and paste. Step 5 is a decision.
+
+### Where automation should stop
+
+The line most guidance draws is between gathering information and taking disruptive action. SP 800-61 Rev. 3 is explicit on this: alongside its suggestion to consider automatic containment and eradication, it recommends allowing incident handlers to manually select and perform containment and eradication actions instead of, or in addition to, automated measures. It also recommends manual review of logs for technologies that cannot be monitored well through automation.
+
+Enrichment that runs on a false positive wastes some API calls. Automatic containment on a false positive can disable an executive's account or isolate a production database server. Common patterns are to fully automate low-impact, reversible actions on high-confidence alerts, and to require a human approval step for anything that disrupts users or systems.
+
+The SEI post also warns that the biggest misperception about SOAR is that it can replace security professionals. It calls SOAR a force multiplier that does not replace the human component, and notes that deploying, connecting and maintaining it is complex, requiring integrations with every tool it orchestrates.
+
+## XDR: an umbrella without a standard
+
+XDR is the easiest of the five to describe and the hardest to define. Palo Alto Networks says its chief technology officer and co-founder, Nir Zuk, coined the category in 2018; that is the company's own claim, not an independent finding. A December 2019 company blog post says the "X" in XDR is a variable that stands for "anything," and describes XDR products as platforms that take data from network, endpoint and cloud sensors and analyze it centrally.
+
+Unlike SIEM, which has a NIST glossary entry, XDR has no definition from a standards body that this article found. That is an observation from the sources read, not a cited finding. Two vendors quote Gartner's definition in slightly different words:
+
+| Source | Gartner's definition as that vendor quotes it |
+|---|---|
+| Google Cloud explainer | "a SaaS-based, vendor-specific, security threat detection and incident response tool that natively integrates multiple security products into a cohesive security operations system that unifies all licensed components" |
+| CrowdStrike explainer | "unified security incident detection and response platform that automatically collects and correlates data from multiple proprietary security components" |
+
+Both quotations stress one vendor's own components, which is the "native" view of XDR. Other vendors market "open" or "hybrid" XDR that ingests third-party tools, which overlaps heavily with what a SIEM already does. The originating vendor's own description ("anything") and the differing wording are why this article treats the term as describing a product strategy, the consolidation of EDR, NDR, cloud and identity data into one console, more than a precisely bounded technology. That reading is an inference, and vendors may disagree with it.
+
+For study purposes, a useful working description: XDR is usually EDR extended with other telemetry sources and built-in correlation and response, sold as one platform. When a job posting asks for XDR experience, it is worth checking which product it means.
+
+## Where they overlap
+
+The boundaries blur in practice:
+
+- **SIEM and XDR** both centralize and correlate data from multiple sources. The difference is mostly scope and openness: SIEMs are built to accept logs from many vendors and keep them for search and compliance; native XDR focuses on one vendor's sensors and on detection and response.
+- **SIEM and SOAR** are often sold together, and SP 800-61 Rev. 3 names both as examples of monitoring and correlation tools.
+- **EDR and NDR** both see network connections. EDR knows which process opened one; NDR sees devices that have no agent.
+- **EDR and SOAR** both take response actions. A SOAR playbook can call the EDR's API to isolate a host as one step in a larger workflow.
+
+## Failure modes
+
+**Alert fatigue.** Every rule that fires too often trains analysts to ignore it. The SEI post describes analysts facing ever-increasing numbers of alerts and false positives, with many alerts ignored because of resource constraints. SP 800-61 Rev. 3 recommends tuning monitoring to reduce false positives and false negatives to acceptable levels, which in practice means retiring or rewriting noisy rules rather than adding more.
+
+**Log gaps.** Detection is limited by collection. SP 800-92 identifies a high number of log sources, inconsistent content and formats, and growing volume as the core difficulties of log management. A source that stops sending, a logging policy that never enabled command-line capture, or a cloud service whose audit log was never connected all create blind spots that produce no alert at all. Monitoring for silence, sources that stopped reporting, is as important as monitoring for events.
+
+**Retention cost.** Storage scales with event volume multiplied by retention time, and SP 800-92 frames the basic problem as balancing limited log management resources against a continuous supply of log data. Long retention helps investigations that start weeks after a compromise and may be required by regulation, but every extra day multiplies storage and, for products priced by volume, licensing. Typical responses include filtering low-value events before ingestion, moving older data to cheaper storage tiers, and keeping searchable indexes for a shorter period than raw archives.
+
+**Parsing and normalization drift.** SP 800-92 notes there are no standards specific to SIEM, so each product stores data in its own format, and SIEMs rely on knowing which field in each source's log holds which value. When a vendor changes its log format in an update, a parser can quietly stop extracting a field. Rules that depend on that field stop matching, and nothing announces the failure. SP 800-92 also flags timestamps specifically: clocks out of sync across hosts can make events appear in the wrong order, which is why it recommends Network Time Protocol (NTP) synchronization.
+
+**Coverage assumptions.** Each tool has a blind spot: logs show only what is logged, EDR only hosts with agents, NDR only monitored segments and unencrypted content. More products do not close these gaps unless someone maps which data covers which technique.
+
+## Study notes
+
+- SIEM: centralized logs, normalization, correlation (NIST SP 800-92).
+- EDR: endpoint sensor telemetry plus host response (Gartner, 2013).
+- NDR: network metadata analysis, agentless (renamed from NTA, 2020).
+- SOAR: playbook automation over other tools' alerts (Gartner, 2015).
+- XDR: vendor-era umbrella (Palo Alto Networks says it coined the term in 2018), no standards-body definition found.
+- SP 800-61 Rev. 3 allows automated containment but keeps manual options for responders.
+
+## Sources
+
+- [NIST CSRC glossary: Security Information and Event Management](https://csrc.nist.gov/glossary/term/security_information_and_event_management)
+- [NIST SP 800-92, Guide to Computer Security Log Management (September 2006), publication page](https://csrc.nist.gov/pubs/sp/800/92/final)
+- [NIST SP 800-92 full text (PDF)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-92.pdf)
+- [NIST SP 800-92 Rev. 1 initial public draft (October 2023)](https://csrc.nist.gov/pubs/sp/800/92/r1/ipd)
+- [NIST SP 800-61 Rev. 3, Incident Response Recommendations and Considerations for Cybersecurity Risk Management (April 2025), publication page](https://csrc.nist.gov/pubs/sp/800/61/r3/final)
+- [NIST SP 800-61 Rev. 3 full text (PDF)](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r3.pdf)
+- [MITRE ATT&CK: Data Sources](https://attack.mitre.org/datasources/)
+- [MITRE ATT&CK: Process (DS0009)](https://attack.mitre.org/datasources/DS0009/)
+- [Kaspersky white paper quoting the 2013 Gartner ETDR definition (PDF)](https://media.kaspersky.com/en/business-security/enterprise/endpoint-detection-and-response-optimum-whitepaper.pdf)
+- [Cisco blog quoting the 2020 Gartner Market Guide for NDR](https://blogs.cisco.com/security/cisco-named-a-representative-vendor-in-the-gartner-market-guide-for-ndr)
+- [Carnegie Mellon SEI: Benefits and Challenges of SOAR Platforms (March 2021)](https://www.sei.cmu.edu/blog/benefits-and-challenges-of-soar-platforms/)
+- [Palo Alto Networks: What Is XDR? (December 2019)](https://www.paloaltonetworks.com/blog/2019/12/cortex-what-is-xdr)
+- [Google Cloud: What is XDR?](https://cloud.google.com/security/resources/insights/what-xdr)
+- [CrowdStrike: What is XDR?](https://www.crowdstrike.com/en-us/cybersecurity-101/what-is-xdr/)
+- [SigmaHQ documentation: Sigma Rules](https://sigmahq.io/docs/basics/rules.html)
+- [Zeek documentation: conn.log](https://docs.zeek.org/en/master/logs/conn.html)
+- [Zeek documentation: dns.log](https://docs.zeek.org/en/master/logs/dns.html)
+- [Zeek documentation: http.log](https://docs.zeek.org/en/master/logs/http.html)
+- [Zeek documentation: ssl.log](https://docs.zeek.org/en/master/logs/ssl.html)
+`,
+  },
+  {
+    slug: "databricks-deployment-structure-for-admins",
+    title: "How a Databricks Deployment Is Organized for Admins",
+    date: "2026-11-21",
+    tags: ["security", "operations", "learning"],
+    excerpt:
+      "A neutral map of Databricks accounts, workspaces, planes, Unity Catalog, identities, privileges and compute policies, as read in November 2026.",
+    coverImage: "/images/blog/databricks-deployment-structure-for-admins-photo.jpg",
+    coverCredit: {
+      author: "OKJaguar",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Perry_Lake_Park_boathouse,_Perry,_OK.jpg",
+    },
+    content: `## Four questions before any setting
+
+An administrator looking at a Databricks deployment for the first time is usually answering four questions at once. Where does the work run? Who is allowed in? What data can they touch? What are they allowed to spin up? Databricks documentation answers each with a different set of objects, and the objects sit at different levels. The rest of this article sorts the objects by level.
+
+This explainer is a neutral map of those levels, based on the public documentation at docs.databricks.com. The pages read were the Amazon Web Services edition. Azure and Google Cloud editions exist and were not compared here. Topics are the account and workspace levels, the control plane and compute plane, serverless and classic compute, Unity Catalog, identities and System for Cross-domain Identity Management (SCIM), privileges and ownership, and compute policies.
+
+Databricks renames features. The names below are the ones used on the pages read in November 2026, and a table near the end records where names differ. Treat every name as a snapshot, not a permanent label.
+
+## Account and workspace
+
+### The account
+
+The documentation defines a Databricks account as a single entity that can include multiple workspaces. Billing and support are handled at this level. Account-level configuration is managed by account admins through the account console. The account identifier is visible only in the account console, not inside a workspace.
+
+### The workspace
+
+A workspace is described as a Databricks deployment in the cloud: the environment where a team gets access to Databricks assets such as notebooks, jobs, queries, dashboards and compute. One account can contain several workspaces. The pages read do not prescribe how many to create or how to split them, so that remains a design decision for each organization.
+
+### What lives where
+
+The high-level architecture page places account-level management in the control plane: identity and access, workspaces, Unity Catalog metastores, and usage and billing. Workspace-level objects include notebooks, queries, dashboards, repos, libraries and small files (the page calls these workspace file system data), plus workspace system data such as query results, job run results and cluster logs.
+
+| Concern | Level | Who manages it |
+| --- | --- | --- |
+| Users, groups, service principals | Account (assigned to workspaces) | Account admin |
+| Metastore (Unity Catalog metadata) | Account, one per region | Account admin |
+| Workspace membership and settings | Workspace | Workspace admin |
+| Catalogs, schemas, tables | Metastore, visible through attached workspaces | Owners, holders of the manage privilege, metastore admins |
+| Compute policies | Workspace | Workspace admin |
+
+## Control plane and compute plane
+
+### Control plane
+
+The control plane is the set of backend services that Databricks manages in the Databricks account, not in the customer's cloud account. The web application lives there.
+
+### Compute plane
+
+The compute plane is where data is processed. There are two kinds.
+
+- **Classic compute plane.** Compute resources are created in the customer's cloud account, inside each workspace's virtual network. The machines therefore live in the customer's account and virtual network. The architecture documentation says this compute can be deployed in the customer's own virtual network with private connectivity to the control plane.
+- **Serverless compute plane.** Compute runs in a compute layer inside the Databricks account, in the same cloud region as the workspace's classic compute plane, within a network boundary for the workspace.
+
+### Where the data sits
+
+Processing in a compute plane does not mean the data lives there. Unity Catalog tables and volumes are described as separate from workspace storage. For classic workspaces, the documentation describes a workspace storage bucket in the customer's cloud account. It holds workspace system data, the default workspace catalog where one exists, and legacy Databricks File System (DBFS) data, and the page warns against deleting or modifying it. Serverless workspaces use a fully managed default storage location instead. The page calls storing data in the DBFS root or DBFS mounts a deprecated pattern.
+
+## Serverless versus classic compute
+
+Serverless compute is described as a Databricks-managed service that provides on-demand compute for notebooks, workflows and Lakeflow pipelines. Databricks allocates and manages the resources, and users run workloads without provisioning compute in their own cloud account. The documentation says it is available by default in most workspaces, and that legacy workspaces without Unity Catalog do not have access until they upgrade.
+
+Structured Query Language (SQL) warehouses have their own types: Classic, Pro and Serverless. The concepts page says Databricks recommends serverless warehouses where available.
+
+Classic compute is the opposite arrangement. The customer creates the compute, and the machines run in the customer's cloud account, in the workspace's virtual network. On classic compute, an access mode setting decides how the compute is shared. The compute configuration page lists Standard (multiple users with data isolation between them), Dedicated (assigned to a single user or group) and an Auto default that normally picks Standard. That page does not mention earlier names for these modes, so older articles that use other labels cannot be mapped to them from that page alone.
+
+For an administrator the difference changes two practical things:
+
+1. **Whose network.** Classic compute sits in a virtual network the customer controls. For serverless, the architecture page says firewalls on the customer's own resources can be configured to allow access from the serverless compute plane, and it lists serverless egress control as a feature.
+2. **Who configures it.** Classic compute is configured by the person creating it, within whatever compute policies allow (covered below). Serverless compute is versionless: workloads run on the latest runtime, and the overview page says changes roll out to all users over a short period.
+
+## Unity Catalog
+
+Unity Catalog is described as the unified governance layer for data and artificial intelligence (AI) built into Databricks. When enabled for a workspace, it governs access control, lineage and auditing. An open-source implementation also exists.
+
+### The metastore
+
+The metastore is the top-level container. The concepts page describes it as an account-level metastore that registers metadata about data, AI and permissions. Three rules matter for administrators.
+
+- **One per region.** The best practices page states that only one metastore per region is allowed and that all workspaces in that region share it.
+- **Attached to workspaces.** An account admin creates a metastore in the account console and selects workspaces to link. A regional metastore can be linked to any number of workspaces in that region, and users must work in a workspace attached to a metastore in their region.
+- **Automatic enablement.** The documentation says Databricks began enabling new workspaces for Unity Catalog automatically on November 8, 2023, with a gradual rollout across accounts. The create-metastore page does not say whether such a workspace gets a new metastore or an existing one.
+
+The user who creates a metastore is its owner, also called the metastore admin. Databricks recommends reassigning that role to a group, and the best practices page says the role is optional.
+
+### Catalog, schema, object
+
+Below the metastore sits a three-level namespace. Tables, views, volumes, functions and models are addressed as \`catalog.schema.object\`. Within the metastore, a catalog is the highest-level container for organizing and isolating data, and a schema (also known as a database) sits inside it.
+
+\`\`\`sql
+-- hypothetical names, for illustration only
+SELECT * FROM prod.sales.orders;
+\`\`\`
+
+Other securables sit directly under the metastore: storage credentials, external locations, connections and shares. Shares belong to the sharing feature that Databricks says Delta Sharing evolved into, now called OpenSharing (see the names table).
+
+Two design points come from the best practices page:
+
+- Catalogs are the primary unit of data isolation in the typical model. A catalog can be bound to a specific workspace when environments and data share the same isolation requirements. Metastores provide regional isolation but are not meant to be the default unit of data isolation.
+- Managed storage can be set at the metastore, catalog or schema level, and data goes to the lowest available location in the hierarchy. Tables and volumes can be managed (Unity Catalog handles governance and the storage lifecycle) or external (it handles governance only).
+
+## Identities: account first, then workspace
+
+### Three kinds of principal
+
+A user is an individual, identified by an email address. A group is a collection of identities. A service principal is an identity for jobs, automated tools and systems, identified by an application identifier. All three can be granted access, and all identities can be members of groups.
+
+### Account-level management and workspace assignment
+
+With identity federation, which is on by default for new workspaces, identities are managed centrally at the account level and assigned to workspaces. Assignment is what gives an identity access to a particular workspace. An account admin or a workspace admin can assign users, service principals or groups to a workspace.
+
+The roles have different reach:
+
+- Account admins can add, update and delete users, service principals and groups in the account, assign admin roles and grant workspace access.
+- Workspace admins can add identities to the account and grant access to their own workspaces, but cannot update or delete users or service principals in the account.
+- Group managers manage membership, and service principal managers manage roles on service principals.
+
+Legacy workspaces without identity federation are managed inside the workspace, and their groups are legacy workspace-local groups that are not added to the account.
+
+### Syncing from an identity provider
+
+The identity management page recommends automatic identity management, which supports Microsoft Entra ID and Okta. Where that is unavailable, the documented fallback is SCIM provisioning. Request for Comments (RFC) 7644 specifies SCIM as a protocol over the Hypertext Transfer Protocol (HTTP) that makes managing identities across domains easier through a standardized service. Databricks describes it as a way to use an identity provider to create users in Databricks and manage their access.
+
+The SCIM page makes these points:
+
+- Databricks recommends account-level SCIM provisioning. Workspace-level SCIM is described as a legacy configuration in Public Preview.
+- In the account console, an admin generates a SCIM token under the identity provider setup, then pastes the token and the account SCIM address (a Uniform Resource Locator, or URL) into the identity provider.
+- Syncing nested groups and Entra ID service principals is described as available through automatic identity management, not through SCIM provisioning.
+- When a token is rotated, the old one keeps working for 24 hours.
+- Migrating from workspace-level connectors: create the account-level connector and confirm it works before shutting down the old ones, and do not remove users from the old connectors first, since that deactivates them.
+
+Single sign-on (SSO) is separate from provisioning. SSO decides how people authenticate, and the documentation recommends configuring it.
+
+Provisioning, assignment and privileges answer different questions. Provisioning makes an identity exist. Assignment lets it into a workspace. Privileges decide what it can do with data.
+
+## Privileges and ownership
+
+### Deny by default
+
+The privileges page states that initially users have no access to data in a metastore. Access comes from grants, and grants are made on securable objects.
+
+### Inheritance and the usage privileges
+
+The permissions model page says that a privilege granted on a container object automatically applies to all current and future child objects. Its example is granting \`SELECT\` on a catalog, which allows users to read all tables in that catalog, given the appropriate usage privileges.
+
+Reading a table takes three grants working together: \`SELECT\` on the table (or inherited from above), \`USE SCHEMA\` on the parent schema, and \`USE CATALOG\` on the parent catalog. The usage privileges do not grant access to data by themselves.
+
+\`\`\`sql
+GRANT USE CATALOG ON CATALOG prod TO \`analysts\`;
+GRANT USE SCHEMA ON SCHEMA prod.sales TO \`analysts\`;
+GRANT SELECT ON SCHEMA prod.sales TO \`analysts\`;
+\`\`\`
+
+The names above are hypothetical. The general form shown in the docs is \`GRANT <privilege-type> ON <securable-type> <securable-name> TO <principal>\`, with \`REVOKE ... FROM\` and \`SHOW GRANTS\` as the companions.
+
+### The main privileges
+
+- \`SELECT\` queries data from a table or view.
+- \`MODIFY\` inserts, updates and deletes table data.
+- \`CREATE TABLE\` lets a user create a table or view in a schema.
+- \`EXECUTE\` invokes a function or loads a registered model.
+- \`READ VOLUME\` reads files in a volume.
+- \`MANAGE\` lets a user manage privileges on, transfer ownership of and delete an object without being the owner.
+- \`ALL PRIVILEGES\` covers every capability on the object and its children, but it does not include \`MANAGE\`, \`READ METADATA\`, \`EXTERNAL USE SCHEMA\` or \`EXTERNAL USE LOCATION\`. The page says this prevents accidental data exfiltration and privilege escalation.
+
+### Ownership
+
+The page says an object's owner has all privileges on that object, including the ability to grant privileges to other principals. The creator of an object is its first owner. Who can grant on an object: its owner, the owner of the catalog or schema that contains it, a holder of \`MANAGE\`, or a metastore admin.
+
+Databricks recommends assigning ownership of production catalogs and schemas to groups, not individual users. A likely reason (this article's inference, not a quoted rationale) is that a group outlives any one person's role.
+
+## Compute policies
+
+Compute policies limit a user's or group's compute creation permissions through a set of rules. The current documentation calls them compute policies. The page read sits under a classic compute policies heading, and serverless compute policies are covered on a separate page that was not read for this article. The URL path and some interface wording still say cluster, so both names are in circulation. The pages read did not state when the rename happened.
+
+What the page says they do:
+
+- Limit users to creating compute with prescribed settings, and limit how many resources a user can create.
+- Hide and fix some values so that more users can create their own compute.
+- Control cost by limiting attributes whose values affect the hourly price.
+- Enforce cluster-scoped library installation.
+
+Permissions work as follows. Workspace admins have permissions on all policies by default. Non-admin users must be granted permission on a policy to use it. A user with the unrestricted cluster creation entitlement also gets access to the Unrestricted policy, which allows fully configurable compute. Databricks-provided policy families are templates with pre-populated rules that a policy can inherit and extend.
+
+Policies also govern jobs compute. Enforcement there is immediate, while all-purpose compute can be deferred until its next restart.
+
+## Limits and common mistakes
+
+- **Granting \`SELECT\` and stopping there.** Without \`USE CATALOG\` and \`USE SCHEMA\` on the parents, the user still cannot reach the table.
+- **Treating \`ALL PRIVILEGES\` as everything.** It excludes \`MANAGE\` and several others by design.
+- **Editing workspace storage.** The documentation warns against deleting or modifying the workspace storage in the cloud account.
+- **Reading a successful revoke as proof.** A \`REVOKE\` statement succeeds even if the privilege was never granted, so verify with \`SHOW GRANTS\`.
+
+## Names as read in November 2026
+
+The table records what the pages read for this article said about names, and where they were silent. When an older runbook uses a term missing from the current docs, search the docs for the concept before assuming the feature is gone.
+
+| Name used on the pages read | Other name that may appear | What the pages say |
+| --- | --- | --- |
+| Compute plane | Data plane (not used on the pages read) | The pages use compute plane throughout and document no rename, so no history is claimed here. |
+| Compute policies | Cluster policies | The URL path and some interface wording still say cluster. The rename date is not stated. |
+| Git folder | Repos | The concepts page says the former name was Repos. |
+| OpenSharing | Delta Sharing | A Databricks blog post says Delta Sharing evolved into OpenSharing, announced June 10, 2026 with the Linux Foundation, and that existing Delta Sharing clients remain compatible. The docs page on creating a metastore already uses the OpenSharing name. |
+| Standard and Dedicated access modes | Not stated | The compute configuration page names no earlier labels. |
+
+## Study notes
+
+- Account: billing, identities, metastores. Workspace: where teams work.
+- Control plane: Databricks-run services. Compute plane: processing, classic (customer account) or serverless (Databricks account).
+- One metastore per region; catalog.schema.object.
+- Provision, assign, grant: three separate steps.
+
+## Sources
+
+- https://docs.databricks.com/aws/en/getting-started/concepts
+- https://docs.databricks.com/aws/en/getting-started/high-level-architecture
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/best-practices
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/create-metastore
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/manage-privileges/
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/manage-privileges/privileges
+- https://docs.databricks.com/aws/en/data-governance/unity-catalog/access-control/permissions-concepts
+- https://docs.databricks.com/aws/en/admin/users-groups/
+- https://docs.databricks.com/aws/en/admin/users-groups/scim/
+- https://docs.databricks.com/aws/en/admin/clusters/policies
+- https://docs.databricks.com/aws/en/compute/serverless/
+- https://docs.databricks.com/aws/en/security/network/concepts/architecture
+- https://docs.databricks.com/aws/en/admin/account-settings/
+- https://docs.databricks.com/aws/en/compute/configure
+- https://www.databricks.com/blog/delta-sharing-opensharing-what-changed-whats-next
+- https://www.rfc-editor.org/rfc/rfc7644
+`,
+  },
+  {
+    slug: "nutanix-cluster-architecture",
+    title: "How a Nutanix Hyperconverged Cluster Fits Together",
+    date: "2026-11-21",
+    tags: ["virtualization", "storage", "servers", "high-availability"],
+    excerpt:
+      "How Nutanix nodes, Controller VMs, AHV or ESXi, RF2/RF3 replication, data locality and Prism fit together, and what CVM and node failures do.",
+    coverImage: "/images/blog/nutanix-cluster-architecture-photo.jpg",
+    coverCredit: {
+      author: "I am R.",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Truck_day_2012_june_19_(38).jpg",
+    },
+    content: `## Why the storage controller moved into a VM
+
+A traditional virtualization stack has three tiers: servers that run virtual machines (VMs), a storage network, and a dedicated storage array with its own controllers. Hyperconverged infrastructure (HCI) collapses those tiers. Each server contributes its local drives, and software turns the drives of all servers into one shared pool.
+
+Nutanix's version of this idea has one design choice that explains most of its behavior: the storage controller is not a kernel module and not a separate appliance. It is an ordinary virtual machine, called the Controller VM (CVM), and one runs on every node. The CVM owns the node's drives, serves all storage input/output (I/O) for the VMs on that host, and talks to the CVMs on every other node to keep the data replicated.
+
+This explainer follows Nutanix's public documentation and the Nutanix Bible, the vendor's own architecture book at nutanixbible.com. Nutanix's core software, AOS (which the Bible glosses as the Nutanix core software that runs in every CVM), has changed a lot across releases, so where a behavior is tied to a release, the release is named. Numbers the Bible gives without a version come from the edition read for this article, whose pages carry a 2025 copyright line and name no release. Treat every such timer and threshold as version dependent.
+
+## Nodes, blocks and the cluster
+
+A node is one physical server: central processing units (CPUs), memory, network ports and local drives (solid-state drives, or SSDs, and in hybrid systems also hard disk drives, or HDDs). The Bible uses "block" for the chassis, which holds one, two or four nodes, and "rack" for a physical unit that holds one or more blocks.
+
+Every node runs two layers of software:
+
+- A hypervisor that runs the guest VMs. The Bible names ESXi (VMware), AHV (Nutanix's own) and Hyper-V (Microsoft). Which hypervisors a current AOS release supports was not checked for this article and depends on the release, so none is claimed here.
+- The CVM, which runs the Nutanix software and, in the Bible's words, serves all of the I/O operations for the hypervisor and every VM on that host.
+
+A cluster is a group of these nodes managed as one system. Adding a node adds compute, capacity and another storage controller at once, so background work such as rebuilds spreads across more controllers.
+
+### How the CVM gets the drives
+
+The CVM needs direct control of the drives, not virtual disks handed to it by the hypervisor. Nutanix does this with passthrough:
+
+- On AHV, the whole storage controller is handed to the CVM with PCI (Peripheral Component Interconnect) passthrough, so the CVM talks to the drives without the hypervisor in the way.
+- On ESXi, the same is done with VMware's VMDirectPath I/O.
+- On Hyper-V, the Bible says the storage devices are passed through to the CVM.
+
+The hypervisor then mounts storage back from its local CVM over the network stack inside the host. On ESXi, the Bible describes an internal virtual switch (vSwitchNutanix) where the host has the address 192.168.5.1 and the CVM has 192.168.5.2, and calls this the primary storage communication path. The main I/O service, Stargate, presents storage to the hypervisor over NFS (Network File System), iSCSI (Internet Small Computer Systems Interface) or SMB (Server Message Block), depending on the hypervisor.
+
+Nutanix lists mobility, resiliency, upgrades and performance as its reasons for a VM-based controller. The key consequence is that the CVM can reboot or fail while its host keeps running, with storage served by other CVMs; rolling AOS upgrades rely on this. The cost is the CPU and memory each node gives to its CVM. [Ceph](/blog/ceph-distributed-storage-intro) takes the opposite approach, running storage daemons directly on the host operating system.
+
+## What runs inside the CVM
+
+The CVM is a bundle of distributed services. Most run on every node and elect a leader for coordination work. The main ones in the Bible's component list:
+
+| Service | Role (paraphrased from the Nutanix Bible) |
+|---|---|
+| Stargate | All data I/O; the interface the hypervisor talks to. Runs on every node. |
+| Cassandra (accessed through Medusa) | Distributed key-value store for cluster metadata. |
+| Zookeeper (accessed through Zeus) | Cluster configuration: hosts, Internet Protocol (IP) addresses, state. Runs on three nodes with an elected leader. |
+| Curator | MapReduce-style background scans: rebuilds, disk balancing, scrubbing. Full scan about every 6 hours, partial scan every hour. |
+| Prism | The web interface, command-line interface and REST (Representational State Transfer) application programming interface. |
+| Cerebro | Snapshot scheduling and replication to remote sites. |
+
+On AHV clusters there is also Acropolis, which manages VMs. An Acropolis worker runs on every CVM and one elected Acropolis leader handles scheduling and, as covered below, restarting VMs after a host failure.
+
+## AHV versus ESXi on the same storage
+
+**AHV** is the Acropolis Hypervisor, Nutanix's own. The Bible describes it as based on Linux, QEMU (a machine emulator and virtualizer) and KVM (Kernel-based Virtual Machine). AOS drives it through libvirt and hides those details behind Prism. Networking uses Open vSwitch (OVS), with a separate internal Linux bridge carrying storage traffic between the CVM and the host. VM disks are reached over iSCSI. Each AHV host runs an iSCSI redirector that checks the health of every Stargate in the cluster and points QEMU at a healthy one, preferring the local CVM.
+
+AHV's disk path changed over releases. The original path ran through QEMU's single-threaded main loop; a lighter, multi-queue path called Frodo (also called AHV Turbo) replaced it. The Bible says Frodo is enabled by default on VMs powered on after AOS 5.5.X.
+
+**ESXi** on Nutanix keeps VMware's own management and networking. The CVM presents a container to the host as a datastore over the internal vSwitchNutanix path described earlier, and the Bible's tooling notes refer to an NFS adapter for that traffic. VM restarts after a host failure come from the hypervisor's own high availability (HA) feature rather than from Acropolis. A comparison of the hypervisors themselves, outside Nutanix, is in [Proxmox vs ESXi](/blog/proxmox-vs-esxi).
+
+The choice does not change how data is protected. It changes the management plane, VM restarts, networking and how a CVM outage is routed around.
+
+## The Distributed Storage Fabric
+
+The Distributed Storage Fabric (DSF) is Nutanix's name for the distributed storage layer formed by all the CVMs together. The Bible and Nutanix's French product page still use that name; the current English product page calls the same layer AOS Storage.
+
+### Storage constructs
+
+The drives from all nodes form a storage pool. Administrators carve containers out of that pool (a container is roughly what the hypervisor sees as a datastore or share), and settings such as the replication factor are set per container. Inside, each VM disk is a vDisk. The Bible describes a vDisk as made of extents, which are logically contiguous chunks of data, and those extents are stored in extent groups, which are physically contiguous files on the drives.
+
+### The write path
+
+When a VM writes, the request goes to Stargate on the local CVM. Stargate decides where the write lands:
+
+- **OpLog.** Bursty random writes go to the OpLog, a journal-like staging area on SSD that coalesces writes and drains them sequentially later.
+- **Extent Store.** Sustained random and sequential writes go straight to the Extent Store, the persistent bulk storage that spans all drive tiers. The Bible says a write stream counts as sequential when more than 1.5 MB of write I/O to a vDisk is outstanding.
+
+Data later moves between tiers under information lifecycle management (ILM), which promotes hot data and demotes cold data.
+
+### Replication factor 2 and 3
+
+Redundancy comes from the replication factor (RF), the number of copies of each piece of data the cluster keeps. When a write lands in the local OpLog, the Bible says it is synchronously replicated to the OpLog of one more CVM (RF2) or two more CVMs (RF3) before the write is acknowledged to the host. A checksum is computed as data is written and stored with its metadata, and every read recomputes the checksum. If a copy does not match, the system reads another replica and replaces the bad one. A background scrubber also checks extent groups when the drives are not busy.
+
+Replicas are not fixed mirror pairs: OpLog peers are chosen per 1 GB of vDisk data based on factors such as response time and capacity, so every node shares the load.
+
+Metadata has its own replication. Metadata lives in the Cassandra-based ring and is replicated with a majority vote enforced by the Paxos consensus algorithm. The Bible ties data RF and metadata RF together through a fault tolerance (FT) level:
+
+- **FT1:** data RF2, metadata RF3. The cluster tolerates one failure.
+- **FT2:** data RF3, metadata RF5. The cluster tolerates two failures.
+
+The Bible notes these FT levels as supported as of AOS 5.0, and its awareness table lists 5 nodes as the minimum for FT2 with node awareness, which fits metadata needing five copies.
+
+Two newer details, both from Nutanix's AOS 6 announcement:
+
+- **RF1 since AOS 6.** Before AOS 6, RF could only be 2 or 3. AOS 6 added containers with RF1, meaning no redundant copy, aimed at applications that protect their own data. Without a second copy, the cluster cannot rebuild that data after a failure, so RF1 is a deliberate exception.
+- **Reserve Rebuild Capacity.** AOS 6 also added a setting that reserves the capacity of the largest node, so that after a node failure there is room to rebuild back to full resiliency.
+
+A related idea is what the Bible calls resilient capacity: total capacity minus the space needed to rebuild after the tolerated failures. Past that line, a cluster may survive a failure but cannot restore full redundancy.
+
+### Block and rack awareness
+
+By default, the failure domain is the node, so replicas land on different nodes. With enough blocks (the Bible says at least 3 for block awareness), replicas are spread across blocks so a whole chassis can be lost. Rack awareness works the same way but requires the administrator to define racks.
+
+## Data locality
+
+Because each VM's I/O goes through its local CVM, Nutanix tries to keep a copy of each VM's data on that same node. Writes always land locally first, with replicas on other nodes. If a VM moves to another host (live migration or an HA restart), its old data is still on the previous node, so reads are forwarded over the network to the remote CVM at first.
+
+Locality then recovers in two ways:
+
+- **Cache locality.** Remote data is pulled into the local Stargate's Unified Cache at 4 KB granularity. This follows vDisk ownership, which moves to the new node's CVM. The Bible says the previous Stargate gives up the vDisk after it sees remote I/O for 300 or more seconds.
+- **Extent group locality.** The actual extent groups are migrated to the new node's drives, but only when access thresholds are met: per the Bible, 3 touches for random or 10 for sequential access within a 10-minute window.
+
+Migration happens only on reads, to avoid flooding the network.
+
+A related change applies to metadata: as of AOS 5.10, metadata is split into global and local parts (before that, all of it was global) to keep more lookups on the local node.
+
+## Prism Element versus Prism Central
+
+Prism is the management layer, and it comes in two forms:
+
+- **Prism Element (PE)** is built into every cluster. It manages one cluster. The Prism service runs on every CVM with an elected leader that handles web requests; other CVMs redirect browsers to the leader. The cluster's virtual IP address always sits on the current leader and moves to a newly elected one after a failure.
+- **Prism Central (PC)** is an optional VM appliance that manages many clusters from one place. It can run on one of the clusters it manages. Multi-cluster features live here, as do some newer features such as the disaster recovery dashboard added with AOS 6.0.
+
+The Bible recommends Prism Central for more than one cluster or site. Prism Central also has its own version numbers (Nutanix material cites releases such as PC 2020.9 and Prism Central 2023.3), so a feature may need both a minimum AOS and a minimum Prism Central release.
+
+## What a failure does
+
+The Bible describes three failure levels and their effect on VMs:
+
+| Failure | VM restart (HA event) | Failed I/O | Latency |
+|---|---|---|---|
+| Disk | No | No | No impact |
+| CVM | No | No | Potentially higher, since I/O crosses the network |
+| Node | Yes | No | No impact once restarted |
+
+### Disk failure
+
+When Stargate sees I/O errors or timeouts, it marks the disk offline, and a service called Hades runs S.M.A.R.T. (Self-Monitoring, Analysis and Reporting Technology) checks. A Curator scan starts immediately to find which data lived on that disk and where the other replicas are, then spreads the rebuild across all nodes. Rebuilds start at once rather than after a waiting period. Why rebuild speed matters for any redundant array of independent disks ([RAID](/blog/raid-levels-comparison)) or replicated system is covered in [RAID rebuild risk math](/blog/raid-rebuild-risk-math).
+
+### CVM failure
+
+A CVM can go down from a power-off, an upgrade reboot or a crash. The host and its VMs keep running. How I/O gets rerouted depends on the hypervisor:
+
+- **ESXi and Hyper-V:** a process the Bible calls CVM Autopathing, using a script named HA.py, changes routes on the host so traffic for the internal CVM address (192.168.5.2) goes to the external IP of a CVM on another node. The datastore stays mounted.
+- **AHV:** the iSCSI redirector notices the local Stargate stopped responding to its health checks and redirects QEMU's iSCSI login to a healthy Stargate elsewhere.
+
+In both cases, when the local CVM comes back and is stable, it takes over as the primary path again. The visible cost is extra network latency while I/O is remote.
+
+### Node failure
+
+When a node goes down, its VMs stop and HA restarts them on other nodes. On AHV, the Acropolis leader does this: when its libvirt connection to the host drops and does not come back within the timeout, it restarts that host's VMs elsewhere, and the Bible says this should happen within 120 seconds. AHV's optional Guarantee mode reserves room so all failed VMs fit; since AOS 5.0 it uses only segment-based reservation (earlier releases also offered host-based). On ESXi, the restart comes from VMware's HA rather than from Acropolis.
+
+Meanwhile Curator finds the replicas that lived on the dead node and the whole cluster rebuilds them. The Bible says that if the node stays down for a prolonged period (30 minutes), its CVM is removed from the metadata ring, and it is added back after it has been up and stable for a while. Once restarted, VMs do their I/O through their new local CVM, and data locality gradually moves their data to them.
+
+## Limits and common mistakes
+
+- **Running full.** Replication protects only if there is free space to rebuild into.
+- **Assuming RF3 or block awareness on a small cluster.** The Bible lists five nodes as the FT2 minimum with node awareness, and block awareness needs at least three blocks.
+- **Using rack awareness as a stretched cluster.** The Bible says spanning one cluster across two rooms or buildings with block or rack awareness is theoretically possible but not recommended, and points to synchronous or near-synchronous replication, optionally with a metro cluster, instead. AOS 6.0 added AHV Metro Availability for that purpose.
+- **Reading old numbers as current.** Timers and thresholds quoted here come from the Bible edition read, not a named release. Check the documentation for your AOS version.
+
+## Study notes
+
+- Each node runs a hypervisor plus one CVM, which owns the drives through passthrough and serves that host's storage I/O.
+- DSF (now marketed as AOS Storage) is the storage layer formed by all CVMs. Stargate does I/O, Cassandra holds metadata, Curator repairs.
+- A write is acknowledged only after it reaches one (RF2) or two (RF3) other CVMs. FT1 is data RF2 with metadata RF3; FT2 is data RF3 with metadata RF5.
+- Version markers: FT levels as of AOS 5.0, Frodo default after AOS 5.5.X, split metadata in AOS 5.10, RF1 and Reserve Rebuild Capacity in AOS 6.
+- Prism Element manages one cluster; Prism Central manages many.
+- Disk failure: rebuild, no VM impact. CVM failure: I/O reroutes, higher latency. Node failure: VMs restart elsewhere and data rebuilds.
+
+## Sources
+
+- [The Nutanix Cloud Bible: Hyperconverged Platform](https://www.nutanixbible.com/2c-book-of-basics-hyperconverged-platform.html)
+- [The Nutanix Cloud Bible: Distributed System](https://www.nutanixbible.com/2d-book-of-basics-distributed-system.html)
+- [The Nutanix Cloud Bible: Cluster Components](https://www.nutanixbible.com/2f-book-of-basics-cluster-components.html)
+- [The Nutanix Cloud Bible: AOS Architecture](https://www.nutanixbible.com/4a-book-of-aos-architecture.html)
+- [The Nutanix Cloud Bible: Data I/O Path](https://www.nutanixbible.com/4g-book-of-aos-data-io-path.html)
+- [The Nutanix Cloud Bible: Data Resilience and HA](https://www.nutanixbible.com/4i-book-of-aos-data-resilience-and-ha.html)
+- [The Nutanix Cloud Bible: AHV Architecture](https://www.nutanixbible.com/5a-book-of-ahv-architecture.html)
+- [The Nutanix Cloud Bible: How Nutanix AHV Works](https://www.nutanixbible.com/5b-book-of-ahv-how-it-works.html)
+- [The Nutanix Cloud Bible: VMware vSphere Architecture](https://www.nutanixbible.com/6a-book-of-vsphere-architecture.html)
+- [The Nutanix Cloud Bible: How vSphere on Nutanix Works](https://www.nutanixbible.com/6b-book-of-vsphere-how-it-works.html)
+- [The Nutanix Cloud Bible: Prism Architecture](https://www.nutanixbible.com/3a-book-of-prism-architecture.html)
+- [Nutanix blog: Announcing Nutanix AOS 6](https://www.nutanix.com/blog/announcing-aos-6)
+- [Nutanix product page: AOS Storage](https://www.nutanix.com/products/nutanix-cloud-infrastructure/distributed-storage)
+- [Nutanix product page (French): Distributed Storage Fabric](https://www.nutanix.com/fr/products/nutanix-cloud-infrastructure/distributed-storage)
+`,
+  },
+  {
     slug: "sase-explained",
     title: "SASE explained: an architecture, not a product",
     date: "2026-11-21",
@@ -4360,6 +5626,7 @@ Licensing changed on later servers. [Velocity Tech Solutions' license guide](htt
     slug: "ilo-6-vs-ilo-7",
     title: "iLO 6 vs iLO 7: Gen11 vs Gen12, Security and Licensing",
     date: "2026-10-17",
+    updated: "2026-11-21",
     tags: ["servers", "hardware", "security"],
     excerpt:
       "Gen11 servers run iLO 6 and Gen12 servers run iLO 7. Learn which generation gets each controller, how security and licensing differ, and what changes for management.",
@@ -4395,7 +5662,7 @@ iLO 6 firmware gained [TLS 1.3](/blog/tls-modern-encryption) support starting wi
 
 iLO 7 is the newer security design. [StorageReview](https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025) says iLO 7 was initially launched in February and "uses a dedicated security processor and a secure storage area, known as a secure enclave, to protect HPE ProLiant Gen12 servers from unauthorized access." [Techzine](https://www.techzine.eu/news/devices/128668/hpe-launches-proliant-gen12-servers-packed-with-security-and-ai-features/) describes the enclave as "an ASIC processor entirely focused on security," and says the new protection extends beyond today's threats to "attacks on the firmware of the servers themselves."
 
-Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security."
+Quantum resistance is the other headline feature. The Techzine article says HPE is qualified to make its quantum claim because of a FIPS 140-3 Level 3 certification, and quotes HPE's promise that "even a future quantum computer will not be able to crack the system." StorageReview says the iLO 7 update adds features designed to resist potential quantum computing threats, and Techzine's June 2025 coverage says HPE "integrates protection against future quantum computing attacks." In October 2025, it reported that the latest update supports longer encryption keys, up to 4096-bit RSA, "meeting federal standards for post-quantum security." Longer RSA keys are a classical-security improvement, not post-quantum protection: NIST lists RSA at every key size as quantum-vulnerable, and its post-quantum signature standards include ML-DSA and SLH-DSA.
 
 | Area | iLO 6 (Gen11) | iLO 7 (Gen12) |
 |---|---|---|
@@ -4448,7 +5715,7 @@ Key management is the other planned change. StorageReview reports that by 2026, 
 
 ## What this means
 
-Gen12 with iLO 7 is the choice when you need its secure enclave, the quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
+Gen12 with iLO 7 is the choice when you need its secure enclave, HPE's stated quantum-resistance features and 4096-bit RSA support. Gen11 with iLO 6 is the choice for Gen11 hardware and the iLO 6 features above, including TLS 1.3 from firmware 1.57. The controller follows the server generation, so an iLO 6 server does not become an iLO 7 server. If you already run Gen11, check the TLS 1.3 support from firmware 1.57 first. If you are buying Gen12, confirm the enclave and quantum-resistance features with HPE before you rely on them. For a fleet, buy Advanced only for the servers whose admins need the remote console, virtual media or directory integration, and leave the rest on Standard.
 
 Before you order, PC Server and Parts says HPE's QuickSpecs name the controller for each generation, so check the QuickSpecs entry for your exact model. Then check HPE's licensing documentation for the features that need a license, and price Advanced into any server you plan to manage remotely. Those vendor documents answer both questions.
 
@@ -4462,6 +5729,7 @@ Before you order, PC Server and Parts says HPE's QuickSpecs name the controller 
 - https://www.storagereview.com/news/hpe-sharpens-ilo-7-and-gen12-servers-at-ocp-2025
 - https://www.prodisknetwork.com/blog/hpe-ilo-licensing-explained-standard-vs-advanced
 - https://support.hpe.com/docs/display/public/ilo-license/index.html
+- https://csrc.nist.gov/pubs/ir/8547/final
 - https://commons.wikimedia.org/wiki/File:HPE_ProLiant_DL360_Gen10_nodes_in_MAM_cluster.jpg
 - https://commons.wikimedia.org/wiki/File:HP_ProLiant_DL360_and_two_DL380.jpg
 `,
@@ -7778,6 +9046,7 @@ If you already own a 4,1, flash it only for six-core CPUs, 1333MHz memory, NVMe 
     slug: "mac-pro-6-1-latest-os",
     title: "Mac Pro 6,1 Latest macOS: Monterey Officially, Sequoia With OCLP",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["mac-pro", "apple", "security", "hardware"],
     excerpt:
       "The 2013 Mac Pro officially tops out at macOS Monterey 12.7.6, last patched July 29, 2024. See what OpenCore Legacy Patcher adds after it, what breaks, and what to run.",
@@ -7801,7 +9070,7 @@ macOS 27 Golden Gate is the current release, and [Apple's compatibility page](ht
 
 ## Does the 2013 Mac Pro still get security updates?
 
-No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as September 28, 2026.
+No. [Apple's security releases list](https://support.apple.com/en-us/100100) shows macOS Monterey 12.7.6 on July 29, 2024 as the newest Monterey entry, and Safari 17.6 the same day as the last Safari for Monterey. Apple kept patching newer releases: Ventura through 13.7.8 on August 20, 2025, Sonoma through 14.8.9 on August 6, 2026, and Sequoia, Tahoe and Golden Gate as recently as November 9, 2026.
 
 <figure>
 <img src="/images/blog/mac-pro-6-1-latest-os/home-setting.jpg" alt="A black cylindrical 2013 Mac Pro on a patterned rug with HDMI and power cables in its rear panel" width="1200" height="1100" loading="lazy" decoding="async">
@@ -7827,9 +9096,9 @@ The docs pages for [Ventura](https://dortania.github.io/OpenCore-Legacy-Patcher/
 | Monterey 12 | Official | 12.7.6, July 29, 2024 |
 | Ventura 13 | OCLP 0.5.1 and newer | 13.7.8, August 20, 2025 |
 | Sonoma 14 | OCLP 1.0.0 and newer | 14.8.9, August 6, 2026 |
-| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.1, September 28, 2026 |
-| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.1, September 28, 2026 |
-| Golden Gate 27 | Not possible, Apple silicon only | 27.0.1, September 28, 2026 |
+| Sequoia 15 | OCLP 2.0.0 and newer | 15.8.3, November 9, 2026 |
+| Tahoe 26 | OCLP 3.0.0 pre-release only | 26.7.3, November 9, 2026 |
+| Golden Gate 27 | Not possible, Apple silicon only | 27.2.1, November 9, 2026 |
 
 Tahoe is where the project's signals conflict. The [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says OCLP "officially supports patching to run macOS Big Sur through Tahoe installs," yet its feature list stops at Sequoia. The Tahoe work ships only in [OCLP 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), whose changelog says "Implement macOS Tahoe support" and whose warning reads "Expect issues resulting in instability, system crashes, and potential data loss." Neither the release notes nor the docs say whether the 6,1's GPUs are covered on Tahoe.
 
@@ -7877,7 +9146,7 @@ Linux runs on it too. [Phoronix reported](https://www.phoronix.com/news/Linux-6.
 | Use case | Run | Why | Watch for |
 |---|---|---|---|
 | Isolated workstation or fixed-function rig (audio, video, legacy apps) | Monterey 12.7.6 | Apple supports it, native GPU drivers, no root patches | No security fixes since July 29, 2024 |
-| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.1, September 28, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
+| Daily browsing, email, banking | A supported Mac; if it must be this one, Sequoia with OCLP | Sequoia still gets Apple updates (15.8.3, November 9, 2026) | Lowered SIP, repatching after updates, Chrome glitches |
 | Headless homelab node | Monterey on its own VLAN, or Linux | No GPU patching to maintain | Linux GPU setup on older kernels |
 | Windows-only software | Windows 10 through Boot Camp | The only Windows Apple supports on it | Out of support since October 14, 2025 |
 | Newest macOS features | Not this Mac | OCLP's Tahoe support is a pre-release with no 6,1 statement | Wait for a stable 3.0.0 |
@@ -8676,6 +9945,7 @@ Fit a Metal-capable graphics card first, because Mojave requires one and later v
     slug: "opencore-legacy-patcher-tahoe",
     title: "OpenCore Legacy Patcher and macOS Tahoe: What Works in 2026",
     date: "2026-10-05",
+    updated: "2026-11-21",
     tags: ["apple", "tools", "hardware", "troubleshooting"],
     excerpt:
       "OCLP 3.0.0 release candidates add macOS Tahoe support, but only as pre-releases. See which Macs work, what breaks, how to update safely and what macOS 27 means.",
@@ -8689,7 +9959,7 @@ Fit a Metal-capable graphics card first, because Mojave requires one and later v
     content: `
 ## The short answer
 
-OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
+OpenCore Legacy Patcher (OCLP) supports macOS Tahoe 26 only as a pre-release: [3.0.0-rc.1 and 3.0.0-rc.2](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.2), both published on October 4, 2026, and later candidates through [3.0.0-rc.5](https://github.com/dortania/OpenCore-Legacy-Patcher/releases/tag/3.0.0-rc.5) on October 28, 2026, which the project warns can cause "instability, system crashes, and potential data loss." The latest stable release, 2.5.1 (September 19, 2026), stops at macOS Sequoia 15, and OCLP has no plans to support macOS 27 Golden Gate, which dropped every Intel Mac. The project has published no list of Macs tested on Tahoe, and the T2 Macs that Tahoe dropped have no published working path. For an unsupported Mac you depend on, stay on Sequoia or older and try Tahoe on a spare disk.
 
 ## Does OpenCore Legacy Patcher support macOS Tahoe?
 
@@ -8701,10 +9971,12 @@ The documentation has not caught up. The [README](https://raw.githubusercontent.
 
 ## What is the latest OpenCore Legacy Patcher version?
 
-The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.2 pre-release. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
+The latest stable version is 2.5.1, and the newest build is the 3.0.0-rc.5 pre-release. The source analysis below is of rc.2. Dates come from the project's [tags page](https://github.com/dortania/OpenCore-Legacy-Patcher/tags).
 
 | Version | Published | Status | macOS range in its source |
 | :--- | :--- | :--- | :--- |
+| 3.0.0-rc.5 | October 28, 2026 | Pre-release | Big Sur through Tahoe |
+| 3.0.0-rc.3 | October 8, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.2 | October 4, 2026 | Pre-release | Big Sur through Tahoe |
 | 3.0.0-rc.1 | October 4, 2026 | Pre-release | Tahoe only with a developer file |
 | 2.5.1 | September 19, 2026 | Latest stable | [Big Sur through Sequoia](https://raw.githubusercontent.com/dortania/OpenCore-Legacy-Patcher/2.5.1/opencore_legacy_patcher/sys_patch/patchsets/detect.py) |
@@ -15279,6 +16551,7 @@ each.
     slug: "commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit",
     title: "CommitLimit Is Half the Memory, and It Is Not a Memory Limit",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "troubleshooting", "performance"],
     excerpt:
       "vm.overcommit_ratio defaults to 50 and applies to RAM alone, so a host with no swap has a CommitLimit of half its memory. In the default mode nothing reads that number. Set vm.overcommit_memory to 2 to stop the OOM killer and it becomes a wall that refuses a 5 GiB allocation with 13.92 GiB free. Measured on one machine, including the page arithmetic that makes the obvious formula two kilobytes wrong.",
@@ -15411,8 +16684,9 @@ This is the part that makes mode 2 a bad answer to the question people ask it.
 
 The killer runs when physical memory is exhausted. Strict accounting governs
 *promises*, and the two come apart in at least three ways: reservations are
-counted rather than pages touched, page cache and shared pages are not in
-\`Committed_AS\` at all, and a ratio above 100 hands out more than exists.
+counted rather than pages touched, page cache and file-backed shared mappings
+are not in \`Committed_AS\` at all (anonymous shared memory is counted at its
+full size), and a ratio above 100 hands out more than exists.
 
 Mode 2 changes when an allocation is refused. It does not change what happens
 when the pages are finally written to.
@@ -15657,6 +16931,7 @@ each.
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
       "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
@@ -15765,11 +17040,14 @@ which one applies depends on nothing but whether a line of code exists.
 While we are here, they are three behaviors and not one limit with two
 warnings:
 
-- **Below the first**, the kernel does not do the global accounting at all.
-  A zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means you are
-  under this mark, not that accounting is broken. Measured on a quiet box: 42
-  established connections, \`TCP: ... mem 0\`.
-- **Between the first and second**, it charges normally.
+- **Below the first**, TCP is not bothered about its memory use. The global
+  counter is still updated on every allocation; nothing throttles on it. A
+  zero in \`sockstat\`'s \`mem\` column on a lightly loaded host means almost no
+  socket buffer memory is charged at that moment, not that accounting is
+  broken. Measured on a quiet box: 42 established connections,
+  \`TCP: ... mem 0\`.
+- **Between the first and second**, nothing changes yet, except that TCP
+  already in the pressure state stays there until usage falls below the first.
 - **Past the second**, it enters the pressure state and begins *shrinking per
   socket buffers*. This is the interesting one, because it shows up as
   throughput falling on every connection at once and as an error nowhere.
@@ -16436,6 +17714,7 @@ to fill a default table.
     slug: "tcp-retries2-is-not-a-count",
     title: "tcp_retries2 Is Not a Count",
     date: "2026-09-19",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "troubleshooting", "operations"],
     excerpt:
       "tcp(7) calls tcp_retries2 the maximum number of times a packet is retransmitted before giving up, and says the duration depends on the retransmission timeout. The kernel never counts a retransmission, and the duration does not depend on the path: retransmits_timed_out turns the number into a time budget modeled from TCP_RTO_MIN, so the default is 924.6 seconds on every Linux host. Measured on a real kernel, tcp_retries2 at 5 aborts after 13.25 seconds having sent 6 segments, one more than the sysctl names, and a slow path gets fewer attempts in the same time rather than more.",
@@ -16538,10 +17817,13 @@ is 9. At the default boundary of 15 the second branch applies:
 \`\`\`
 
 **924.6 seconds.** Fifteen minutes and twenty-five seconds, on every Linux host
-in the world, whatever the path, whatever the round trip time, whatever the
-connection's measured RTO. The "13 to 30 minutes, depending on the
-retransmission timeout" in the manual page describes a dependency the code does
-not have.
+that keeps the default 120 second maximum RTO, whatever the path, whatever the
+round trip time, whatever the connection's measured RTO. Since Linux 6.15 that
+maximum is tunable with the \`net.ipv4.tcp_rto_max_ms\` sysctl and the
+\`TCP_RTO_MAX_MS\` socket option, which is why the function calls
+\`tcp_rto_max(sk)\`; lower it and the budget shrinks with it. The "13 to 30
+minutes, depending on the retransmission timeout" in the manual page describes
+a dependency the code does not have.
 
 ## Measuring it
 
@@ -20442,6 +21724,7 @@ You can trace ten of these, including the ones where every rule is correct, at
     slug: "minus-one-thousand-is-not-a-hint",
     title: "oom_score_adj Explained: Why -1000 Is Not Just a Low Score",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "kernel"],
     excerpt:
       "oom_score_adj reads like a nudge and it is a quantity of memory. On a 16 GiB host one point is worth 16.4 MiB, so an adj of 200 adds 3.2 GiB to a process score and -800 subtracts 12.8 GiB. And -1000 is not the bottom of the scale, it is a different code path: set it on every unit and the kernel has no candidate, so a lost process becomes a lost machine.",
@@ -20608,10 +21891,10 @@ change. What it is a proportion of did.
 
 Tell them apart before you investigate, because they lead to opposite
 conclusions. A memcg kill names the cgroup in the dump, and
-\`memory.events\` counts them:
+\`memory.events.local\` counts them:
 
 \`\`\`
-$ cat /sys/fs/cgroup/system.slice/app.service/memory.events
+$ cat /sys/fs/cgroup/system.slice/app.service/memory.events.local
 low 0
 high 4213
 max 981
@@ -20619,9 +21902,16 @@ oom 12
 oom_kill 12
 \`\`\`
 
-If \`oom_kill\` there is climbing, the machine was never full and the answer is a
-limit that is too low or a service that leaks. If it is flat and processes are
-dying anyway, the host is oversubscribed.
+If \`oom\` and \`max\` are climbing along with \`oom_kill\`, the cgroup hit its own
+limit, the machine was never full, and the answer is a limit that is too low or
+a service that leaks. \`oom_kill\` counts kills by any OOM killer, so if it rises
+while \`oom\` and \`max\` stay flat, the limit that was hit belongs to another
+cgroup or to the whole machine. The counters can also split across a hierarchy,
+because the cgroup whose limit fired and the cgroup the victim lived in are
+charged separately. When that matters, let the kernel's own line decide: the
+\`oom-kill:\` message names \`constraint=\` (\`CONSTRAINT_MEMCG\` for a cgroup limit,
+\`CONSTRAINT_NONE\` for a system-wide OOM), \`oom_memcg=\` (the cgroup whose limit
+was hit) and \`task_memcg=\` (the cgroup the victim was in).
 
 ## What memory.oom.group changes
 
@@ -20670,7 +21960,7 @@ grep -E "VmRSS|VmSwap|VmPTE" /proc/PID/status
 Three of the four terms, none of which is in \`top\`'s default columns.
 
 \`\`\`
-cat /sys/fs/cgroup/<path>/memory.events
+cat /sys/fs/cgroup/<path>/memory.events.local
 \`\`\`
 
 Which OOM you actually had.
@@ -21869,6 +23159,7 @@ one where the shell was telling the truth, at
     slug: "the-free-column-was-always-going-to-be-zero",
     title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
+    updated: "2026-11-21",
     tags: ["linux", "operations", "monitoring"],
     excerpt:
       "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
@@ -21981,15 +23272,21 @@ promise, read \`Dirty\` and \`Writeback\` next to it.
 
 ## The used column is a residue
 
-\`free\` computes used as total minus free minus buff/cache. Nothing tracks it
-and nothing chose it: it is what is left over after the cache, so it moves
-whenever the cache moves, which is constantly.
+\`free\` before procps-ng 4.0.1 computes used as total minus free minus
+buff/cache, which is the formula the output above adds up under. Nothing
+tracks it and nothing chose it: it is what is left over after the cache, so it
+moves whenever the cache moves, which is constantly.
 
 Two readings of the same server ten minutes apart, nothing deployed and no
 process started or stopped, and the used column goes from 2.6 GiB to 8.5 GiB.
 What happened is that something read a large file and displaced 6 GiB of cache.
 Not one byte of anonymous memory was allocated. It is the column people
 screenshot and it has the least meaning in the output.
+
+Since procps-ng 4.0.1, \`free\` computes used as total minus available instead.
+That follows the kernel's MemAvailable estimate rather than the raw cache size,
+so it is steadier, but it is still derived rather than a count of what programs
+hold.
 
 For what programs are actually holding:
 
@@ -23022,6 +24319,7 @@ device](/space).
     slug: "the-clock-is-the-last-thing-anybody-checks",
     title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
+    updated: "2026-11-21",
     tags: ["security", "operations", "networking"],
     excerpt:
       "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
@@ -23090,7 +24388,10 @@ part I got wrong in my own prose, which I will come back to.
 
 Across these cases, the checks that tolerate anything at all allow 300 seconds
 and 30 seconds. A certificate's notBefore and an RRSIG's inception allow
-nothing: the edge is an edge.
+nothing in the specifications: the edge is an edge. Validators can add their
+own slack, though. Unbound by default forgives 10% of a signature's lifetime,
+clamped between one hour and a day, so check the resolver's skew settings
+before reading a [DNSSEC](/blog/dns-security-dnssec) failure as a hard edge.
 
 \`\`\`
 Kerberos, default clockskew      300 s
@@ -26316,6 +27617,7 @@ step in the table is that argument winning again.
     slug: "post-quantum-tls-handshake-bytes",
     title: "Post-Quantum TLS Handshake Size: What X25519MLKEM768 Adds",
     date: "2026-09-05",
+    updated: "2026-11-21",
     tags: ["security", "networking", "cybersecurity"],
     excerpt:
       "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
@@ -26375,10 +27677,10 @@ flaw in it, if there is one, has had about two years to run. X25519 has had
 twenty.
 
 So a hybrid derives its secret from both, and an attacker has to break both to
-recover it. RFC 9954, published a month earlier as Informational, is the
-document that lays out that reasoning and the security properties a hybrid has
-to preserve. Reading them in the other order, 9954 then 10024, is the right
-way round: one is why, the other is exactly what.
+recover it. RFC 9954, published a month earlier as Informational, defines the
+general hybrid construction for TLS 1.3 and lays out that reasoning and the
+goals a hybrid has to meet. Reading them in the other order, 9954 then 10024,
+is the right way round: one is why and how, the other is exactly what.
 
 There is a second reason, less discussed and just as real. Harvest now, decrypt
 later is not a hypothetical for anything with a long confidentiality life. A
@@ -26395,9 +27697,10 @@ and the failure mode was not slowness, it was connections that did not
 complete at all. Middleboxes, load balancers and TLS-terminating proxies had
 been written on the assumption that a ClientHello arrives in one packet,
 because for twenty years it always had. Feed them one that spans two and some
-of them simply stop. Their measurements found breakage clustering around 10kB
-and 30kB, thresholds that correspond to nothing in the protocol and everything
-in somebody's buffer.
+of them simply stop. In a separate test of inflated certificate chains,
+Cloudflare found failures jumping when the chain grew by more than 10kB or
+30kB, thresholds that correspond to nothing in the protocol and everything in
+somebody's buffer.
 
 This is protocol ossification, and it is the most useful thing to take away
 from the whole exercise. Nothing in TLS ever said the ClientHello fitted in a
@@ -26450,7 +27753,7 @@ anything about cryptography.
 ## References
 
 - [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
-- [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
+- [RFC 9954: Hybrid Key Exchange in TLS 1.3](https://www.rfc-editor.org/rfc/rfc9954.html)
 - [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
 - [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters)
 - [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)
@@ -26980,6 +28283,7 @@ One security note that applies to both. SNMPv1 and v2c send a community string i
     slug: "netfilter-hook-order",
     title: "Netfilter Hooks And The Order Your Rules Really Run In",
     date: "2026-06-23",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "security"],
     excerpt:
       "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
@@ -27058,7 +28362,7 @@ Notice also that the nat hooks have \`policy accept\`. A nat chain is not a filt
 
 \`ct state\` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
 
-First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
+First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource, and an idle established TCP entry is kept for five days by default (\`nf_conntrack_tcp_timeout_established\` is 432000 seconds) unless the connection closes cleanly. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
 
 Second, the \`invalid\` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
 
@@ -27067,11 +28371,12 @@ Second, the \`invalid\` state is not noise. It usually means the tracker saw a p
 Two commands answer most questions. \`nft monitor trace\` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
 
 \`\`\`bash
-nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft add chain inet fw trace_chain '{ type filter hook prerouting priority -301; }'
+nft add rule inet fw trace_chain ip saddr 10.10.5.77 meta nftrace set 1
 nft monitor trace
 \`\`\`
 
-And counters tell you whether a rule is dead code:
+And counters tell you whether a rule is dead code, but only on rules that have one. nftables counts nothing by default, so add a \`counter\` statement to the rules you want to audit (\`iifname "mgmt0" tcp dport 22 counter accept\`) and let traffic run:
 
 \`\`\`bash
 nft --handle list ruleset | grep -n "counter packets 0"
@@ -27092,6 +28397,7 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
     slug: "oom-killer-and-swap-sizing",
     title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
+    updated: "2026-11-21",
     tags: ["linux", "servers", "operations"],
     excerpt:
       "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
@@ -27132,8 +28438,11 @@ done | sort -k2 -rn | head
 The important consequence is that the biggest process usually dies, and on most servers the biggest process is the one doing the actual work. The database gets killed, not the leaky agent that caused the pressure. If you have a process that must survive, bias it explicitly:
 
 \`\`\`bash
-echo -800 > /proc/$(pidof postgres)/oom_score_adj
+PGDATA=$(sudo -u postgres psql -Atc 'SHOW data_directory')
+echo -800 > /proc/$(head -1 "$PGDATA/postmaster.pid")/oom_score_adj
 \`\`\`
+
+The first line asks the running server where its data directory is, and the second (run as root) reads the postmaster's PID from the first line of \`postmaster.pid\` in that directory. That targets the postmaster alone. \`pidof postgres\` returns every PostgreSQL process, and a redirect to more than one path fails as ambiguous. Backends forked afterward inherit the postmaster's value, so [PostgreSQL's documentation](https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT) suggests setting it in the startup script instead, with \`PG_OOM_ADJUST_FILE\` and \`PG_OOM_ADJUST_VALUE\` set so backends go back to 0 and stay killable.
 
 and if you have something you would rather lose first, bias it the other way with a positive number. Do not set -1000 on more than one thing. If nothing is eligible, the kernel panics instead.
 
@@ -27175,6 +28484,7 @@ cat /proc/pressure/memory
     slug: "ebpf-observability-basics",
     title: "eBPF Is How I Ask The Kernel Questions",
     date: "2026-07-04",
+    updated: "2026-11-21",
     tags: ["linux", "monitoring", "tools"],
     excerpt:
       "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
@@ -27233,7 +28543,7 @@ tracepoint:sched:sched_switch
 {
   @off[args->prev_pid] = nsecs;
   if (@off[args->next_pid]) {
-    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    @us[args->next_comm] = hist((nsecs - @off[args->next_pid]) / 1000);
     delete(@off[args->next_pid]);
   }
 }
@@ -27659,6 +28969,7 @@ None of these are exotic. They are the same configuration management and regress
     slug: "spf-dkim-dmarc",
     title: "SPF, DKIM, And DMARC Without The Mystery",
     date: "2026-07-09",
+    updated: "2026-11-21",
     tags: ["security", "networking", "operations"],
     excerpt:
       "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
@@ -27720,7 +29031,7 @@ First, **alignment**. DMARC requires that the domain validated by SPF or DKIM ma
 Second, **policy and reporting**.
 
 \`\`\`dns
-_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r; pct=100"
+_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r"
 \`\`\`
 
 - \`p=\` is the policy: \`none\`, \`quarantine\`, or \`reject\`.
@@ -27734,7 +29045,7 @@ The order matters, and rushing it is how you drop legitimate mail from a system 
 1. **Publish SPF and DKIM first.** Sign everything, from every system that sends: the mail server, the ticketing system, the monitoring alerts, the thing in the closet that emails a nightly report.
 2. **Publish \`p=none\` with \`rua=\`.** This changes nothing about delivery. It asks the world to send you daily aggregate reports in XML listing every IP that sent mail claiming your domain, and whether it passed.
 3. **Read the reports for several weeks.** This is the entire value of the exercise. You will find senders you forgot about. Everybody does. Fix or authorize each legitimate one before you go further.
-4. **Move to \`p=quarantine\`,** optionally with \`pct=\` to ramp gradually.
+4. **Move to \`p=quarantine\`,** optionally with \`t=y\` first, which asks receivers to apply one level less than the stated policy while you watch the reports. RFC 9989 replaced the old \`pct=\` tag with \`t=\`. Receivers that still follow RFC 7489 ignore \`t=\` and apply the full policy, so expect some real quarantining even in test mode.
 5. **Move to \`p=reject\`** once the reports are clean.
 
 Then the forwarding problem. Legitimate forwarders and mailing lists break SPF and sometimes DKIM, and under \`p=reject\` that mail is refused. ARC exists to address this by letting intermediaries record the authentication results they saw, so a downstream receiver can choose to trust that chain. Support is uneven, so the practical answer is still to know which forwarding paths your users depend on before you enforce.
@@ -27759,6 +29070,7 @@ One last point, because it is the reason to do any of this: these records do not
 
 - [RFC 7208: Sender Policy Framework (SPF) for Authorizing Use of Domains in Email, Version 1](https://www.rfc-editor.org/rfc/rfc7208)
 - [RFC 6376: DomainKeys Identified Mail (DKIM) Signatures](https://www.rfc-editor.org/rfc/rfc6376)
+- [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989)
 - [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489)
 - [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617)
 - [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321)
@@ -27770,6 +29082,7 @@ One last point, because it is the reason to do any of this: these records do not
     slug: "flash-caching-tiers",
     title: "SSD Caching for HDD Arrays: bcache vs dm-cache and Writeback",
     date: "2026-07-10",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "hardware"],
     excerpt:
       "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
@@ -27841,7 +29154,7 @@ The way to find out is to measure. \`lvs\` exposes hit and miss counters for a c
 Endurance is the constraint people forget. Every promotion into the cache is a write to the flash device, and on a workload with poor locality the tier can churn constantly, writing far more to the SSD than the application ever wrote. Check the drive's endurance rating in drive writes per day, then check what you are actually doing to it:
 
 \`\`\`bash
-smartctl -A /dev/nvme0n1 | grep -Ei 'percentage_used|data_units_written|media_errors'
+smartctl -A /dev/nvme0n1 | grep -Ei 'percentage used|data units written|media and data integrity'
 \`\`\`
 
 If percentage used is climbing noticeably in the first months, the cache is thrashing and either the cache is too small or the workload is not cacheable.
@@ -27865,6 +29178,7 @@ And if your slow tier is already fast enough for the workload, adding a cache is
     slug: "policy-based-routing-linux",
     title: "Policy-Based Routing on Linux: ip rule, Marks, and rp_filter",
     date: "2026-07-11",
+    updated: "2026-11-21",
     tags: ["networking", "routing", "linux"],
     excerpt:
       "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
@@ -27948,7 +29262,7 @@ sysctl -w net.ipv4.conf.all.rp_filter=2
 sysctl -w net.ipv4.conf.eth1.rp_filter=2
 \`\`\`
 
-Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the \`all\` setting and the per interface setting, so setting the interface to 2 while \`all\` is 1 does nothing.
+Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the \`all\` setting and the per interface setting, so setting the interface to 2 while \`all\` is 1 does give loose mode on that interface, but setting it to 0 while \`all\` is 1 or 2 does nothing.
 
 ## Debugging: ask the kernel, do not read the tables
 
@@ -28786,7 +30100,7 @@ per object, and people are surprised their cache "is not working."
 
 ## Cache-Control directives that matter
 
-The response directives worth knowing, from RFC 9111:
+The response directives worth knowing, from RFC 9111 and two extensions:
 
 - \`max-age=N\` seconds of freshness for any cache.
 - \`s-maxage=N\` overrides \`max-age\` for shared caches only. This is how you
@@ -28799,8 +30113,8 @@ The response directives worth knowing, from RFC 9111:
   sensitive responses, not as a general safety blanket.
 - \`private\` means a browser may cache it but a shared cache must not. Get this
   wrong on a personalized page and one user sees another user's data.
-- \`immutable\` promises the body will never change for this URL, so a client
-  should not revalidate even on a reload.
+- \`immutable\` from RFC 8246 promises the body will never change for this URL,
+  so a client should not revalidate even on a reload.
 - \`stale-while-revalidate=N\` from RFC 5861 lets a cache serve a stale copy
   immediately and refresh in the background. It smooths out the latency
   spike every time an object expires.
@@ -29216,6 +30530,7 @@ tenants from memory first, then check whether the compute split makes sense.
     slug: "wal-point-in-time-recovery",
     title: "Write-Ahead Logs and Recovering to a Point in Time",
     date: "2026-07-27",
+    updated: "2026-11-21",
     tags: ["storage", "operations", "servers"],
     excerpt:
       "A write-ahead log exists so a crash cannot corrupt the database. The same log lets you rewind to any second before someone ran the bad DELETE.",
@@ -29293,7 +30608,9 @@ runs.
 ## Recovering to a target
 
 Recovery is: put the base backup in place, tell the server where the archived
-segments are, tell it when to stop.
+segments are, tell it when to stop, and create an empty \`recovery.signal\` file
+in the data directory. Without that file PostgreSQL 12 and later start normally
+and ignore the recovery settings below.
 
 \`\`\`ini
 # postgresql.conf on the recovery instance
@@ -30283,6 +31600,7 @@ In my experience the culprit is almost always one forgotten port or one overly e
     slug: "linux-disk-io-troubleshooting",
     title: "Troubleshooting Disk I/O on Linux Without Guessing",
     date: "2026-04-13",
+    updated: "2026-11-21",
     tags: ["linux", "storage", "operations"],
     excerpt:
       "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
@@ -30368,6 +31686,7 @@ runtime=60
 time_based=1
 group_reporting=1
 filename=/mnt/data/fiotest
+size=4g
 
 [random-read-4k]
 rw=randread
@@ -31036,6 +32355,7 @@ Threat modeling has made me a better builder, not just a better defender. Once y
     slug: "cgroups-resource-limits",
     title: "cgroups v2: Making One Server Behave Like Several",
     date: "2026-04-18",
+    updated: "2026-11-21",
     tags: ["linux", "virtualization", "operations"],
     excerpt:
       "One runaway process should not take down everything else on the box. Control groups are how Linux enforces that, and you can use them without containers.",
@@ -31195,7 +32515,7 @@ My practice is to set \`memory.high\` deliberately low at first and watch \`memo
 When a service disappears without a word in its own logs, or slows down for no obvious reason, read what the kernel recorded before reading the application:
 
 1. Find the cgroup. \`systemctl status name.service\` prints it, or read \`/proc/PID/cgroup\`.
-2. Check \`memory.events\`. A nonzero \`oom_kill\` means the limit killed it. It did not crash. It ran out of budget, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
+2. Check \`memory.events.local\`, which counts only this cgroup (plain \`memory.events\` also rolls up events from child cgroups). A nonzero \`oom_kill\` there means the OOM killer took a process out of this cgroup. If \`max\` and \`oom\` are climbing in the same file, this cgroup's own limit killed it. If they are flat, the limit that was hit belongs to a parent slice or to the whole host, and with nested cgroups the counters can be split between the cgroup whose limit fired and the cgroup the victim lived in. The kernel's \`oom-kill:\` line settles it: \`oom_memcg=\` is the cgroup whose limit was hit, \`task_memcg=\` is the victim's cgroup, and \`constraint=CONSTRAINT_NONE\` means the host itself ran out of memory. Whichever it was, it did not crash. It was killed for memory, which makes this a capacity or leak question rather than a stack trace question. \`journalctl -k | grep -i -E 'killed process|oom'\` shows the kernel's side.
 3. Check \`cpu.stat\`. A rising \`nr_throttled\` means the quota is the bottleneck.
 4. Check the pressure files to see which resource tasks were waiting on.
 5. Only then look at the application.
@@ -33275,6 +34595,7 @@ list.
     slug: "recursive-resolver-internals",
     title: "What A Recursive Resolver Actually Does",
     date: "2026-06-17",
+    updated: "2026-11-21",
     tags: ["networking", "linux", "operations"],
     excerpt:
       "Stub, forwarder, recursive: three different jobs people all call a DNS server. Here is the walk down the tree, the caching rules, and how to watch it happen.",
@@ -33318,8 +34639,12 @@ Suppose the cache is completely cold and someone asks for
 3. Ask an \`example.com\` server. This one is authoritative for the zone, so it
    answers with the A record and the authoritative answer flag set.
 
-Three key details people get wrong. The resolver asks the *full* name at every
-step, not one label at a time. The root does not "know about" example.com in
+Three key details people get wrong. The walk above is the classic one, in which
+the resolver asks the *full* name at every step. Modern resolvers such as
+Unbound use QNAME minimisation (RFC 9156) by default, so the root is asked only
+about \`com\`, the \`com\` servers about \`example.com\`, and only the zone's own
+servers see \`api.example.com\`, with a fallback to the full name when a server
+answers badly. Either way the referrals are the same. The root does not "know about" example.com in
 any sense, it just knows who is authoritative for \`com\`. And the resolver seeds
 this whole process from a static list of root server addresses, the root hints,
 which is the only DNS data that arrives out of band.
@@ -33409,6 +34734,7 @@ waiting on the authoritative side will change that.
 - [RFC 2308: Negative Caching of DNS Queries](https://www.rfc-editor.org/rfc/rfc2308.html)
 - [RFC 6891: Extension Mechanisms for DNS (EDNS(0))](https://www.rfc-editor.org/rfc/rfc6891.html)
 - [RFC 8767: Serving Stale Data to Improve DNS Resiliency](https://www.rfc-editor.org/rfc/rfc8767.html)
+- [RFC 9156: DNS Query Name Minimisation to Improve Privacy](https://www.rfc-editor.org/rfc/rfc9156.html)
 - [Unbound documentation](https://unbound.docs.nlnetlabs.nl/en/latest/)
 `,
   },
@@ -33416,6 +34742,7 @@ waiting on the authoritative side will change that.
     slug: "gpu-passthrough-proxmox",
     title: "GPU Passthrough on Proxmox Without the Guesswork",
     date: "2026-06-18",
+    updated: "2026-11-21",
     tags: ["virtualization", "linux", "homelab"],
     excerpt:
       "IOMMU groups, VFIO binding, and the handful of failure modes that eat an entire evening. How I reason through passthrough problems instead of copying forum posts.",
@@ -33437,13 +34764,14 @@ The goal is to take a PCIe device away from the host kernel and hand it, with it
 
 The IOMMU exists so a device can do DMA using guest physical addresses without being able to scribble anywhere in host memory. Without it, passthrough would be a security hole with a nice UI.
 
-Enable it on the kernel command line, then reboot and verify rather than assume.
+Enable it in firmware (VT-d or AMD-Vi) and, where your kernel needs it, on the kernel command line, then reboot and verify rather than assume.
 
 \`\`\`bash
-# Intel hosts
-intel_iommu=on iommu=pt
-# AMD hosts
-amd_iommu=on iommu=pt
+# Intel hosts on kernels older than 6.8 (6.8 and newer enable it by default)
+intel_iommu=on
+# AMD hosts enable it by default; nothing to add
+# Optional on either, may improve host performance
+iommu=pt
 
 # After reboot, confirm the kernel actually brought it up
 dmesg | grep -e DMAR -e IOMMU | head
@@ -34018,6 +35346,7 @@ just an unusually eloquent client.
     slug: "zfs-arc-l2arc-tuning",
     title: "ZFS Caching: ARC, L2ARC, and the SLOG Misunderstanding",
     date: "2026-06-26",
+    updated: "2026-11-21",
     tags: ["storage", "linux", "servers"],
     excerpt:
       "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
@@ -34077,8 +35406,9 @@ Which means a SLOG only helps synchronous writes. Ordinary asynchronous writes, 
 Where it genuinely helps: NFS exports with sync semantics, databases issuing sync commits, and virtual machine storage over iSCSI or NFS where the guest is flushing. Check whether your workload is even synchronous before shopping.
 
 \`\`\`bash
-# Are writes to this dataset synchronous at all?
-zpool iostat -v 1
+# Are applications asking for synchronous writes at all?
+# Run it twice; a climbing zil_commit_count means yes (Linux path)
+grep zil_commit_count /proc/spl/kstat/zfs/zil
 
 # Dataset sync policy: standard honors the application, always forces sync
 zfs get sync tank/vmstore
@@ -37741,6 +39071,7 @@ anything like it does now.
     slug: "systemd-service-hardening",
     title: "Hardening A systemd Service In Twenty Lines",
     date: "2026-08-20",
+    updated: "2026-11-21",
     tags: ["linux", "security", "operations"],
     excerpt:
       "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
@@ -37863,8 +39194,10 @@ capability at all.
 **SystemCallFilter.** The \`@system-service\` set is a curated allowlist covering
 what normal daemons do. Subtracting \`@privileged\`, \`@resources\`, and \`@obsolete\`
 removes administrative calls, resource limit manipulation, and legacy interfaces
-nobody should be calling. Blocked calls return an error, and you will see them
-in the journal, which makes debugging a broken filter straightforward.
+nobody should be calling. By default a blocked call kills the process with
+\`SIGSYS\`, which shows up in the journal as the service dying on signal SYS. Add
+\`SystemCallErrorNumber=EPERM\` if you would rather the call fail with an error,
+and \`SystemCallLog=@privileged @resources @obsolete\` to log when the service makes one of the calls you removed. It needs a list: an empty \`SystemCallLog=\` resets the setting and logs nothing.
 
 **IPAddressDeny and IPAddressAllow.** A per service firewall implemented in the
 kernel filter layer. A web application that only needs to talk to a local
@@ -40698,7 +42031,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     slug: "zfs-on-enterprise-hardware",
     title: "Running ZFS on Dell Enterprise Hardware",
     date: "2026-02-08",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage", "zfs", "servers", "homelab"],
     excerpt:
       "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
@@ -40821,7 +42154,7 @@ Snapshots are nearly free at creation, because copy-on-write means a snapshot is
 
 ZFS rewards careful planning. Choose your pool layout thoughtfully because changing it later means destroying and recreating the pool. Buy drives from different batches to avoid correlated failures. And always have more RAM than you think you need, because ZFS uses memory aggressively for caching.
 
-On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: the ARC on Linux defaults to using about half of system memory, that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
+On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: by default the ARC may grow to the larger of 5/8 of system memory or all memory minus 1 GiB (OpenZFS 2.3 and later; earlier releases on Linux stopped at about half), that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
 
 ## What breaks
 
@@ -43089,7 +44422,7 @@ One rule for lab practice: the attack lab must not route to anything you care ab
     slug: "sfp-transceivers-explained",
     title: "SFP, SFP+, and QSFP: Transceivers Explained",
     date: "2025-12-15",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
@@ -43153,7 +44486,7 @@ Fiber ends are the most common physical failure and the easiest to fix. A finger
 
 ## Third-party vs OEM
 
-Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
+Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now part of Coherent, formerly II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
 
 Some switches check for OEM transceivers and will display warnings or refuse to use third-party modules. Cisco is notorious for this. The workaround is usually a CLI command to accept non-certified transceivers:
 
@@ -46292,7 +47625,7 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
     slug: "ssl-tls-certificates-explained",
     title: "SSL/TLS Certificates: What They Are and How They Work",
     date: "2025-09-25",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "networking", "servers"],
     excerpt:
       "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
@@ -46413,7 +47746,7 @@ The protocol underneath is ACME, standardized as RFC 8555. The CA gives your cli
 
 Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
 
-Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates has been 398 days since 2020, and it continues to move shorter.
+Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates was 398 days from 2020, dropped to 200 days for certificates issued from March 15, 2026, and is scheduled to fall to 100 days in March 2027 and 47 days in March 2029.
 
 ## Certificate management
 
@@ -46640,6 +47973,7 @@ This hybrid approach uses each filesystem where it is strongest.
     slug: "homelab-network-evolution",
     title: "How My Home Network Evolved Over Three Years",
     date: "2025-09-18",
+    updated: "2026-11-21",
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
@@ -46671,7 +48005,7 @@ Three things go wrong here, in roughly this order:
 
 **DHCP stops working the moment you add a VLAN.** A \`DHCPDISCOVER\` is a broadcast, and broadcasts do not cross a layer 3 boundary. A client in the new VLAN sits there with an APIPA address while the DHCP server two VLANs away never hears it. The answer is a DHCP relay, configured on the router or the SVI as \`ip helper-address\`, which unicasts the request to the server and populates the giaddr field so the server knows which scope to answer from. RFC 2131 describes the whole exchange, and reading it once saves you from the guesswork.
 
-**Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. Effective inter-VLAN throughput is roughly 500 Mbps total, shared by every VLAN pair. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
+**Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. The link is full duplex, so one transfer can still approach gigabit speed, but all routed traffic shares the trunk's 1 Gbps in each direction, so two busy VLAN pairs, or routed traffic plus internet traffic, split it between them. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
 
 Once you have two switches, [spanning tree](/blog/spanning-tree-protocol-deep-dive) stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
 
@@ -46732,6 +48066,7 @@ Buy the rack-mount servers when you have a workload that needs them: many VMs at
     slug: "container-orchestration-basics",
     title: "Container Orchestration: Docker and LXC in a Homelab",
     date: "2025-09-15",
+    updated: "2026-11-21",
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
@@ -46797,7 +48132,7 @@ One note on that file: the \`version\` key is a leftover from Compose V1 and the
 
 The mental model difference is that an LXC container is a machine you maintain and a Docker container is a process you replace. LXC containers have an init system, get patched with \`apt upgrade\`, and accumulate state. Docker images are immutable layers on an overlay filesystem; you do not patch a running container, you build a new image and recreate it. Anything you write inside a Docker container that is not on a named volume or bind mount is gone the moment the container is recreated, and losing a database that way is a rite of passage.
 
-Running Docker *inside* an unprivileged LXC container is the most popular bad idea in the Proxmox community. It can be made to work with the \`nesting=1\` and \`keyctl=1\` features, but Docker's overlay2 storage driver does not work on a ZFS-backed unprivileged container, so it silently falls back to the \`vfs\` driver. \`vfs\` makes a full copy of every layer instead of stacking them, so a 400 MB image becomes several gigabytes on disk and image pulls crawl. If you want Docker on Proxmox, put it in a VM.
+Running Docker *inside* an unprivileged LXC container is the most popular bad idea in the Proxmox community. It can be made to work with the \`nesting=1\` and \`keyctl=1\` features, but before OpenZFS 2.2, Docker's overlay2 storage driver did not work on a ZFS-backed unprivileged container, so it silently fell back to the \`vfs\` driver. OpenZFS 2.2 added overlayfs support, so check \`docker info\` for the storage driver you actually got. \`vfs\` makes a full copy of every layer instead of stacking them, so a 400 MB image becomes several gigabytes on disk and image pulls crawl. If you want Docker on Proxmox, put it in a VM.
 
 ## When You Actually Need an Orchestrator
 
@@ -46825,6 +48160,7 @@ Written as a decision sequence: does it need a non-Linux OS, a different kernel,
     slug: "bgp-for-network-engineers",
     title: "BGP for Network Engineers: A Practical Introduction",
     date: "2026-02-21",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "routing"],
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
@@ -46882,7 +48218,7 @@ Read that \`network\` statement carefully, because it does not do what it looks 
 
 BGP's state machine has six states, and the useful thing is that each one points at a different layer. **Idle** means BGP is not even trying, usually because there is no route to the peer. **Connect** and **Active** are both TCP problems: Active in particular sounds positive and is not, it means the router keeps trying to open a TCP session and keeps failing, which is almost always a firewall blocking 179 or a wrong peer address. **OpenSent** and **OpenConfirm** mean TCP worked and the peers are arguing about parameters, so check for an AS number mismatch or an authentication mismatch. **Established** is the only good state.
 
-Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 default hold time is 180 seconds with keepalives every 60, and peers negotiate down to the lower of their two values. So the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
+Once established, the session is kept alive by KEEPALIVE messages. RFC 4271 suggests a 90 second hold time with keepalives every 30, but [Cisco IOS](/blog/cisco-ios-fundamentals) and FRR default to 180 seconds and 60, and peers negotiate down to the lower of their two values. So on those platforms the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
 
 ## What Actually Goes Wrong
 
@@ -46928,6 +48264,7 @@ Containerlab with FRR is the lightest way in now: a multi-AS topology defined in
     slug: "fortigate-cli-essentials",
     title: "FortiGate CLI: Commands You Will Use Every Day",
     date: "2026-02-22",
+    updated: "2026-11-21",
     tags: ["fortinet", "firewall", "networking"],
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
     coverImage: "/images/blog/fortigate-cli-essentials.jpg",
@@ -47049,11 +48386,11 @@ When the cluster is formed but behaving oddly, \`diagnose sys ha checksum show\`
 
 Always run \`diagnose debug disable\` and \`diagnose debug reset\` when you are done debugging. Leaving debug enabled affects performance. And document any changes you make in the CLI, because the GUI does not always show CLI-only configurations clearly.
 
-Two more habits worth building. First, run \`execute backup config tftp <filename> <server-ip>\` before any risky change. FortiOS has no equivalent of the IOS \`reload in 5\` safety net, so if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via \`execute revision list config\` help, but only if the unit is still reachable.
+Two more habits worth building. First, run \`execute backup config tftp <filename> <server-ip>\` before any risky change. FortiOS has no \`reload in 5\`, but it has a similar safety net: under \`config system global\`, \`set cfg-save revert\` and \`set cfg-revert-timeout 600\`. Changes then last only until you run \`execute cfg save\`, and if the timeout passes without a save the unit reboots into the last saved configuration. Without it, if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via \`execute revision list config\` help, but only if the unit is still reachable.
 
 Second, if the CLI is producing \`command parse error\` on a command you know exists, check your scope. On a unit with VDOMs enabled, most \`config system\` settings live in the global scope and firewall objects live inside each VDOM. \`config global\` and \`config vdom\` then \`edit <name>\` move you between them, and the same command is genuinely invalid in the wrong place.
 
-Two operational numbers worth remembering: \`get system performance status\` reports CPU and memory alongside a 1, 10, 30, and 60 minute average, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
+Two operational numbers worth remembering: \`get system performance status\` reports current CPU and memory use, plus 1, 10, and 30 minute averages for network usage and sessions, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
 
 ## References
 
@@ -47069,7 +48406,7 @@ Two operational numbers worth remembering: \`get system performance status\` rep
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["storage", "hardware", "servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
     coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
@@ -47186,7 +48523,7 @@ media_errors                        : 0
 
 **M.2 drives throttle in server chassis.** A drive that starts at 6,000 MB/s and settles at 900 MB/s two minutes into a copy is not defective, it is hot. Watch \`nvme smart-log\` temperature during a sustained run, and if it is climbing into the drive's throttle range, the fix is airflow or a different form factor, not firmware.
 
-**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded \`dd\` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at \`avgqu-sz\` in \`iostat -x 1\` on the live system.
+**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded \`dd\` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at \`aqu-sz\` (\`avgqu-sz\` in older sysstat releases) in \`iostat -x 1\` on the live system.
 
 **Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
 
@@ -47799,7 +49136,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -47866,9 +49203,9 @@ Expected output on a working dual-stack segment:
 
 \`\`\`
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
-    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+    inet6 2001:db8:1234:1:a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
        valid_lft 86200sec preferred_lft 14200sec
-    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+    inet6 2001:db8:1234:1:1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
        valid_lft 86200sec preferred_lft 14200sec
     inet6 fe80::5054:ff:fe12:3456/64 scope link
        valid_lft forever preferred_lft forever
@@ -47937,6 +49274,7 @@ Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global a
     slug: "cisco-ios-fundamentals",
     title: "Cisco IOS Fundamentals Every Network Engineer Should Know",
     date: "2026-03-02",
+    updated: "2026-11-21",
     tags: ["cisco", "networking", "routing"],
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
@@ -48017,7 +49355,7 @@ interface GigabitEthernet0/0
   no shutdown
 \`\`\`
 
-The \`description\` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in \`show ip interface brief\` output on modern IOS and in most monitoring tools.
+The \`description\` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in \`show interfaces description\` output and in most monitoring tools. \`show ip interface brief\` does not show it.
 
 Interface naming differs between platforms and it trips people up. On a router, \`GigabitEthernet0/0\` is slot/port. On a stackable switch, \`GigabitEthernet1/0/1\` is switch-number/module/port, so the leading \`1\` is the stack member, not the slot. Type the wrong form and IOS reports an invalid interface rather than telling you the naming scheme changed.
 
@@ -48399,6 +49737,7 @@ A cluster also concentrates risk. Three standalone nodes fail one at a time. A t
     slug: "fortigate-sdwan-configuration",
     title: "FortiGate SD-WAN: Intelligent WAN Link Selection",
     date: "2026-03-05",
+    updated: "2026-11-21",
     tags: ["fortinet", "networking", "firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
@@ -48509,10 +49848,9 @@ end
 \`set mode\` controls the selection strategy, and the default is \`manual\`, meaning it simply uses \`priority-members\` in the order listed. The options that matter:
 
 - \`manual\` uses the first listed member, period. No SLA awareness.
-- \`priority\` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behavior.
-- \`sla\` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
-- \`load-balance\` distributes across members regardless of quality.
-- \`best-quality\` picks the single best member by whichever metric \`set quality-link\` or \`sla-compare-method\` names.
+- \`sla\` (the GUI calls it Lowest Cost SLA) uses the lowest cost member that meets the SLA, taking members in the listed order when costs tie, and falls to the next when it does not. This is the classic active/backup behavior.
+- \`priority\` (Best Quality in the GUI) picks the member with the best measured value of the metric named by \`set link-cost-factor\`, such as latency, jitter, or packet loss.
+- \`set load-balance enable\` spreads sessions across members. Since FortiOS 7.4.1 it is a separate option used with \`manual\` or \`sla\` rather than a mode; with \`sla\` it balances across the members that meet the SLA, and when none of them do but their health checks are still alive, Fortinet's documentation for the earlier Maximize Bandwidth (SLA) mode says they tie and traffic is balanced across all of them. Before 7.4.1 this was \`set mode load-balance\`, which the GUI called Maximize Bandwidth SLA.
 
 Rules are evaluated top to bottom by sequence number and the first match wins, exactly like firewall policies. If a rule is never taking effect, check whether a broader rule above it is catching the traffic first. Traffic that matches no rule falls through to the implicit rule, which uses the global \`load-balance-mode\`, defaulting to \`source-ip-based\`.
 
@@ -48560,6 +49898,7 @@ And it does nothing at a single-WAN site. If there is one circuit, there is no d
     slug: "power-over-ethernet-poe",
     title: "Power over Ethernet: How PoE Works in Enterprise Networks",
     date: "2026-03-07",
+    updated: "2026-11-21",
     tags: ["networking", "hardware", "switching"],
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
     coverImage: "/images/blog/power-over-ethernet-poe.jpg",
@@ -48584,7 +49923,7 @@ The power is DC, injected at roughly 48 V, and it travels on the same twisted pa
 
 **PoE++ (IEEE 802.3bt):** Up to 60W (Type 3) or 90W (Type 4) per port. Powers high-performance APs, thin clients, and even small displays.
 
-Two numbers matter for every one of these, and vendors quote whichever one flatters them. The first is what the switch puts out at the port. The second is what the device is guaranteed to receive after cable losses, which the standard budgets at up to 12.5 percent over a full 100 m run. So 802.3af is 15.4 W at the port and 12.95 W guaranteed at the device. 802.3at is 30 W out and 25.5 W in. 802.3bt Type 3 is 60 W out and 51 W in, and Type 4 is 90 W out and 71.3 W in. If a product page advertises "100 W PoE", that is marketing rather than 802.3bt, because Type 4 tops out at 90 W from the source. Cisco's UPOE and UPOE+ are 60 W and 90 W respectively.
+Two numbers matter for every one of these, and vendors quote whichever one flatters them. The first is what the switch puts out at the port. The second is what the device is guaranteed to receive after worst-case cable losses over a full 100 m run. So 802.3af is 15.4 W at the port and 12.95 W guaranteed at the device. 802.3at is 30 W out and 25.5 W in. 802.3bt Type 3 is 60 W out and 51 W in, and Type 4 is 90 W out and 71.3 W in. If a product page advertises "100 W PoE", that is marketing rather than 802.3bt, because Type 4 tops out at 90 W from the source. Cisco's UPOE and UPOE+ are 60 W and 90 W respectively.
 
 The other split is how many pairs are used. 802.3af and 802.3at power two pairs. The standard defines Alternative A, which uses the data pairs (1/2 and 3/6), and Alternative B, which uses the spare pairs (4/5 and 7/8) on 100BASE-TX. The switch picks one and a compliant device has to accept either. 802.3bt uses all four pairs, which is how it reaches 90 W without exceeding the per-conductor current limit. This is why a run that works fine for a phone can fail for a Type 3 access point: if a pair is broken, or a cheap patch cable only landed two pairs, 100 Mbps data still works and 4-pair PoE does not.
 
@@ -48915,6 +50254,7 @@ The habits transfer directly. Narrowing a time window, aggregating before readin
     slug: "iscsi-storage-protocol",
     title: "iSCSI Storage: How to Configure and Use It",
     date: "2026-03-10",
+    updated: "2026-11-21",
     tags: ["storage", "networking", "servers"],
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
     coverImage: "/images/blog/iscsi-storage-protocol.jpg",
@@ -49033,7 +50373,7 @@ When the SCSI translation overhead itself is the bottleneck, [NVMe over Fabrics]
 
 I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can access the same iSCSI volumes from TrueNAS, which enables live VM migration and HA failover. The setup takes about an hour to configure properly, and once it is running it is very reliable.
 
-The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and it costs you snapshots: LVM on a shared LUN in Proxmox is thick provisioned and does not support VM snapshots. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
+The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and through Proxmox VE 8 it cost you snapshots: LVM on a shared LUN in Proxmox is thick provisioned, and those versions do not support VM snapshots on it. Proxmox VE 9 added VM snapshots on it as volume chains, a per-storage option marked a technology preview. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
 
 ## References
 
@@ -49392,7 +50732,7 @@ On the supplicant side, plan for the client experience. Windows has a \`Wired Au
     slug: "vxlan-network-virtualization",
     title: "VXLAN and Network Virtualization Explained",
     date: "2026-03-14",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["networking", "virtualization", "datacenter"],
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
@@ -49441,7 +50781,7 @@ ip link set vxlan100 up
 ip addr add 10.100.0.1/24 dev vxlan100
 \`\`\`
 
-Set the MTU explicitly at the same time, because the kernel will not work it out for you:
+Check the MTU straight away. With \`dev eth0\` the kernel subtracts the 50 bytes of overhead from eth0's MTU for you, but without a \`dev\` the interface stays at 1500, so setting it explicitly does no harm:
 
 \`\`\`bash
 ip link set vxlan100 mtu 1450
@@ -49857,6 +51197,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
     slug: "syslog-centralized-logging",
     title: "Centralized Logging with Syslog: A Practical Guide",
     date: "2026-03-19",
+    updated: "2026-11-21",
     tags: ["operations", "monitoring", "servers"],
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
     coverImage: "/images/blog/syslog-centralized-logging.jpg",
@@ -49903,10 +51244,10 @@ template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PRO
 Add one thing to the UDP input before you rely on it:
 
 \`\`\`bash
-module(load="imudp" rcvbufSize="16m")
+input(type="imudp" port="514" rcvbufSize="16m")
 \`\`\`
 
-UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. Raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
+UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. \`rcvbufSize\` belongs on the \`input()\` line, replacing the plain one above; on \`module()\` it does nothing. rsyslog uses \`SO_RCVBUFFORCE\` when it has the privilege (root or \`CAP_NET_ADMIN\`), which can exceed \`net.core.rmem_max\`. Without that privilege, raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
 
 Put \`/var/log/remote\` on its own filesystem. A log server that fills its root partition stops logging and frequently stops working, and the classic version of this outage is one misbehaving host emitting debug output at ten thousand lines per second overnight.
 
@@ -49987,6 +51328,7 @@ Three security properties are worth being blunt about.
     slug: "container-networking-fundamentals",
     title: "Container Networking Fundamentals: How Pods and Containers Communicate",
     date: "2026-03-20",
+    updated: "2026-11-21",
     tags: ["networking", "containers", "kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
@@ -50065,7 +51407,7 @@ Kubernetes Services provide stable IP addresses for groups of pods. Service IPs 
 
 Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
 
-A ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
+In kube-proxy's iptables and nftables modes, a ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. (IPVS mode is the exception: it binds every ClusterIP to a dummy interface, \`kube-ipvs0\`, so the node answers the ping, which proves nothing about the backends either.) Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
 
 kube-proxy's default \`iptables\` mode writes one chain per Service plus one per endpoint, and load balancing is a chain of statistically weighted jumps. Rule evaluation and, more importantly, full-table resync are roughly linear in the number of Services, so clusters with several thousand Services see multi-second sync times and slow endpoint convergence. IPVS mode replaces the linear chain with a hash table and stays flat as the Service count grows; the newer \`nftables\` mode does the same with maps. If your cluster is small, iptables mode is simpler and easier to read with \`iptables-save -t nat | grep <service-name>\`.
 
@@ -50394,6 +51736,7 @@ Serving the same dataset over both protocols at once is the one thing I would te
     slug: "ntp-enterprise-networks",
     title: "NTP: Why Time Synchronization Matters in Enterprise Networks",
     date: "2026-03-23",
+    updated: "2026-11-21",
     tags: ["networking", "servers", "operations"],
     excerpt: "Accurate time is foundational to authentication, logging, and troubleshooting. Here is how NTP works and how to deploy it properly.",
     coverImage: "/images/blog/ntp-enterprise-networks.jpg",
@@ -50418,7 +51761,7 @@ NTP measures the round-trip delay to the time server and uses statistical algori
 
 The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is \`(T4 - T1) - (T3 - T2)\` and offset is \`((T2 - T1) + (T3 - T4)) / 2\`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
 
-Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. \`chronyc tracking\` does not print 16 for the local machine: an unsynchronized chronyd shows \`Stratum : 0\`, \`Reference ID : 00000000\` and \`Leap status : Not synchronised\`. If you see that on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -50455,7 +51798,7 @@ chronyc tracking
 chronyc sources -v
 \`\`\`
 
-\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes days. \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
+\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes about half a day even at chronyd's default maximum slew rate of 83333 ppm (one twelfth). \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
 
 ## Network Devices
 
@@ -50519,6 +51862,7 @@ Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause s
     slug: "nginx-reverse-proxy-setup",
     title: "Setting Up Nginx as a Reverse Proxy for Lab Services",
     date: "2026-03-24",
+    updated: "2026-11-21",
     tags: ["linux", "networking", "servers"],
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
     coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
@@ -50613,7 +51957,7 @@ openssl x509 -req -in grafana.csr -CA ca.crt -CAkey ca.key \\
   -extfile <(printf "subjectAltName=DNS:grafana.lab.internal")
 \`\`\`
 
-The 397 day figure is not arbitrary. Apple platforms reject TLS server certificates with a validity period longer than 398 days, so a lab certificate issued for ten years works in Firefox on your desktop and fails on every iPhone in the house. Ten years is fine for the CA itself, which is not subject to that limit.
+The 397 day figure is a habit worth keeping rather than a requirement here. Apple platforms reject publicly trusted TLS server certificates with a validity period longer than 398 days, but Apple says the rule does not affect certificates issued from user-added or administrator-added root CAs, so a lab CA's certificates are not subject to it. Short-lived leaves are still easier to rotate. Ten years is fine for the CA itself, which is not subject to that limit.
 
 One more nginx-specific detail: \`ssl_certificate\` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while \`curl\`, \`openssl s_client\`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
 
@@ -50662,6 +52006,7 @@ Nginx is also not a web application firewall, not an identity provider, and not 
     slug: "lacp-link-aggregation",
     title: "LACP and Link Aggregation: Combining Links for More Bandwidth",
     date: "2026-03-25",
+    updated: "2026-11-21",
     tags: ["networking", "switching", "hardware"],
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
     coverImage: "/images/blog/lacp-link-aggregation.jpg",
@@ -50746,13 +52091,13 @@ Each member interface needs its own \`.network\` file with \`Bond=bond0\` and no
 
 The file to read when something is wrong is \`/proc/net/bonding/bond0\`. It prints the aggregator ID, the actor and partner state bytes, and the churn counters for every member. Two lines matter most. \`Aggregator ID\` should be identical for every member: if two members show different aggregator IDs, only one aggregator is active and the other members are silently idle. \`Partner Mac Address\` of 00:00:00:00:00:00 means no LACPDUs are being received at all, which points at the switch side or at a port that was never added to the channel group.
 
-Note that \`Mode=802.3ad\` is the only bonding mode that requires switch configuration. Round-robin (mode 0) needs none, which is why tutorials reach for it, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
+Note that \`Mode=802.3ad\` is the only bonding mode that negotiates with the switch, but it is not the only one that needs switch configuration: round-robin (mode 0), balance-xor and broadcast need the switch ports grouped into a static channel. Round-robin is the one tutorials reach for, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
 
 ## What LACP Cannot Do
 
 It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
 
-It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
+It cannot span two independent switches. A standard 802.1AX aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
 
 It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
 
@@ -51177,6 +52522,7 @@ Finally, a stale target simply stops producing samples. Prometheus looks back a 
     slug: "bgp-route-filtering-security",
     title: "BGP Route Filtering and Security Best Practices",
     date: "2026-03-29",
+    updated: "2026-11-21",
     tags: ["networking", "bgp", "security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
@@ -51215,7 +52561,7 @@ The \`ge\` and \`le\` keywords are where most people go wrong, so be precise abo
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS and Junos with no export policy both readvertise every active BGP route to an eBGP peer, while IOS XR, which behaves the way RFC 8212 now requires, advertises nothing to an eBGP peer until a policy is attached. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 
@@ -51603,7 +52949,7 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
@@ -51639,7 +52985,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 \`\`\`bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep -E 'action="?deny' /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
 There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
@@ -51649,8 +52995,8 @@ There is a caveat that took me a while to internalize. Denies tell you what did 
 Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
 
 \`\`\`bash
-grep 'action=deny' /var/log/fortigate/traffic.log \\
-  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \\
+grep -E 'action="?deny' /var/log/fortigate/traffic.log \\
+  | sed -nE 's/.*(srcip=[0-9.]+) .*(dstip=[0-9.]+).*/\\1 \\2/p' \\
   | sort -u \\
   | awk '{print $1}' \\
   | uniq -c \\
@@ -52060,7 +53406,7 @@ Finally, Ansible is push-based and stateless. It has no continuous reconciliatio
     slug: "tls-modern-encryption",
     title: "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
     date: "2026-04-06",
-    updated: "2026-08-25",
+    updated: "2026-11-21",
     tags: ["security", "encryption", "networking"],
     excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
     coverImage: "/images/blog/tls-modern-encryption.jpg",
@@ -52119,9 +53465,9 @@ ssl_prefer_server_ciphers on;
 
 Two things about that config are easy to get wrong.
 
-\`ssl_ciphers\` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API and nginx does not expose a directive for them, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing \`ECDH+AESGCM\` from the string will not disable \`TLS_AES_128_GCM_SHA256\`.
+\`ssl_ciphers\` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing \`ECDH+AESGCM\` from the string will not disable \`TLS_AES_128_GCM_SHA256\`. Since nginx 1.19.4 you can set them with \`ssl_conf_command Ciphersuites\`, for example \`ssl_conf_command Ciphersuites TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;\`. Before 1.19.4 nginx had no directive for them.
 
-\`ssl_prefer_server_ciphers\` also has no effect on TLS 1.3. Suite preference in 1.3 is client-driven by design, which is deliberate: it lets a phone pick ChaCha20-Poly1305 because it has no AES hardware, while a server with AES-NI gets AES-GCM.
+\`ssl_prefer_server_ciphers\` does apply to TLS 1.3 when nginx is built with OpenSSL. The server always picks from the suites the client offers; with the option on it uses its own order, with it off it follows the client's. If you prefer server order, add \`ssl_conf_command Options PrioritizeChaCha;\` so a phone that lists ChaCha20-Poly1305 first, because it has no AES hardware, still gets it, while clients with AES hardware get AES-GCM.
 
 You also need a build that can do it. TLS 1.3 support in nginx requires OpenSSL 1.1.1 or newer, and the \`TLSv1.3\` parameter arrived in nginx 1.13.0. Check what you actually have:
 
@@ -52556,6 +53902,7 @@ was answering correctly the entire time.
     slug: "how-totp-codes-actually-work",
     title: "How TOTP Codes Actually Work",
     date: "2026-08-24",
+    updated: "2026-11-21",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
       "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
@@ -52655,8 +54002,9 @@ back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 
 \`\`\`bash
-# What the server would accept with a window of one step either side
-oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+# What the server would accept with a window of one step either side:
+# -w only counts forward, so start one step early and print three codes
+oathtool --totp -b --now "2026-08-25 08:59:30 UTC" -w 2 JBSWY3DPEHPK3PXP
 \`\`\`
 
 The window is a real cost, not free tolerance. Every extra step you accept
@@ -57211,6 +58559,561 @@ A working order, cheapest check first:
 - [GL.iNet forum: 4.x WireGuard REKEY-TIMEOUT troubleshooting](https://forum.gl-inet.com/t/4-x-wireguard-rekey-timeout-troubleshooting/25814)
 - [FreeBSD forums: Wireguard connection not established due to clock out of sync](https://forums.freebsd.org/threads/wireguard-connection-not-established-due-to-clock-out-of-sync.84824/post-563707)
 `,
+  },
+  {
+    slug: "ospf-neighbor-states-hello-to-full",
+    title: "From Hello to Full: How OSPF Neighbors Sync Databases",
+    date: "2026-11-21",
+    tags: ["ospf", "routing", "networking", "troubleshooting", "cisco"],
+    excerpt:
+      "OSPF routers reach Full through Hello checks, DR election, a master and slave database exchange and flooding. Each stuck state maps to one of those steps.",
+    coverImage: "/images/blog/ospf-neighbor-states-hello-to-full-photo.jpg",
+    coverCredit: {
+      author: "www.heimnetzwerke.net",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Patch_cable_with_RJ45_connector.jpg",
+    },
+    content: `## Neighbors are not adjacencies
+
+Two Open Shortest Path First (OSPF) routers on the same link do not simply start trading routes. They move through neighbor states defined in RFC 2328 (Request for Comments 2328, the specification for OSPF version 2), and the climb has two halves. The first half runs on Hello packets: find a neighbor and confirm that both routers can hear each other. The second half is entered only by some neighbors: synchronize the two routers' link-state databases (LSDBs) so both hold the same map of the network.
+
+The existing post on [OSPF fundamentals](/blog/ospf-routing-protocol) covers configuration, timers and a short list of stuck states. This article follows the packets instead: what each one carries, which check can reject it, and how each step explains the state a show command prints. RFC 2328 is the source throughout. The only vendor material used is one Cisco troubleshooting page and the FRRouting (FRR) command reference.
+
+## The five packet types
+
+- **Type 1, Hello:** discovers neighbors, confirms two-way communication, and elects the designated router.
+- **Type 2, Database Description (DD):** summarizes the LSDB while an adjacency is built.
+- **Type 3, Link State Request (LSR):** asks for specific link-state advertisements (LSAs) the sender lacks.
+- **Type 4, Link State Update (LSU):** carries full LSAs and floods changes.
+- **Type 5, Link State Acknowledgment (LSAck):** confirms receipt of LSAs.
+
+An LSA is one unit of topology information, such as one router's description of its links. The LSDB is all the LSAs a router holds for an area. Per RFC 2328 section 8.2, every packet type except Hello must come from an active neighbor, and anything else is discarded.
+
+## Step one: Hello
+
+### What a Hello carries
+
+Beyond the standard OSPF header (router ID, area identifier, authentication type and data), the Hello format in appendix A.3.2 holds the sender's network mask, HelloInterval (seconds between Hellos), Options, router priority, RouterDeadInterval (seconds of silence before a neighbor is declared down), and its view of the designated router (DR) and backup designated router (BDR). The DR and BDR fields hold interface IP (Internet Protocol) addresses, not router IDs, and read 0.0.0.0 when unset. The last field is the neighbor list: router IDs heard within the last RouterDeadInterval. Options includes the E-bit, which describes how AS-external LSAs (routes learned from outside the OSPF domain) are flooded.
+
+
+### Checks that can reject a Hello
+
+Sections 8.2 and 10.5 describe two layers of checks. Failing any one drops the packet.
+
+| Setting | Carried in | Rule |
+|---|---|---|
+| Area ID | OSPF header | Must match the receiving interface's area. Except on point-to-point links, the source address must also be on the interface's subnet. |
+| Authentication | OSPF header | The type must match and the packet must authenticate. |
+| Network mask | Hello body | Must match, except on point-to-point and virtual links, where it is ignored. |
+| HelloInterval | Hello body | Must match. |
+| RouterDeadInterval | Hello body | Must match. |
+| E-bit | Hello options | Must agree with the area type: clear for a stub area, set otherwise. |
+
+Two consequences follow. First, the neighbor record is created only after these checks pass. A mismatch therefore normally leaves the other router absent from the neighbor table instead of parked in some low state, so it has to be found by comparing settings, not by reading the state column. Second, network type is not a Hello field. It is a per-interface setting, so a mismatch is not detected directly and shows up only through the fields that do differ. Check it on both ends separately.
+
+### Down, Init and 2-Way
+
+A neighbor record starts in **Down**. The first valid Hello moves it to **Init**. If that Hello already lists the receiver's own router ID, the 2-Way event follows at once, because section 10.5 runs the Hello and 2-Way events in sequence for a single packet. If it does not, the neighbor stays in Init: a Hello was seen, but two-way communication is not yet proven. The first Hello that does list the receiver moves the neighbor to **2-Way**. A later Hello that omits the receiver's ID drops it back to Init.
+
+**Attempt** exists only on nonbroadcast multi-access (NBMA) networks, where some configuration may be needed to find neighbors. A broadcast network such as Ethernet never uses it. From any state, silence for RouterDeadInterval or a link-down report forces the neighbor to Down.
+
+## Step two: deciding who becomes adjacent
+
+On a broadcast segment, 2-Way is also where a decision is made. Section 10.4 says routers on point-to-point links, point-to-multipoint networks and virtual links always become adjacent. On broadcast and NBMA networks, an adjacency forms only if the router itself is the DR or BDR, or the neighbor is. Otherwise the RFC says the conversation stops at 2-Way. That is the specified outcome, not an error.
+
+### How the DR and BDR are elected
+
+The election runs from Hello data, which is why 2-Way comes first: the pool is the calculating router plus its neighbors at 2-Way or higher. Section 9.4 outlines the steps:
+
+1. Routers with priority 0 are removed.
+2. The BDR is chosen first, from routers not declaring themselves DR. Those already declaring themselves BDR win, by highest priority and then highest router ID. If none are declaring, the same rule applies to everyone left.
+3. The DR is chosen from routers declaring themselves DR, by priority then router ID. If nobody declares, the new BDR is promoted.
+4. If the calculating router's own role changed, steps 2 and 3 repeat.
+
+The RFC describes this as hysteresis: no new BDR is chosen until the old backup has accepted its DR duties, which keeps failover orderly. Section 7.3 adds that a router whose interface comes up and finds an existing DR accepts it regardless of priority. The [earlier post](/blog/ospf-routing-protocol) covers the practical effect, that the election does not preempt.
+
+The DR originates the network LSA for the segment and is adjacent to every other router on it.
+
+### Why neighbors sit at 2-Way
+
+Two routers that are neither DR nor BDR (DROther routers) see each other as neighbors and stay at 2-Way. Each is Full with the DR and BDR, so a router needs only two adjacencies on the segment instead of one per peer.
+
+It is a fault only when the pairing makes no sense. A point-to-point neighbor at 2-Way is wrong, since such links always become adjacent. A segment where every router has priority 0 is another case: nobody is eligible, so no DR exists and, by section 10.4, the neighbors stay at 2-Way.
+
+## Step three: from ExStart to Full
+
+Once the answer is yes, the neighbor enters **ExStart**. The RFC calls conversations in ExStart or any higher state adjacencies.
+
+### ExStart: master and slave
+
+Both routers send empty DD packets with the init, more and master bits set, retransmitting every RxmtInterval (the configured retransmission interval). The goal is to pick a master and the first DD sequence number. The router with the higher router ID becomes master. The other becomes slave and adopts the master's sequence number.
+
+### Exchange: describing the database
+
+In **Exchange**, each router lists its LSDB as a series of DD packets. They carry LSA headers only. A header is 20 bytes and identifies an LSA and its current instance. The master sends a DD packet with a sequence number, the slave answers by echoing it, and the master moves to the next number. Only one DD packet may be outstanding, and only the master retransmits. The exchange ends when each side has sent and received a DD packet with the more bit off.
+
+As headers arrive, each router compares them with its own database. An LSA the neighbor has that the router lacks, or holds in a newer instance, goes onto a request list.
+
+The DD packet also carries the Interface MTU, the largest IP datagram the sending interface can send without fragmentation (MTU stands for maximum transmission unit). Hellos have no such field. That matters in the troubleshooting section.
+
+### Loading and Full
+
+When the exchange ends, a router with a non-empty request list enters **Loading** and starts (or continues) sending LSR packets. The RFC notes that requests may be interleaved with the DD packets still arriving, so LSRs can already be going out during Exchange. The neighbor answers with LSUs containing the full LSAs. At most one LSR should be outstanding at a time, and unanswered requests are retransmitted every RxmtInterval. When the list empties, the neighbor reaches **Full**. A router with nothing to request goes straight from Exchange to Full, as the RFC's example shows for the router with the up-to-date database. At Full the adjacency appears in the routers' LSAs.
+
+A simplified version of the RFC's example (section 10.10) for two routers on a broadcast segment. The RFC assumes RT2 is the DR, has the higher router ID, and holds a completely up-to-date database:
+
+\`\`\`
+RT1: Down                      RT2: Down
+RT1 -> RT2  Hello (no DR, no neighbors seen)
+                               RT2: Init
+RT2 -> RT1  Hello (DR = RT2, RT1 seen)
+RT1: ExStart
+RT1 -> RT2  DD  init, more, master set, empty
+RT2 -> RT1  DD  init, more, master set, empty   (RT2 has the higher router ID)
+RT1: Exchange (slave)
+RT1 -> RT2  DD  echoes sequence, more set
+RT2 -> RT1  DD  next sequence ...   (until more is off on both)
+                               RT2: Full (nothing to request)
+RT1: Loading
+RT1 -> RT2  LSR
+RT2 -> RT1  LSU
+RT1: Full
+\`\`\`
+
+| State | Meaning | Leaves when |
+|---|---|---|
+| Down | No recent information | A valid Hello arrives |
+| Attempt | NBMA only, contacting a configured neighbor | A Hello arrives |
+| Init | Hello seen, own ID not in it | Own ID appears in a Hello |
+| 2-Way | Bidirectional | Adjacency wanted (ExStart), else stays |
+| ExStart | Choosing master and sequence | Roles agreed |
+| Exchange | Swapping DD summaries | DD packets finished both ways |
+| Loading | Requesting missing LSAs | Request list empty |
+| Full | Databases synchronized | Steady state |
+
+## The database and flooding at a high level
+
+An LSA is identified by its LS (link-state) type, Link State ID and advertising router. When a router holds two copies, the RFC picks the newer one by sequence number first. With equal sequence numbers the larger checksum wins. After that, an instance at MaxAge is newer, and an instance whose age is smaller by more than 15 minutes (MaxAgeDiff) is newer. The same comparison runs during the database exchange and during flooding.
+
+RFC 2328 defines five LSA types: router LSAs (type 1, one per router, describing its links to the area), network LSAs (type 2, from the DR, listing a segment's routers), summary LSAs (types 3 and 4, from area border routers, describing inter-area destinations: type 3 for IP networks and type 4 for AS boundary routers), and AS-external LSAs (type 5, from AS boundary routers, describing destinations external to the autonomous system).
+
+Flooding spreads a change across adjacencies. An LSU moves each LSA one hop farther from its origin. For each LSA received, the router validates the checksum and compares it with its copy. A newer LSA is installed, flooded out some of the eligible interfaces and, under the acknowledgment rules, acknowledged. An identical copy can serve as an implied acknowledgment for an LSA the router was retransmitting. If the router's own copy is newer, it normally sends that copy back to the sender and does not acknowledge the older one.
+
+Each LSA is acknowledged separately, though many acknowledgments can share one LSAck packet. Until one arrives, the LSA stays on the adjacency's retransmission list and is resent, which makes flooding reliable. A neighbor below Exchange does not take part. Neighbors in Exchange and Loading do, which the RFC says makes synchronization finish in a predictable time. On broadcast segments, the DR multicasts updates to the AllSPFRouters address instead of repeating them over every adjacency. Other routers send their updates to the AllDRouters address, which only the DR and BDR accept. When an update arrives on a segment where the router is the BDR, the BDR leaves the flooding to the DR, though it ends up retransmitting if the DR fails (section 13.3).
+
+
+The constants in RFC appendix B set the cadence. A router re-originates its own LSAs at least every 30 minutes (LSRefreshTime) even if nothing changed. An LSA reaching one hour of age (MaxAge) is flooded to flush it and is no longer used for routing. A new instance of the same LSA is originated at most every 5 seconds, and instances arriving within 1 second of the installed one are discarded.
+
+## Why an adjacency sticks: inferences from the RFC
+
+The RFC does not list failure causes. Everything in this section applies its procedure to each state, so it is inference, not quoted finding. The one place vendor documentation backs it up is noted where it comes up.
+
+### Stuck in Init
+
+Hellos arrive from the neighbor, but its Hellos do not list this router. Either this router's Hellos are not reaching it, or it is rejecting them. Because the usual configuration mismatches (timers, mask, area, authentication) are checked by both sides, they tend to cause silence on both sides, not Init. Init points more often at a one-way path: an access control list (ACL) permitting OSPF in one direction only, a unidirectional link fault, or multicast filtered on one side. Check what the neighbor receives, not only what this router receives.
+
+### Stuck in 2-Way
+
+First decide whether it is expected. Two DROther routers at 2-Way is the protocol working. A point-to-point link at 2-Way is a fault. On a broadcast segment, check the DR and BDR fields and the priorities, since all-zero priorities leave every pair at 2-Way.
+
+### Stuck in ExStart or Exchange
+
+The usual cause is an MTU mismatch. Section 10.6 says a router rejects a DD packet whose Interface MTU is larger than the biggest IP datagram it can accept on that interface without fragmentation. Hellos carry no MTU, so the neighbor relationship forms and then stalls at the first DD packet. A larger-MTU router accepts DD packets from a smaller-MTU one but not the reverse, so the failure is one-directional.
+
+Applying the section 10.6 ExStart rules to unequal MTUs gives two outcomes. Call the lower-MTU router L and the higher-MTU router H. L rejects every DD packet from H. If L has the higher router ID, H accepts L's opening DD packet, becomes slave and moves to Exchange, but L rejects H's replies and stays in ExStart. If H has the higher router ID, neither side completes negotiation and both stay in ExStart. This is an application of the rules, not a scenario the RFC describes. Cisco's troubleshooting page works through a case that matches the first outcome: its Router 7 has the lower MTU (1450 against 1500) and the higher router ID, ends up in EXSTART, and its neighbor sits in EXCHANGE. Cisco attributes the problem to mismatched MTU settings on the neighboring interfaces, and the fix is to make the MTU equal on both ends. The post on [MTU and jumbo frames](/blog/mtu-and-jumbo-frames) covers MTU in more depth.
+
+MTU is not the only cause. Cisco's page lists others that stop the DD packets from getting through: unicast delivery that is broken (a wrong virtual circuit mapping, an access list that blocks the unicast packet, or NAT translating it), a path that carries only small packets, and two routers configured with the same router ID. Cisco notes that in ExStart the router sends a unicast packet to the neighbor, except on a point-to-point link, where it sends a multicast packet.
+
+A neighbor that keeps falling back from Exchange to ExStart has a different problem. The RFC returns a neighbor to ExStart on a SeqNumberMismatch event (DD packets out of sequence or with changed options) or a BadLSReq event (a request for an LSA the neighbor does not have).
+
+### Stuck in Loading
+
+The request list is not empty, so requests are going out and complete answers are not arriving. The RFC names no specific cause.
+
+## Reading it on a router
+
+On a Cisco IOS (Internetwork Operating System) router, \`show ip ospf neighbor\` lists each neighbor with its ID, priority, state, dead time, address and interface. FRR documents the same command and variants such as \`show ip ospf neighbor detail\`, but its reference page has no sample neighbor output, so that layout is not reproduced here. Cisco's MTU troubleshooting page prints the output below for its two routers, one in EXCHANGE and one in EXSTART (the interfaces reflect the older serial links in that document):
+
+\`\`\`
+router-6#show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+172.16.7.11      1   EXCHANGE/  -    00:00:36    172.16.7.11    Serial2.7
+
+router-7#show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.170.10.6      1   EXSTART/  -     00:00:33    10.170.10.6    Serial0.6
+\`\`\`
+
+No sample output for Init or 2-Way was available from a source read for this article, so those states are described in words. An Init neighbor shows the state Init, and a 2-Way neighbor shows 2-Way. In both cases watch whether the Dead Time column keeps counting down from the full value again. The RFC restarts a neighbor's inactivity timer on every Hello, so a timer that keeps refreshing means Hellos still arrive and the problem lies in what happens next. The [Cisco IOS fundamentals post](/blog/cisco-ios-fundamentals) covers the basic show commands.
+
+## Study notes
+
+- A neighbor is a router whose Hellos are seen. An adjacency is a neighbor in ExStart or higher.
+- Init means one-way: the neighbor's Hello does not list this router yet.
+- 2-Way is the normal resting state between two DROther routers.
+- Hello checks (mask, timers, area, authentication, E-bit) fail silently, so a mismatch usually leaves no neighbor entry.
+- Higher router ID wins master. Higher priority, then router ID, wins DR and BDR.
+- Full means the request list is empty, not merely that the exchange finished.
+- ExStart or Exchange that never completes: check the MTU on both ends first.
+
+## Sources
+
+- [RFC 2328: OSPF Version 2 (J. Moy, April 1998)](https://www.rfc-editor.org/rfc/rfc2328.txt)
+- [Cisco: Troubleshoot OSPF Neighbors Stuck in Exstart/Exchange State](https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13684-12.html)
+- [FRRouting documentation: OSPFv2](https://docs.frrouting.org/en/latest/ospfd.html)`,
+  },
+  {
+    slug: "rstp-convergence-handshake-edge-ports-mst",
+    title: "How RSTP Converges: Handshakes, Edge Ports, and MST",
+    date: "2026-11-21",
+    tags: ["networking", "switching", "cisco", "learning"],
+    excerpt:
+      "How RSTP replaces STP timers with a proposal and agreement handshake, what edge ports and link types change, and when MST beats per-VLAN spanning tree.",
+    coverImage: "/images/blog/rstp-convergence-handshake-edge-ports-mst-photo.jpg",
+    coverCredit: {
+      author: "Kevin Hadley",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Rack_railway_turnout_(SPB).JPG",
+    },
+    content: `## From timers to handshakes
+
+Spanning Tree Protocol (STP) keeps a switched network loop-free by blocking redundant links, but the original version is slow to react. A current Cisco Catalyst 9300 guide lists the default timers: hello time 2 seconds, forward delay 15 seconds, maximum age 20 seconds. Juniper's documentation says the original protocol took up to 50 seconds to respond to a topology change.
+
+The fix came in two steps from the Institute of Electrical and Electronics Engineers (IEEE). The 802.1w supplement defined Rapid Spanning Tree Protocol (RSTP), and IEEE's project page for it records that it was incorporated into 802.1D-2004. The 802.1s supplement defined Multiple Spanning Tree Protocol (MSTP, called MST in much vendor documentation), which IEEE describes as an addition to 802.1Q that lets virtual local area network (VLAN) bridges use multiple spanning trees.
+
+Two existing posts cover the foundations: the [spanning tree deep dive](/blog/spanning-tree-protocol-deep-dive) explains the bridge identifier (ID), root election, path cost and the bridge protocol data unit (BPDU), and [STP troubleshooting](/blog/stp-troubleshooting) covers storms and diagnosis. This article picks up where those stop. It walks through how RSTP converges step by step, then compares per-VLAN spanning tree with MST, and ends with the protections that defend the assumptions RSTP makes.
+
+## Why classic STP waits
+
+A port that has just come up cannot tell whether the switch on the other end has already blocked its own redundant ports. Classic STP handles this by waiting: the port passes through listening and learning, spending the forward delay in each (Cisco puts it at twice the forward delay, 2 x 15 seconds by default), before it forwards. RSTP replaces the wait with a conversation. Neighbors tell each other directly that it is safe to forward, and the timers remain as a fallback.
+
+## RSTP vocabulary in one table
+
+RSTP merges the 802.1D disabled, blocking and listening states into one discarding state, leaving three states: discarding, learning and forwarding. Cisco's RSTP document defines four port roles.
+
+| Role | What it means | Typical state |
+| --- | --- | --- |
+| Root | Receives the best BPDU on a switch | Forwarding |
+| Designated | Sends the best BPDU on its segment | Forwarding |
+| Alternate | Receives better BPDUs from another switch, so it is a standby path to the root | Discarding |
+| Backup | Receives better BPDUs from the same switch, so it is a redundant link to a segment this switch already serves | Discarding |
+
+RSTP BPDUs also differ on the wire. Cisco describes them as type 2, version 2, using the six flag bits that 802.1D left unused to encode port role and state and to carry the proposal and agreement bits used below. Every switch now sends its own BPDU each hello interval instead of relaying the root's, which matters for failure detection.
+
+## The proposal and agreement handshake
+
+Take a small example. SW1 is the root. A new cable joins SW1 to SW2. SW2 already has a link down to SW3 and a workstation on an edge port. (An edge port faces only an end host and is covered in the next section.)
+
+\`\`\`
+SW1 (root)                               SW2
+designated port, discarding
+        -------- proposal BPDU ------->  superior BPDU: this port becomes
+                                         the root port
+                                         sync: block non-edge designated
+                                         ports (the one toward SW3)
+        <------- agreement BPDU -------  root port forwarding, agreement sent
+designated port moves to forwarding
+(no timer involved)
+\`\`\`
+
+The steps, following Cisco's description:
+
+1. **Proposal.** A designated port in the discarding or learning state sets the proposal bit in its BPDUs. SW1's new port is exactly that.
+2. **New root port.** SW2 sees that the BPDU is better than anything it has and elects the receiving port as its root port.
+3. **Sync.** Before it can bless the new root port, SW2 must be sure that nothing behind it can form a loop. A port counts as already in sync if it is blocking or if it is an edge port. SW2's other non-edge designated ports are neither, so SW2 blocks them. The workstation on the edge port keeps working.
+4. **Agreement.** SW2 unblocks its root port and replies with a copy of the proposal BPDU with the agreement bit set instead of the proposal bit.
+5. **Forwarding.** SW1 receives the agreement and moves its designated port to forwarding. No timer is involved.
+
+The handshake then repeats downstream, which Cisco describes as well: the port that was left in a designated discarding state after the sync is in the same situation the root's port was in at step 1, so it proposes to its own neighbor. Here that is SW2's port toward SW3, and SW3 runs the same sync and answers. Cisco says the final topology is reached in the time the new BPDUs need to travel down the tree, with no timer involved.
+
+Two consequences follow from that description. A loop never forms during the process, because every port that could create one is blocked before the new path opens. And traffic through SW2's non-edge designated ports pauses until SW3 agrees. The result is a brief interruption, not a loop. One caveat from Cisco: its own enhancement to the sync lets a switch put only its former root port in discarding when it syncs, and Cisco says that applies in most common reconvergence cases, so the exact set of ports that pause depends on the implementation.
+
+If no agreement arrives, for example because the neighbor does not speak RSTP, Cisco says the port falls back to the traditional 802.1D listening and learning sequence and forwards slowly.
+
+## When a link fails
+
+For a failure, RSTP leans on the alternate port. Juniper's RSTP documentation says that when a point-to-point link fails, the alternate link can transition to the forwarding state. Cisco describes the same behavior: a bridge that loses its root port can put its best alternate port directly into forwarding, which Cisco compares to its proprietary UplinkFast feature.
+
+Failures that do not drop the link are detected through hellos. Because each switch sends BPDUs every hello time (2 seconds by default), a neighbor that stays silent for three consecutive hellos can have its information aged out immediately, without waiting for the 20-second maximum age. Juniper states the same bound as three hello BPDUs, or 6 seconds.
+
+## Edge ports and link type
+
+Two settings decide whether the handshake can be skipped or used at all.
+
+**Edge ports.** An edge port faces an end host, so no switch sits behind it that could form a loop. Cisco says edge ports (the equivalent of PortFast) go straight to forwarding without listening or learning, and that a link flap on one does not generate a topology change. The assumption is policed simply: if an edge port receives a BPDU, it loses edge status. Juniper's RSTP page agrees, noting that edge ports do not expect to receive BPDUs.
+
+**Link type.** Cisco's document derives link type from duplex: full duplex is treated as point-to-point, half duplex as shared, and either can be overridden by configuration. It then states the key limit: rapid transition to the forwarding state is possible only on edge ports and on point-to-point links. Cisco states the limit without giving a reason. A plausible reading, offered here as inference rather than as Cisco's explanation, is that the handshake is a two-party exchange, so on shared media an agreement from one bridge could not speak for the others. Juniper exposes the same idea as a link mode: p2p for a point-to-point link and shared for shared media. On Cisco's IOS XE operating system, this command forces point-to-point treatment:
+
+\`\`\`
+spanning-tree link-type point-to-point
+\`\`\`
+
+## Topology changes in RSTP
+
+When the network changes shape, switches must forget stale MAC (media access control) address entries, or frames keep flowing toward ports that no longer lead anywhere. RSTP narrows what counts as a change. According to Cisco, only non-edge ports that move to forwarding cause a topology change, and losing connectivity no longer does.
+
+On detecting a change, a switch starts a topology change (TC) While timer, set to twice the hello time, on its non-edge designated ports and root port, and flushes the MAC addresses learned on those ports. A switch that receives a TC clears learned addresses on all ports except the one the notice arrived on, starts its own timer and sends TC-flagged BPDUs. RSTP no longer uses the separate topology change notification (TCN) BPDU of 802.1D unless a legacy bridge needs one.
+
+Because an edge port that toggles does not generate a topology change, a host rebooting on one does not start this flush. Cisco notes that the approach can cause more temporary flooding, which is the cost of clearing stale entries quickly: frames for unknown destinations are flooded until the table refills. Counting fewer events as topology changes limits how often that happens.
+
+## When a legacy bridge joins
+
+RSTP is backward compatible. Juniper states that switches do not all have to run RSTP, and offers a force-version setting to make a bridge behave as classic 802.1D STP. Cisco describes the cost: each port has a three-second migration delay during which its mode is locked, then adapts to the type of the next BPDU received. If a legacy bridge is on the segment, the port drops to 802.1D mode and the fast convergence benefits are lost. If the legacy bridge is removed later, Cisco says that in this rare case the port can stay in STP mode, and user intervention is required to restart protocol detection. One old switch is therefore a quiet way to lose RSTP's benefits on the links that touch it.
+
+## Three assumptions, three protections
+
+RSTP works only if three things hold. Each has a feature that defends it, and each feature is described in Cisco's Catalyst 9300 guide on optional spanning tree features. Framing the features as defenses of assumptions is this article's own; the Behavior column follows Cisco's text.
+
+| Assumption | What breaks it | Feature | Behavior |
+| --- | --- | --- | --- |
+| Edge ports face only hosts | A switch or bridging device is plugged into an access port | PortFast with BPDU Guard | The port goes to the error-disabled state when a BPDU arrives |
+| The root stays where it was designed to be | A switch with a better bridge ID appears behind a port | Root Guard | The port goes to the root-inconsistent (blocked) state instead of accepting the new root |
+| BPDUs keep arriving on non-designated ports | A unidirectional link silences the neighbor without dropping the link | Loop Guard | Alternate or root ports are prevented from becoming designated ports |
+
+Two details are worth knowing. BPDU Guard enabled globally applies to ports in the PortFast operational state, while enabled on an interface it also works on a port that does not have PortFast enabled. And Cisco states that Root Guard and Loop Guard cannot both be enabled at the same time.
+
+BPDU Filter is a different tool and easy to confuse with BPDU Guard. The Cisco guide warns that enabling BPDU filtering on an interface is the same as disabling spanning tree on it, which removes the protection above.
+
+## Per-VLAN trees or MST
+
+Everything so far describes one spanning tree. With [VLANs](/blog/vlan-segmentation-guide), the question is how many trees to run.
+
+### Per-VLAN: PVST+ and Rapid PVST+
+
+Cisco's Per-VLAN Spanning Tree Plus (PVST+) runs one spanning tree instance per VLAN and is based on 802.1D. Rapid PVST+ runs the 802.1w behavior described above per VLAN and, according to the Catalyst 9300 guide, is the default mode on that platform. Each VLAN has its own bridge ID: a 4-bit priority plus a 12-bit extended system ID equal to the VLAN number, so priorities move in steps of 4096 with a default of 32768.
+
+The benefit is load balancing: each VLAN can have a different root, so different VLANs can use different uplinks. A Cisco best-practices guide for Catalyst 6500 and 4500 switches, updated in 2015, notes this and the cost, which is more BPDU processing for the central processing unit (CPU) as the VLAN count grows. The Catalyst 9300 guide caps spanning tree instances in these modes at 300 per device or stack.
+
+### MST: instances instead of VLANs
+
+MST maps many VLANs onto a small number of instances. Cisco's MST document gives the motivating case of 1,000 VLANs but only two real logical topologies: per-VLAN spanning tree would compute 1,000 trees, while MST computes two.
+
+Switches share an MST region only if three attributes match exactly: a name (32 bytes), a revision number (two bytes) and a table mapping each of the 4,096 possible VLANs to an instance. BPDUs carry a digest of the table along with the name and revision, not the table itself. A switch that receives a different digest knows the port sits on a region boundary.
+
+Instance 0 is the Internal Spanning Tree (IST), an RSTP instance that extends the Common Spanning Tree (CST) of 802.1Q into the region and represents the whole region to the outside as one bridge. The Multiple Spanning Tree Instances (MSTIs) exist only inside the region. A switch sends one BPDU containing the IST information plus one record per MSTI present on the port, rather than a separate BPDU for every instance.
+
+Instance limits depend on the platform and release. The older Cisco MST document, which still calls 802.1s pre-standard, describes its implementation as 16 instances (the IST plus 15 MSTIs), while the current Catalyst 9300 guide says the device supports up to 65 MST instances and places no limit on how many VLANs map to one instance.
+
+### Where the two meet
+
+MST switches detect PVST+ neighbors at region boundaries automatically, and the region replicates the IST BPDU on all VLANs to look like a PVST+ neighbor. Cisco recommends that the IST root have a higher priority (a numerically lower value) than any other bridge in the network, and warns that if the MST bridge is the root, it must be the root for all VLANs. A conflict puts the boundary port in root-inconsistent state, which keeps the topology loop-free but loses connectivity. Cisco also recommends avoiding mapping any VLANs onto instance 0.
+
+### Choosing
+
+| | Rapid PVST+ | MST |
+| --- | --- | --- |
+| Basis | 802.1w behavior per VLAN (Cisco's mode) | IEEE 802.1s, a supplement to 802.1Q |
+| Trees | One per VLAN | One per instance, with VLANs mapped to instances |
+| Root placement | Per VLAN | Per instance |
+| Neighbor requirements | None beyond normal RSTP | Name, revision and VLAN mapping must match |
+| Cost | More CPU work as VLANs multiply | Computation stays proportional to instances |
+
+The 2015 Cisco guide says a recommendation depends on hardware, software and the number of devices and VLANs. In general, it recommends Rapid PVST+ for new deployments when the number of logical ports stays within the platform guideline, because it gives fast convergence without extra configuration. It recommends MST for a design with VLANs everywhere and a large number of VLANs, where the logical port count can exceed that guideline. For a network with a few dozen VLANs, well inside platform limits, Rapid PVST+ is therefore the simpler default. MST earns its extra configuration discipline when the VLAN count makes per-VLAN trees expensive.
+
+## Limits and common mistakes
+
+**Assuming RSTP is fast everywhere.** Rapid transition needs edge ports or point-to-point links. A half-duplex link, a forced shared link type, or a neighbor that never answers with an agreement returns that segment to slow behavior.
+
+**Marking a switch port as an edge port.** Cisco says an edge port goes straight to forwarding and loses edge status only when it receives a BPDU. By inference from those two facts, a bridge mistakenly attached behind such a port is forwarding from the start, until its first BPDU arrives. Pairing the port with BPDU Guard shuts it down instead.
+
+**Treating an MST region as approximate.** A typo in the region name or a mismatched mapping splits the region in two, and the boundary behavior is rarely what was intended.
+
+**Mixing modes without a plan.** In a mixed MST and PVST+ network, Cisco states that the common spanning tree root must be inside the MST backbone, and that a PVST+ device cannot connect to multiple MST regions.
+
+## Study notes
+
+- Classic STP uses timers to decide when forwarding is safe. RSTP uses a handshake and keeps the timers as a fallback.
+- The handshake is proposal, sync, agreement, forwarding. Sync blocks non-edge designated ports so that no loop can form.
+- Rapid transition applies only on edge ports and point-to-point links. Duplex decides link type unless it is overridden.
+- Only non-edge ports moving to forwarding generate topology changes in RSTP.
+- Three missed hellos (6 seconds at the default) age out a silent neighbor, and a failed link promotes the alternate port.
+- BPDU Guard defends edge ports, Root Guard defends the root position, Loop Guard defends against unidirectional links.
+- Per-VLAN modes give load balancing at the cost of one tree per VLAN. MST trades configuration discipline for fewer trees.
+
+## Sources
+
+- [Cisco: Understand Rapid Spanning Tree Protocol (802.1w)](https://www.cisco.com/c/en/us/support/docs/lan-switching/spanning-tree-protocol/24062-146.html)
+- [Cisco: Understand the Multiple Spanning Tree Protocol (802.1s)](https://www.cisco.com/c/en/us/support/docs/lan-switching/spanning-tree-protocol/24248-147.html)
+- [Cisco: Layer 2 Configuration Guide, IOS XE 17.17.x (Catalyst 9300), Configuring Spanning Tree Protocol](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-17/configuration_guide/lyr2/b_1717_lyr2_9300_cg/configuring_spanning_tree_protocol.html)
+- [Cisco: Layer 2 Configuration Guide, IOS XE 17.16.x (Catalyst 9300), Configuring Optional Spanning-Tree Features](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-16/configuration_guide/lyr2/b_1716_lyr2_9300_cg/configuring_optional_spanning_tree_features.html)
+- [Cisco: Best Practices for Catalyst 6500/6000 Series and Catalyst 4500/4000 Series Switches Running Cisco IOS Software (updated 2015)](https://www.cisco.com/c/en/us/support/docs/switches/catalyst-6500-series-switches/24330-185.html)
+- [Juniper: Configuring RSTP (Junos OS documentation)](https://networkingdocs.hpe.com/documentation/us/en/software/junos/stp-l2/topics/topic-map/spanning-tree-configuring-rstp.html)
+- [IEEE 802.1: 802.1w, Rapid Reconfiguration of Spanning Tree](https://www.ieee802.org/1/pages/802.1w.html)
+- [IEEE 802.1: 802.1s, Multiple Spanning Trees](https://www.ieee802.org/1/pages/802.1s.html)`,
+  },
+  {
+    slug: "nist-csf-2-explained",
+    title: "NIST Cybersecurity Framework 2.0 Explained",
+    date: "2026-11-21",
+    tags: ["security", "cybersecurity", "learning", "operations"],
+    excerpt:
+      "The six CSF 2.0 Functions, the Core structure, Tiers and Profiles, what changed from 1.1, and how the CSF differs from SP 800-53 and ISO/IEC 27001.",
+    coverImage: "/images/blog/nist-csf-2-explained-photo.jpg",
+    coverCredit: {
+      author: "PattayaPatrol",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DFC_4040_Workers_in_safety_gear_assemble_a_large_steel_scaffold_against_a_clear_blue_sky.jpg",
+    },
+    content: `## A framework that describes outcomes, not instructions
+
+The NIST Cybersecurity Framework (CSF) is guidance from the National Institute of Standards and Technology (NIST), a U.S. federal agency, for describing and managing cybersecurity risk. Version 2.0 was published on February 26, 2024, as NIST Cybersecurity White Paper (CSWP) 29, with the digital object identifier (DOI) 10.6028/NIST.CSWP.29. NIST's own later blog calls it the first major update since the framework was created in 2014. The prior edition, version 1.1, is dated April 16, 2018, and says that version 1.0 was issued in February 2014.
+
+The abstract says it plainly: "The CSF does not prescribe how outcomes should be achieved." The CSF is a taxonomy, meaning a structured list, of high-level cybersecurity outcomes. It does not say which firewall to buy or how long a password must be. It names results, such as keeping an inventory of hardware, and leaves the method to the organization.
+
+That design choice explains why the CSF is often confused with control catalogs and certifiable standards, and why it is neither. This explainer covers the Functions, the Core structure, what changed from version 1.1, Tiers, Profiles, a hypothetical gap analysis, and the comparison with NIST Special Publication (SP) 800-53 and with ISO/IEC 27001, a standard from the International Organization for Standardization (ISO) and the International Electrotechnical Commission (IEC).
+
+The document defines three components: the **Core** (the hierarchy of outcomes), **Organizational Profiles** (an organization's current or target posture expressed in Core outcomes) and **Tiers** (how rigorous its risk governance and management practices are). NIST updates the PDF infrequently, on purpose. Faster-moving material lives online: Informative References (mappings from the Core to other standards and regulations), Implementation Examples, Quick Start Guides, Community Profiles and Profile templates.
+
+## The six Functions
+
+Each Function is named for a verb and has a two-letter code used in identifiers.
+
+- **Govern (GV).** The organization's cybersecurity risk management strategy, expectations and policy are established, communicated and monitored. It covers organizational context, strategy, supply chain risk management, roles, policy and oversight, and NIST calls it critical for tying cybersecurity into enterprise risk management (ERM), the organization-wide management of risks of all kinds.
+- **Identify (ID).** Current cybersecurity risks are understood: the assets (data, hardware, software, systems, facilities, services, people), the suppliers and the risks attached to them. It also covers finding improvement opportunities.
+- **Protect (PR).** Safeguards are used. Topics include identity management, authentication and access control, awareness and training, data security, platform security and infrastructure resilience.
+- **Detect (DE).** Possible attacks and compromises are found and analyzed.
+- **Respond (RS).** Actions are taken on a detected incident: management, analysis, mitigation, reporting and communication.
+- **Recover (RC).** Assets and operations affected by an incident are restored, with appropriate communication.
+
+Two details are easy to miss. The Functions are drawn as a wheel with Govern in the center, because Govern informs how the other five are carried out. And they are not steps. NIST says they should be addressed concurrently: Govern, Identify, Protect and Detect actions happen continuously, while Respond and Recover capabilities should be ready at all times and are used when an incident occurs.
+
+## Categories and Subcategories
+
+Each Function divides into Categories (related outcomes that together make up the Function), and each Category into Subcategories (more specific outcomes). Counting the Core in Appendix A of the final document gives 6 Functions, 22 Categories and 106 Subcategories:
+
+- Govern, 31 Subcategories in 6 Categories: Organizational Context; Risk Management Strategy; Roles, Responsibilities, and Authorities; Policy; Oversight; Cybersecurity Supply Chain Risk Management.
+- Identify, 21 in 3: Asset Management, Risk Assessment, Improvement.
+- Protect, 22 in 5: Identity Management, Authentication, and Access Control; Awareness and Training; Data Security; Platform Security; Technology Infrastructure Resilience.
+- Detect, 11 in 2: Continuous Monitoring, Adverse Event Analysis.
+- Respond, 13 in 4: Incident Management, Incident Analysis, Incident Response Reporting and Communication, Incident Mitigation.
+- Recover, 8 in 2: Incident Recovery Plan Execution, Incident Recovery Communication.
+
+The per-Function counts were tallied from the Appendix A text and sum to 106.
+
+An identifier such as PR.AA-05 has three parts: the Function (PR), the Category (AA, identity management, authentication and access control) and the Subcategory number. That Subcategory is about access permissions being defined in policy, managed, enforced and reviewed, using least privilege and separation of duties.
+
+The numbers have gaps on purpose. Data Security, for example, has Subcategories 01, 02, 10 and 11. NIST says the gaps mark version 1.1 Subcategories that were relocated. The order of the Core is also not a priority list: NIST states that order and size do not imply sequence or importance, and that the outcomes are not a checklist. The Core applies to all information and communications technology (ICT), including information technology (IT), the Internet of Things (IoT) and operational technology (OT), meaning systems that run physical processes. Cloud, mobile and artificial intelligence (AI) systems are named as covered environments.
+
+## What changed from version 1.1
+
+### The new Govern Function
+
+Version 1.1 had five Functions: Identify, Protect, Detect, Respond, Recover. Version 2.0 adds Govern. Counting identifiers in each document, version 1.1 had 5 Functions, 23 Categories and 108 Subcategories, and version 2.0 has 6, 22 and 106. The totals fell slightly even though a Function was added, which shows the Core was reorganized, not just extended.
+
+In version 1.1, Identify held Categories named Business Environment, Governance, Risk Management Strategy and Supply Chain Risk Management. In version 2.0, Identify has only Asset Management, Risk Assessment and Improvement, and the strategy, policy, oversight and supply chain topics appear under Govern. The match is by topic, not one to one. NIST's record page for the document mentions a spreadsheet overview of Core transition changes, so anyone translating an existing assessment should use NIST's mapping material and not this summary.
+
+Improvement also moved. Version 1.1 had improvement Categories under Respond and Recover (RS.IM and RC.IM). In version 2.0, Improvement is a Category under Identify (ID.IM), and NIST says it informs efforts under all six Functions.
+
+### Scope and name
+
+Version 1.1 was titled "Framework for Improving Critical Infrastructure Cybersecurity." It grew out of Executive Order 13636 (February 2013), and the Cybersecurity Enhancement Act of 2014 later gave NIST a role in developing voluntary frameworks for critical infrastructure owners and operators. Version 1.1 already described itself as applicable to any organization relying on technology and as a possible model for other sectors and communities. Version 2.0 drops that title, and its Note to Readers says so. It states that the CSF is for organizations of all sizes and sectors, including industry, government, academia and nonprofits, regardless of program maturity.
+
+So the change in scope is mainly in the stated audience and framing. Saying the framework was only for critical infrastructure before would overstate what version 1.1 said about itself.
+
+### Other differences visible in the documents
+
+- Version 1.1 printed Informative References in its Core table. Version 2.0 moves References and Implementation Examples online.
+- Version 1.1 used the term Framework Profile. Version 2.0 uses Organizational Profile and also describes Community Profiles.
+
+## Implementation Tiers
+
+The Tiers describe the rigor of an organization's cybersecurity risk governance and risk management practices. They are optional: an organization can choose to apply them to its Current and Target Profiles.
+
+1. **Partial.** Governance is ad hoc, and risk management happens irregularly, case by case.
+2. **Risk Informed.** Management approves risk management practices, but they may not be organization-wide policy. Information is shared informally.
+3. **Repeatable.** Practices are formally approved and expressed as policy. There is an organization-wide approach, and supplier risks are acted on formally.
+4. **Adaptive.** The organization adapts its practices based on lessons learned and predictive indicators, through continuous improvement.
+
+The document calls its table notional, meaning illustrative. NIST says the Tiers should complement an organization's own risk management methodology and not replace it. Higher is not always better: progression is encouraged when risks or mandates are greater, or when a cost-benefit analysis shows a feasible and cost-effective reduction in risk.
+
+## Organizational Profiles: Current and Target
+
+An Organizational Profile describes an organization's current and/or target cybersecurity posture in terms of Core outcomes. Every Profile includes one or both of two parts.
+
+- A **Current Profile** records the outcomes the organization is achieving or attempting to achieve and characterizes how, or to what extent, each is being achieved.
+- A **Target Profile** records the outcomes the organization has selected and prioritized, considering anticipated changes such as new requirements, new technology and threat intelligence trends.
+
+A Profile can have any scope. NIST's examples are an entire organization, a set of financial systems, or countering ransomware threats and handling ransomware incidents involving those systems. A **Community Profile** is a published baseline for a sector, technology or threat type, which an organization can use as the starting point for its own Target Profile.
+
+The document sketches five steps that can repeat as often as needed: scope the Profile; gather information (policies, risk priorities, business impact analysis registers, tools, roles); create the Profile; analyze the gaps between Current and Target and build a prioritized action plan, such as a risk register or a Plan of Action and Milestones (POA&M); then implement the plan and update the Profile. A Current Profile can also show partners or customers an organization's capabilities, and a Target Profile can state expectations to suppliers.
+
+## A hypothetical gap analysis
+
+The following example is invented for illustration. It does not describe any real organization, and the cells are not drawn from any NIST publication. Imagine a 30-person company that prepares invoices for clients, with a Profile scoped to customer billing data and the systems that handle it. The outcome wording is paraphrased from the Core.
+
+| Outcome | Current Profile | Target Profile | Gap and action |
+| --- | --- | --- | --- |
+| GV.RM-02, risk appetite and tolerance statements exist | None written; decided case by case | One-page statement, approved and reviewed yearly | Draft and approve it |
+| ID.AM-01, hardware inventories maintained | A spreadsheet listing servers only | All hardware touching billing data, reviewed quarterly | Add laptops and network gear, assign someone to keep it current |
+| PR.AA-05, permissions defined, reviewed, least privilege | One shared administrator login | Named accounts, access by role, reviewed twice a year | Retire the shared login, write a role list |
+| PR.DS-11, backups created, protected, maintained, tested | Nightly backups; no restore ever tried | Backups ordinary accounts cannot delete, restore tested twice a year | Schedule a first restore test |
+
+The action column becomes a prioritized plan. A reasonable ordering weighs the risk of each Current entry: an untested backup set and a shared administrator login would normally outrank a gap in a hardware inventory. That ordering is the organization's judgment, and a governance Tier could be recorded alongside, for instance Tier 1 now and Tier 2 as the target, again as an invented illustration.
+
+The layout is also illustrative, since the document requires only that a Current Profile characterize how or to what extent each outcome is achieved. The backup row connects to a separate post on [restore drills that matter](/blog/restore-drills-that-matter): a backup job that reports success has not proven that the data can be restored.
+
+## Framework, catalog and standard: how the CSF differs
+
+The CSF is often mentioned in the same breath as SP 800-53 and ISO/IEC 27001. They are different kinds of documents.
+
+| Question | NIST CSF 2.0 | NIST SP 800-53 Rev. 5 | ISO/IEC 27001:2022 |
+| --- | --- | --- | --- |
+| What it is | A framework: a taxonomy of outcomes | A catalog of security and privacy controls | A standard with requirements for an information security management system (ISMS) |
+| Structure | 6 Functions, 22 Categories, 106 Subcategories | 20 control families of base controls and enhancements | Requirements in Clauses 4 to 10, plus an Annex A list of controls |
+| Says how? | No; points to Informative References | Yes, at control level, with values the organization sets | Requires a risk-based process; control guidance is in ISO/IEC 27002 |
+
+### SP 800-53, the control catalog
+
+SP 800-53 Revision 5 (September 2020) is titled Security and Privacy Controls for Information Systems and Organizations. Its controls sit in 20 families, each with a two-letter identifier. Families contain base controls and control enhancements, which add functionality or specificity to a base control or increase its strength, for systems and environments that need greater protection.
+
+The level of detail differs sharply from the CSF. Control AC-2, Account Management, spells out items such as defining the account types allowed, assigning account managers, requiring approvals to create accounts, monitoring account use, and reviewing accounts at an organization-defined frequency. The CSF's PR.AA-05 states only the outcome. This pairing shows the difference in granularity and is not a published mapping.
+
+The CSF names SP 800-53 directly: one control may be one of many references needed for a single Subcategory, and the CSF can complement the NIST Risk Management Framework's approach to selecting and prioritizing those controls.
+
+### ISO/IEC 27001, the certifiable standard
+
+ISO/IEC 27001:2022 is the third edition, with a listed publication date of October 25, 2022. Its scope is requirements for establishing, implementing, maintaining and continually improving an ISMS, plus requirements for assessing and treating information security risks. The requirements are generic and apply to any organization, and excluding any requirement in Clauses 4 to 10 is not acceptable when claiming conformity.
+
+Annex A lists controls. The IEC webstore page for the standard confirms the edition and date above and quotes its scope. A certification body, DQS, reports that the 2022 edition lists 93 controls in four themes, down from 114 in the 2013 edition, derived from ISO/IEC 27002:2022. The full standard is sold, not free, so the Annex A figures rest on that secondary source and not on the ISO text, which was not read for this article. Certification bodies run initial and recertification audits against the standard, which is the practical meaning of being certified to it.
+
+The CSF connects to this standard: the version 1.1 Core listed ISO/IEC 27001:2013 controls among its Informative References. But the CSF is free and voluntary, and its 2.0 text describes no certification scheme. The 1.1 document even notes that a phrase like "compliance with the Framework" can be confusing.
+
+### A way to remember it
+
+The CSF asks what outcomes a program should achieve and where the gaps are. SP 800-53 asks which controls could deliver them. ISO/IEC 27001 asks whether a management system exists that can be audited against stated requirements. Real programs often use more than one. A separate post on [threat modeling in a homelab](/blog/threat-modeling-homelab) covers the related habit of asking what is worth protecting and what could go wrong.
+
+## Limits and common mistakes
+
+- **Treating outcomes as a checklist.** NIST says they are not, and that the order does not imply importance.
+- **Reading the Functions as phases.** They run concurrently, and Respond and Recover readiness has to exist before the incident.
+- **Climbing the Tiers as a goal.** Tiers are optional and NIST ties higher ones to risk, mandates and cost-benefit.
+- **Mixing version vocabulary.** Five Functions and Categories like ID.GV belong to version 1.1. Six Functions and GV identifiers belong to version 2.0.
+- **Expecting the CSF to stand alone.** NIST says to use it with other frameworks, standards, guidelines and practices.
+
+## Study notes
+
+- Six Functions in order: Govern, Identify, Protect, Detect, Respond, Recover. Govern sits at the center of the wheel.
+- Published February 26, 2024, as CSWP 29. Version 1.1 was April 16, 2018.
+- Version 2.0 has 6 Functions, 22 Categories and 106 Subcategories. Version 1.1 had 5, 23 and 108.
+- Identifier shape: Function letters, Category letters, then a number, for example RC.RP-03.
+- Tiers: Partial, Risk Informed, Repeatable, Adaptive. They are optional.
+- A Profile is Current, Target or both, and the gap between them drives a prioritized action plan.
+- The CSF is outcomes, SP 800-53 is controls, ISO/IEC 27001 is a certifiable management system standard.
+
+## Sources
+
+- [NIST CSWP 29: The NIST Cybersecurity Framework (CSF) 2.0 (February 26, 2024)](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf)
+- [NIST publication page for CSWP 29](https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20)
+- [NIST CSRC record for CSWP 29, with document history](https://csrc.nist.gov/pubs/cswp/29/the-nist-cybersecurity-framework-csf-20/final)
+- [NIST blog: Celebrating 1 Year of CSF 2.0](https://www.nist.gov/blogs/cybersecurity-insights/celebrating-1-year-csf-20)
+- [NIST Framework for Improving Critical Infrastructure Cybersecurity, Version 1.1 (April 16, 2018)](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.04162018.pdf)
+- [NIST SP 800-53 Revision 5: Security and Privacy Controls for Information Systems and Organizations](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf)
+- [NIST CSRC record for SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final)
+- [IEC Webstore: ISO/IEC 27001:2022 (scope, edition and publication date)](https://webstore.iec.ch/publication/79694)
+- [DQS: New ISO 27001:2022, key changes (Annex A counts and audits)](https://www.dqsglobal.com/blog/new-iso-27001-2022-key-changes)`,
   },
 ];
 

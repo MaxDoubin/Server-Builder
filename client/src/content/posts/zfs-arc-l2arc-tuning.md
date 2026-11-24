@@ -53,8 +53,9 @@ Which means a SLOG only helps synchronous writes. Ordinary asynchronous writes, 
 Where it genuinely helps: NFS exports with sync semantics, databases issuing sync commits, and virtual machine storage over iSCSI or NFS where the guest is flushing. Check whether your workload is even synchronous before shopping.
 
 ```bash
-# Are writes to this dataset synchronous at all?
-zpool iostat -v 1
+# Are applications asking for synchronous writes at all?
+# Run it twice; a climbing zil_commit_count means yes (Linux path)
+grep zil_commit_count /proc/spl/kstat/zfs/zil
 
 # Dataset sync policy: standard honors the application, always forces sync
 zfs get sync tank/vmstore

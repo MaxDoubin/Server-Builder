@@ -35,10 +35,10 @@ template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PRO
 Add one thing to the UDP input before you rely on it:
 
 ```bash
-module(load="imudp" rcvbufSize="16m")
+input(type="imudp" port="514" rcvbufSize="16m")
 ```
 
-UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. Raise `net.core.rmem_max` on the host to match, or the request for a 16 MB buffer is quietly clamped.
+UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. `rcvbufSize` belongs on the `input()` line, replacing the plain one above; on `module()` it does nothing. rsyslog uses `SO_RCVBUFFORCE` when it has the privilege (root or `CAP_NET_ADMIN`), which can exceed `net.core.rmem_max`. Without that privilege, raise `net.core.rmem_max` on the host to match, or the request for a 16 MB buffer is quietly clamped.
 
 Put `/var/log/remote` on its own filesystem. A log server that fills its root partition stops logging and frequently stops working, and the classic version of this outage is one misbehaving host emitting debug output at ten thousand lines per second overnight.
 

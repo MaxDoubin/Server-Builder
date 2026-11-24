@@ -250,4 +250,14 @@ export const SECURITY: Term[] = [
       "Its key lengths are not comparable with AES's. A 2048-bit RSA key gives roughly the strength of a 112-bit symmetric key, which is why RSA keys are so much longer. It is also slow, so it protects a small secret or a hash rather than the bulk of the data.",
     see: ["certificate", "AES", "TLS"],
   },
+  {
+    term: "XDR",
+    expansion: "Extended Detection and Response",
+    field: "security",
+    definition:
+      "A product category name for platforms that gather endpoint, network, cloud and identity telemetry in one place and add correlation and response on top, usually sold as a single console.",
+    confusion:
+      "No standards body defines it, and vendors word their definitions differently. A job posting or product page asking for XDR may mean EDR with extra data sources or an open platform close to a SIEM, so ask which product is meant.",
+    see: ["SIEM"],
+  },
 ];
